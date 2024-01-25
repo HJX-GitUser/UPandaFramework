@@ -4,43 +4,67 @@ using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class MonoMgr : BaseSingleton<MonoMgr>
+/// <summary>
+/// Mono的管理
+///1.利用帧更新或定时更新处理逻辑
+///2.利用协同程序处理逻辑
+///3.可以统一执行管理帧更新或定时更新相关逻辑
+/// </summary>
+public class MonoMgr : BaseMonoSingletonAuto<MonoMgr>
 {
-    private MonoController controller;
-    public MonoMgr()
+    private event UnityAction updateEvent;
+    private event UnityAction fixedUpdatteEvent;
+    private event UnityAction lateUpdateEvent;
+    
+
+    // Update is called once per frame
+    void Update()
     {
-        //保证了MonoController对象的唯一性
-        GameObject obj = new GameObject("MonoController");
-        controller = obj.AddComponent<MonoController>();
+        updateEvent?.Invoke();
     }
-    /// <summary>
-    /// 给外部提供的 添加帧更新事件的函数
-    /// </summary>
-    /// <param name="func"></param>
-    public void AddUpdateListener(UnityAction func)
+    private void FixedUpdate()
     {
-        controller.AddUpdateListener(func);
+        fixedUpdatteEvent?.Invoke();
+    }
+
+    private void LateUpdate()
+    {
+        lateUpdateEvent?.Invoke();
+    }
+
+    /// <summary>
+    /// 提供给外部添加帧更新事件的方法
+    /// </summary>
+    /// <param name="fun"></param>
+    public void AddUpdateListener(UnityAction fun)
+    {
+        updateEvent += fun;
     }
     /// <summary>
     /// 提供给外部 用于移除帧更新事件函数
     /// </summary>
-    /// <param name="func"></param>
-    public void RemoveUpdateListener(UnityAction func)
+    /// <param name="fun"></param>
+    public void RemoveUpdateListener(UnityAction fun)
     {
-        controller.RemoveUpdateListener(func);
-    }
-    public Coroutine StartCoroutine(IEnumerator routine)
-    {
-        return controller.StartCoroutine(routine);
+        updateEvent -= fun;
     }
 
-    public Coroutine StartCoroutine(string methodName, [DefaultValue("null")] object value)
+    public void AddFixedUpdatteEventListener(UnityAction fun)
     {
-        return controller.StartCoroutine(methodName, value);
+        fixedUpdatteEvent += fun;
+    }
+    public void RemoveFixedUpdatteListener(UnityAction fun)
+    {
+        fixedUpdatteEvent -= fun;
     }
 
-    public Coroutine StartCoroutine(string methodName)
+    public void AddLateUpdateEventListener(UnityAction fun)
     {
-        return controller.StartCoroutine(methodName);
+        lateUpdateEvent += fun;
     }
+    public void RemoveLateUpdateEventListener(UnityAction fun)
+    {
+        lateUpdateEvent -= fun;
+    }
+   
 }
