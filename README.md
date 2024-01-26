@@ -1,17 +1,20 @@
-# PandaFramework
+# UPandaFramework
 Unity的前端框架
 ## 目录结构介绍
 ---
 
 ### **Editor**
 以下工具在Tools菜单目录里使用
-#### AssetBundleTools AB包管理工具
+#### AssetBundleTools 
+**AB包管理工具**
 1. 可以给AB包生成MD5码并生成对比文件
 2. 上传AB包到指定资源服务器
 
-#### ExcelDll 读取Excel的插件
+#### ExcelDll 
+**读取Excel的插件**
 
-#### ExcelTool Excel工具
+#### ExcelTool 
+**Excel工具**
 1. 根据Excel配置的数据生成数据类和数据容器类
 2. 把Excel里的数据生成二进制文件放入StreamingAssets里，用BinaryDataMgr类得到相关数据
 
@@ -47,6 +50,7 @@ Unity的前端框架
 
 
 #### PublicMono
+**公共Mono模块**
 1. 利用帧更新或定时更新处理逻辑
 2. 利用协同程序处理逻辑
 3. 可以统一执行管理帧更新或定时更新相关逻辑
@@ -96,6 +100,18 @@ public class HowUseMonoMgr
 
 ```
 
-#### ObjPool
-对象池
+#### ObjPool 
+**对象池**
+对象池还需要优化，目前提供基础功能
+使用前对象需要做成预制体放进Resources里
+```C#
+//对象在Hierarchy中放回对象池后是否按层级结构存放
+//建议打包的时候设为false，可以节约一点性能
+//默认是true
+PoolMgr.isOpenLayout;
+
+PoolMgr.Instance.GetObj(string name)//可以得到对象。
+//name是在Resources里的路径，也被用作对象的标识，存的时候也必须是一样的
+PoolMgr.Instance.(string name, GameObject obj)//把对象放入对象池。
+```
 

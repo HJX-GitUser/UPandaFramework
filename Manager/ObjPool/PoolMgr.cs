@@ -9,7 +9,7 @@ using UnityEngine.Events;
 public class PoolData
 {
     public GameObject fatherObj;//容器的父对象
-    public List<GameObject> poolList;
+    public Stack<GameObject> poolList;//容器
 
     /// <summary>
     /// 构造函数
@@ -18,9 +18,12 @@ public class PoolData
     /// <param name="poolObj">对象池</param>
     public PoolData(GameObject obj, GameObject poolObj)
     {
-        fatherObj = new GameObject(obj.name + "_F");
-        fatherObj.transform.SetParent(poolObj.transform);
-        poolList = new List<GameObject>();
+        if (PoolMgr.isOpenLayout && poolObj != null)
+        {
+            fatherObj = new GameObject(obj.name + "_F");
+            fatherObj.transform.SetParent(poolObj.transform);
+        }
+        poolList = new Stack<GameObject>();
         PushObj(obj);
     }
 
@@ -31,8 +34,9 @@ public class PoolData
     public void PushObj(GameObject obj)
     {
         obj.SetActive(false);
-        poolList.Add(obj);
-        obj.transform.SetParent(fatherObj.transform);
+        poolList.Push(obj);
+        if (PoolMgr.isOpenLayout)
+            obj.transform.SetParent(fatherObj.transform);
     }
 
     /// <summary>
@@ -42,10 +46,10 @@ public class PoolData
     public GameObject GetObj()
     {
         GameObject obj = null;
-        obj = poolList[0];
-        poolList.RemoveAt(0);
+        obj = poolList.Pop();
         obj.SetActive(true);
-        obj.transform.parent = null;
+        if (PoolMgr.isOpenLayout)
+            obj.transform.parent = null;
         return obj;
     }
 }
@@ -60,11 +64,18 @@ public class PoolMgr : BaseSingleton<PoolMgr>
     //对象池Obj
     private GameObject poolObj;
     /// <summary>
-    /// 取对象
+    /// 对象在Hierarchy中放回对象池后是否按层级结构存放
+    /// 建议打包的时候设为false，可以节约一点性能
+    /// </summary>
+    public static bool isOpenLayout = true;
+
+
+    /// <summary>
+    /// 异步取对象
     /// </summary>
     /// <param name="name"></param>
     /// <param name="callback"></param>
-    public void GetObj(string name, UnityAction<GameObject> callback)
+    public void GetObjAsync(string name, UnityAction<GameObject> callback)
     {
         if (poolDic.ContainsKey(name) && poolDic[name].poolList.Count > 0)
         {
@@ -81,16 +92,35 @@ public class PoolMgr : BaseSingleton<PoolMgr>
             });
         }
     }
+
+    public GameObject GetObj(string name)
+    {
+        GameObject obj = null;
+        if (poolDic.ContainsKey(name) && poolDic[name].poolList.Count > 0)
+        {
+            obj = poolDic[name].GetObj();
+        }
+        else
+        {
+            obj = GameObject.Instantiate(Resources.Load<GameObject>(name));
+        }
+        if (obj == null)
+        {
+            Debug.LogError($"Resources里没有{name}");
+        }
+        return obj;
+    }
+
     /// <summary>
     /// 往对象池放对象
     /// </summary>
     /// <param name="name">对象池内容器的名字</param>
     /// <param name="obj"></param>
-    public void PushObj(string name,GameObject obj)
+    public void PushObj(string name, GameObject obj)
     {
-        if(poolObj == null) poolObj = new GameObject("Pool");
+        if (poolObj == null && isOpenLayout) poolObj = new GameObject("Pool");
         //对象池里有该容器
-        if(poolDic.ContainsKey(name))
+        if (poolDic.ContainsKey(name))
         {
             poolDic[name].PushObj(obj);
         }
