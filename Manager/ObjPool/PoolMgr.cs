@@ -12,7 +12,7 @@ public class PoolData
     public List<GameObject> poolList;
 
     /// <summary>
-    /// 
+    /// 构造函数
     /// </summary>
     /// <param name="obj">需要存入的对象</param>
     /// <param name="poolObj">对象池</param>
