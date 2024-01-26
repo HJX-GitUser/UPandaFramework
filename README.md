@@ -102,6 +102,7 @@ public class HowUseMonoMgr
 
 #### ObjPool 
 **对象池**
+
 对象池还需要优化，目前提供基础功能
 使用前对象需要做成预制体放进Resources里
 ```C#
@@ -112,6 +113,6 @@ PoolMgr.isOpenLayout;
 
 PoolMgr.Instance.GetObj(string name)//可以得到对象。
 //name是在Resources里的路径，也被用作对象的标识，存的时候也必须是一样的
-PoolMgr.Instance.(string name, GameObject obj)//把对象放入对象池。
+PoolMgr.Instance.PushObj(string name, GameObject obj)//把对象放入对象池。
 ```
 
