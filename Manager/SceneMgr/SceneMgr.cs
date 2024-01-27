@@ -36,7 +36,7 @@ public class SceneMgr : BaseSingleton<SceneMgr>
         while(!ao.isDone)
         {
             // 事件中心 向外分发 进度情况  外面想用就用
-            EventCenter.Instance.EventTrigger("SceneAsynLoadProgress", ao.progress);
+            EventCenter.Instance.EventTrigger(EEventDefine.SceneMgr_SceneAsynLoadProgress, ao.progress);
             yield return ao.progress;
         }
         Callback?.Invoke();

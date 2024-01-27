@@ -116,3 +116,5 @@ PoolMgr.Instance.GetObj(string name)//可以得到对象。
 PoolMgr.Instance.PushObj(string name, GameObject obj)//把对象放入对象池。
 ```
 
+#### EventCenterModule
+**事件中心模块**
