@@ -118,3 +118,26 @@ PoolMgr.Instance.PushObj(string name, GameObject obj)//把对象放入对象池�
 
 #### EventCenterModule
 **事件中心模块**
+事件需要先在EEventDefine的枚举里定义好
+```C#
+/// <summary>
+/// 事件中心的事件定义枚举
+/// 所有的事件要在这里定义出来
+/// </summary>
+public enum EEventDefine
+{
+    /// <summary>
+    /// 场景管理模块，场景进度
+    /// </summary>
+    SceneMgr_SceneAsynLoadProgress
+
+}
+```
+监听和触发：
+```C#
+//监听
+EventCenter.Instance.AddEventListener(EEventDefine.SceneMgr_SceneAsynLoadProgress,()=>{//执行的事件})
+//触发
+EventCenter.Instance.EventTrigger(EEventDefine.SceneMgr_SceneAsynLoadProgress, ao.progress);
+```
+
