@@ -9,11 +9,12 @@ using UnityEngine.Events;
 /// </summary>
 public class ResMgr : BaseMonoSingletonAuto<ResMgr>
 {
+
     //同步加载资源
     public T Load<T>(string path) where T : UnityEngine.Object
     {
         T res = Resources.Load<T>(path);
-        //如果对象是一个GameObject类型的 我把他实例化后 再返回出去 外部 直接使用即可
+        //如果对象是一个GameObject类型的 把他实例化后 再返回出去 外部 直接使用即可
         if (res is GameObject)
             return GameObject.Instantiate(res);
         else
@@ -28,7 +29,7 @@ public class ResMgr : BaseMonoSingletonAuto<ResMgr>
     public UnityEngine.Object Load(string path, System.Type type)
     {
         UnityEngine.Object res = Resources.Load(path, type);
-        if(res is GameObject)
+        if (res is GameObject)
             return GameObject.Instantiate(res);
         else
             return res;
@@ -51,19 +52,43 @@ public class ResMgr : BaseMonoSingletonAuto<ResMgr>
     /// <summary>
     /// Type异步加载资源
     /// </summary>
-    /// <param name="name"></param>
-    /// <param name="callback"></param>
-    public void LoadAsync(string name,UnityAction<UnityEngine.Object> callback)
+    /// <param name="name">资源路径</param>
+    /// <param name="type">类型，用typeof(class)得到</param>
+    /// <param name="callback">回调 </param>
+    public void LoadAsync(string name, Type type, UnityAction<UnityEngine.Object> callback)
     {
-        StartCoroutine(ReallyTypeLoadAsync(name, callback));
+        StartCoroutine(ReallyTypeLoadAsync(name, type, callback));
     }
-    private IEnumerator ReallyTypeLoadAsync(string path, UnityAction<UnityEngine.Object> callback)
+    private IEnumerator ReallyTypeLoadAsync(string path, Type type, UnityAction<UnityEngine.Object> callback)
     {
-        ResourceRequest r = Resources.LoadAsync(path);
+        ResourceRequest r = Resources.LoadAsync(path, type);
         yield return r;
         if (r.asset is GameObject)
             callback(GameObject.Instantiate(r.asset));
         else
             callback(r.asset);
     }
+    /// <summary>
+    /// 卸载资源
+    /// </summary>
+    /// <param name="asset"></param>
+    public void UnLoadAsset(UnityEngine.Object asset)
+    {
+        Resources.UnloadAsset(asset);
+    }
+    /// <summary>
+    /// 卸载资源（异步）
+    /// </summary>
+    /// <param name="callback"></param>
+    public void UnLoadUnUseAssets(UnityAction callback = null)
+    {
+        StartCoroutine(IE_UnLoadUnUseAssets(callback));
+    }
+    private IEnumerator IE_UnLoadUnUseAssets(UnityAction callback = null)
+    {
+        var ao = Resources.UnloadUnusedAssets();
+        yield return ao;
+        callback?.Invoke();
+    }
+
 }
