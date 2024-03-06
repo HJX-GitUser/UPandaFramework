@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public interface IEventInfo { }
-public class EventInfo<T> : IEventInfo
+public interface I_PD_EventInfo { }
+public class PD_EventInfo<T> : I_PD_EventInfo
 {
     public UnityAction<T> actions;
-    public EventInfo(UnityAction<T> action)
+    public PD_EventInfo(UnityAction<T> action)
     {
         actions += action;
     }
 }
-public class EventInfo : IEventInfo
+public class PD_EventInfo : I_PD_EventInfo
 {
     public UnityAction actions;
-    public EventInfo(UnityAction action)
+    public PD_EventInfo(UnityAction action)
     {
         this.actions += action;
     }
@@ -23,7 +23,7 @@ public class EventInfo : IEventInfo
 
 public class EventCenter : BaseSingleton<EventCenter>
 {
-    private Dictionary<EEventDefine, IEventInfo> eventDic = new Dictionary<EEventDefine, IEventInfo>();
+    private Dictionary<EEventDefine, I_PD_EventInfo> eventDic = new Dictionary<EEventDefine, I_PD_EventInfo>();
     /// <summary>
     /// Ìí¼ÓÊÂ¼þ
     /// </summary>
@@ -34,11 +34,11 @@ public class EventCenter : BaseSingleton<EventCenter>
     {
         if (eventDic.ContainsKey(eventDefine))
         {
-            (eventDic[eventDefine] as EventInfo<T>).actions += action;
+            (eventDic[eventDefine] as PD_EventInfo<T>).actions += action;
         }
         else
         {
-            eventDic.Add(eventDefine, new EventInfo<T>(action));
+            eventDic.Add(eventDefine, new PD_EventInfo<T>(action));
         }
     }
     /// <summary>
@@ -50,11 +50,11 @@ public class EventCenter : BaseSingleton<EventCenter>
     {
         if (eventDic.ContainsKey(eventDefine))
         {
-            (eventDic[eventDefine] as EventInfo).actions += action;
+            (eventDic[eventDefine] as PD_EventInfo).actions += action;
         }
         else
         {
-            eventDic.Add(eventDefine, new EventInfo(action));
+            eventDic.Add(eventDefine, new PD_EventInfo(action));
         }
     }
     /// <summary>
@@ -67,7 +67,7 @@ public class EventCenter : BaseSingleton<EventCenter>
     {
         if (eventDic.ContainsKey(eventDefine))
         {
-            (eventDic[eventDefine] as EventInfo<T>).actions -= action;
+            (eventDic[eventDefine] as PD_EventInfo<T>).actions -= action;
         }
     }
     /// <summary>
@@ -79,7 +79,7 @@ public class EventCenter : BaseSingleton<EventCenter>
     {
         if (eventDic.ContainsKey(eventDefine))
         {
-            (eventDic[eventDefine] as EventInfo).actions -= action;
+            (eventDic[eventDefine] as PD_EventInfo).actions -= action;
         }
     }
     /// <summary>
@@ -92,7 +92,7 @@ public class EventCenter : BaseSingleton<EventCenter>
     {
         if (eventDic.ContainsKey(eventDefine))
         {
-            (eventDic[eventDefine] as EventInfo<T>).actions?.Invoke(info);
+            (eventDic[eventDefine] as PD_EventInfo<T>).actions?.Invoke(info);
         }
     }
     /// <summary>
@@ -103,7 +103,7 @@ public class EventCenter : BaseSingleton<EventCenter>
     {
         if (eventDic.ContainsKey(eventDefine))
         {
-            (eventDic[eventDefine] as EventInfo).actions?.Invoke();
+            (eventDic[eventDefine] as PD_EventInfo).actions?.Invoke();
         }
     }
     /// <summary>
