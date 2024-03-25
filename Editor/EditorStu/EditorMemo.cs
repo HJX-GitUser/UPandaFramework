@@ -155,6 +155,8 @@ public class EditorMemo : EditorWindow
         isHideGroup = EditorGUILayout.BeginFoldoutHeaderGroup(isHideGroup, "折叠组控件");
         if (isHideGroup)
         {
+
+            vec2Pos = EditorGUILayout.BeginScrollView(vec2Pos); //开启滚动视图
             #region Lesson6 对象关联、各类型输入
             //对象关联
             obj = EditorGUILayout.ObjectField("关联资源对象", obj, typeof(GameObject), false) as GameObject;
@@ -179,7 +181,7 @@ public class EditorMemo : EditorWindow
             i2 = EditorGUILayout.DelayedIntField("Int输入框", i2);
             EditorGUILayout.LabelField(i2.ToString());
             #endregion
-            vec2Pos = EditorGUILayout.BeginScrollView(vec2Pos); //开启滚动视图
+            
 
             #region Lesson8 开关、开关组控件
             //开关组控件
