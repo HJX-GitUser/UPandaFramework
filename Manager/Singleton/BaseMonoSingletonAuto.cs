@@ -20,13 +20,16 @@ public class BaseMonoSingletonAuto<T> : MonoBehaviour where T : MonoBehaviour
                 GameObject obj = new GameObject();
                 //设置脚本挂载对象脚本名
                 obj.name = typeof(T).Name;
-                //让这个单例模式对象 过场景 不移除
-                //因为 单例模式对象 往往 是存在整个程序生命周期中的
                 DontDestroyOnLoad(obj);
                 instance = obj.AddComponent<T>();
 
             }
             return instance;
         }
+    }
+    protected virtual void Awake()
+    {
+        instance = this as T;
+        DontDestroyOnLoad(instance);
     }
 }
