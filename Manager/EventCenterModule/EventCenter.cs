@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+/// <summary>
+/// 事件参数
+/// </summary>
 public interface I_PD_EventInfo { }
 public class PD_EventInfo<T> : I_PD_EventInfo
 {
@@ -20,7 +23,9 @@ public class PD_EventInfo : I_PD_EventInfo
         this.actions += action;
     }
 }
-
+/// <summary>
+/// 事件中心
+/// </summary>
 public class EventCenter : BaseSingleton<EventCenter>
 {
     private Dictionary<EEventDefine, I_PD_EventInfo> eventDic = new Dictionary<EEventDefine, I_PD_EventInfo>();

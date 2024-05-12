@@ -4,9 +4,14 @@
 /// </summary>
 public enum EEventDefine
 {
+    #region 框架事件
     /// <summary>
     /// 场景管理模块，场景进度事件
     /// </summary>
     SceneMgr_SceneAsynLoadProgress
+
+    #endregion
+
+    
 
 }

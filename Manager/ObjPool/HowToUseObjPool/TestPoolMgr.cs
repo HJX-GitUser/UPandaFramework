@@ -22,10 +22,12 @@ public class TestPoolMgr : MonoBehaviour
         {
             foreach (GameObject item in cubes)
             {
+                item.GetComponent<Rigidbody>().velocity = Vector3.zero;
                 PoolMgr.Instance.PushObj(obj1Path, item);
             }
             foreach (GameObject item in spheres)
             {
+                item.GetComponent<Rigidbody>().velocity = Vector3.zero;
                 PoolMgr.Instance.PushObj(obj2Path, item);
             }
             cubes.Clear();
@@ -39,7 +41,7 @@ public class TestPoolMgr : MonoBehaviour
             //    cubes.Add(obj);
             //});
             GameObject obj = PoolMgr.Instance.GetObj(obj1Path);
-            obj.transform.position = new Vector3(Random.Range(0, 11), Random.Range(0, 11), Random.Range(0, 11));
+            obj.transform.position = new Vector3(Random.Range(-11, 11), Random.Range(0, 11), Random.Range(0, 11));
             cubes.Add(obj);
         }
 
@@ -51,7 +53,7 @@ public class TestPoolMgr : MonoBehaviour
             //    spheres.Add(obj);
             //});
             GameObject obj = PoolMgr.Instance.GetObj(obj2Path);
-            obj.transform.position = new Vector3(Random.Range(0, 11), Random.Range(0, 11), Random.Range(0, 11));
+            obj.transform.position = new Vector3(Random.Range(-11, 11), Random.Range(0, 11), Random.Range(0, 11));
             spheres.Add(obj);
         }
     }

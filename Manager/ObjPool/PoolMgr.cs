@@ -59,16 +59,19 @@ public class PoolData
 /// </summary>
 public class PoolMgr : BaseSingleton<PoolMgr>
 {
-    //对象池容器
+    /// <summary>
+    /// 对象池容器
+    /// </summary>
     public Dictionary<string, PoolData> poolDic = new Dictionary<string, PoolData>();
-    //对象池Obj
+    /// <summary>
+    /// 对象池Obj
+    /// </summary>
     private GameObject poolObj;
     /// <summary>
     /// 对象在Hierarchy中放回对象池后是否按层级结构存放
     /// 建议打包的时候设为false，可以节约一点性能
     /// </summary>
     public static bool isOpenLayout = true;
-
 
     /// <summary>
     /// 异步取对象

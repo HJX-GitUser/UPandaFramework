@@ -10,6 +10,8 @@ using UnityEngine.Events;
 public class ResMgr : BaseMonoSingletonAuto<ResMgr>
 {
 
+
+
     //同步加载资源
     public T Load<T>(string path) where T : UnityEngine.Object
     {
@@ -34,7 +36,12 @@ public class ResMgr : BaseMonoSingletonAuto<ResMgr>
         else
             return res;
     }
-    //异步加载资源
+    /// <summary>
+    /// 异步加载资源
+    /// </summary>
+    /// <typeparam name="T">资源类型</typeparam>
+    /// <param name="name">资源路劲</param>
+    /// <param name="callback">回调</param>
     public void LoadAsync<T>(string name, UnityAction<T> callback) where T : UnityEngine.Object
     {
         StartCoroutine(ReallyLoadAsync(name, callback));
@@ -86,7 +93,7 @@ public class ResMgr : BaseMonoSingletonAuto<ResMgr>
     }
     private IEnumerator IE_UnLoadUnUseAssets(UnityAction callback = null)
     {
-        var ao = Resources.UnloadUnusedAssets();
+        AsyncOperation ao = Resources.UnloadUnusedAssets();
         yield return ao;
         callback?.Invoke();
     }
