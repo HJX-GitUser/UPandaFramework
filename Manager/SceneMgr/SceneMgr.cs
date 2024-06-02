@@ -33,12 +33,14 @@ public class SceneMgr : BaseSingleton<SceneMgr>
     private IEnumerator ReallyLoadSceneAsyn(string sceneName, UnityAction Callback = null)
     {
         AsyncOperation ao = SceneManager.LoadSceneAsync(sceneName);
-        while(!ao.isDone)
+        while (!ao.isDone)
         {
             // 事件中心 向外分发 进度情况  外面想用就用
-            EventCenter.Instance.EventTrigger(EEventDefine.SceneMgr_SceneAsynLoadProgress, ao.progress);
-            yield return ao.progress;
+            EventCenter.Instance.EventTrigger<float>(EEventDefine.SceneMgr_SceneAsynLoadProgress, ao.progress);
+            //yield return ao.progress;
+            yield return 0;
         }
+        EventCenter.Instance.EventTrigger<float>(EEventDefine.SceneMgr_SceneAsynLoadProgress, ao.progress);
         Callback?.Invoke();
     }
 }
