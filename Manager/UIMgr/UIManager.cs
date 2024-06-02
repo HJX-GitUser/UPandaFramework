@@ -31,25 +31,37 @@ public class UIManager : BaseSingleton<UIManager>
     private Transform top;
     private Transform system;
 
-    public RectTransform canvas;
+    private Camera uiCamera;
+    private Canvas uiCanvas;
+    private EventSystem uiEventSystem;
+    public RectTransform canvasRectTransform;
 
     public UIManager()
     {
+        uiCamera = GameObject.Instantiate(ResMgr.Instance.Load<GameObject>(UI_RESOURCES_PATH + "UICamera")).GetComponent<Camera>();
+        GameObject.DontDestroyOnLoad(uiCamera.gameObject);
         //创建Canvas 让其过场景的时候 不被移除
-        GameObject obj = ResMgr.Instance.Load<GameObject>(UI_RESOURCES_PATH + "Canvas");
-        canvas = obj.transform as RectTransform;
+        GameObject obj = GameObject.Instantiate(ResMgr.Instance.Load<GameObject>(UI_RESOURCES_PATH + "Canvas"));
+        uiCanvas = obj.GetComponent<Canvas>();
+        uiCanvas.worldCamera = uiCamera;
+        canvasRectTransform = obj.transform as RectTransform;
         GameObject.DontDestroyOnLoad(obj);
+
+
 
         //找到各层
-        bot = canvas.Find("Bot");
-        mid = canvas.Find("Mid");
-        top = canvas.Find("Top");
-        system = canvas.Find("System");
+        bot = canvasRectTransform.Find("Bot");
+        mid = canvasRectTransform.Find("Mid");
+        top = canvasRectTransform.Find("Top");
+        system = canvasRectTransform.Find("System");
 
         //创建EventSystem 让其过场景的时候 不被移除
-        obj = ResMgr.Instance.Load<GameObject>("UI/EventSystem");
-        GameObject.DontDestroyOnLoad(obj);
+        uiEventSystem = GameObject.Instantiate(ResMgr.Instance.Load<GameObject>("UI/EventSystem")).GetComponent<EventSystem>();
+        GameObject.DontDestroyOnLoad(uiEventSystem.gameObject);
     }
+
+    public void Init() { }
+
     /// <summary>
     /// 通过层级枚举 得到对应层级的父对象
     /// </summary>

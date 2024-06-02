@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -9,14 +10,32 @@ using UnityEngine.UI;
 /// 通过代码快速的找到所有的子控件，节约找控件的工作量
 /// 在子类中处理逻辑 
 /// </summary>
-public class BasePanel : MonoBehaviour
+public abstract class BasePanel : MonoBehaviour
 {
     /// <summary>
     /// UI组件容器
     /// UIBehaviour是所有UI组件的基类，UI组件都是直接或者间接继承UIBehaviour这个抽象类的，
     /// 它继承自MonoBehavior，所以拥有和Unity相同的生命周期
     /// </summary>
-    private Dictionary<string, List<UIBehaviour>> controlDic = new Dictionary<string, List<UIBehaviour>>();
+    protected Dictionary<string, List<UIBehaviour>> controlDic = new Dictionary<string, List<UIBehaviour>>();
+    /// <summary>
+    ///如果UI控件的名字存在该容器，就不记录
+    /// </summary>
+    private static List<string> defaultNameList = new List<string>() {"Image",
+                                                                       "Text (TMP)",
+                                                                       "RawImage",
+                                                                       "Background",
+                                                                       "Checkmark",
+                                                                       "Label",
+                                                                       "Text (Legacy)",
+                                                                       "Arrow",
+                                                                       "Placeholder",
+                                                                       "Fill",
+                                                                       "Handle",
+                                                                       "Viewport",
+                                                                       "Scrollbar Horizontal",
+                                                                       "Scrollbar Vertical"
+    };
 
 
     protected virtual void Awake()
@@ -24,19 +43,23 @@ public class BasePanel : MonoBehaviour
         FindChildrenUIComponent<Button>();
         FindChildrenUIComponent<Slider>();
         FindChildrenUIComponent<Toggle>();
+        FindChildrenUIComponent<InputField>();
+        FindChildrenUIComponent<ScrollRect>();
+        FindChildrenUIComponent<Dropdown>();
+      
         FindChildrenUIComponent<Image>();
         FindChildrenUIComponent<Text>();
-        FindChildrenUIComponent<ScrollRect>();
-        FindChildrenUIComponent<InputField>();
+        FindChildrenUIComponent<TextMeshPro>();
+        
     }
     /// <summary>
     /// 在子类重写显示逻辑
     /// </summary>
-    public virtual void ShowMe() { }
+    public abstract void ShowMe();
     /// <summary>
     /// 隐藏
     /// </summary>
-    public virtual void HideMe() { }
+    public abstract void HideMe();
     /// <summary>
     /// 按钮监听事件，重写时自己根据传入的按钮名字处理对应按钮的逻辑
     /// </summary>
@@ -86,7 +109,10 @@ public class BasePanel : MonoBehaviour
             string objName = controls[i].gameObject.name;
             if (controlDic.ContainsKey(objName))
             {
-                controlDic[objName].Add(controls[i]);
+                if (!defaultNameList.Contains(objName))
+                {
+                    controlDic[objName].Add(controls[i]);
+                }
             }
             else
             {
@@ -143,6 +169,7 @@ public class BasePanel : MonoBehaviour
                 }
             }
         }
+        Debug.LogError($"“{controlName}”不存在!");
         return null;
     }
 }
