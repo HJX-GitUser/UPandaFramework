@@ -1,0 +1,60 @@
+using System;
+using System.Text;
+using System.Threading;
+
+public class PLoger
+{
+    public static LogConfig cfg;
+    public static void InitLog(LogConfig _cfg = null)
+    {
+        cfg = _cfg == null ? new LogConfig() : _cfg;
+    }
+
+    #region ∆’Õ®»’÷æ
+    public static void Log(object obj)
+    {
+        if (!cfg.openLog) return;
+        UnityEngine.Debug.Log(GenerateLog(obj.ToString()));
+    }
+
+    public static void LogFormat(object obj, params object[] args)
+    {
+        if (!cfg.openLog) return;
+        UnityEngine.Debug.LogFormat(GenerateLog(obj.ToString()), args);
+    }
+
+    public static void LogWarning(object obj)
+    {
+        if (!cfg.openLog) return;
+        UnityEngine.Debug.LogWarning(GenerateLog(obj.ToString()));
+    }
+
+    public static void LogWarningFormat(object obj, params object[] args)
+    {
+        if (!cfg.openLog) return;
+        UnityEngine.Debug.LogWarningFormat(GenerateLog(obj.ToString()), args);
+    }
+
+    public static void LogError(object obj)
+    {
+        if (!cfg.openLog) return;
+        UnityEngine.Debug.LogError(GenerateLog(obj.ToString()));
+    }
+
+    public static void LogErrorFormat(object obj, params object[] args)
+    {
+        if (!cfg.openLog) return;
+        UnityEngine.Debug.LogErrorFormat(GenerateLog(obj.ToString()), args);
+    }
+    #endregion
+
+
+    private static string GenerateLog(string log)
+    {
+        StringBuilder stringBuilder = new StringBuilder(cfg.logHeadFix, 100);
+        if (cfg.openTime) stringBuilder.Append($" {DateTime.Now.ToString("hh:mm:ss-fff")}");
+        if (cfg.showThreadID) stringBuilder.Append($" ThreadID:{Thread.CurrentThread.ManagedThreadId}\n");
+        stringBuilder.Append(log);
+        return stringBuilder.ToString();
+    }
+}

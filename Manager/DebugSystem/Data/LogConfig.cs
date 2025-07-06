@@ -5,42 +5,27 @@ using UnityEngine;
 /// <summary>
 /// 日志系统配置
 /// </summary>
-public class LogConfig
+[CreateAssetMenu(fileName = "日志系统配置", menuName = "UPanda/Create DebugConfig", order = 0)]
+public class LogConfig : ScriptableObject
 {
-    /// <summary>
-    /// 是否打开日志系统
-    /// </summary>
+    [Header("是否打开日志系统")]
     public bool openLog = true;
-    /// <summary>
-    /// 日志前缀
-    /// </summary>
+    [Header("日志前缀")]
     public string logHeadFix = "###";
-    /// <summary>
-    /// 是否显示时间
-    /// </summary>
+    [Header("是否显示时间")]
     public bool openTime = true;
-    /// <summary>
-    /// 显示线程id
-    /// </summary>
+    [Header("显示线程id")]
     public bool showThreadID = true;
-    /// <summary>
-    /// 日志文件储存开关
-    /// </summary>
+    [Header("日志文件储存开关")]
     public bool logSave = true;
-    /// <summary>
-    /// 是否显示FPS
-    /// </summary>
+    [Header("是否显示FPS")]
     public bool showFPS = true;
-    /// <summary>
-    /// 显示颜色名称
-    /// </summary>
+    [Header("显示颜色名称")]
     public bool showColorName = true;
-    /// <summary>
-    /// 文件储存路径
-    /// </summary>
+
+    [Header("文件储存路径")]
     public string logFileSavePath { get { return Application.persistentDataPath + "/"; } }
-    /// <summary>
-    /// 日志文件名称
-    /// </summary>
+    [Header("日志文件名称")]
     public string logFileName { get { return Application.productName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm") + ".log"; } }
+
 }
