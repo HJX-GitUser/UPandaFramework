@@ -22,12 +22,12 @@ public class TestPoolMgr : MonoBehaviour
         {
             foreach (GameObject item in cubes)
             {
-                item.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                item.GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
                 PoolMgr.Instance.PushObj(obj1Path, item);
             }
             foreach (GameObject item in spheres)
             {
-                item.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                item.GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
                 PoolMgr.Instance.PushObj(obj2Path, item);
             }
             cubes.Clear();
