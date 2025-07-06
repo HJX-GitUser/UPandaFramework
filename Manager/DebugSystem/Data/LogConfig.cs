@@ -20,11 +20,9 @@ public class LogConfig : ScriptableObject
     public bool logSave = true;
     [Header("是否显示FPS")]
     public bool showFPS = true;
-    [Header("显示颜色名称")]
-    public bool showColorName = true;
 
     [Header("文件储存路径")]
-    public string logFileSavePath { get { return Application.persistentDataPath + "/"; } }
+    public string logFileSavePath { get { return Application.persistentDataPath + "/Output Log/"; } }
     [Header("日志文件名称")]
     public string logFileName { get { return Application.productName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm") + ".log"; } }
 

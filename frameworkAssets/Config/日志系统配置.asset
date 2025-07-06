@@ -13,9 +13,8 @@ MonoBehaviour:
   m_Name: "\u65E5\u5FD7\u7CFB\u7EDF\u914D\u7F6E"
   m_EditorClassIdentifier: 
   openLog: 1
-  logHeadFix: '###'
+  logHeadFix: "\u6807\u8BC61"
   openTime: 1
   showThreadID: 1
-  logSave: 1
+  logSave: 0
   showFPS: 1
-  showColorName: 1
