@@ -17,7 +17,7 @@ public class LogConfig : ScriptableObject
     [Header("显示线程id")]
     public bool showThreadID = true;
     [Header("日志文件储存开关")]
-    public bool logSave = true;
+    public bool logSave = false;
     [Header("是否显示FPS")]
     public bool showFPS = true;
 

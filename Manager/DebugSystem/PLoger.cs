@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using UnityEngine;
@@ -6,6 +7,7 @@ using UnityEngine;
 public class PLoger
 {
     public static LogConfig cfg;
+    [Conditional("OPEN_PLOG")]
     public static void InitLog(LogConfig _cfg = null)
     {
         cfg = _cfg == null ? new LogConfig() : _cfg;
@@ -25,36 +27,37 @@ public class PLoger
     }
 
     #region ∆’Õ®»’÷æ
+    [Conditional("OPEN_PLOG")]
     public static void Log(object obj)
     {
         if (!cfg.openLog) return;
         UnityEngine.Debug.Log(GenerateLog(obj.ToString()));
     }
-
+    [Conditional("OPEN_PLOG")]
     public static void LogFormat(object obj, params object[] args)
     {
         if (!cfg.openLog) return;
         UnityEngine.Debug.LogFormat(GenerateLog(obj.ToString()), args);
     }
-
+    [Conditional("OPEN_PLOG")]
     public static void LogWarning(object obj)
     {
         if (!cfg.openLog) return;
         UnityEngine.Debug.LogWarning(GenerateLog(obj.ToString()));
     }
-
+    [Conditional("OPEN_PLOG")]
     public static void LogWarningFormat(object obj, params object[] args)
     {
         if (!cfg.openLog) return;
         UnityEngine.Debug.LogWarningFormat(GenerateLog(obj.ToString()), args);
     }
-
+    [Conditional("OPEN_PLOG")]
     public static void LogError(object obj)
     {
         if (!cfg.openLog) return;
         UnityEngine.Debug.LogError(GenerateLog(obj.ToString()));
     }
-
+    [Conditional("OPEN_PLOG")]
     public static void LogErrorFormat(object obj, params object[] args)
     {
         if (!cfg.openLog) return;
