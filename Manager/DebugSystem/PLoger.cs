@@ -11,6 +11,7 @@ public class PLoger
     public static void InitLog(LogConfig _cfg = null)
     {
         cfg = _cfg == null ? new LogConfig() : _cfg;
+        Log("日志系统初始化...");
         if (cfg.logSave)
         {
             GameObject logObj = new GameObject("LogHelper");
@@ -30,37 +31,37 @@ public class PLoger
     [Conditional("OPEN_PLOG")]
     public static void Log(object obj)
     {
-        if (!cfg.openLog) return;
+        if (cfg == null || !cfg.openLog) return;
         UnityEngine.Debug.Log(GenerateLog(obj.ToString()));
     }
     [Conditional("OPEN_PLOG")]
     public static void LogFormat(object obj, params object[] args)
     {
-        if (!cfg.openLog) return;
+        if (cfg == null || !cfg.openLog) return;
         UnityEngine.Debug.LogFormat(GenerateLog(obj.ToString()), args);
     }
     [Conditional("OPEN_PLOG")]
     public static void LogWarning(object obj)
     {
-        if (!cfg.openLog) return;
+        if (cfg == null || !cfg.openLog) return;
         UnityEngine.Debug.LogWarning(GenerateLog(obj.ToString()));
     }
     [Conditional("OPEN_PLOG")]
     public static void LogWarningFormat(object obj, params object[] args)
     {
-        if (!cfg.openLog) return;
+        if (cfg == null || !cfg.openLog) return;
         UnityEngine.Debug.LogWarningFormat(GenerateLog(obj.ToString()), args);
     }
     [Conditional("OPEN_PLOG")]
     public static void LogError(object obj)
     {
-        if (!cfg.openLog) return;
+        if (cfg == null || !cfg.openLog) return;
         UnityEngine.Debug.LogError(GenerateLog(obj.ToString()));
     }
     [Conditional("OPEN_PLOG")]
     public static void LogErrorFormat(object obj, params object[] args)
     {
-        if (!cfg.openLog) return;
+        if (cfg == null || !cfg.openLog) return;
         UnityEngine.Debug.LogErrorFormat(GenerateLog(obj.ToString()), args);
     }
     #endregion

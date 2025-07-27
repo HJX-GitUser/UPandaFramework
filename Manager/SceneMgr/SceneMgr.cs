@@ -36,11 +36,24 @@ public class SceneMgr : BaseSingleton<SceneMgr>
         while (!ao.isDone)
         {
             // 事件中心 向外分发 进度情况  外面想用就用
-            EventCenter.Instance.EventTrigger<float>(EEventDefine.SceneMgr_SceneAsynLoadProgress, ao.progress);
+            EventCenter.Instance.EventTrigger(new SceneMgr_SceneAsynLoadProgress(ao.progress));
             //yield return ao.progress;
             yield return 0;
         }
-        EventCenter.Instance.EventTrigger<float>(EEventDefine.SceneMgr_SceneAsynLoadProgress, ao.progress);
+        EventCenter.Instance.EventTrigger(new SceneMgr_SceneAsynLoadProgress(ao.progress));
         Callback?.Invoke();
     }
 }
+
+public class SceneMgr_SceneAsynLoadProgress : EventArgBase
+{
+    public override int EventID => throw new NotImplementedException();
+
+    public float progress { get; private set; }
+
+    public SceneMgr_SceneAsynLoadProgress(float progress)
+    {
+        this.progress = progress;
+    }
+}
+

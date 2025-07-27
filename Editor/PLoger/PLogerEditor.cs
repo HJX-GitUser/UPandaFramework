@@ -1,6 +1,4 @@
 using UnityEditor;
-using UnityEngine;
-
 public class PLogerEditor
 {
     [MenuItem("UPandaGF/日志系统/启动日志", false, 0)]
