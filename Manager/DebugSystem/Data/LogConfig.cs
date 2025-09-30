@@ -21,9 +21,9 @@ public class LogConfig : ScriptableObject
     [Header("是否显示FPS")]
     public bool showFPS = true;
 
-    [Header("文件储存路径")]
+    //[Header("文件储存路径")]
     public string logFileSavePath { get { return Application.persistentDataPath + "/Output Log/"; } }
-    [Header("日志文件名称")]
+    //[Header("日志文件名称")]
     public string logFileName { get { return Application.productName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm") + ".log"; } }
 
 }
