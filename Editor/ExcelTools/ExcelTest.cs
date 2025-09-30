@@ -9,7 +9,7 @@ using System.Data;
 public class ExcelTest
 {
     private static string EXCEL_PATH = Application.dataPath + "/ArtAssets/Excel/Exceltest.xlsx";
-    [MenuItem("Tools/ExcelTool/打开Excel表(测试)")]
+    [MenuItem("UPandaGF/Tools/ExcelTool/打开Excel表(测试)")]
     private static void OpenExcel()
     {
         using (FileStream fs = File.Open(EXCEL_PATH, FileMode.Open, FileAccess.Read))

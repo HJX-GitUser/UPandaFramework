@@ -36,7 +36,7 @@ public class ExcelTool
     /// </summary>
     public static string SUFFIX = ".binary";
 
-    [MenuItem("Tools/ExcelTool/生成数据类和数据容器类")]
+    [MenuItem("UPandaGF/Tools/ExcelTool/生成数据类和数据容器类")]
     private static void GenerateExcelInfo()
     {
         //记下在指定路径中的所有Excel文件 用于生成对应的3个文件

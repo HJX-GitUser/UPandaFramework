@@ -17,7 +17,7 @@ public class CreatDirectory
 
 
 
-    [MenuItem("Tools/创建目录文件夹")]
+    [MenuItem("UPandaGF/Tools/创建目录文件夹")]
     private static void CreatForder()
     {
         #region 旧

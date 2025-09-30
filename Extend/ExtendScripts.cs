@@ -8,16 +8,16 @@ using UnityEngine;
 public static class ExtendScripts
 {
     /// <summary>
-    /// 给Transform添加的扩展方法，用out参数把组件返回
+    /// 获取组件的扩展方法
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="trs"></param>
     /// <param name="t"></param>
     /// <returns></returns>
-    public static Transform GetOrAddComponent<T>(this Transform trs,out T t) where T : Component
+    public static T GetOrAddComponent<T>(this GameObject trs) where T : Component
     {
-        t = trs.GetComponent<T>();
-        if(t == null) t = trs.gameObject.AddComponent<T>();
-        return trs.transform;
+        T t = trs.GetComponent<T>();
+        if (t == null) t = trs.AddComponent<T>();
+        return t;
     }
 }

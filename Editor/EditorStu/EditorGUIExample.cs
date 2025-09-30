@@ -11,7 +11,10 @@ public enum E_TestType
     One_and_Two = 1 | 2,
 }
 
-public class EditorMemo : EditorWindow
+/// <summary>
+/// GUI控件案例
+/// </summary>
+public class EditorGUIExample : EditorWindow
 {
     void Start()
     {
@@ -60,10 +63,10 @@ public class EditorMemo : EditorWindow
         #endregion
     }
 
-    [MenuItem("Tools/EditorGUI控件备忘录")]
+    [MenuItem("UPandaGF/Tools/EditorGUI控件备忘录")]
     private static void OpenLesson3()
     {
-        EditorMemo win = EditorWindow.GetWindow<EditorMemo>("EditorGUI控件备忘录");
+        EditorGUIExample win = EditorWindow.GetWindow<EditorGUIExample>("EditorGUI控件备忘录");
         //win.titleContent = new GUIContent("EditorGUI知识讲解窗口");
         win.Show();
     }

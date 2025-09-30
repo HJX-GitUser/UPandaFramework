@@ -12,7 +12,7 @@ using UnityEngine;
 /// </summary>
 public class UpLoadAB
 {
-    [MenuItem("Tools/AB包工具/上传AB包和对比文件")]
+    [MenuItem("UPandaGF/Tools/AB包工具/上传AB包和对比文件")]
     private static void UpLoadAllABFile()
     {
         DirectoryInfo directory = Directory.CreateDirectory(DataConfig.CurrentABFilePath);
@@ -76,7 +76,7 @@ public class UpLoadAB
         });
     }
 
-    [MenuItem("Tools/AB包工具/打印persistentDataPath路径")]
+    [MenuItem("UPandaGF/Tools/AB包工具/打印persistentDataPath路径")]
     private static void DebugPath()
     {
         Debug.Log(Application.persistentDataPath);
