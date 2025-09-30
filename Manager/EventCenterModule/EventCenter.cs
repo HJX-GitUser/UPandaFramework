@@ -5,6 +5,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
+using UPandaGF;
 
 /// <summary>
 /// 事件参数
@@ -30,7 +31,7 @@ public class PD_EventInfo
         }
         else
         {
-            PLoger.LogWarning($"{id}方法试图重复加入监听，已拒绝！");
+            PLoger.LogWarning($"{id}方法试图重复加入监听!");
         }
 
     }

@@ -12,4 +12,5 @@ public class PLogerEditor
     {
         ScriptingDefineSymbols.RemoveScriptingDefineSymbol("OPEN_PLOG");
     }
+   
 }

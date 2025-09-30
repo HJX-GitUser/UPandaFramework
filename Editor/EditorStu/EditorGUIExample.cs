@@ -18,8 +18,6 @@ public class EditorGUIExample : EditorWindow
 {
     void Start()
     {
-        #region 知识回顾 以及 准备工作
-        //1.知识回顾
         //GUILayout 是一个GUI自动布局的公共类
         //它其中的方法和GUI基本一模一样，都是用来绘制、响应各种UI控件的
         //只不过它在GUI的基础上加入了自动布局功能
@@ -41,11 +39,7 @@ public class EditorGUIExample : EditorWindow
         //GUILayout.ExpandHeight(true);//允许
         //GUILayout.ExpandHeight(false);//禁止
 
-        //2.准备工作
-        //创建一个编辑器窗口 
-        #endregion
 
-        #region 知识点 EditorGUI是什么？
         //EditorGUI 类似 GUI
         //是一个主要用于绘制编辑器拓展 UI 的工具类
         //它提供了一些 GUI 中没有的API
@@ -60,14 +54,13 @@ public class EditorGUIExample : EditorWindow
         //EditorGUI和它的区别仅仅是需要自己设置位置而已
 
         //详细内容：https://docs.unity.cn/cn/2022.3/ScriptReference/EditorGUILayout.html
-        #endregion
     }
 
     [MenuItem("UPandaGF/Tools/EditorGUI控件备忘录")]
     private static void OpenLesson3()
     {
         EditorGUIExample win = EditorWindow.GetWindow<EditorGUIExample>("EditorGUI控件备忘录");
-        //win.titleContent = new GUIContent("EditorGUI知识讲解窗口");
+        //win.titleContent = new GUIContent("窗口标题设置");
         win.Show();
     }
     int layer;
@@ -120,7 +113,7 @@ public class EditorGUIExample : EditorWindow
     {
         //窗口中的控件相关绘制 逻辑处理相关的内容
         //EditorGUI相关的控件 同样还是需要在OnGUI当中进行实现 才能被显示出来
-        #region Lesson4 文本控件、层级标签控件、颜色获取控件
+        #region 1 文本控件、层级标签控件、颜色获取控件
         //文本控件
         EditorGUILayout.LabelField("编辑器路径：Editor/EditorStu/EditorMemo");
         EditorGUILayout.LabelField("文本标题", "测试内容");
@@ -132,7 +125,7 @@ public class EditorGUIExample : EditorWindow
                                             color, true, false, false);
         #endregion
 
-        #region Lesson5 枚举选择、整数选择、按下就触发的按钮
+        #region 2 枚举选择、整数选择、按下就触发的按钮
 
         isHide = EditorGUILayout.Foldout(isHide, "折叠控件", false);
 
@@ -154,13 +147,12 @@ public class EditorGUIExample : EditorWindow
         }
         #endregion
 
-        #region Lesson7 折叠、折叠组控件
+        #region 3 折叠、折叠组控件
         isHideGroup = EditorGUILayout.BeginFoldoutHeaderGroup(isHideGroup, "折叠组控件");
         if (isHideGroup)
         {
-
             vec2Pos = EditorGUILayout.BeginScrollView(vec2Pos); //开启滚动视图
-            #region Lesson6 对象关联、各类型输入
+            #region 4 对象关联、各类型输入
             //对象关联
             obj = EditorGUILayout.ObjectField("关联资源对象", obj, typeof(GameObject), false) as GameObject;
             //各类型输入
@@ -186,7 +178,7 @@ public class EditorGUIExample : EditorWindow
             #endregion
             
 
-            #region Lesson8 开关、开关组控件
+            #region 5 开关、开关组控件
             //开关组控件
             isTogGroup = EditorGUILayout.BeginToggleGroup("开关组控件", isTogGroup);
             //开关控件
@@ -195,7 +187,7 @@ public class EditorGUIExample : EditorWindow
             EditorGUILayout.EndToggleGroup();
             #endregion
 
-            #region Lesson9 滑动条、双块滑动条控件
+            #region 6 滑动条、双块滑动条控件
             //滑动条
             fSlider = EditorGUILayout.Slider("滑动条", fSlider, 0, 10);
             iSlider = EditorGUILayout.IntSlider("整形滑动条", iSlider, 0, 10);
@@ -205,7 +197,7 @@ public class EditorGUIExample : EditorWindow
             EditorGUILayout.LabelField(rightV.ToString());
             #endregion
 
-            #region Lesson10 帮助框、间隔控件
+            #region 7 帮助框、间隔控件
             //帮助框控件
             EditorGUILayout.HelpBox("一般提示", MessageType.None);
             EditorGUILayout.Space(10);
@@ -219,23 +211,23 @@ public class EditorGUIExample : EditorWindow
 
             EditorGUILayout.EndScrollView(); //结束滚动视图
         }
-        EditorGUILayout.EndFoldoutHeaderGroup();
+        EditorGUILayout.EndFoldoutHeaderGroup();//结束折叠
         #endregion
 
-        #region Lesson11 动画曲线控件和布局API
+        #region 8 动画曲线控件和布局API
         //动画曲线控件
         curve = EditorGUILayout.CurveField("曲线控件", curve);
         //布局API
         EditorGUILayout.BeginHorizontal(); //开始水平布局
-        EditorGUILayout.LabelField("123123");
-        EditorGUILayout.LabelField("123123");
-        EditorGUILayout.LabelField("123123");
+        EditorGUILayout.LabelField("水平布局1");
+        EditorGUILayout.LabelField("水平布局2");
+        EditorGUILayout.LabelField("水平布局3");
         EditorGUILayout.EndHorizontal();//结束水平布局
 
         EditorGUILayout.BeginVertical();//开始垂直布局
-        EditorGUILayout.LabelField("123123");
-        EditorGUILayout.LabelField("123123");
-        EditorGUILayout.LabelField("123123");
+        EditorGUILayout.LabelField("垂直布局1");
+        EditorGUILayout.LabelField("垂直布局2");
+        EditorGUILayout.LabelField("垂直布局3");
         EditorGUILayout.EndVertical();//结束垂直布局
 
         //vec2Pos = EditorGUILayout.BeginScrollView(vec2Pos); //开启滚动视图

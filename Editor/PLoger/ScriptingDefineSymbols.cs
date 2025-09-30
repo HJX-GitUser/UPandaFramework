@@ -12,6 +12,7 @@ public static class ScriptingDefineSymbols
             NamedBuildTarget.Standalone,
             NamedBuildTarget.iOS,
             NamedBuildTarget.Android,
+            NamedBuildTarget.WebGL
     };
 
     /// <summary>

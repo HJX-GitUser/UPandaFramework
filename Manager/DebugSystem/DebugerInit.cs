@@ -1,10 +1,13 @@
 using UnityEngine;
-
-public class DebugerInit : MonoBehaviour
+namespace UPandaGF
 {
-    public LogConfig logConfig;
-    private void Awake()
+    public class DebugerInit : MonoBehaviour
     {
-        PLoger.InitLog(logConfig);
+        public LogConfig logConfig;
+        private void Awake()
+        {
+            PLoger.InitLog(logConfig);
+        }
     }
 }
+
