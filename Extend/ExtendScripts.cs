@@ -11,13 +11,12 @@ public static class ExtendScripts
     /// 获取组件的扩展方法
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="trs"></param>
-    /// <param name="t"></param>
+    /// <param name="obj"></param>
     /// <returns></returns>
-    public static T GetOrAddComponent<T>(this GameObject trs) where T : Component
+    public static T GetOrAddComponent<T>(this GameObject obj) where T : Component
     {
-        T t = trs.GetComponent<T>();
-        if (t == null) t = trs.AddComponent<T>();
+        T t = obj.GetComponent<T>();
+        if (t == null) t = obj.AddComponent<T>();
         return t;
     }
 }

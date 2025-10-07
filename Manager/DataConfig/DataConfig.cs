@@ -6,7 +6,7 @@ using UnityEngine;
 public static class DataConfig 
 {
     //[Tooltip("AB包打包的文件夹位置")]
-    public static string CurrentABFilePath = Application.dataPath + "/AssetBundle/PC/";
+    public static string CurrentABFilePath = Application.dataPath + "/AssetBundles/PC/";
     //[Tooltip("上传AB包地址")]
     public static string UpABURL = "ftp://192.168.31.48/AB/PC/";
     //[Tooltip("下载AB包地址")]

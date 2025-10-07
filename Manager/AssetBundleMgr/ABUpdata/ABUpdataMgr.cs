@@ -3,15 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
+using UPandaGF;
 
 /// <summary>
-/// 管理下载AB包
+/// AB包更新
 /// </summary>
-public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
+public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
 {
     /// <summary>
     /// AB包信息类
@@ -28,12 +28,25 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
             this.md5 = md5;
         }
     }
+    [Header("启动时检查资源更新")]
+    public bool enableChecekOnStart = false;
+
     /// <summary>
     /// 下载地址，自行修改。这里是自己搭建的一个测试的ftp服务器
     /// </summary>
-    private string DownLoadURL = "ftp://192.168.31.48/AB/PC/";
-    private string Ftp_UserName = "Admin";
-    private string Ftp_Password = "Admin123";
+    [Header("FTP Server Config")]
+    public string DownLoadURL = "ftp://192.168.31.48/AB/PC/";
+    public string Ftp_UserName = "Admin";
+    public string Ftp_Password = "Admin123";
+
+    [Header("重新下载次数")]
+    public int reDownTimes = 5;
+    [Header("远端对比文件名称")]
+    public string remoteFile = "ABCompareInfo.txt";
+    [Header("资源包下载路径")]
+    public string localFilePath = "";
+
+    private string abCompareInfoLocalPath;//本地对比文件存放路径
 
     //用于存储远端AB包信息的字典 之后和本地进行对比即可完成 更新 下载相关逻辑
     private Dictionary<string, ABInfo> remoteABInfo = new Dictionary<string, ABInfo>();
@@ -46,6 +59,41 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
 
     //下载的文件数量
     private int downLoadOverNum = 0;
+
+    
+
+    protected override void Awake()
+    {
+        base.Awake();
+        localFilePath = $"{Application.persistentDataPath}/{localFilePath}";
+        abCompareInfoLocalPath = localFilePath + remoteFile;
+    }
+
+    private void Start()
+    {
+        if (enableChecekOnStart)
+        {
+            CheckUpdata((arg) =>
+            {
+                if (arg)
+                {
+                    PLoger.Log("资源更新完成");
+                }
+                else
+                {
+                    PLoger.Log("资源更新失败");
+                }
+            },
+            (message) =>
+            {
+                PLoger.Log(message);
+            });
+        }
+        else
+        {
+            PLoger.Log("不启动资源更新");
+        }
+    }
 
     /// <summary>
     /// 用于检测热更新的函数
@@ -66,7 +114,7 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
             if (isOver)
             {
                 updataInfoCallBack("对比文件下载结束");
-                string remoteInfo = File.ReadAllText(Application.persistentDataPath + "/ABCompareInfo_TMP.txt");
+                string remoteInfo = File.ReadAllText(abCompareInfoLocalPath);
                 updataInfoCallBack("解析远端对比文件");
                 AnalysisABCompareFileInfo(remoteInfo, remoteABInfo);
                 updataInfoCallBack("解析远端对比文件完成");
@@ -123,8 +171,8 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
                                 //下载完所有AB包文件后
                                 //把本地的AB包对比文件 更新为最新
                                 //把之前读取出来的 远端对比文件信息 存储到 本地 
-                                updataInfoCallBack("开始更新本地AB包对比文件为最新");
-                                File.WriteAllText(Application.persistentDataPath + "/ABCompareInfo.txt", remoteInfo);
+                                updataInfoCallBack("更新本地AB包对比文件");
+                                File.WriteAllText(abCompareInfoLocalPath, remoteInfo);
                                 overCallBack(true);
                             }
                             else
@@ -153,19 +201,13 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
     public void GetLocalABCompareFileInfo(UnityAction<bool> overCallBack)
     {
         //如果可读可写文件夹中 存在对比文件 说明之前已经下载更新过了
-        if (File.Exists(Application.persistentDataPath + "/ABCompareInfo.txt"))
+        if (File.Exists(abCompareInfoLocalPath))
         {
-            StartCoroutine(IE_GetLocalABCompareFileInfo(Application.persistentDataPath + "/ABCompareInfo.txt", overCallBack));
+            StartCoroutine(IE_GetLocalABCompareFileInfo(abCompareInfoLocalPath, overCallBack));
         }
-        //只有当可读可写中没有对比文件时  才会来加载默认资源（第一次进游戏时才会发生）
-        else if (File.Exists(Application.streamingAssetsPath + "/ABCompareInfo.txt"))
+        else//第一次并且没有默认资源 
         {
-            StartCoroutine(IE_GetLocalABCompareFileInfo(Application.streamingAssetsPath + "/ABCompareInfo.txt", overCallBack));
-        }
-        //如果两个都不进 证明第一次并且没有默认资源 
-        else
-        {
-            overCallBack(true);
+            overCallBack(false);
         }
     }
     /// <summary>
@@ -198,21 +240,20 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
     public async void DownLoadABComparteFile(UnityAction<bool> overCallBack)
     {
         //1.从资源服务器下载资源对比文件
-        // www UnityWebRequest ftp相关api
-        //print(Application.persistentDataPath);
-        //下载是否成功
-        bool isOver = false;
-        //再下载次数
-        int reDownTimes = 5;
-        //不能在子线程中访问Unity主线程的 Application 所以 在外面声明
-        string localPath = Application.persistentDataPath;
-        while (!isOver && reDownTimes > 0)
+        bool isOver = false; //下载是否成功
+        //重新下载次数
+        int ReDownTimes = reDownTimes;
+        while (!isOver && ReDownTimes > 0)
         {
-            await Task.Run(() =>
+            await System.Threading.Tasks.Task.Run(() =>
             {
-                isOver = DownLoadFile("ABCompareInfo.txt", localPath + "/ABCompareInfo_TMP.txt");
+                isOver = DownLoadFile(remoteFile, abCompareInfoLocalPath);
             });
-            --reDownTimes;
+            if (!isOver)
+            {
+                --ReDownTimes;
+                PLoger.LogError($"对比文件下载失败，重新加载：{ReDownTimes}");
+            }
         }
         //告诉外部成功与否
         overCallBack?.Invoke(isOver);
@@ -220,8 +261,8 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
     /// <summary>
     /// 下载文件
     /// </summary>
-    /// <param name="fileName">文集名字</param>
-    /// <param name="localPath">文件路径</param>
+    /// <param name="fileName">远端下载文件名称</param>
+    /// <param name="localPath">本地存储路径文件路径</param>
     /// <returns></returns>
     private bool DownLoadFile(string fileName, string localPath)
     {
@@ -229,7 +270,7 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
         {
             //1.创建一个FTP连接 用于下载
             FtpWebRequest req = FtpWebRequest.Create(new Uri(DownLoadURL + fileName)) as FtpWebRequest;
-            //2.设置一个通信凭证 这样才能下载（如果有匿名账号 可以不设置凭证 但是实际开发中 建议 还是不要设置匿名账号）
+            //2.设置一个通信凭证 这样才能下载（如果有匿名账号 可以不设置凭证)
             NetworkCredential n = new NetworkCredential(Ftp_UserName, Ftp_Password);
             req.Credentials = n;
             //3.其它设置
@@ -268,7 +309,7 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
         }
         catch (System.Exception ex)
         {
-            print(fileName + "下载失败:" + ex.Message);
+            PLoger.LogError(fileName + "下载失败:" + ex.Message);
             return false;
         }
     }
@@ -300,17 +341,15 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
     /// <param name="updatePro">下载进度回调，每当有一个包下载成功都会调用</param>
     public async void DownLoadABFile(UnityAction<bool> overCallBack, UnityAction<string> updatePro)
     {
-        //本地存储的路径 由于多线程不能访问Unity相关的一些内容比如Application 所以声明再外部
-        string DownPath = Application.persistentDataPath + "/";
         // 是否下载成功
         bool isOver = false;
         //下载成功的列表 之后用于移除下载成功的内容
         List<string> tempList = new List<string>();
         //重新下载的最大次数
-        int ReDownTimes = 5;
+        int ReDownTimes = this.reDownTimes;
         //下载成功的资源数
         downLoadOverNum = 0;
-        //这一次下载需要下载多少个资源
+        //需要下载资源的数量
         int currentDownCount = downLoadList.Count;
         //while循环的目的 是进行n次重新下载 避免网络异常时 下载失败
         while (downLoadList.Count > 0 && ReDownTimes > 0)
@@ -318,9 +357,9 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
             for (int i = 0; i < downLoadList.Count; i++)
             {
                 isOver = false;
-                await Task.Run(() =>
+                await System.Threading.Tasks.Task.Run(() =>
                 {
-                    isOver = DownLoadFile(downLoadList[i], DownPath + downLoadList[i]);
+                    isOver = DownLoadFile(downLoadList[i], localFilePath + downLoadList[i]);
                 });
                 if (isOver)
                 {
@@ -337,7 +376,7 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
             }
             --ReDownTimes;
         }
-        //所有内容都下载完了 告诉外部是否下载完成
+        //下载状态返回
         overCallBack(downLoadList.Count == 0);
     }
 }

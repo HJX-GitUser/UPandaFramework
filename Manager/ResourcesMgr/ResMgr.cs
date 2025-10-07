@@ -54,7 +54,7 @@ public class ResInfo<T> : ResInfoBase
 /// <summary>
 /// Resources加载资源
 /// </summary>
-public class ResMgr : BaseMonoSingletonAuto<ResMgr>
+public class ResMgr : BaseMonoSingletonAuto<ResMgr> 
 {
     /// <summary>
     /// 存储 加载过 或 加载中 的资源
