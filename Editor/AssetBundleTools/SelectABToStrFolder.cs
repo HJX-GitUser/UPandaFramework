@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class SelectABToStrFolder
 {
-    [MenuItem("UPandaGF/Tools/AB包工具/移动选中的AB包资源到StreamingAssets")]
+    [MenuItem("UPandaGF/AB包工具/移动选中的AB包资源到StreamingAssets")]
     private static void MoveABToStreamingAssets()
     {
         //通过编辑器Selection类中的方法 获取再Project窗口中选中的资源 

@@ -12,7 +12,7 @@ using UnityEngine;
 /// </summary>
 public class UpLoadAB
 {
-    [MenuItem("UPandaGF/Tools/AB包工具/上传AB包和对比文件")]
+    [MenuItem("UPandaGF/AB包工具/上传AB包和对比文件")]
     private static void UpLoadAllABFile()
     {
         DirectoryInfo directory = Directory.CreateDirectory(DataConfig.CurrentABFilePath);
@@ -25,6 +25,7 @@ public class UpLoadAB
             }
         }
     }
+
     private async static void FtpUploadFile(string filePath, string fileName)
     {
         await Task.Run(() =>
@@ -62,7 +63,7 @@ public class UpLoadAB
                         //写完再读
                         contentLength = file.Read(bytes, 0, bytes.Length);
                     }
-                    //循环完毕后 证明上传结束
+                    //循环完毕后 上传结束
                     file.Close();
                     upLoadStream.Close();
 
@@ -76,7 +77,7 @@ public class UpLoadAB
         });
     }
 
-    [MenuItem("UPandaGF/Tools/AB包工具/打印persistentDataPath路径")]
+    [MenuItem("UPandaGF/AB包工具/打印persistentDataPath路径")]
     private static void DebugPath()
     {
         Debug.Log(Application.persistentDataPath);
