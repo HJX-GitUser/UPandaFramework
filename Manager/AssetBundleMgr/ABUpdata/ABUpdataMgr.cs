@@ -35,18 +35,19 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
     /// 下载地址，自行修改。这里是自己搭建的一个测试的ftp服务器
     /// </summary>
     [Header("FTP Server Config")]
-    public string DownLoadURL = "ftp://192.168.31.48/AB/PC/";
+    public string DownLoadURL = "ftp://127.0.0.1/AB/PC/";
     public string Ftp_UserName = "Admin";
     public string Ftp_Password = "Admin123";
 
     [Header("重新下载次数")]
     public int reDownTimes = 5;
     [Header("远端对比文件名称")]
-    public string remoteFile = "ABCompareInfo.txt";
+    public string remoteFile = "ABCompareInfo";
     [Header("资源包下载路径")]
     public string localFilePath = "";
 
     private string abCompareInfoLocalPath;//本地对比文件存放路径
+    private string abCompare_Tmp_InfoLocalPath;//远端对比文件存放路径
 
     //用于存储远端AB包信息的字典 之后和本地进行对比即可完成 更新 下载相关逻辑
     private Dictionary<string, ABInfo> remoteABInfo = new Dictionary<string, ABInfo>();
@@ -60,13 +61,23 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
     //下载的文件数量
     private int downLoadOverNum = 0;
 
-    
+    public UnityAction<string> updataMessage;//更新信息事件
+    public UnityAction updataSuccessEvent;//更新信息事件
+
+
 
     protected override void Awake()
     {
         base.Awake();
         localFilePath = $"{Application.persistentDataPath}/{localFilePath}";
-        abCompareInfoLocalPath = localFilePath + remoteFile;
+        if (!Directory.Exists(localFilePath))
+        {
+            // 不存在则创建（支持多级目录）
+            Directory.CreateDirectory(localFilePath);
+            PLoger.Log("资源路径创建成功：" + localFilePath);
+        }
+        abCompareInfoLocalPath = localFilePath + remoteFile + ".txt";
+        abCompare_Tmp_InfoLocalPath = localFilePath + remoteFile + "_TMP.txt";
     }
 
     private void Start()
@@ -78,16 +89,17 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
                 if (arg)
                 {
                     PLoger.Log("资源更新完成");
+                    updataSuccessEvent?.Invoke();
                 }
                 else
                 {
                     PLoger.Log("资源更新失败");
                 }
             },
-            (message) =>
-            {
-                PLoger.Log(message);
-            });
+           (arg1) =>
+           {
+               updataMessage?.Invoke(arg1);
+           });
         }
         else
         {
@@ -99,7 +111,7 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
     /// 用于检测热更新的函数
     /// </summary>
     /// <param name="overCallBack">更新结束的回调，参数是是否成功</param>
-    /// <param name="updataInfoCallBack">更新信息的回调，期间的所有更新消息都发出去</param>
+    /// <param name="updataInfoCallBack">更新信息的回调，期间的所有更新消息都发出去，更新步骤共10步，第9步开始更新资源</param>
     public void CheckUpdata(UnityAction<bool> overCallBack, UnityAction<string> updataInfoCallBack)
     {
         //为了避免由于上一次报错 而残留信息 所以清空
@@ -110,22 +122,22 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
         //1.加载远端资源对比文件
         DownLoadABComparteFile((isOver) =>
         {
-            updataInfoCallBack("开始更新资源");
+            updataInfoCallBack("开始更新资源*1");
             if (isOver)
             {
-                updataInfoCallBack("对比文件下载结束");
-                string remoteInfo = File.ReadAllText(abCompareInfoLocalPath);
-                updataInfoCallBack("解析远端对比文件");
+                updataInfoCallBack("对比文件下载结束*2");
+                string remoteInfo = File.ReadAllText(abCompare_Tmp_InfoLocalPath);//获取远端对比信息
+                updataInfoCallBack("解析远端对比文件*3");
                 AnalysisABCompareFileInfo(remoteInfo, remoteABInfo);
-                updataInfoCallBack("解析远端对比文件完成");
+                updataInfoCallBack("解析远端对比文件完成*4");
                 //2.加载本地资源对比文件
                 GetLocalABCompareFileInfo((isOK) =>
                 {
                     if (isOK)
                     {
-                        updataInfoCallBack("解析本地对比文件完成");
+                        updataInfoCallBack("解析本地对比文件完成*5");
                         //3.对比他们 然后进行AB包下载
-                        updataInfoCallBack("开始对比");
+                        updataInfoCallBack("开始对比*6");
                         foreach (string abName in remoteABInfo.Keys)
                         {
                             //1.判断 哪些资源是新的 然后记录 之后用于下载
@@ -148,8 +160,8 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
                                 localABInfo.Remove(abName);
                             }
                         }
-                        updataInfoCallBack("对比完成");
-                        updataInfoCallBack("开始删除无用的AB包文件");
+                        updataInfoCallBack("对比完成*7");
+                        updataInfoCallBack("开始删除无用的AB包文件*8");
                         //上面对比完了 那就先删除没用的内容 再下载AB包
                         //删除无用的AB包
                         foreach (string abName in localABInfo.Keys)
@@ -161,7 +173,7 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
                                 File.Delete(Application.persistentDataPath + "/" + abName);
                             }
                         }
-                        updataInfoCallBack("下载和更新AB包文件");
+                        updataInfoCallBack("下载和更新AB包文件*9");
                         //下载待更新列表中的所有AB包
                         //下载
                         DownLoadABFile((isOver) =>
@@ -171,7 +183,7 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
                                 //下载完所有AB包文件后
                                 //把本地的AB包对比文件 更新为最新
                                 //把之前读取出来的 远端对比文件信息 存储到 本地 
-                                updataInfoCallBack("更新本地AB包对比文件");
+                                updataInfoCallBack("更新本地AB包对比文件*10");
                                 File.WriteAllText(abCompareInfoLocalPath, remoteInfo);
                                 overCallBack(true);
                             }
@@ -205,9 +217,9 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
         {
             StartCoroutine(IE_GetLocalABCompareFileInfo(abCompareInfoLocalPath, overCallBack));
         }
-        else//第一次并且没有默认资源 
+        else
         {
-            overCallBack(false);
+            overCallBack(true);
         }
     }
     /// <summary>
@@ -247,7 +259,7 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
         {
             await System.Threading.Tasks.Task.Run(() =>
             {
-                isOver = DownLoadFile(remoteFile, abCompareInfoLocalPath);
+                isOver = DownLoadFile(remoteFile, abCompare_Tmp_InfoLocalPath);//远端的对比文件存放路径
             });
             if (!isOver)
             {
@@ -351,6 +363,8 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
         downLoadOverNum = 0;
         //需要下载资源的数量
         int currentDownCount = downLoadList.Count;
+        Debug.Log($"<color=green>需要下载资源的数量:{currentDownCount}</color>");
+        updatePro("0*0");
         //while循环的目的 是进行n次重新下载 避免网络异常时 下载失败
         while (downLoadList.Count > 0 && ReDownTimes > 0)
         {
@@ -378,5 +392,25 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
         }
         //下载状态返回
         overCallBack(downLoadList.Count == 0);
+    }
+
+    public void DeleteAllAssets()
+    {
+        if (Directory.Exists(localFilePath))
+        {
+            string[] files = Directory.GetFiles(localFilePath);
+            foreach (string file in files)
+            {
+                try
+                {
+                    File.Delete(file); // 删除单个文件
+                    Debug.Log("已删除文件：" + file);
+                }
+                catch (IOException ex)
+                {
+                    Debug.LogError("删除失败：" + ex.Message); // 捕获异常（如文件被占用）
+                }
+            }
+        }
     }
 }

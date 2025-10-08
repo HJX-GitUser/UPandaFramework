@@ -13,7 +13,7 @@ public class CreatDirectory
     private static string PATH_Scenes = Application.dataPath + "/Scenes";
     private static string PATH_StreamingAssets = Application.dataPath + "/StreamingAssets";
     private static string PATH_Scripts = Application.dataPath + "/Scripts";
-    private static string PATH_AssetBundle = Application.dataPath + "/AssetBundle";
+    private static string PATH_AssetBundle = Application.dataPath + "/AssetBundles";
 
 
 

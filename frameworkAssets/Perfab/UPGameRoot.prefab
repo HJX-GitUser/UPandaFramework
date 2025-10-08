@@ -89,13 +89,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7ebc10cdf4b36143815d9170660a1a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableChecekOnStart: 1
-  DownLoadURL: ftp://192.168.31.48/AB/PC/
+  enableChecekOnStart: 0
+  DownLoadURL: ftp://127.0.0.1/AB/PC/
   Ftp_UserName: Admin
   Ftp_Password: Admin123
   reDownTimes: 5
   remoteFile: ABCompareInfo.txt
-  localFilePath: AB/PC/
+  localFilePath: AB/PC
 --- !u!1 &6237702032991392438
 GameObject:
   m_ObjectHideFlags: 0

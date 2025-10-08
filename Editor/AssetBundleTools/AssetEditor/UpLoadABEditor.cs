@@ -23,6 +23,10 @@ internal class UpLoadABEditor
         if (Config == null)
         {
             Config = new UpLoadABEditorConfig();
+            Config.UpABURL = EditorPrefs.GetString("UpLoadABEditor_UpABURL", Config.UpABURL);
+            Config.LocalABPath = EditorPrefs.GetString("UpLoadABEditor_LocalABPath", Config.LocalABPath);
+            Config.Ftp_UserName = EditorPrefs.GetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
+            Config.Ftp_Password = EditorPrefs.GetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
         }
     }
 
@@ -48,7 +52,7 @@ internal class UpLoadABEditor
         {
             CreateABCompareFile();
         }
-        EditorGUILayout.Space();
+        EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("FTP通信凭证:");
         Config.Ftp_UserName = EditorGUILayout.TextField("ftp用户名", Config.Ftp_UserName);
         Config.Ftp_Password = EditorGUILayout.TextField("ftp密码", Config.Ftp_Password);
@@ -56,37 +60,52 @@ internal class UpLoadABEditor
 
         if (GUILayout.Button("上传AB包和对比文件"))
         {
-            DirectoryInfo directory = Directory.CreateDirectory(Config.LocalABPath);
-            FileInfo[] fileInfos = directory.GetFiles();
-            foreach (FileInfo fileInfo in fileInfos)
-            {
-                if (fileInfo.Extension == "" || fileInfo.Extension == ".txt")
-                    Debug.Log(fileInfo.FullName);
-            }
+            UpLoadAllABFile();
         }
 
-        EditorGUILayout.Space();
+        EditorGUILayout.Space(10);
+
+        if (GUILayout.Button("复制资源到StreamingAssets"))
+        {
+            //通过编辑器Selection类中的方法 获取再Project窗口中选中的资源 
+            UnityEngine.Object[] selectedAsset = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.DeepAssets);
+            //如果一个资源都没有选择 就没有必要处理后面的逻辑了
+            if (selectedAsset.Length == 0)
+            {
+                Debug.Log("请先选择资源文件");
+            }
+            else
+            {
+                string savePath = EditorUtility.OpenFolderPanel("复制路径选择", Application.streamingAssetsPath, string.Empty);
+                if (!string.IsNullOrEmpty(savePath))
+                {
+                    SaveABToStreamingAssets(savePath, selectedAsset);
+                }
+            }
+        }
+        EditorGUILayout.HelpBox("复制前需要先手动选择本地资源路径下资源", MessageType.Info);
+
+        EditorGUILayout.Space(10);
         if (GUILayout.Button("打印persistentDataPath路径"))
         {
             DebugPath();
         }
-        if (GUILayout.Button("选择资源到StreamingAssets"))
+
+        EditorGUILayout.Space(20);
+        if (GUILayout.Button("保存"))
         {
-            var newPath = EditorUtility.OpenFolderPanel("Bundle Folder", Application.streamingAssetsPath, string.Empty);
-            if (!string.IsNullOrEmpty(newPath))
-            {
-                MoveABToStreamingAssets(newPath);
-            }
-
+            SaveData();
         }
-
         GUILayout.EndVertical();
         EditorGUILayout.EndScrollView();
     }
 
-
+    /// <summary>
+    /// 上传
+    /// </summary>
     private void UpLoadAllABFile()
     {
+        Debug.Log($"开始上传：{Config.UpABURL}");
         DirectoryInfo directory = Directory.CreateDirectory(Config.LocalABPath);
         FileInfo[] fileInfos = directory.GetFiles();
         foreach (FileInfo fileInfo in fileInfos)
@@ -119,6 +138,19 @@ internal class UpLoadABEditor
     public void ResetPathToDefault()
     {
         Config = new UpLoadABEditorConfig();
+        SaveData();
+    }
+
+    /// <summary>
+    /// 保存数据
+    /// </summary>
+    public void SaveData()
+    {
+        EditorPrefs.SetString("UpLoadABEditor_UpABURL", Config.UpABURL);
+        EditorPrefs.SetString("UpLoadABEditor_LocalABPath", Config.LocalABPath);
+        EditorPrefs.SetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
+        EditorPrefs.SetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
+        Debug.Log("界面信息已保存");
     }
 
     /// <summary>
@@ -186,17 +218,8 @@ internal class UpLoadABEditor
     /// <summary>
     /// 选择资源到StreamingAssets
     /// </summary>
-    private void MoveABToStreamingAssets(string sPath)
+    private void SaveABToStreamingAssets(string savePath, UnityEngine.Object[] selectedAsset)
     {
-        //通过编辑器Selection类中的方法 获取再Project窗口中选中的资源 
-        UnityEngine.Object[] selectedAsset = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.DeepAssets);
-        //如果一个资源都没有选择 就没有必要处理后面的逻辑了
-        if (selectedAsset.Length == 0)
-        {
-            Debug.Log("没有选择文件");
-            return;
-        }
-
         //用于拼接本地默认AB包资源信息的字符串
         string abCompareInfo = "";
         //遍历选中的资源对象
@@ -208,15 +231,16 @@ internal class UpLoadABEditor
             string judge_fileName = assetPath.Substring(0, assetPath.LastIndexOf('/'));
             if (judge_fileName != Config.LocalABPath)
             {
-                Debug.LogError($"请不要选取资源路径以外的文件");
-                return;
+                if (judge_fileName != Config.LocalABPath.Substring(0, Config.LocalABPath.LastIndexOf('/')))
+                    Debug.LogError($"（{judge_fileName}）无法复制，你只能选\"{Config.LocalABPath}\"路径下的资源");
+                continue;
             }
             //截取路径当中的文件名 用于作为 StreamingAssets中的文件名
             string fileName = assetPath.Substring(assetPath.LastIndexOf('/'));
             // 判断是否有.符号 如果有 证明有后缀 不处理
             if (fileName.IndexOf('.') != -1)
                 continue;//也可以在拷贝之前去获取全路径，然后通过FileInfo去获取后缀来判断 这样更准确
-            string copyPath = $"{sPath}/{fileName}";
+            string copyPath = $"{savePath}/{fileName}";
             Debug.Log(copyPath);
             //利用AssetDatabase中的API 将选中文件 复制到目标路径
             AssetDatabase.CopyAsset(assetPath, copyPath);
@@ -233,7 +257,7 @@ internal class UpLoadABEditor
         {
             abCompareInfo = abCompareInfo.Substring(0, abCompareInfo.Length - 1);
             //将本地默认资源的对比信息 存入文件
-            File.WriteAllText(sPath + "/ABCompareInfo.txt", abCompareInfo);
+            File.WriteAllText(savePath + "/ABCompareInfo.txt", abCompareInfo);
         }
         else
         {
