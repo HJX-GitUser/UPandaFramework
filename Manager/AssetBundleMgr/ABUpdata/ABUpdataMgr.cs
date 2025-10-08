@@ -104,6 +104,7 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
         else
         {
             PLoger.Log("不启动资源更新");
+            updataSuccessEvent?.Invoke();
         }
     }
 

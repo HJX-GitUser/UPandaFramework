@@ -9,12 +9,13 @@ public enum AssetLoaddingMethod
     Assetbundles,//使用AssetBundle加载资源
 }
 
-public class UPGameRoot : MonoBehaviour
+public class UPGameRoot : BaseMonoSingleton<UPGameRoot>
 {
+    [Header("资源加载方式")]
+    public AssetLoaddingMethod method;
     [Header("从StreamingAssets路径下加载资源")]
     public bool LoadAssetOnStreamingAssets = false;
-    private void Awake()
-    {
-        DontDestroyOnLoad(gameObject);
-    }
+    [Header("资源路径")]
+    public string LoadAssetPath = "AB/PC/";
+   
 }

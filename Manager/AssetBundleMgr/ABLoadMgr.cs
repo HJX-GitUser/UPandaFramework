@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UPandaGF;
 
 /// <summary>
 /// AB包加载管理器
@@ -18,6 +19,10 @@ public class ABLoadMgr : BaseMonoSingletonAuto<ABLoadMgr>
     //字典用来存储 AB包对象
     private Dictionary<string, AssetBundle> abDic = new Dictionary<string, AssetBundle>();
 
+    private void Start()
+    {
+        PLoger.Log("AB加载路径：" + PathUrl);
+    }
     /// <summary>
     /// 获取AB包加载路径
     /// </summary>
@@ -25,7 +30,10 @@ public class ABLoadMgr : BaseMonoSingletonAuto<ABLoadMgr>
     {
         get
         {
-            return Application.streamingAssetsPath + "/";
+            if (UPGameRoot.Instance.LoadAssetOnStreamingAssets)
+                return Application.streamingAssetsPath + "/" + UPGameRoot.Instance.LoadAssetPath;
+            else
+                return Application.persistentDataPath + "/" + UPGameRoot.Instance.LoadAssetPath;
         }
     }
     /// <summary>
