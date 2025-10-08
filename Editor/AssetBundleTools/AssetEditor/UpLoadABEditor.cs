@@ -1,3 +1,4 @@
+using GluonGui.WorkspaceWindow.Views.WorkspaceExplorer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -67,23 +68,13 @@ internal class UpLoadABEditor
 
         if (GUILayout.Button("复制资源到StreamingAssets"))
         {
-            //通过编辑器Selection类中的方法 获取再Project窗口中选中的资源 
-            UnityEngine.Object[] selectedAsset = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.DeepAssets);
-            //如果一个资源都没有选择 就没有必要处理后面的逻辑了
-            if (selectedAsset.Length == 0)
+            string savePath = EditorUtility.OpenFolderPanel("复制路径选择", Application.streamingAssetsPath, string.Empty);
+            if (!string.IsNullOrEmpty(savePath))
             {
-                Debug.Log("请先选择资源文件");
+                MoveABToStreamingAssets(savePath);
             }
-            else
-            {
-                string savePath = EditorUtility.OpenFolderPanel("复制路径选择", Application.streamingAssetsPath, string.Empty);
-                if (!string.IsNullOrEmpty(savePath))
-                {
-                    SaveABToStreamingAssets(savePath, selectedAsset);
-                }
-            }
+
         }
-        EditorGUILayout.HelpBox("复制前需要先手动选择本地资源路径下资源", MessageType.Info);
 
         EditorGUILayout.Space(10);
         if (GUILayout.Button("打印persistentDataPath路径"))
@@ -110,11 +101,21 @@ internal class UpLoadABEditor
         FileInfo[] fileInfos = directory.GetFiles();
         foreach (FileInfo fileInfo in fileInfos)
         {
-            if (fileInfo.Extension == "" || fileInfo.Extension == ".txt")
+            if (IsABAssets(fileInfo))
             {
                 FtpUploadFile(fileInfo.FullName, fileInfo.Name);
             }
         }
+    }
+
+    private bool IsABAssets(FileInfo fileInfo)
+    {
+        bool isABAssets = false;
+        if (fileInfo.Extension == "" || fileInfo.Extension == ".txt")
+        {
+            isABAssets = true;
+        }
+        return isABAssets;
     }
     /// <summary>
     /// 选择路径
@@ -215,10 +216,29 @@ internal class UpLoadABEditor
     {
         Debug.Log(Application.persistentDataPath);
     }
+
+    private void SelectAB()
+    {
+        //通过编辑器Selection类中的方法 获取再Project窗口中选中的资源 
+        UnityEngine.Object[] selectedAsset = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.DeepAssets);
+        //如果一个资源都没有选择 就没有必要处理后面的逻辑了
+        if (selectedAsset.Length == 0)
+        {
+            Debug.Log("请先选择资源文件");
+        }
+        else
+        {
+            string savePath = EditorUtility.OpenFolderPanel("复制路径选择", Application.streamingAssetsPath, string.Empty);
+            if (!string.IsNullOrEmpty(savePath))
+            {
+                SelectABToStreamingAssets(savePath, selectedAsset);
+            }
+        }
+    }
     /// <summary>
     /// 选择资源到StreamingAssets
     /// </summary>
-    private void SaveABToStreamingAssets(string savePath, UnityEngine.Object[] selectedAsset)
+    private void SelectABToStreamingAssets(string savePath, UnityEngine.Object[] selectedAsset)
     {
         //用于拼接本地默认AB包资源信息的字符串
         string abCompareInfo = "";
@@ -265,6 +285,38 @@ internal class UpLoadABEditor
         }
         AssetDatabase.Refresh();
     }
+
+    private void MoveABToStreamingAssets(string savePath)
+    {
+        string assetsKeyword = "Assets";
+        int startIndex= savePath.IndexOf(assetsKeyword); // 定位"Assets"的起始位置
+        string result = savePath.Substring(startIndex); // 从"Assets"开始截取
+
+
+        if (startIndex == -1)
+        {
+            Debug.LogError("路径不在Assets路径内");
+            return;
+        }
+
+        DirectoryInfo directory = Directory.CreateDirectory(Config.LocalABPath);
+        FileInfo[] fileInfos = directory.GetFiles();
+        foreach (var file in fileInfos)
+        {
+            if (IsABAssets(file))
+            {
+                int startIndex1 = file.FullName.IndexOf(assetsKeyword); 
+                string result1 = file.FullName.Substring(startIndex1); // 从"Assets"开始截取
+                AssetDatabase.CopyAsset(result1, result + $"/{file.Name}");
+                Debug.Log(result1 + " 已拷贝至：" + result + $"/{file.Name}");
+            }
+        }
+        AssetDatabase.Refresh();
+
+
+    }
+
+
 
     /// <summary>
     /// 创建对比文件

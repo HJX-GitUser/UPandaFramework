@@ -76,7 +76,7 @@ public class ResMgr : BaseMonoSingletonAuto<ResMgr>
             T res = Resources.Load<T>(path);
             info = new ResInfo<T>();
             info.asset = res;
-            info.AddRefCount();
+            info. AddRefCount();
             resDic.Add(resName, info);
             return res;
         }

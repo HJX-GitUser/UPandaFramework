@@ -28,7 +28,7 @@ public class SelectABToStrFolder
             string assetPath = AssetDatabase.GetAssetPath(asset);
             //判断选取的资源是不是AB包文件夹下的，不是的话报错
             string judge_fileName = assetPath.Substring(0, assetPath.LastIndexOf('/'));
-            if (judge_fileName != "Assets/AssetBundle/PC")
+            if (judge_fileName != "Assets/AssetBundles/PC")
             {
                 Debug.LogError($"请不要选取Assets/AssetBundle/PC路径以外的文件");
                 return;
@@ -42,7 +42,8 @@ public class SelectABToStrFolder
 
             //利用AssetDatabase中的API 将选中文件 复制到目标路径
             AssetDatabase.CopyAsset(assetPath, "Assets/StreamingAssets" + fileName);
-
+            Debug.Log(assetPath);
+            Debug.Log("Assets/StreamingAssets" + fileName);
             //获取拷贝到StreamingAssets文件夹中的文件的全部信息
             System.IO.FileInfo fileInfo = new System.IO.FileInfo(Application.streamingAssetsPath + fileName);
             //拼接AB包信息到字符串中
