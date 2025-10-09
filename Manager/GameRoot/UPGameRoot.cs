@@ -66,6 +66,9 @@ namespace UPandaGF
         {
             base.Awake();
             SetComponent();
+#if !UNITY_EDITOR
+            method = AssetLoaddingMethod.Assetbundles;
+#endif
             if (method == AssetLoaddingMethod.Editor)
             {
                 enableChecekOnStart = false;

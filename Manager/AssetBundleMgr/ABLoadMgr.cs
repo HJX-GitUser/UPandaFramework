@@ -24,11 +24,13 @@ namespace UPandaGF
         /// <summary>
         /// 获取AB包加载路径
         /// </summary>
+        [HideInInspector]
         public string PathUrl;
 
         /// <summary>
         /// 主包名 根据平台不同 包名不同
         /// </summary>
+        [HideInInspector]
         public string MainName;
 
         protected override void Awake()
