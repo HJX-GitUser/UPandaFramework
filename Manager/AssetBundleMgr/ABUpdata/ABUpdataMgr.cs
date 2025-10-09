@@ -44,7 +44,7 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
     [Header("重新下载次数")]
     public int reDownTimes = 5;
     [Header("远端对比文件名称")]
-    public string remoteFile = "ABCompareInfo";
+    public string remoteFile = "ABCompareInfo.txt";
     //[Header("资源包下载路径")]
     [HideInInspector]
     public string localFilePath = "";

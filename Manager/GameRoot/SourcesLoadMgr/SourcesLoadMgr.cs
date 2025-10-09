@@ -10,12 +10,12 @@ namespace UPandaGF
         private ABLoadMgr abLoadMgr;
         private EditorSourcesMgr editorSourcesMgr;
         private ABSourcesRef sourceRef;
-        public void Init(AssetLoaddingMethod arg0, ABSourcesRef arg1)
+        public void Init(AssetLoaddingMethod arg0, ABSourcesRef arg1, ABLoadMgr arg2, EditorSourcesMgr arg3)
         {
             method = arg0;
             sourceRef = arg1;
-            abLoadMgr = ABLoadMgr.Instance;
-            editorSourcesMgr = EditorSourcesMgr.Instance;
+            abLoadMgr = arg2;
+            editorSourcesMgr = arg3;
         }
         /// <summary>
         /// 加载资源 泛型
@@ -65,6 +65,30 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Assetbundles:
                     ABArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, type, callback);
+                    break;
+            }
+        }
+
+        public void LoadScene(string path)
+        {
+            if (!sourceRef.sourcesDic.ContainsKey(path))
+            {
+                PLoger.LogError("该资源不存在：" + path);
+                return;
+            }
+            string sceneName = path.Substring(path.LastIndexOf('/') + 1);
+            sceneName = sceneName.Split('.')[0];
+            switch (method)
+            {
+                case AssetLoaddingMethod.Editor:
+                    SceneMgr.Instance.LoadScene(sceneName);
+                    break;
+                case AssetLoaddingMethod.Assetbundles:
+                    ABArg arg = sourceRef.sourcesDic[path];
+                    abLoadMgr.LoadSceneResAsync(arg.packageName, arg.sourceName, () =>
+                    {
+                        SceneMgr.Instance.LoadScene(sceneName);
+                    });
                     break;
             }
         }

@@ -354,6 +354,63 @@ namespace UPandaGF
             yield return abq;
             callBack(abq.asset);
         }
+
+        /// <summary>
+        /// 加载场景资源
+        /// </summary>
+        /// <param name="abName"></param>
+        /// <param name="resName"></param>
+        /// <param name="callBack"></param>
+        public void LoadSceneResAsync(string abName, string resName, UnityAction callBack)
+        {
+            StartCoroutine(ReallyLoadSceneResAsync(abName, resName, callBack));
+        }
+        private IEnumerator ReallyLoadSceneResAsync(string abName, string resName, UnityAction callBack)
+        {
+            //加载依赖包
+            //加载主包
+            LoadMainAB();
+            //获取依赖包
+            string[] strs = manifest.GetAllDependencies(abName);
+            for (int i = 0; i < strs.Length; i++)
+            {
+                if (!abDic.ContainsKey(strs[i]))
+                {
+                    abDic.Add(strs[i], null);
+                    //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + strs[i]);
+                    //abDic.Add(strs[i], ab);
+                    AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + strs[i]);
+                    yield return req;
+
+                    abDic[strs[i]] = req.assetBundle;
+                }
+                else
+                {
+                    while (abDic[strs[i]] == null)//如果为null说明资源正在异步加载中
+                    {
+                        yield return 0;
+                    }
+                }
+            }
+            //加载目标包
+            if (!abDic.ContainsKey(abName))
+            {
+                abDic.Add(abName, null);
+                //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + abName);
+                AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + abName);
+                yield return req;
+
+                abDic[abName] = req.assetBundle;
+            }
+            else
+            {
+                while (abDic[abName] == null)
+                {
+                    yield return 0;
+                }
+            }
+            callBack();
+        }
         #endregion
 
         /// <summary>

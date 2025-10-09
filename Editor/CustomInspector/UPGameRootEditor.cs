@@ -77,7 +77,6 @@ namespace UPandaGF
                     // 创建一个 AssetInfo 对象，并添加到列表中
                     ABArg assetInfo = new ABArg(assetBundleName, assetName);
                     aBSourcesRef.sourcesDic.Add(assetPath, assetInfo);
-
                 }
             }
 

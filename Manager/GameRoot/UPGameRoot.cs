@@ -23,7 +23,7 @@ namespace UPandaGF
         persistentDataPath
     }
 
-    public class UPGameRoot : BaseMonoSingleton<UPGameRoot>
+    public class UPGameRoot : BaseMonoSingletonAuto<UPGameRoot>
     {
         //[Header("资源加载方式")]
         public AssetLoaddingMethod method;
@@ -91,7 +91,7 @@ namespace UPandaGF
             abLoadMgr.Init();
             string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
             ABSourcesRef arg = Load<ABSourcesRef>(assetRefpath);
-            sourcesLoadMgr.Init(method, arg);
+            sourcesLoadMgr.Init(method, arg, abLoadMgr, editorSourcesMgr);
         }
 
         private void SetComponent()
