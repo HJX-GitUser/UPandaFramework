@@ -41,6 +41,7 @@ namespace UPandaGF
         private ABUpdataMgr abUpdataMgr;
         private ABLoadMgr abLoadMgr;
         private SourcesLoadMgr sourcesLoadMgr;
+        private EditorSourcesMgr editorSourcesMgr;
 
         private BinaryDataMgrInit binaryDataMgr;
 
@@ -96,6 +97,7 @@ namespace UPandaGF
             abUpdataMgr = InitComponent<ABUpdataMgr>();
             abLoadMgr = InitComponent<ABLoadMgr>();
             sourcesLoadMgr = InitComponent<SourcesLoadMgr>();
+            editorSourcesMgr = InitComponent<EditorSourcesMgr>();
             binaryDataMgr = InitComponent<BinaryDataMgrInit>();
         }
 

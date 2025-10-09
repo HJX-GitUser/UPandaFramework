@@ -358,21 +358,19 @@ namespace UPandaGF
         /// 卸载AB包的方法
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="callbackResult"></param>
-        public void UnLoadAB(string name, UnityAction<bool> callbackResult = null)
+        public bool UnLoadAB(string name)
         {
             if (abDic.ContainsKey(name))
             {
                 if (abDic[name] == null)
                 {
                     Debug.Log("该资源正处于异步加载中，无法卸载！");
-                    callbackResult?.Invoke(false);
-                    return;
+                    return false;
                 }
                 abDic[name].Unload(false);
                 abDic.Remove(name);
-                callbackResult?.Invoke(true);
             }
+            return true;
         }
         /// <summary>
         /// 清空AB包的方法
