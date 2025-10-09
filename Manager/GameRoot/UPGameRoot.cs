@@ -1,69 +1,141 @@
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UPandaGF;
 
-/// <summary>
-/// 资源加载方式
-/// </summary>
-public enum AssetLoaddingMethod
+namespace UPandaGF
 {
-    Editor,//编辑器环境下加载资源
-    Assetbundles,//使用AssetBundle加载资源
-}
-
-public class UPGameRoot : BaseMonoSingleton<UPGameRoot>
-{
-    [Header("资源加载方式")]
-    public AssetLoaddingMethod method;
-    [Header("从StreamingAssets路径下加载资源")]
-    public bool LoadAssetOnStreamingAssets = false;
-    [Header("资源路径")]
-    public string LoadAssetPath = "AB/PC/";
-    [Header("主包名")]
-    public string MainName = "PC";
-
-    [Header("启动时检查资源更新")]
-    public bool enableChecekOnStart = false;
-
-    private DebugerInit debugerInit;
-    private ABUpdataMgr abUpdataMgr;
-    private ABLoadMgr abLoadMgr;
-
-
-    private void Reset()
+    /// <summary>
+    /// 资源加载方式
+    /// </summary>
+    public enum AssetLoaddingMethod
     {
-        InitComponent();
-    }
-    protected override void Awake()
-    {
-        base.Awake();
-        InitComponent();
-        abUpdataMgr.localFilePath = LoadAssetPath;
-        abUpdataMgr.enableChecekOnStart = enableChecekOnStart;
-        string p = LoadAssetOnStreamingAssets ? Application.streamingAssetsPath : Application.persistentDataPath;
-        abLoadMgr.PathUrl = p + "/" + LoadAssetPath;
-        abLoadMgr.MainName = MainName;
-        debugerInit.Init();
-        abUpdataMgr.Init();
-        abLoadMgr.LogInitMessage();
+        Editor,//编辑器环境下加载资源
+        Assetbundles,//使用AssetBundle加载资源
     }
 
-    private void InitComponent()
+    /// <summary>
+    /// AB包根路径
+    /// </summary>
+    public enum ABRootPath
     {
-        debugerInit = InitComponent<DebugerInit>();
-        abUpdataMgr = InitComponent<ABUpdataMgr>();
-        abLoadMgr = InitComponent<ABLoadMgr>();
+        streamingAssetsPath,
+        persistentDataPath
     }
 
-    private T InitComponent<T>() where T : Component
+    public class UPGameRoot : BaseMonoSingleton<UPGameRoot>
     {
-        T component = GetComponentInChildren<T>();
-        if (component == null)
+        //[Header("资源加载方式")]
+        public AssetLoaddingMethod method;
+        //[Header("资源加载根路径")]
+        public ABRootPath aBRootPath;
+        //[Header("资源路径")]
+        public string LoadAssetPath = "AB/PC/";
+        //[Header("主包名")]
+        public string MainName = "PC";
+
+        //[Header("启动时检查资源更新")]
+        public bool enableChecekOnStart = false;
+
+        private DebugerInit debugerInit;
+        private ABUpdataMgr abUpdataMgr;
+        private ABLoadMgr abLoadMgr;
+        private SourcesLoadMgr sourcesLoadMgr;
+
+        private BinaryDataMgrInit binaryDataMgr;
+
+        /// <summary>
+        /// 资源数据存储的位置
+        /// </summary>
+        public string assetRefSavePath = "/AssetRefData/";
+
+        public string assetRefName = "assetData";
+
+        /// <summary>
+        /// 资源数据存储文件后缀
+        /// </summary>
+        public string assetRefextension = ".assetref";
+
+
+        private void Reset()
         {
-            GameObject obj = new GameObject(typeof(T).Name);
-            obj.transform.parent = transform;
-            component = obj.AddComponent<T>();
+            SetComponent();
         }
-        return component;
+        protected override void Awake()
+        {
+            base.Awake();
+            SetComponent();
+            if (method == AssetLoaddingMethod.Editor)
+            {
+                enableChecekOnStart = false;
+                aBRootPath = ABRootPath.streamingAssetsPath;
+            }
+            abUpdataMgr.localFilePath = LoadAssetPath;
+            abUpdataMgr.enableChecekOnStart = enableChecekOnStart;
+            switch (aBRootPath)
+            {
+                case ABRootPath.streamingAssetsPath:
+                    abLoadMgr.PathUrl = Application.streamingAssetsPath + "/" + LoadAssetPath;
+                    break;
+                case ABRootPath.persistentDataPath:
+                    abLoadMgr.PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;
+                    break;
+            }
+            abLoadMgr.MainName = MainName;
+            debugerInit.Init();
+            abUpdataMgr.Init();
+            abLoadMgr.Init();
+            string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
+            ABSourcesRef arg = Load<ABSourcesRef>(assetRefpath);
+            sourcesLoadMgr.Init(method, arg);
+        }
+
+        private void SetComponent()
+        {
+            debugerInit = InitComponent<DebugerInit>();
+            abUpdataMgr = InitComponent<ABUpdataMgr>();
+            abLoadMgr = InitComponent<ABLoadMgr>();
+            sourcesLoadMgr = InitComponent<SourcesLoadMgr>();
+            binaryDataMgr = InitComponent<BinaryDataMgrInit>();
+        }
+
+        private T InitComponent<T>() where T : Component
+        {
+            T component = GetComponentInChildren<T>();
+            if (component == null)
+            {
+                GameObject obj = new GameObject(typeof(T).Name);
+                obj.transform.parent = transform;
+                component = obj.AddComponent<T>();
+            }
+            return component;
+        }
+
+
+
+        private T Load<T>(string filePath) where T : class
+        {
+            //如果不存在这个文件 就直接返回泛型对象的默认值
+            if (!File.Exists(filePath))
+            {
+                return default(T);
+            }
+            T obj = null;
+
+
+            byte[] bytes = File.ReadAllBytes(filePath);
+            //ToDo..这里可以根据规则做解密的工作
+            using (MemoryStream ms = new MemoryStream(bytes))
+            {
+                BinaryFormatter bf = new BinaryFormatter();
+                obj = bf.Deserialize(ms) as T;
+                ms.Close();
+            }
+            return obj;
+        }
+
     }
 
 }
+
+

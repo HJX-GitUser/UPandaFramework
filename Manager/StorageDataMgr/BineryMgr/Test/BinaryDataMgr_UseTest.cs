@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UPandaGF;
 
 [System.Serializable]
 public class CustomDate_By_BinaryDataMgr_Use

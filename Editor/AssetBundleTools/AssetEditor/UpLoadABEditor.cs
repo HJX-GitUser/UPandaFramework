@@ -289,7 +289,7 @@ internal class UpLoadABEditor
     private void MoveABToStreamingAssets(string savePath)
     {
         string assetsKeyword = "Assets";
-        int startIndex= savePath.IndexOf(assetsKeyword); // 定位"Assets"的起始位置
+        int startIndex = savePath.IndexOf(assetsKeyword); // 定位"Assets"的起始位置
         string result = savePath.Substring(startIndex); // 从"Assets"开始截取
 
 
@@ -305,7 +305,7 @@ internal class UpLoadABEditor
         {
             if (IsABAssets(file))
             {
-                int startIndex1 = file.FullName.IndexOf(assetsKeyword); 
+                int startIndex1 = file.FullName.IndexOf(assetsKeyword);
                 string result1 = file.FullName.Substring(startIndex1); // 从"Assets"开始截取
                 AssetDatabase.CopyAsset(result1, result + $"/{file.Name}");
                 Debug.Log(result1 + " 已拷贝至：" + result + $"/{file.Name}");
@@ -342,6 +342,11 @@ internal class UpLoadABEditor
             }
         }
         //因为循环完毕后 会在最后有一个 | 符号 所以 把它去掉
+        if (abCompareInfo.Length == 0)
+        {
+            Debug.LogError("对比文件创建失败！请检查资源路径：" + Config.LocalABPath);
+            return;
+        }
         abCompareInfo = abCompareInfo.Substring(0, abCompareInfo.Length - 1);
         //存储拼接好的 AB包资源信息
         int _index = Config.LocalABPath.IndexOf('/', 1);

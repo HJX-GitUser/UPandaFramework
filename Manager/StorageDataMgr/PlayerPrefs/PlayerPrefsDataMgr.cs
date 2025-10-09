@@ -67,7 +67,7 @@ public class PlayerPrefsDataMgr : BaseSingleton<PlayerPrefsDataMgr>
         #endregion
     }
     /// <summary>
-    /// 封装了一个方法 专门来存储值 
+    /// 存储
     /// </summary>
     /// <param name="value">数据对象</param>
     /// <param name="keyName">数据的Key</param>
