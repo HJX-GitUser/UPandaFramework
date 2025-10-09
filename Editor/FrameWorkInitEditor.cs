@@ -5,7 +5,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-public class CreatDirectory
+public class FrameWorkInitEditor
 {
     private static string PATH_3rd = Application.dataPath + "/3rd";
     private static string PATH_ArtAssets = Application.dataPath + "/ArtAssets";
@@ -109,5 +109,18 @@ public class CreatDirectory
             Debug.Log($"{name}目录已存在");
         }
 
+    }
+
+    [MenuItem("GameObject/UPandaGF/创建UPGameRoot")]
+    [MenuItem("UPandaGF/创建UPGameRoot")]
+    private static void CreatUPGameRoot()
+    {
+        if (GameObject.FindObjectOfType<UPGameRoot>() != null)
+        {
+            Debug.Log("场景中已存在带有MyComponent组件的对象，取消创建");
+            return;
+        }
+        GameObject obj = new GameObject("UPGameRoot");
+        obj.AddComponent<UPGameRoot>();
     }
 }

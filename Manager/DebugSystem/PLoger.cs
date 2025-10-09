@@ -19,7 +19,7 @@ namespace UPandaGF
                 GameObject logObj = new GameObject("LogHelper");
                 GameObject.DontDestroyOnLoad(logObj);
                 PLogHelper unityLogHelper = logObj.AddComponent<PLogHelper>();
-                unityLogHelper.InitLogFileModule(cfg.logFileSavePath, cfg.logFileName);
+                unityLogHelper.InitLogFileModule(cfg.logFileSavePath, cfg.LogFileName);
             }
             if (cfg.showFPS)
             {

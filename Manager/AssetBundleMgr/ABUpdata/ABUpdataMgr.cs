@@ -13,6 +13,7 @@ using UPandaGF;
 /// </summary>
 public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
 {
+    private bool hasInit = false;
     /// <summary>
     /// AB包信息类
     /// </summary>
@@ -28,7 +29,8 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
             this.md5 = md5;
         }
     }
-    [Header("启动时检查资源更新")]
+    //[Header("启动时检查资源更新")]
+    [HideInInspector]
     public bool enableChecekOnStart = false;
 
     /// <summary>
@@ -43,7 +45,8 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
     public int reDownTimes = 5;
     [Header("远端对比文件名称")]
     public string remoteFile = "ABCompareInfo";
-    [Header("资源包下载路径")]
+    //[Header("资源包下载路径")]
+    [HideInInspector]
     public string localFilePath = "";
 
     private string abCompareInfoLocalPath;//本地对比文件存放路径
@@ -69,6 +72,15 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
     protected override void Awake()
     {
         base.Awake();
+        if (!hasInit)
+        {
+            Init();
+        }
+    }
+
+    public void Init()
+    {
+        hasInit = true;
         localFilePath = $"{Application.persistentDataPath}/{localFilePath}";
         if (!Directory.Exists(localFilePath))
         {
@@ -78,9 +90,9 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
         }
         abCompareInfoLocalPath = localFilePath + remoteFile + ".txt";
         abCompare_Tmp_InfoLocalPath = localFilePath + remoteFile + "_TMP.txt";
+        StartUpadateAssets();
     }
-
-    private void Start()
+    private void StartUpadateAssets()
     {
         if (enableChecekOnStart)
         {

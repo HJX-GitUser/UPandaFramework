@@ -19,37 +19,35 @@ public class ABLoadMgr : BaseMonoSingletonAuto<ABLoadMgr>
     //字典用来存储 AB包对象
     private Dictionary<string, AssetBundle> abDic = new Dictionary<string, AssetBundle>();
 
-    private void Start()
-    {
-        PLoger.Log("AB加载路径：" + PathUrl);
-    }
     /// <summary>
     /// 获取AB包加载路径
     /// </summary>
-    private string PathUrl
-    {
-        get
-        {
-            if (UPGameRoot.Instance.LoadAssetOnStreamingAssets)
-                return Application.streamingAssetsPath + "/" + UPGameRoot.Instance.LoadAssetPath;
-            else
-                return Application.persistentDataPath + "/" + UPGameRoot.Instance.LoadAssetPath;
-        }
-    }
+    [HideInInspector]
+    public string PathUrl;
+
     /// <summary>
     /// 主包名 根据平台不同 包名不同
     /// </summary>
-    private string MainName
+    [HideInInspector]
+    public string MainName;
+
+    protected override void Awake()
     {
-        get
-        {
-#if UNITY_ANDROID
-            return "Android";
-#endif
-            return "PC";
-        }
+        base.Awake();
     }
 
+    public void LogInitMessage()
+    {
+        PLoger.Log("AB加载路径：" + PathUrl);
+        if(MainName == string.Empty)
+        {
+            PLoger.LogError("资源包主包名称未设置，将会导致资源加载异常");
+        }
+        else
+        {
+            PLoger.Log("资源包 主包名：" + MainName);
+        }
+    }
     /// <summary>
     /// 加载主包 和 配置文件
     /// 因为加载所有包是 通过它才能得到依赖信息
