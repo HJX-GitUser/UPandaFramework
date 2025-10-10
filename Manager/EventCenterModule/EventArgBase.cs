@@ -1,7 +1,11 @@
-/// <summary>
-/// 事件参数基类
-/// </summary>
-public abstract class EventArgBase
+namespace UPandaGF
 {
-    public abstract int EventID { get; }
+    /// <summary>
+    /// 事件参数基类
+    /// </summary>
+    public abstract class EventArgBase
+    {
+        public abstract int EventID { get; }
+    }
+
 }

@@ -8,7 +8,7 @@ namespace UPandaGF
     /// <summary>
     /// AB包加载管理器
     /// </summary>
-    public class ABLoadMgr : BaseMonoSingletonAuto<ABLoadMgr>
+    public class ABLoadMgr : BaseMonoSingleton<ABLoadMgr>
     {
         private bool isInit = false;
         //主包
@@ -33,9 +33,8 @@ namespace UPandaGF
         [HideInInspector]
         public string MainName;
 
-        protected override void Awake()
+        protected override void Initialize()
         {
-            base.Awake();
             if (!isInit) Init();
         }
 

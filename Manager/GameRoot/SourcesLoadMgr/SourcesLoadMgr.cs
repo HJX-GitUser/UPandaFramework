@@ -69,7 +69,7 @@ namespace UPandaGF
             }
         }
 
-        public void LoadScene(string path)
+        public void LoadSceneAsync(string path, UnityAction callback = null)
         {
             if (!sourceRef.sourcesDic.ContainsKey(path))
             {
@@ -81,13 +81,13 @@ namespace UPandaGF
             switch (method)
             {
                 case AssetLoaddingMethod.Editor:
-                    SceneMgr.Instance.LoadScene(sceneName);
+                    SceneMgr.Instance.LoadSceneAsyn(sceneName, callback);
                     break;
                 case AssetLoaddingMethod.Assetbundles:
                     ABArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.LoadSceneResAsync(arg.packageName, arg.sourceName, () =>
                     {
-                        SceneMgr.Instance.LoadScene(sceneName);
+                        SceneMgr.Instance.LoadSceneAsyn(sceneName, callback);
                     });
                     break;
             }

@@ -10,7 +10,7 @@ using UnityEngine.Events;
 ///2.利用协同程序处理逻辑
 ///3.可以统一执行管理帧更新或定时更新相关逻辑
 /// </summary>
-public class MonoMgr : BaseMonoSingletonAuto<MonoMgr>
+public class MonoMgr : BaseMonoSingleton<MonoMgr>
 {
     private event UnityAction updateEvent;
     private event UnityAction fixedUpdatteEvent;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UPandaGF;
 
 /// <summary>
 /// 场景切换模块,
@@ -37,7 +38,6 @@ public class SceneMgr : BaseSingleton<SceneMgr>
         {
             // 事件中心 向外分发 进度情况  外面想用就用
             EventCenter.Instance.EventTrigger(new SceneMgr_SceneAsynLoadProgress(ao.progress));
-            //yield return ao.progress;
             yield return 0;
         }
         EventCenter.Instance.EventTrigger(new SceneMgr_SceneAsynLoadProgress(ao.progress));
@@ -47,7 +47,7 @@ public class SceneMgr : BaseSingleton<SceneMgr>
 
 public class SceneMgr_SceneAsynLoadProgress : EventArgBase
 {
-    public override int EventID => throw new NotImplementedException();
+    public override int EventID => typeof(SceneMgr_SceneAsynLoadProgress).GetHashCode();
 
     public float progress { get; private set; }
 

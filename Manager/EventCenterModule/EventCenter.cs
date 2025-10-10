@@ -5,112 +5,141 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
-using UPandaGF;
 
-/// <summary>
-/// 事件参数
-/// </summary>
-public class PD_EventInfo
+namespace UPandaGF
 {
-    private UnityAction<EventArgBase> actions;
-    private List<int> actionID;
-    public PD_EventInfo(UnityAction<EventArgBase> action)
+    /// <summary>
+    /// 事件参数
+    /// </summary>
+    public class PD_EventInfo<T> where T : EventArgBase
     {
-        actionID = new List<int>();
-        actions += action;
-        actionID.Add(actions.GetHashCode());
-    }
-
-    public void AddAction(UnityAction<EventArgBase> action)
-    {
-        int id = action.GetHashCode();
-        if (!actionID.Contains(id))
+        private UnityAction<T> actions;
+        private HashSet<int> actionIDs; // 使用 HashSet 更高效地避免重复
+        private readonly object lockObj = new object(); // 用于同步的锁对象
+        public PD_EventInfo(UnityAction<T> action)
         {
-            actions += action;
-            actionID.Add(id);
-        }
-        else
-        {
-            PLoger.LogWarning($"{id}方法试图重复加入监听!");
+            actionIDs = new HashSet<int>();
+            AddAction(action);
         }
 
-    }
-
-    public void RemoveAction(UnityAction<EventArgBase> action)
-    {
-        if (actionID.Contains(action.GetHashCode()))
+        public void AddAction(UnityAction<T> action)
         {
-            actions -= action;
-            actionID.Remove(action.GetHashCode());
+            int id = action.GetHashCode();
+            lock (lockObj) // 保证线程安全
+            {
+                if (!actionIDs.Contains(id))
+                {
+                    actions += action;
+                    actionIDs.Add(id);
+                }
+                else
+                {
+                    PLoger.LogWarning($"id：{id} 的方法试图重复加入监听!");
+                }
+            }
+
+        }
+
+        public void RemoveAction(UnityAction<T> action)
+        {
+            int id = action.GetHashCode();
+            lock (lockObj) // 保证线程安全
+            {
+                if (actionIDs.Contains(id))
+                {
+                    actions -= action;
+                    actionIDs.Remove(id);
+                }
+            }
+        }
+
+        public int GetActionCount => actionIDs.Count;
+
+        public void Invoke(T arg)
+        {
+            lock (lockObj) // 保证线程安全
+            {
+                actions?.Invoke(arg);
+            }
         }
     }
 
-    public void Invoke(EventArgBase arg)
+    /// <summary>
+    /// 事件中心
+    /// </summary>
+    public class EventCenter : BaseSingleton<EventCenter>
     {
-        actions?.Invoke(arg);
+        private Dictionary<int, object> eventDic = new Dictionary<int, object>();
+        private readonly object lockObj = new object(); // 用于同步的锁对象
+
+        /// <summary>
+        /// 添加事件
+        /// </summary>
+        /// <typeparam name="T">事件参数的类型</typeparam>
+        /// <param name="action">事件回调方法</param>
+        public void AddEventListener<T>(UnityAction<T> action) where T : EventArgBase
+        {
+            int id = typeof(T).GetHashCode();
+            lock (lockObj) // 保证线程安全
+            {
+                if (eventDic.ContainsKey(id))
+                {
+                    (eventDic[id] as PD_EventInfo<T>)?.AddAction(action);
+                }
+                else
+                {
+                    eventDic.Add(id, new PD_EventInfo<T>(action));
+                }
+            }
+        }
+
+        /// <summary>
+        /// 移除对应的事件监听
+        /// </summary>
+        /// <typeparam name="T">事件参数的类型</typeparam>
+        /// <param name="action">事件回调方法</param>
+        public void RemoveEventListener<T>(UnityAction<T> action) where T : EventArgBase
+        {
+            int id = typeof(T).GetHashCode();
+            if (eventDic.ContainsKey(id))
+            {
+                PD_EventInfo<T> temp = (eventDic[id] as PD_EventInfo<T>);
+                temp?.RemoveAction(action);
+                // 如果没有任何监听者，移除事件
+                //if (temp.GetActionCount == 0)
+                //{
+                //    eventDic.Remove(id);
+                //}
+            }
+        }
+
+        /// <summary>
+        /// 事件触发
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="arg"></param>
+        public void EventTrigger<T>(T arg) where T : EventArgBase
+        {
+            lock (lockObj) // 保证线程安全
+            {
+                int id = typeof(T).GetHashCode();
+                if (eventDic.ContainsKey(id))
+                {
+                    (eventDic[id] as PD_EventInfo<T>)?.Invoke(arg);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 清空事件中心 
+        /// </summary>
+        public void Clear()
+        {
+            lock (lockObj) // 保证线程安全
+            {
+                eventDic.Clear();
+            }
+        }
     }
 }
 
-/// <summary>
-/// 事件中心
-/// </summary>
-public class EventCenter : BaseSingleton<EventCenter>
-{
-    private Dictionary<int, PD_EventInfo> eventDic = new Dictionary<int, PD_EventInfo>();
-
-    /// <summary>
-    /// 添加事件
-    /// </summary>
-    /// <typeparam name="T">事件的参数类型</typeparam>
-    /// <param name="eventDefine">事件枚举</param>
-    /// <param name="action">事件</param>
-    public void AddEventListener<T>(UnityAction<EventArgBase> action) where T : EventArgBase
-    {
-        int id = typeof(T).GetHashCode();
-        if (eventDic.ContainsKey(id))
-        {
-            eventDic[id].AddAction(action);
-        }
-        else
-        {
-            eventDic.Add(id, new PD_EventInfo(action));
-        }
-    }
-
-    /// <summary>
-    /// 移除对应的事件监听
-    /// </summary>
-    /// <typeparam name="T">事件参数的类型</typeparam>
-    /// <param name="eventDefine">事件枚举</param>
-    /// <param name="action">事件</param>
-    public void RemoveEventListener<T>(UnityAction<EventArgBase> action) where T : EventArgBase
-    {
-        int id = typeof(T).GetHashCode();
-        if (eventDic.ContainsKey(id))
-        {
-            eventDic[id].RemoveAction(action);
-        }
-    }
-
-    /// <summary>
-    /// 事件触发
-    /// </summary>
-    /// <typeparam name="T">事件参数的类型</typeparam>
-    /// <param name="eventDefine">事件枚举</param>
-    /// <param name="info">事件参数</param>
-    public void EventTrigger(EventArgBase arg)
-    {
-        if (eventDic.ContainsKey(arg.EventID))
-        {
-            eventDic[arg.EventID].Invoke(arg);
-        }
-    }
-
-    /// <summary>
-    /// 清空事件中心 
-    /// </summary>
-    public void Clear()
-    {
-        eventDic.Clear();
-    }
-}

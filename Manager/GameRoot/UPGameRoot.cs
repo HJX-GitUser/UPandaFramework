@@ -23,7 +23,7 @@ namespace UPandaGF
         persistentDataPath
     }
 
-    public class UPGameRoot : BaseMonoSingletonAuto<UPGameRoot>
+    public class UPGameRoot : BaseMonoSingleton<UPGameRoot>
     {
         //[Header("资源加载方式")]
         public AssetLoaddingMethod method;
@@ -62,9 +62,8 @@ namespace UPandaGF
         {
             SetComponent();
         }
-        protected override void Awake()
+        protected override void Initialize()
         {
-            base.Awake();
             SetComponent();
 #if !UNITY_EDITOR
             method = AssetLoaddingMethod.Assetbundles;
@@ -120,7 +119,6 @@ namespace UPandaGF
 
         private T Load<T>(string filePath) where T : class
         {
-            //如果不存在这个文件 就直接返回泛型对象的默认值
             if (!File.Exists(filePath))
             {
                 return default(T);

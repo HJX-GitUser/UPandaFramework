@@ -11,7 +11,7 @@ using UPandaGF;
 /// <summary>
 /// AB°ü¸üÐÂ
 /// </summary>
-public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
+public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
 {
     private bool hasInit = false;
     /// <summary>
@@ -69,9 +69,8 @@ public class ABUpdataMgr : BaseMonoSingletonAuto<ABUpdataMgr>
 
 
 
-    protected override void Awake()
+    protected override void Initialize()
     {
-        base.Awake();
         if (!hasInit)
         {
             Init();
