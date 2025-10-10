@@ -229,17 +229,17 @@ namespace AssetBundleBrowser
                         m_UserData.m_OnToggles.Remove(m_ForceRebuild.content.text);
                     m_ForceRebuild.state = newState;
                 }
-                newState = GUILayout.Toggle(
-                    m_CopyToStreaming.state,
-                    m_CopyToStreaming.content);
-                if (newState != m_CopyToStreaming.state)
-                {
-                    if (newState)
-                        m_UserData.m_OnToggles.Add(m_CopyToStreaming.content.text);
-                    else
-                        m_UserData.m_OnToggles.Remove(m_CopyToStreaming.content.text);
-                    m_CopyToStreaming.state = newState;
-                }
+                //newState = GUILayout.Toggle(
+                //    m_CopyToStreaming.state,
+                //    m_CopyToStreaming.content);
+                //if (newState != m_CopyToStreaming.state)
+                //{
+                //    if (newState)
+                //        m_UserData.m_OnToggles.Add(m_CopyToStreaming.content.text);
+                //    else
+                //        m_UserData.m_OnToggles.Remove(m_CopyToStreaming.content.text);
+                //    m_CopyToStreaming.state = newState;
+                //}
             }
 
             // advanced options
