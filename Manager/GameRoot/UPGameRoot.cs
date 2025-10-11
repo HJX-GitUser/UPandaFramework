@@ -74,25 +74,25 @@ namespace UPandaGF
 #if !UNITY_EDITOR
             method = AssetLoaddingMethod.Assetbundles;
 #endif
-            if (method == AssetLoaddingMethod.Editor)
-            {
-                enableChecekOnStart = false;
-                aBRootPath = ABRootPath.streamingAssetsPath;
-            }
-            abUpdataMgr.localFilePath = LoadAssetPath;
-            abUpdataMgr.enableChecekOnStart = enableChecekOnStart;
-            switch (aBRootPath)
-            {
-                case ABRootPath.streamingAssetsPath:
-                    abLoadMgr.PathUrl = Application.streamingAssetsPath + "/" + LoadAssetPath;
-                    break;
-                case ABRootPath.persistentDataPath:
-                    abLoadMgr.PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;
-                    break;
-            }
-            abLoadMgr.MainName = MainName;
             debugerInit.Init(() =>
             {
+                abLoadMgr.MainName = MainName;
+                if (method == AssetLoaddingMethod.Editor)
+                {
+                    enableChecekOnStart = false;
+                    aBRootPath = ABRootPath.streamingAssetsPath;
+                }
+                abUpdataMgr.localFilePath = LoadAssetPath;
+                abUpdataMgr.enableChecekOnStart = enableChecekOnStart;
+                switch (aBRootPath)
+                {
+                    case ABRootPath.streamingAssetsPath:
+                        abLoadMgr.PathUrl = Application.streamingAssetsPath + "/" + LoadAssetPath;
+                        break;
+                    case ABRootPath.persistentDataPath:
+                        abLoadMgr.PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;
+                        break;
+                }
                 abUpdataMgr.Init();
                 abUpdataMgr.updataCompleteEvent += OnSourceInited;
                 abLoadMgr.Init();
@@ -101,6 +101,7 @@ namespace UPandaGF
                 sourcesLoadMgr.Init(method, arg, abLoadMgr, editorSourcesMgr);
                 abUpdataMgr.StartUpadateAssets();
             });
+          
         }
 
         private void SetComponent()

@@ -27,17 +27,12 @@ namespace UPandaGF
         IEnumerator LoadJsonDataAsync(string filePath, UnityAction callback)
         {
             string url = "file://" + Application.streamingAssetsPath + filePath;
-            Debug.Log(url);
-
             UnityWebRequest request = UnityWebRequest.Get(url);
             yield return request.SendWebRequest();
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                // 反序列化 JSON 数据
-                Debug.Log("反序列化 JSON 数据");
                 logConfig = JsonUtility.FromJson<LogConfig>(request.downloadHandler.text);
-                Debug.Log(logConfig.logHeadFix);
             }
             else
             {
