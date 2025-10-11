@@ -44,16 +44,12 @@ namespace UPandaGF
             if (PathUrl == null || PathUrl == "")
             {
                 PathUrl = Application.streamingAssetsPath + "/AB/PC/";
+                PLoger.Log("AB包加载路径：" + PathUrl);
             }
-            PLoger.Log("AB包加载路径：" + PathUrl);
             if (MainName == null || MainName == "")
             {
                 MainName = "PC";
                 PLoger.LogError("资源包主包名称未设置，默认为PC");
-            }
-            else
-            {
-                PLoger.Log("AB包主包名：" + MainName);
             }
         }
         /// <summary>

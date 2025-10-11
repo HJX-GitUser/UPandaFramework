@@ -1,7 +1,9 @@
+using AssetBundleBrowser;
+using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
-using UPandaGF;
+using UnityEngine.Events;
 
 namespace UPandaGF
 {
@@ -23,6 +25,7 @@ namespace UPandaGF
         persistentDataPath
     }
 
+
     public class UPGameRoot : BaseMonoSingleton<UPGameRoot>
     {
         //[Header("资源加载方式")]
@@ -38,18 +41,20 @@ namespace UPandaGF
         public bool enableChecekOnStart = false;
 
         private DebugerInit debugerInit;
+        private MonoMgr monoMgr;
         private ABUpdataMgr abUpdataMgr;
         private ABLoadMgr abLoadMgr;
-        private SourcesLoadMgr sourcesLoadMgr;
+        private SourcesLoad sourcesLoadMgr;
         private EditorSourcesMgr editorSourcesMgr;
 
         private BinaryDataMgrInit binaryDataMgr;
-
         /// <summary>
         /// 资源数据存储的位置
         /// </summary>
-        public string assetRefSavePath = "/AssetRefData/";
-
+        public string assetRefSavePath = "/Data/";
+        /// <summary>
+        /// 资源名
+        /// </summary>
         public string assetRefName = "assetData";
 
         /// <summary>
@@ -57,6 +62,8 @@ namespace UPandaGF
         /// </summary>
         public string assetRefextension = ".assetref";
 
+        //运行场景
+        public string firstScenePath;
 
         private void Reset()
         {
@@ -87,18 +94,21 @@ namespace UPandaGF
             abLoadMgr.MainName = MainName;
             debugerInit.Init();
             abUpdataMgr.Init();
+            abUpdataMgr.updataCompleteEvent += OnSourceInited;
             abLoadMgr.Init();
             string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
-            ABSourcesRef arg = Load<ABSourcesRef>(assetRefpath);
+            ABSourcesRelated arg = LoadABSourcesRelated(assetRefpath);
             sourcesLoadMgr.Init(method, arg, abLoadMgr, editorSourcesMgr);
+            abUpdataMgr.StartUpadateAssets();
         }
 
         private void SetComponent()
         {
             debugerInit = InitComponent<DebugerInit>();
+            monoMgr = InitComponent<MonoMgr>();
             abUpdataMgr = InitComponent<ABUpdataMgr>();
             abLoadMgr = InitComponent<ABLoadMgr>();
-            sourcesLoadMgr = InitComponent<SourcesLoadMgr>();
+            sourcesLoadMgr = InitComponent<SourcesLoad>();
             editorSourcesMgr = InitComponent<EditorSourcesMgr>();
             binaryDataMgr = InitComponent<BinaryDataMgrInit>();
         }
@@ -117,28 +127,30 @@ namespace UPandaGF
 
 
 
-        private T Load<T>(string filePath) where T : class
+        private ABSourcesRelated LoadABSourcesRelated(string filePath)
         {
             if (!File.Exists(filePath))
             {
-                return default(T);
+                return null;
             }
-            T obj = null;
+            ABSourcesRelated obj = null;
 
 
             byte[] bytes = File.ReadAllBytes(filePath);
-            //ToDo..这里可以根据规则做解密的工作
             using (MemoryStream ms = new MemoryStream(bytes))
             {
                 BinaryFormatter bf = new BinaryFormatter();
-                obj = bf.Deserialize(ms) as T;
+                obj = bf.Deserialize(ms) as ABSourcesRelated;
                 ms.Close();
             }
             return obj;
         }
 
+        private void OnSourceInited(bool state)
+        {
+            sourcesLoadMgr.LoadSceneAsync(firstScenePath);
+        }
     }
-
 }
 
 

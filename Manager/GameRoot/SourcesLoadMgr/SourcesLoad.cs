@@ -1,16 +1,21 @@
+using AssetBundleBrowser;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace UPandaGF
 {
-    public class SourcesLoadMgr : BaseMonoSingleton<SourcesLoadMgr>
+    /// <summary>
+    /// 资源加载封装
+    /// </summary>
+    public class SourcesLoad : BaseMonoSingleton<SourcesLoad>
     {
         private AssetLoaddingMethod method;
         private ABLoadMgr abLoadMgr;
         private EditorSourcesMgr editorSourcesMgr;
-        private ABSourcesRef sourceRef;
-        public void Init(AssetLoaddingMethod arg0, ABSourcesRef arg1, ABLoadMgr arg2, EditorSourcesMgr arg3)
+        private ABSourcesRelated sourceRef;
+        public void Init(AssetLoaddingMethod arg0, ABSourcesRelated arg1, ABLoadMgr arg2, EditorSourcesMgr arg3)
         {
             method = arg0;
             sourceRef = arg1;
@@ -37,7 +42,7 @@ namespace UPandaGF
                     callback?.Invoke(editorSourcesMgr.Load<T>(path));
                     break;
                 case AssetLoaddingMethod.Assetbundles:
-                    ABArg arg = sourceRef.sourcesDic[path];
+                    ABRelatedArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, callback);
                     break;
             }
@@ -63,17 +68,27 @@ namespace UPandaGF
                     callback?.Invoke(editorSourcesMgr.Load(path, type));
                     break;
                 case AssetLoaddingMethod.Assetbundles:
-                    ABArg arg = sourceRef.sourcesDic[path];
+                    ABRelatedArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, type, callback);
                     break;
             }
         }
 
+        /// <summary>
+        /// 场景加载
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="callback"></param>
         public void LoadSceneAsync(string path, UnityAction callback = null)
         {
             if (!sourceRef.sourcesDic.ContainsKey(path))
             {
                 PLoger.LogError("该资源不存在：" + path);
+                return;
+            }
+            if (path.Substring(path.LastIndexOf('/')).Length == 0)
+            {
+                PLoger.LogError($"路径异常：{path}");
                 return;
             }
             string sceneName = path.Substring(path.LastIndexOf('/') + 1);
@@ -84,7 +99,7 @@ namespace UPandaGF
                     SceneMgr.Instance.LoadSceneAsyn(sceneName, callback);
                     break;
                 case AssetLoaddingMethod.Assetbundles:
-                    ABArg arg = sourceRef.sourcesDic[path];
+                    ABRelatedArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.LoadSceneResAsync(arg.packageName, arg.sourceName, () =>
                     {
                         SceneMgr.Instance.LoadSceneAsyn(sceneName, callback);
@@ -93,6 +108,11 @@ namespace UPandaGF
             }
         }
 
+        /// <summary>
+        /// 资源卸载
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public bool UnLoadAB(string path)
         {
             if (!sourceRef.sourcesDic.ContainsKey(path))
@@ -103,7 +123,7 @@ namespace UPandaGF
             bool isUnload = false;
             if (method == AssetLoaddingMethod.Assetbundles)
             {
-                ABArg arg = sourceRef.sourcesDic[path];
+                ABRelatedArg arg = sourceRef.sourcesDic[path];
                 isUnload = abLoadMgr.UnLoadAB(arg.sourceName);
             }
             else
@@ -113,40 +133,49 @@ namespace UPandaGF
             return isUnload;
         }
 
-
-
-    }
-    /// <summary>
-    /// AB资源信息
-    /// </summary>
-    [System.Serializable]
-    public class ABSourcesRef
-    {
         /// <summary>
-        /// key是编辑器里的路径
+        /// 清空AB资源
         /// </summary>
-        public Dictionary<string, ABArg> sourcesDic = new Dictionary<string, ABArg>();
-    }
-
-    /// <summary>
-    /// AB数据
-    /// </summary>
-    [System.Serializable]
-    public class ABArg
-    {
-        /// <summary>
-        /// AB包名
-        /// </summary>
-        public string packageName;
-        /// <summary>
-        /// 资源名
-        /// </summary>
-        public string sourceName;
-        public ABArg(string arg0, string arg1)
+        /// <returns></returns>
+        public void ClearAB()
         {
-            packageName = arg0;
-            sourceName = arg1;
+            if (method == AssetLoaddingMethod.Assetbundles)
+            {
+                abLoadMgr.ClearAB();
+            }
         }
     }
+    ///// <summary>
+    ///// AB资源信息
+    ///// </summary>
+    //[System.Serializable]
+    //public class ABSourcesRef
+    //{
+    //    /// <summary>
+    //    /// key是编辑器里的路径
+    //    /// </summary>
+    //    public Dictionary<string, ABArg> sourcesDic = new Dictionary<string, ABArg>();
+    //}
+
+    ///// <summary>
+    ///// AB数据
+    ///// </summary>
+    //[System.Serializable]
+    //public class ABArg
+    //{
+    //    /// <summary>
+    //    /// AB包名
+    //    /// </summary>
+    //    public string packageName;
+    //    /// <summary>
+    //    /// 资源名
+    //    /// </summary>
+    //    public string sourceName;
+    //    public ABArg(string arg0, string arg1)
+    //    {
+    //        packageName = arg0;
+    //        sourceName = arg1;
+    //    }
+    //}
 }
 

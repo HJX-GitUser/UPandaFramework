@@ -34,7 +34,7 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
     public bool enableChecekOnStart = false;
 
     /// <summary>
-    /// 下载地址，自行修改。这里是自己搭建的一个测试的ftp服务器
+    /// 下载地址，自行修改。这里是测试搭建的一个测试的ftp服务器
     /// </summary>
     [Header("FTP Server Config")]
     public string DownLoadURL = "ftp://127.0.0.1/AB/PC/";
@@ -65,7 +65,7 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
     private int downLoadOverNum = 0;
 
     public UnityAction<string> updataMessage;//更新信息事件
-    public UnityAction updataSuccessEvent;//更新信息事件
+    public UnityAction<bool> updataCompleteEvent;//更新信息事件
 
 
 
@@ -89,23 +89,23 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
         }
         abCompareInfoLocalPath = localFilePath + remoteFile + ".txt";
         abCompare_Tmp_InfoLocalPath = localFilePath + remoteFile + "_TMP.txt";
-        StartUpadateAssets();
     }
-    private void StartUpadateAssets()
+    public void StartUpadateAssets()
     {
         if (enableChecekOnStart)
         {
+            PLoger.Log("启动资源更新检查");
             CheckUpdata((arg) =>
             {
                 if (arg)
                 {
                     PLoger.Log("资源更新完成");
-                    updataSuccessEvent?.Invoke();
                 }
                 else
                 {
                     PLoger.Log("资源更新失败");
                 }
+                updataCompleteEvent?.Invoke(arg);
             },
            (arg1) =>
            {
@@ -115,7 +115,7 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
         else
         {
             PLoger.Log("不启动资源更新");
-            updataSuccessEvent?.Invoke();
+            updataCompleteEvent?.Invoke(false);
         }
     }
 
@@ -134,10 +134,10 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
         //1.加载远端资源对比文件
         DownLoadABComparteFile((isOver) =>
         {
-            updataInfoCallBack("开始更新资源*1");
+            updataInfoCallBack("对比文件下载结束*1");
             if (isOver)
             {
-                updataInfoCallBack("对比文件下载结束*2");
+                updataInfoCallBack("开始更新资源*2");
                 string remoteInfo = File.ReadAllText(abCompare_Tmp_InfoLocalPath);//获取远端对比信息
                 updataInfoCallBack("解析远端对比文件*3");
                 AnalysisABCompareFileInfo(remoteInfo, remoteABInfo);
@@ -267,6 +267,7 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
         bool isOver = false; //下载是否成功
         //重新下载次数
         int ReDownTimes = reDownTimes;
+        if (ReDownTimes <= 0) ReDownTimes = 1;
         while (!isOver && ReDownTimes > 0)
         {
             await System.Threading.Tasks.Task.Run(() =>
@@ -276,7 +277,7 @@ public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
             if (!isOver)
             {
                 --ReDownTimes;
-                PLoger.LogError($"对比文件下载失败，重新加载：{ReDownTimes}");
+                PLoger.LogError($"对比文件下载失败，剩余加载次数：{ReDownTimes}");
             }
         }
         //告诉外部成功与否
