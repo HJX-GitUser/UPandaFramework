@@ -7,8 +7,8 @@ namespace UPandaGF
     /// <summary>
     /// 日志系统配置
     /// </summary>
-    [CreateAssetMenu(fileName = "日志系统配置", menuName = "UPanda/Create DebugConfig", order = 0)]
-    public class LogConfig : ScriptableObject
+    [Serializable]
+    public class LogConfig
     {
         [Header("是否打开日志系统")]
         public bool openLog = true;

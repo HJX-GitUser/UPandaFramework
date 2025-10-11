@@ -91,14 +91,16 @@ namespace UPandaGF
                     break;
             }
             abLoadMgr.MainName = MainName;
-            debugerInit.Init();
-            abUpdataMgr.Init();
-            abUpdataMgr.updataCompleteEvent += OnSourceInited;
-            abLoadMgr.Init();
-            string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
-            ABSourcesRelated arg = LoadABSourcesRelated(assetRefpath);
-            sourcesLoadMgr.Init(method, arg, abLoadMgr, editorSourcesMgr);
-            abUpdataMgr.StartUpadateAssets();
+            debugerInit.Init(() =>
+            {
+                abUpdataMgr.Init();
+                abUpdataMgr.updataCompleteEvent += OnSourceInited;
+                abLoadMgr.Init();
+                string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
+                ABSourcesRelated arg = LoadABSourcesRelated(assetRefpath);
+                sourcesLoadMgr.Init(method, arg, abLoadMgr, editorSourcesMgr);
+                abUpdataMgr.StartUpadateAssets();
+            });
         }
 
         private void SetComponent()
