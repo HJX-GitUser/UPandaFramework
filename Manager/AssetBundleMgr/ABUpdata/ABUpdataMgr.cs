@@ -122,7 +122,7 @@ namespace UPandaGF
         /// <summary>
         /// 用于检测热更新的函数
         /// </summary>
-        /// <param name="overCallBack">更新结束的回调，参数是是否成功</param>
+        /// <param name="overCallBack">更新结束的回调，参数为false表示更新失败</param>
         /// <param name="updataInfoCallBack">更新信息的回调，期间的所有更新消息都发出去，更新步骤共10步，第9步开始更新资源</param>
         public void CheckUpdata(UnityAction<bool> overCallBack, UnityAction<string> updataInfoCallBack)
         {

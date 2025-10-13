@@ -164,7 +164,6 @@ namespace AssetBundleBrowser
         private void OnGUI()
         {
             ModeToggle();
-
             switch (m_Mode)
             {
                 case Mode.Builder:

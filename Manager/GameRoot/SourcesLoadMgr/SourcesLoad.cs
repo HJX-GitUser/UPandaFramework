@@ -33,7 +33,7 @@ namespace UPandaGF
         {
             if (!sourceRef.sourcesDic.ContainsKey(path))
             {
-                PLoger.LogError("该资源不存在：" + path);
+                PLoger.LogError("该资源不存在：" + path + "\n请检查资源关联数据是否更新");
                 return;
             }
 

@@ -68,12 +68,14 @@ internal class UpLoadABEditor
 
         if (GUILayout.Button("复制资源到StreamingAssets"))
         {
-            string savePath = EditorUtility.OpenFolderPanel("复制路径选择", Application.streamingAssetsPath, string.Empty);
-            if (!string.IsNullOrEmpty(savePath))
+            //string savePath = EditorUtility.OpenFolderPanel("复制路径选择", Application.streamingAssetsPath, string.Empty);
+            string savePath = Config.LocalABPath.Substring(Config.LocalABPath.IndexOf("Assets") + "Assets".Length);
+            savePath = Application.streamingAssetsPath + savePath;
+            if (!Directory.Exists(savePath))
             {
-                MoveABToStreamingAssets(savePath);
+                Directory.CreateDirectory(savePath);
             }
-
+            MoveABToStreamingAssets(savePath);
         }
 
         EditorGUILayout.Space(10);
@@ -139,6 +141,7 @@ internal class UpLoadABEditor
     public void ResetPathToDefault()
     {
         Config = new UpLoadABEditorConfig();
+        Debug.Log("已重置");
         SaveData();
     }
 
