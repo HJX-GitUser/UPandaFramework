@@ -87,6 +87,7 @@ namespace UPandaGF
 
         private IEnumerator Init()
         {
+            Debug.Log("∆Ù∂Ø≥ı ºªØ");
             yield return StartCoroutine(debugerInit.Init());
             if (method == AssetLoaddingMethod.Editor)
             {

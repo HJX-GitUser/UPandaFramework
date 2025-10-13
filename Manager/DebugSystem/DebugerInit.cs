@@ -10,12 +10,13 @@ namespace UPandaGF
     public class DebugerInit : MonoBehaviour
     {
         private string configPath = "/Data/";
-        private string fileNmae = "LogConfig.json";
+        private string fileName = "LogConfig.json";
         public LogConfig logConfig;
         public IEnumerator Init()
         {
-            string filePath = Path.Combine(configPath, fileNmae);
-            string url = "file://" + Application.streamingAssetsPath + filePath;
+            string filePath = Path.Combine(configPath, fileName);
+            string url = SourcesLoad.GetStreamingAssetsPath(filePath);
+            Debug.Log(url);
             UnityWebRequest request = UnityWebRequest.Get(url);
             yield return request.SendWebRequest();
 

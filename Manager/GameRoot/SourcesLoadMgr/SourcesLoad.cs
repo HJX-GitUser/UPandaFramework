@@ -1,7 +1,9 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Networking;
 
 namespace UPandaGF
 {
@@ -145,38 +147,106 @@ namespace UPandaGF
                 abLoadMgr.ClearAB();
             }
         }
-    }
-    ///// <summary>
-    ///// AB资源信息
-    ///// </summary>
-    //[System.Serializable]
-    //public class ABSourcesRef
-    //{
-    //    /// <summary>
-    //    /// key是编辑器里的路径
-    //    /// </summary>
-    //    public Dictionary<string, ABArg> sourcesDic = new Dictionary<string, ABArg>();
-    //}
 
-    ///// <summary>
-    ///// AB数据
-    ///// </summary>
-    //[System.Serializable]
-    //public class ABArg
-    //{
-    //    /// <summary>
-    //    /// AB包名
-    //    /// </summary>
-    //    public string packageName;
-    //    /// <summary>
-    //    /// 资源名
-    //    /// </summary>
-    //    public string sourceName;
-    //    public ABArg(string arg0, string arg1)
-    //    {
-    //        packageName = arg0;
-    //        sourceName = arg1;
-    //    }
-    //}
+
+        /// <summary>
+        /// 获取StreamingAssets的路径（适用于所有平台）
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static string GetStreamingAssetsPath(string fileName)
+        {
+            string path = "";
+
+            // 判断平台类型，获取对应的路径
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                // Android平台上，StreamingAssets路径是通过jar包访问的
+                path = "jar:file://" + Application.dataPath + "!/assets/" + fileName;
+            }
+            else if (Application.platform == RuntimePlatform.IPhonePlayer)
+            {
+                // iOS平台，StreamingAssets在应用包的根目录
+                path = "file://" + Path.Combine(Application.dataPath, "Raw") + "/" + fileName;
+            }
+            else
+            {
+                // 其他平台（Windows, Mac, Linux, WebGL等），可以直接使用Application.streamingAssetsPath
+                path = Application.streamingAssetsPath + "/" +fileName;
+            }
+
+#if UNITY_EDITOR
+            path = Application.streamingAssetsPath + "/" + fileName;
+#endif
+            return path;
+        }
+
+        // 加载文件内容
+        public static string LoadTextFile(string fileName)
+        {
+            string path = GetStreamingAssetsPath(fileName);
+
+            // 判断平台是否是Android
+            if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                return LoadTextFileFromWebRequest(path);
+            }
+            else
+            {
+                // 其他平台，直接读取文件
+                return File.ReadAllText(path);
+            }
+        }
+
+        private static string LoadTextFileFromWebRequest(string path)
+        {
+            using (var request = UnityWebRequest.Get(path))
+            {
+                request.SendWebRequest();
+
+                while (!request.isDone)
+                {
+                    // 等待文件加载完成
+                }
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    return request.downloadHandler.text;
+                }
+                else
+                {
+                    Debug.LogError("Failed to load file from Android StreamingAssets: " + request.error);
+                    return null;
+                }
+            }
+        }
+
+        // 加载文件内容 异步
+        public IEnumerator LoadTextFileAsync(string fileName, UnityAction<string> callback)
+        {
+            string path = GetStreamingAssetsPath(fileName);
+            yield return StartCoroutine(LoadTextFileFromAsync(fileName, callback));
+        }
+        //加载文本文件
+        private IEnumerator LoadTextFileFromAsync(string path, UnityAction<string> callback)
+        {
+            using (UnityWebRequest request = UnityWebRequest.Get(path))
+            {
+                request.SendWebRequest();
+
+                yield return request;
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    callback?.Invoke(request.downloadHandler.text);
+                }
+                else
+                {
+                    Debug.LogError("Failed to load file from WebGL StreamingAssets: " + request.error);
+                    callback?.Invoke(null);
+                }
+            }
+        }
+    }
 }
 
