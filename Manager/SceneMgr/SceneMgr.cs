@@ -29,7 +29,7 @@ public class SceneMgr : BaseSingleton<SceneMgr>
     /// <param name="Callback"></param>
     public void LoadSceneAsyn(string sceneName, UnityAction Callback = null)
     {
-        MonoMgr.Instance.StartCoroutine(ReallyLoadSceneAsyn(sceneName, Callback));
+        PublicMono.Instance.StartCoroutine(ReallyLoadSceneAsyn(sceneName, Callback));
     }
     private IEnumerator ReallyLoadSceneAsyn(string sceneName, UnityAction Callback = null)
     {

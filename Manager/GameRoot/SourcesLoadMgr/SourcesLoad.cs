@@ -13,13 +13,15 @@ namespace UPandaGF
         private AssetLoaddingMethod method;
         private ABLoadMgr abLoadMgr;
         private EditorSourcesMgr editorSourcesMgr;
+        private SceneMgr sceneMgr;
         private ABSourcesRelated sourceRef;
-        public void Init(AssetLoaddingMethod arg0, ABSourcesRelated arg1, ABLoadMgr arg2, EditorSourcesMgr arg3)
+        public void Init(AssetLoaddingMethod arg0, ABSourcesRelated arg1, ABLoadMgr arg2)
         {
             method = arg0;
             sourceRef = arg1;
             abLoadMgr = arg2;
-            editorSourcesMgr = arg3;
+            editorSourcesMgr = EditorSourcesMgr.Instance;
+            sceneMgr = SceneMgr.Instance;
         }
         /// <summary>
         /// 加载资源 泛型
@@ -95,13 +97,13 @@ namespace UPandaGF
             switch (method)
             {
                 case AssetLoaddingMethod.Editor:
-                    SceneMgr.Instance.LoadSceneAsyn(sceneName, callback);
+                    sceneMgr.LoadSceneAsyn(sceneName, callback);
                     break;
                 case AssetLoaddingMethod.Assetbundles:
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.LoadSceneResAsync(arg.packageName, arg.sourceName, () =>
                     {
-                        SceneMgr.Instance.LoadSceneAsyn(sceneName, callback);
+                        sceneMgr.LoadSceneAsyn(sceneName, callback);
                     });
                     break;
             }

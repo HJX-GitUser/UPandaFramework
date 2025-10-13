@@ -10,7 +10,7 @@ using UPandaGF;
 namespace AssetBundleBrowser
 {
     [System.Serializable]
-    internal class AssetBundleBuildTab
+    public class AssetBundleBuildTab
     {
         const string k_BuildPrefPrefix = "ABBBuild:";
 
@@ -371,20 +371,20 @@ namespace AssetBundleBrowser
         /// <summary>
         /// 资源数据存储的位置
         /// </summary>
-        private string assetRefSavePath = "/Data/";
+        private static string assetRefSavePath = "/Data/";
         /// <summary>
         /// 资源名
         /// </summary>
-        private string assetRefName = "assetData";
+        private static string assetRefName = "assetData";
 
         /// <summary>
         /// 资源数据存储文件后缀
         /// </summary>
-        private string assetRefextension = ".assetref";
+        private static string assetRefextension = ".assetref";
         /// <summary>
         /// 遍历项目目录，生成AB资源关联数据
         /// </summary>
-        private void GenerateAssetBundleInfo()
+        public static void GenerateAssetBundleInfo()
         {
             // 获取所有的资源路径
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
@@ -413,7 +413,7 @@ namespace AssetBundleBrowser
             AssetDatabase.Refresh();
         }
 
-        public void Save(object obj)
+        public static void Save(object obj)
         {
             string SAVE_PATH = Application.streamingAssetsPath + assetRefSavePath;
             //先判断路径文件夹有没有
@@ -480,7 +480,7 @@ namespace AssetBundleBrowser
         private void ResetPathToDefault()
         {
             m_UserData.m_UseDefaultPath = true;
-            m_UserData.m_OutputPath = "AssetBundles/";
+            m_UserData.m_OutputPath = "Assets/AssetBundles/";
             m_UserData.m_OutputPath += m_UserData.m_BuildTarget.ToString();
             //EditorUserBuildSettings.SetPlatformSettings(EditorUserBuildSettings.activeBuildTarget.ToString(), "AssetBundleOutputPath", m_OutputPath);
         }

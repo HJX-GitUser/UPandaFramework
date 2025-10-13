@@ -10,7 +10,7 @@ using UnityEngine.Events;
 ///2.利用协同程序处理逻辑
 ///3.可以统一执行管理帧更新或定时更新相关逻辑
 /// </summary>
-public class MonoMgr : BaseMonoSingleton<MonoMgr>
+public class PublicMono : BaseMonoSingleton<PublicMono>
 {
     private event UnityAction updateEvent;
     private event UnityAction fixedUpdatteEvent;
@@ -33,7 +33,7 @@ public class MonoMgr : BaseMonoSingleton<MonoMgr>
     }
 
     /// <summary>
-    /// 提供给外部添加帧更新事件的方法
+    /// 添加帧更新事件
     /// </summary>
     /// <param name="fun"></param>
     public void AddUpdateListener(UnityAction fun)
@@ -41,7 +41,7 @@ public class MonoMgr : BaseMonoSingleton<MonoMgr>
         updateEvent += fun;
     }
     /// <summary>
-    /// 提供给外部 用于移除帧更新事件函数
+    /// 移除帧更新事件
     /// </summary>
     /// <param name="fun"></param>
     public void RemoveUpdateListener(UnityAction fun)

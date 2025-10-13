@@ -10,22 +10,11 @@ namespace UPandaGF
     public class DebugerInit : MonoBehaviour
     {
         private string configPath = "/Data/";
-        private string fileNmae = "Ploger.json";
+        private string fileNmae = "LogConfig.json";
         public LogConfig logConfig;
-        public void Init(UnityAction callback)
+        public IEnumerator Init()
         {
-            string p = Path.Combine(configPath, fileNmae);
-            LoadJson(p, callback);
-        }
-
-
-        private void LoadJson(string filePath, UnityAction callback)
-        {
-            StartCoroutine(LoadJsonDataAsync(filePath, callback));
-        }
-
-        IEnumerator LoadJsonDataAsync(string filePath, UnityAction callback)
-        {
+            string filePath = Path.Combine(configPath, fileNmae);
             string url = "file://" + Application.streamingAssetsPath + filePath;
             UnityWebRequest request = UnityWebRequest.Get(url);
             yield return request.SendWebRequest();
@@ -39,7 +28,6 @@ namespace UPandaGF
                 Debug.LogError("Failed to load debugConfig!  " + request.error);
             }
             PLoger.InitLog(logConfig);
-            callback?.Invoke();
         }
     }
 }

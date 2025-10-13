@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
@@ -27,42 +28,46 @@ namespace UPandaGF
 
     public class UPGameRoot : BaseMonoSingleton<UPGameRoot>
     {
+        #region Component
+        private DebugerInit debugerInit;
+        private PublicMono monoMgr;
+        private ABUpdataMgr abUpdataMgr;
+        private ABLoadMgr abLoadMgr;
+        private SourcesLoad sourcesLoadMgr;
+        private BinaryDataMgrInit binaryDataMgr;
+        #endregion
+
+        #region Config
         //[Header("资源加载方式")]
         public AssetLoaddingMethod method;
         //[Header("资源加载根路径")]
         public ABRootPath aBRootPath;
         //[Header("资源路径")]
-        public string LoadAssetPath = "AB/PC/";
+        public string LoadAssetPath = "AssetBundles/StandaloneWindows/";
         //[Header("主包名")]
-        public string MainName = "PC";
+        public string MainName = "StandaloneWindows";
 
-        //[Header("启动时检查资源更新")]
-        public bool enableChecekOnStart = false;
-
-        private DebugerInit debugerInit;
-        private MonoMgr monoMgr;
-        private ABUpdataMgr abUpdataMgr;
-        private ABLoadMgr abLoadMgr;
-        private SourcesLoad sourcesLoadMgr;
-        private EditorSourcesMgr editorSourcesMgr;
-
-        private BinaryDataMgrInit binaryDataMgr;
         /// <summary>
-        /// 资源数据存储的位置
+        /// 资源远端更新配置
+        /// </summary>
+        public ABUpdataMgrArg assetUpdataConfig;
+        /// <summary>
+        /// 资源关联数据存储的位置
         /// </summary>
         public string assetRefSavePath = "/Data/";
         /// <summary>
-        /// 资源名
+        /// 资源关联数据文件名
         /// </summary>
         public string assetRefName = "assetData";
-
         /// <summary>
-        /// 资源数据存储文件后缀
+        /// 资源关联存储文件后缀
         /// </summary>
         public string assetRefextension = ".assetref";
 
-        //运行场景
-        public string firstScenePath;
+        //初始加载场景
+        public string firstScenePath = "Assets/Scenes/InitScene.unity";
+
+        #endregion
 
         private void Reset()
         {
@@ -72,46 +77,50 @@ namespace UPandaGF
         {
             SetComponent();
 #if !UNITY_EDITOR
-            method = AssetLoaddingMethod.Assetbundles;
-#endif
-            debugerInit.Init(() =>
+            if (method == AssetLoaddingMethod.Editor)
             {
-                abLoadMgr.MainName = MainName;
-                if (method == AssetLoaddingMethod.Editor)
-                {
-                    enableChecekOnStart = false;
-                    aBRootPath = ABRootPath.streamingAssetsPath;
-                }
-                abUpdataMgr.localFilePath = LoadAssetPath;
-                abUpdataMgr.enableChecekOnStart = enableChecekOnStart;
-                switch (aBRootPath)
-                {
-                    case ABRootPath.streamingAssetsPath:
-                        abLoadMgr.PathUrl = Application.streamingAssetsPath + "/" + LoadAssetPath;
-                        break;
-                    case ABRootPath.persistentDataPath:
-                        abLoadMgr.PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;
-                        break;
-                }
-                abUpdataMgr.Init();
-                abUpdataMgr.updataCompleteEvent += OnSourceInited;
-                abLoadMgr.Init();
-                string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
-                ABSourcesRelated arg = LoadABSourcesRelated(assetRefpath);
-                sourcesLoadMgr.Init(method, arg, abLoadMgr, editorSourcesMgr);
-                abUpdataMgr.StartUpadateAssets();
-            });
-          
+                method = AssetLoaddingMethod.Assetbundles;
+            }
+#endif
+            StartCoroutine(Init());
+        }
+
+        private IEnumerator Init()
+        {
+            yield return StartCoroutine(debugerInit.Init());
+            if (method == AssetLoaddingMethod.Editor)
+            {
+                aBRootPath = ABRootPath.streamingAssetsPath;
+            }
+            abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);
+            switch (aBRootPath)
+            {
+                case ABRootPath.streamingAssetsPath:
+                    abLoadMgr.PathUrl = Application.streamingAssetsPath + "/" + LoadAssetPath;
+                    break;
+                case ABRootPath.persistentDataPath:
+                    abLoadMgr.PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;
+                    yield return StartCoroutine(abUpdataMgr.StartUpadateAssets());
+                    break;
+            }
+            abLoadMgr.MainName = MainName;
+            abLoadMgr.Init();
+
+            //资源关联数据
+            string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
+            ABSourcesRelated arg = LoadABSourcesRelated(assetRefpath);
+
+            sourcesLoadMgr.Init(method, arg, abLoadMgr);
+            OnSourceInited();
         }
 
         private void SetComponent()
         {
+            monoMgr = InitComponent<PublicMono>();
             debugerInit = InitComponent<DebugerInit>();
-            monoMgr = InitComponent<MonoMgr>();
             abUpdataMgr = InitComponent<ABUpdataMgr>();
             abLoadMgr = InitComponent<ABLoadMgr>();
             sourcesLoadMgr = InitComponent<SourcesLoad>();
-            editorSourcesMgr = InitComponent<EditorSourcesMgr>();
             binaryDataMgr = InitComponent<BinaryDataMgrInit>();
         }
 
@@ -148,8 +157,9 @@ namespace UPandaGF
             return obj;
         }
 
-        private void OnSourceInited(bool state)
+        private void OnSourceInited()
         {
+            PLoger.Log($"场景加载： {firstScenePath}");
             sourcesLoadMgr.LoadSceneAsync(firstScenePath);
         }
     }

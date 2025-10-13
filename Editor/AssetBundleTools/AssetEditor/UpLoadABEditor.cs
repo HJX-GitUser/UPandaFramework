@@ -387,9 +387,9 @@ internal class UpLoadABEditor
 public class UpLoadABEditorConfig
 {
     //[Tooltip("上传AB包地址")]
-    public string UpABURL = "ftp://127.0.0.1/AB/PC/";
+    public string UpABURL = "ftp://127.0.0.1/AssetBundles/StandaloneWindows/";
     //本地AB包路径
-    public string LocalABPath = "Assets/AssetBundles/PC";
+    public string LocalABPath = "Assets/AssetBundles/StandaloneWindows";
     //FTP通信凭证
     //ftp用户名
     public string Ftp_UserName = "Admin";

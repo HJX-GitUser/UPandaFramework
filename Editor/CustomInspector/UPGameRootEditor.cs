@@ -13,18 +13,17 @@ namespace UPandaGF
     public class UPGameRootEditor : Editor
     {
         UPGameRoot component;
-        string firstScenePath = "Assets/Scenes/firstScene.unity";
         private void OnEnable()
         {
             component = (UPGameRoot)target;
-            firstScenePath = EditorPrefs.GetString("UPGameRootEditor_firstScenePath", firstScenePath);
         }
         public override void OnInspectorGUI()
         {
             //base.OnInspectorGUI();
+            serializedObject.Update();
             EditorGUILayout.LabelField("UPGameRoot", EditorStyles.boldLabel);
             EditorGUILayout.Space();
-            component.method = (AssetLoaddingMethod)EditorGUILayout.EnumPopup("资源加载方式", component.method);
+            ShowArg("method", "资源加载方式");
             switch (component.method)
             {
                 case AssetLoaddingMethod.Editor:
@@ -35,30 +34,38 @@ namespace UPandaGF
                     break;
             }
             EditorGUILayout.Space(10);
-            firstScenePath = EditorGUILayout.TextField("加载场景", firstScenePath);
-            if (component.firstScenePath != firstScenePath)
-            {
-                Debug.Log(firstScenePath);
-                component.firstScenePath = firstScenePath;
-                EditorPrefs.SetString("UPGameRootEditor_firstScenePath", firstScenePath);
-            }
+            ShowArg("firstScenePath", "加载场景路径");
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void AssetEditorGUI()
         {
-
+            EditorGUILayout.Space();
+            EditorGUILayout.HelpBox("把资源添加到AssetBundle后，需要更新资源关联数据才能加载", MessageType.Info);
+            if (GUILayout.Button("更新资源关联数据"))
+            {
+                AssetBundleBuildTab.GenerateAssetBundleInfo();
+            }
+            EditorGUILayout.Space();
         }
 
         private void AssetbundlesEditorGUI()
         {
-            component.aBRootPath = (ABRootPath)EditorGUILayout.EnumPopup("根路径", component.aBRootPath);
+            ShowArg("aBRootPath", "根路径");
             if (component.aBRootPath == ABRootPath.persistentDataPath)
             {
-                component.enableChecekOnStart = EditorGUILayout.ToggleLeft("启动时检查资源更新", component.enableChecekOnStart);
+                ShowArg("assetUpdataConfig", "资源更新配置");
                 EditorGUILayout.Space();
             }
-            component.LoadAssetPath = EditorGUILayout.TextField("资源路径", component.LoadAssetPath);
-            component.MainName = EditorGUILayout.TextField("主包名", component.MainName);
+            ShowArg("LoadAssetPath", "资源路径");
+            ShowArg("MainName", "主包名");
+        }
+
+
+        private void ShowArg(string argName,string inspectName)
+        {
+            SerializedProperty arg = serializedObject.FindProperty(argName);
+            EditorGUILayout.PropertyField(arg, new GUIContent(inspectName));
         }
     }
 }

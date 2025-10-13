@@ -22,7 +22,7 @@ public class DebugerInitEditor : Editor
             {
                 Directory.CreateDirectory(savePath);
             }
-            savePath += "Ploger.json";
+            savePath += "LogConfig.json";
             File.WriteAllText(savePath, data);
             Debug.Log("日志配置已保存：" + savePath);
             AssetDatabase.Refresh();

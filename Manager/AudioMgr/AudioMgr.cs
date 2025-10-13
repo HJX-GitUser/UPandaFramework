@@ -20,7 +20,7 @@ public class AudioMgr : BaseSingleton<AudioMgr>
     private float soundValue = 1;
     public AudioMgr()
     {
-        MonoMgr.Instance.AddUpdateListener(Update);
+        PublicMono.Instance.AddUpdateListener(Update);
     }
     private void Update()
     {

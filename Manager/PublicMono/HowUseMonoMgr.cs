@@ -11,11 +11,11 @@ public class HowUseMonoMgr
     /// </summary>
     public void EnableMyUpdate()
     {
-        MonoMgr.Instance.AddUpdateListener(MyUpdate);
+        PublicMono.Instance.AddUpdateListener(MyUpdate);
     }
     public void DisableMyUpdate()
     {
-        MonoMgr.Instance.RemoveUpdateListener(MyUpdate);
+        PublicMono.Instance.RemoveUpdateListener(MyUpdate);
     }
 
     private void MyUpdate()
@@ -27,7 +27,7 @@ public class HowUseMonoMgr
     /// </summary>
     public void StartMyIEnumerator()
     {
-        MonoMgr.Instance.StartCoroutine(SelfIEnumerator());
+        PublicMono.Instance.StartCoroutine(SelfIEnumerator());
     }
 
     private IEnumerator SelfIEnumerator()
