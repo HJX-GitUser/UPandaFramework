@@ -27,7 +27,8 @@ namespace UPandaGF
             switch (component.method)
             {
                 case AssetLoaddingMethod.Editor:
-                    AssetEditorGUI();
+                    //AssetEditorGUI();
+                    EditorGUILayout.Space();
                     break;
                 case AssetLoaddingMethod.Assetbundles:
                     AssetbundlesEditorGUI();

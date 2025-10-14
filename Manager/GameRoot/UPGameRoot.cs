@@ -51,18 +51,7 @@ namespace UPandaGF
         /// 资源远端更新配置
         /// </summary>
         public ABUpdataMgrArg assetUpdataConfig;
-        /// <summary>
-        /// 资源关联数据存储的位置
-        /// </summary>
-        public string assetRefSavePath = "/Data/";
-        /// <summary>
-        /// 资源关联数据文件名
-        /// </summary>
-        public string assetRefName = "assetData";
-        /// <summary>
-        /// 资源关联存储文件后缀
-        /// </summary>
-        public string assetRefextension = ".assetref";
+       
 
         //初始加载场景
         public string firstScenePath = "Assets/Scenes/InitScene.unity";
@@ -80,6 +69,7 @@ namespace UPandaGF
             if (method == AssetLoaddingMethod.Editor)
             {
                 method = AssetLoaddingMethod.Assetbundles;
+                aBRootPath = ABRootPath.streamingAssetsPath;
             }
 #endif
             StartCoroutine(Init());
@@ -87,12 +77,7 @@ namespace UPandaGF
 
         private IEnumerator Init()
         {
-            Debug.Log("启动初始化");
             yield return StartCoroutine(debugerInit.Init());
-            if (method == AssetLoaddingMethod.Editor)
-            {
-                aBRootPath = ABRootPath.streamingAssetsPath;
-            }
             abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);
             switch (aBRootPath)
             {
@@ -106,12 +91,7 @@ namespace UPandaGF
             }
             abLoadMgr.MainName = MainName;
             abLoadMgr.Init();
-
-            //资源关联数据
-            string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
-            ABSourcesRelated arg = LoadABSourcesRelated(assetRefpath);
-
-            sourcesLoadMgr.Init(method, arg, abLoadMgr);
+            sourcesLoadMgr.Init(method, abLoadMgr);
             OnSourceInited();
         }
 
@@ -135,27 +115,6 @@ namespace UPandaGF
                 component = obj.AddComponent<T>();
             }
             return component;
-        }
-
-
-
-        private ABSourcesRelated LoadABSourcesRelated(string filePath)
-        {
-            if (!File.Exists(filePath))
-            {
-                return null;
-            }
-            ABSourcesRelated obj = null;
-
-
-            byte[] bytes = File.ReadAllBytes(filePath);
-            using (MemoryStream ms = new MemoryStream(bytes))
-            {
-                BinaryFormatter bf = new BinaryFormatter();
-                obj = bf.Deserialize(ms) as ABSourcesRelated;
-                ms.Close();
-            }
-            return obj;
         }
 
         private void OnSourceInited()

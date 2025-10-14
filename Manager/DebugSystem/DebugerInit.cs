@@ -9,7 +9,7 @@ namespace UPandaGF
 {
     public class DebugerInit : MonoBehaviour
     {
-        private string configPath = "/Data/";
+        private string configPath = "Data/";
         private string fileName = "LogConfig.json";
         public LogConfig logConfig;
         public IEnumerator Init()

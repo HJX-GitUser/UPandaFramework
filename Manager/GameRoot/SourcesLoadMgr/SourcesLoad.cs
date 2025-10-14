@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -17,13 +18,29 @@ namespace UPandaGF
         private EditorSourcesMgr editorSourcesMgr;
         private SceneMgr sceneMgr;
         private ABSourcesRelated sourceRef;
-        public void Init(AssetLoaddingMethod arg0, ABSourcesRelated arg1, ABLoadMgr arg2)
+
+        /// <summary>
+        /// 资源关联数据存储的位置
+        /// </summary>
+        public string assetRefSavePath = "/Data/";
+        /// <summary>
+        /// 资源关联数据文件名
+        /// </summary>
+        public string assetRefName = "assetData";
+        /// <summary>
+        /// 资源关联存储文件后缀
+        /// </summary>
+        public string assetRefextension = ".assetref";
+        public void Init(AssetLoaddingMethod arg0, ABLoadMgr arg2)
         {
             method = arg0;
-            sourceRef = arg1;
             abLoadMgr = arg2;
             editorSourcesMgr = EditorSourcesMgr.Instance;
             sceneMgr = SceneMgr.Instance;
+
+            //资源关联数据
+            string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
+            sourceRef = LoadABSourcesRelated(assetRefpath);
         }
         /// <summary>
         /// 加载资源 泛型
@@ -33,18 +50,17 @@ namespace UPandaGF
         /// <param name="callback"></param>
         public void LoadAsync<T>(string path, UnityAction<T> callback) where T : Object
         {
-            if (!sourceRef.sourcesDic.ContainsKey(path))
-            {
-                PLoger.LogError("该资源不存在：" + path + "\n请检查资源关联数据是否更新");
-                return;
-            }
-
             switch (method)
             {
                 case AssetLoaddingMethod.Editor:
                     callback?.Invoke(editorSourcesMgr.Load<T>(path));
                     break;
                 case AssetLoaddingMethod.Assetbundles:
+                    if (!sourceRef.sourcesDic.ContainsKey(path))
+                    {
+                        PLoger.LogError("该资源不存在：" + path);
+                        return;
+                    }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, callback);
                     break;
@@ -59,18 +75,17 @@ namespace UPandaGF
         /// <param name="callback"></param>
         public void LoadAsync(string path, System.Type type, UnityAction<Object> callback)
         {
-            if (!sourceRef.sourcesDic.ContainsKey(path))
-            {
-                PLoger.LogError("该资源不存在：" + path);
-                return;
-            }
-
             switch (method)
             {
                 case AssetLoaddingMethod.Editor:
                     callback?.Invoke(editorSourcesMgr.Load(path, type));
                     break;
                 case AssetLoaddingMethod.Assetbundles:
+                    if (!sourceRef.sourcesDic.ContainsKey(path))
+                    {
+                        PLoger.LogError("该资源不存在：" + path);
+                        return;
+                    }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, type, callback);
                     break;
@@ -84,11 +99,7 @@ namespace UPandaGF
         /// <param name="callback"></param>
         public void LoadSceneAsync(string path, UnityAction callback = null)
         {
-            if (!sourceRef.sourcesDic.ContainsKey(path))
-            {
-                PLoger.LogError("该资源不存在：" + path);
-                return;
-            }
+           
             if (path.Substring(path.LastIndexOf('/')).Length == 0)
             {
                 PLoger.LogError($"路径异常：{path}");
@@ -102,6 +113,12 @@ namespace UPandaGF
                     sceneMgr.LoadSceneAsyn(sceneName, callback);
                     break;
                 case AssetLoaddingMethod.Assetbundles:
+                    if (!sourceRef.sourcesDic.ContainsKey(path))
+                    {
+                        PLoger.LogError("该资源不存在：" + path);
+                        callback?.Invoke();
+                        return;
+                    }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.LoadSceneResAsync(arg.packageName, arg.sourceName, () =>
                     {
@@ -149,6 +166,7 @@ namespace UPandaGF
         }
 
 
+        #region StreamingAssets资源获取
         /// <summary>
         /// 获取StreamingAssets的路径（适用于所有平台）
         /// </summary>
@@ -246,6 +264,26 @@ namespace UPandaGF
                     callback?.Invoke(null);
                 }
             }
+        }
+        #endregion
+
+        private ABSourcesRelated LoadABSourcesRelated(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                return null;
+            }
+            ABSourcesRelated obj = null;
+
+
+            byte[] bytes = File.ReadAllBytes(filePath);
+            using (MemoryStream ms = new MemoryStream(bytes))
+            {
+                BinaryFormatter bf = new BinaryFormatter();
+                obj = bf.Deserialize(ms) as ABSourcesRelated;
+                ms.Close();
+            }
+            return obj;
         }
     }
 }
