@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.Events;
@@ -99,7 +101,7 @@ namespace UPandaGF
         /// <param name="callback"></param>
         public void LoadSceneAsync(string path, UnityAction callback = null)
         {
-           
+
             if (path.Substring(path.LastIndexOf('/')).Length == 0)
             {
                 PLoger.LogError($"路径异常：{path}");
@@ -126,6 +128,28 @@ namespace UPandaGF
                     });
                     break;
             }
+        }
+
+        /// <summary>
+        /// 加载程序集 （HybridCLR）
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="callback"></param>
+        public void LoadAssemblyAsync(string path, UnityAction<Assembly> callback)
+        {
+            Assembly hotUpdateAss = null;
+#if !UNITY_EDITOR
+            LoadAsync<TextAsset>(path, (dllAsset) =>
+            {
+                hotUpdateAss = Assembly.Load(dllAsset.bytes);
+                callback?.Invoke(hotUpdateAss);
+            });
+#else
+            // Editor下无需加载，直接查找获得HotUpdate程序集
+            string AssemblyName = Path.GetFileName(path).Split('.')[0];
+            hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == AssemblyName);
+            callback?.Invoke(hotUpdateAss);
+#endif
         }
 
         /// <summary>
@@ -190,7 +214,7 @@ namespace UPandaGF
             else
             {
                 // 其他平台（Windows, Mac, Linux, WebGL等），可以直接使用Application.streamingAssetsPath
-                path = Application.streamingAssetsPath + "/" +fileName;
+                path = Application.streamingAssetsPath + "/" + fileName;
             }
 
 #if UNITY_EDITOR
