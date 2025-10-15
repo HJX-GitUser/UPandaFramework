@@ -7,13 +7,25 @@ using UnityEditor.Build;
 /// </summary>
 public static class ScriptingDefineSymbols
 {
-    private static readonly NamedBuildTarget[] BuildTargetGroups = new NamedBuildTarget[]
+#if UNITY_2021_OR_NEWER
+    // Unity 2021+ 使用 NamedBuildTarget
+    private static readonly object[] BuildTargetGroups = new object[]
     {
-            NamedBuildTarget.Standalone,
-            NamedBuildTarget.iOS,
-            NamedBuildTarget.Android,
-            NamedBuildTarget.WebGL
+        NamedBuildTarget.Standalone,
+        NamedBuildTarget.iOS,
+        NamedBuildTarget.Android,
+        NamedBuildTarget.WebGL
     };
+#else
+    // Unity 2020 及以下版本使用 BuildTargetGroup
+    private static readonly object[] BuildTargetGroups = new object[]
+    {
+        BuildTargetGroup.Standalone,
+        BuildTargetGroup.iOS,
+        BuildTargetGroup.Android,
+        BuildTargetGroup.WebGL
+    };
+#endif
 
     /// <summary>
     /// 检查指定平台是否存在指定的脚本宏定义。
@@ -21,7 +33,7 @@ public static class ScriptingDefineSymbols
     /// <param name="buildTargetGroup">要检查脚本宏定义的平台。</param>
     /// <param name="scriptingDefineSymbol">要检查的脚本宏定义。</param>
     /// <returns>指定平台是否存在指定的脚本宏定义。</returns>
-    public static bool HasScriptingDefineSymbol(NamedBuildTarget buildTargetGroup, string scriptingDefineSymbol)
+    public static bool HasScriptingDefineSymbol(object buildTargetGroup, string scriptingDefineSymbol)
     {
         if (string.IsNullOrEmpty(scriptingDefineSymbol))
         {
@@ -45,7 +57,7 @@ public static class ScriptingDefineSymbols
     /// </summary>
     /// <param name="buildTargetGroup">要增加脚本宏定义的平台。</param>
     /// <param name="scriptingDefineSymbol">要增加的脚本宏定义。</param>
-    public static void AddScriptingDefineSymbol(NamedBuildTarget buildTargetGroup, string scriptingDefineSymbol)
+    public static void AddScriptingDefineSymbol(object buildTargetGroup, string scriptingDefineSymbol)
     {
         if (string.IsNullOrEmpty(scriptingDefineSymbol))
         {
@@ -58,9 +70,9 @@ public static class ScriptingDefineSymbols
         }
 
         List<string> scriptingDefineSymbols = new List<string>(GetScriptingDefineSymbols(buildTargetGroup))
-            {
-                scriptingDefineSymbol
-            };
+        {
+            scriptingDefineSymbol
+        };
 
         SetScriptingDefineSymbols(buildTargetGroup, scriptingDefineSymbols.ToArray());
     }
@@ -70,7 +82,7 @@ public static class ScriptingDefineSymbols
     /// </summary>
     /// <param name="buildTargetGroup">要移除脚本宏定义的平台。</param>
     /// <param name="scriptingDefineSymbol">要移除的脚本宏定义。</param>
-    public static void RemoveScriptingDefineSymbol(NamedBuildTarget buildTargetGroup, string scriptingDefineSymbol)
+    public static void RemoveScriptingDefineSymbol(object buildTargetGroup, string scriptingDefineSymbol)
     {
         if (string.IsNullOrEmpty(scriptingDefineSymbol))
         {
@@ -102,7 +114,7 @@ public static class ScriptingDefineSymbols
             return;
         }
 
-        foreach (NamedBuildTarget buildTargetGroup in BuildTargetGroups)
+        foreach (object buildTargetGroup in BuildTargetGroups)
         {
             AddScriptingDefineSymbol(buildTargetGroup, scriptingDefineSymbol);
         }
@@ -119,21 +131,31 @@ public static class ScriptingDefineSymbols
             return;
         }
 
-        foreach (NamedBuildTarget buildTargetGroup in BuildTargetGroups)
+        foreach (object buildTargetGroup in BuildTargetGroups)
         {
             RemoveScriptingDefineSymbol(buildTargetGroup, scriptingDefineSymbol);
         }
     }
-
 
     /// <summary>
     /// 获取指定平台的脚本宏定义。
     /// </summary>
     /// <param name="buildTargetGroup">要获取脚本宏定义的平台。</param>
     /// <returns>平台的脚本宏定义。</returns>
-    public static string[] GetScriptingDefineSymbols(NamedBuildTarget buildTargetGroup)
+    public static string[] GetScriptingDefineSymbols(object buildTargetGroup)
     {
-        return PlayerSettings.GetScriptingDefineSymbols(buildTargetGroup).Split(';');
+#if UNITY_2021_OR_NEWER
+        if (buildTargetGroup is NamedBuildTarget namedTarget)
+        {
+            return PlayerSettings.GetScriptingDefineSymbols(namedTarget).Split(';');
+        }
+#else
+        if (buildTargetGroup is BuildTargetGroup targetGroup)
+        {
+            return PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup).Split(';');
+        }
+#endif
+        throw new System.ArgumentException("Unsupported build target group type");
     }
 
     /// <summary>
@@ -141,8 +163,21 @@ public static class ScriptingDefineSymbols
     /// </summary>
     /// <param name="buildTargetGroup">要设置脚本宏定义的平台。</param>
     /// <param name="scriptingDefineSymbols">要设置的脚本宏定义。</param>
-    public static void SetScriptingDefineSymbols(NamedBuildTarget buildTargetGroup, string[] scriptingDefineSymbols)
+    public static void SetScriptingDefineSymbols(object buildTargetGroup, string[] scriptingDefineSymbols)
     {
-        PlayerSettings.SetScriptingDefineSymbols(buildTargetGroup, string.Join(";", scriptingDefineSymbols));
+#if UNITY_2021_OR_NEWER
+        if (buildTargetGroup is NamedBuildTarget namedTarget)
+        {
+            PlayerSettings.SetScriptingDefineSymbols(namedTarget, string.Join(";", scriptingDefineSymbols));
+            return;
+        }
+#else
+        if (buildTargetGroup is BuildTargetGroup targetGroup)
+        {
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, string.Join(";", scriptingDefineSymbols));
+            return;
+        }
+#endif
+        throw new System.ArgumentException("Unsupported build target group type");
     }
 }
