@@ -8,39 +8,104 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-public class ExcelTool
+public class ExcelTool : EditorWindow
 {
     /// <summary>
     /// excel文件存放的路径
     /// </summary>
-    public static string EXCEL_PATH = Application.dataPath + "/ArtAssets/Excel";
+    public string EXCEL_PATH = "ArtAssets/Excel";// = Application.dataPath + "/ArtAssets/Excel";
     /// <summary>
     /// 数据结构类脚本存储位置路径
     /// </summary>
-    public static string DATA_CLASS_PATH = Application.dataPath + "/Scripts/ExcelData/DataClass/";
+    public string DATA_CLASS_PATH = "Scripts/ExcelData/DataClass/";// = Application.dataPath + "/Scripts/ExcelData/DataClass/";
     /// <summary>
     /// 容器类脚本存储位置路径
     /// </summary>
-    public static string DATA_CONTAINER_PATH = Application.dataPath + "/Scripts/ExcelData/Container/";
+    public string DATA_CONTAINER_PATH = "Scripts/ExcelData/Container/";// = Application.dataPath + "/Scripts/ExcelData/Container/";
     /// <summary>
     /// 2进制数据存储位置路径
     /// 这个必须和BinaryDataMgr里的读取路径一致
     /// </summary>
-    public static string DATA_BINARY_PATH = Application.streamingAssetsPath + "/BinaryData/";
+    public string DATA_BINARY_PATH = "Data/BinaryData/";// = Application.streamingAssetsPath + "/BinaryData/";
     /// <summary>
     /// Excel表中真正内容开始的行号
     /// </summary>
-    public static int BEGIN_INDEX = 4;
+    public int BEGIN_INDEX = 4;
     /// <summary>
     /// 二进制数据文件后缀
     /// </summary>
-    public static string SUFFIX = ".binary";
+    public string SUFFIX = ".binary";
 
-    [MenuItem("UPandaGF/Tools/ExcelTool/生成数据类和数据容器类")]
-    private static void GenerateExcelInfo()
+    private Vector2 vec2Pos;
+
+    [MenuItem("UPandaGF/Tools/Excel配置工具")]
+    private static void OpenTool()
+    {
+        ExcelTool excelTool = GetWindow<ExcelTool>();
+        excelTool.Show();
+    }
+
+    private void OnEnable()
+    {
+
+    }
+
+    private void OnGUI()
+    {
+        vec2Pos = GUILayout.BeginScrollView(vec2Pos);
+        EditorGUILayout.LabelField("Excel配置工具");
+        GUILayout.Space(5);
+
+        EXCEL_PATH = EditorGUILayout.TextField("excel文件存放位置", EXCEL_PATH);
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Browse"))
+        {
+            EXCEL_PATH = SelectPath(EXCEL_PATH);
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(5);
+        EditorGUILayout.LabelField("数据类存储位置", DATA_CLASS_PATH);
+        EditorGUILayout.LabelField("数据容器类存储位置", DATA_CONTAINER_PATH);
+        EditorGUILayout.LabelField("数据存储路径", DATA_BINARY_PATH);
+        EditorGUILayout.LabelField("数据文件后缀", SUFFIX);
+        EditorGUILayout.LabelField("Excel配置开始的行号", BEGIN_INDEX.ToString());
+        GUILayout.Space(5);
+
+        if (GUILayout.Button("创建数据"))
+        {
+            GenerateExcelInfo();
+        }
+
+        GUILayout.EndScrollView();
+
+    }
+
+
+    private string SelectPath(string defaultPth)
+    {
+        var newPath = EditorUtility.OpenFolderPanel("Excel Folder", defaultPth, string.Empty);
+        if (!string.IsNullOrEmpty(newPath))
+        {
+            var gamePath = System.IO.Path.GetFullPath(".");
+            gamePath = gamePath.Replace("\\", "/");
+            if (newPath.StartsWith(gamePath) && newPath.Length > gamePath.Length)
+                newPath = newPath.Remove(0, gamePath.Length + 1);
+            return newPath;
+        }
+        return defaultPth;
+    }
+    private string PathAddHead(string path)
+    {
+        return Application.dataPath + "/" + path;
+    }
+
+    //[MenuItem("UPandaGF/Tools/ExcelTool/生成数据类和数据容器类")]
+    private void GenerateExcelInfo()
     {
         //记下在指定路径中的所有Excel文件 用于生成对应的3个文件
-        DirectoryInfo dInfo = Directory.CreateDirectory(EXCEL_PATH);
+        DirectoryInfo dInfo = Directory.CreateDirectory(PathAddHead(EXCEL_PATH));
         //得到指定路径中的所有文件信息 相当于就是得到所有的Excel表
         FileInfo[] files = dInfo.GetFiles();
         //数据表容器
@@ -73,7 +138,7 @@ public class ExcelTool
     /// 生成Excel表对应的数据结构类
     /// </summary>
     /// <param name="table"></param>
-    private static void GenerateExcelDataClass(DataTable table)
+    private void GenerateExcelDataClass(DataTable table)
     {
         //字段名行
         DataRow rowName = GetVariableNameRow(table);
@@ -81,9 +146,9 @@ public class ExcelTool
         DataRow rowType = GetVariableTypeRow(table);
 
         //判断路径是否存在 没有的话 就创建文件夹
-        if (!Directory.Exists(DATA_CLASS_PATH))
+        if (!Directory.Exists(PathAddHead(DATA_CLASS_PATH)))
         {
-            Directory.CreateDirectory(DATA_CLASS_PATH);
+            Directory.CreateDirectory(PathAddHead(DATA_CLASS_PATH));
         }
         //如果要生成对应的数据结构类脚本 其实就是通过代码进行字符串拼接 然后存进文件就行了
         string str = $"public class {table.TableName}\n{{\n";
@@ -94,28 +159,28 @@ public class ExcelTool
         str += "}";
 
         //把拼接好的字符串存到指定文件中去
-        File.WriteAllText(DATA_CLASS_PATH + table.TableName + ".cs", str);
+        File.WriteAllText(PathAddHead(DATA_CLASS_PATH) + table.TableName + ".cs", str);
         AssetDatabase.Refresh();
     }
     /// <summary>
     /// 生成Excel表对应的数据容器类
     /// </summary>
     /// <param name="table"></param>
-    private static void GenerateExcelContainerContainer(DataTable table)
+    private void GenerateExcelContainerContainer(DataTable table)
     {
         //得到主键的索引
         int keyIndex = GetKeyIndex(table);
         //得到字段类型行
         DataRow rowType = GetVariableTypeRow(table);
         //没有路径创建路径
-        if (!Directory.Exists(DATA_CONTAINER_PATH))
-            Directory.CreateDirectory(DATA_CONTAINER_PATH);
+        if (!Directory.Exists(PathAddHead(DATA_CONTAINER_PATH)))
+            Directory.CreateDirectory(PathAddHead(DATA_CONTAINER_PATH));
         string str = "using System.Collections.Generic;\n";
         str += $"public class {table.TableName}Container\n{{\n";
         str += $"    public Dictionary<{rowType[keyIndex].ToString()},{table.TableName}> dataDic = new Dictionary<{rowType[keyIndex].ToString()},{table.TableName}>();";
         str += "\n}";
 
-        File.WriteAllText(DATA_CONTAINER_PATH + table.TableName + "Container.cs", str);
+        File.WriteAllText(PathAddHead(DATA_CONTAINER_PATH) + table.TableName + "Container.cs", str);
         AssetDatabase.Refresh();
     }
     /// <summary>
@@ -124,12 +189,12 @@ public class ExcelTool
     /// 其他类型直接转成二进制后就存进去，字符类型就先把二进制数组长度存进去，再存转成二进制的字符）
     /// </summary>
     /// <param name="table"></param>
-    private static void GenerateExcelBinary(DataTable table)
+    private void GenerateExcelBinary(DataTable table)
     {
         //没有路径创建路径
-        if (!Directory.Exists(DATA_BINARY_PATH)) Directory.CreateDirectory(DATA_BINARY_PATH);
+        if (!Directory.Exists(PathAddHead(DATA_BINARY_PATH))) Directory.CreateDirectory(PathAddHead(DATA_BINARY_PATH));
         //创建一个2进制文件进行写入
-        using (FileStream fs = new FileStream(DATA_BINARY_PATH + table.TableName + SUFFIX, FileMode.OpenOrCreate, FileAccess.Write))
+        using (FileStream fs = new FileStream(PathAddHead(DATA_BINARY_PATH) + table.TableName + SUFFIX, FileMode.OpenOrCreate, FileAccess.Write))
         {
             //存储具体的excel对应的2进制信息
             //1.先要存储 需要写多少行的数据 方便读取
@@ -221,4 +286,6 @@ public class ExcelTool
     {
         return table.Rows[1];
     }
+
+
 }

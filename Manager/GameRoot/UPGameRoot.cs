@@ -25,7 +25,7 @@ namespace UPandaGF
         persistentDataPath
     }
 
-
+    [AddComponentMenu("UPandaGF/GameRoot")]
     public class UPGameRoot : BaseMonoSingleton<UPGameRoot>
     {
         #region Component
