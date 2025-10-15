@@ -2,7 +2,7 @@
     "name": "UPandaGF.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:684227d4fb3cc584e8eb30c86949e6a8"
+        "GUID:dc8d015b875d80f4bac721d17cebaf95"
     ],
     "includePlatforms": [
         "Editor"

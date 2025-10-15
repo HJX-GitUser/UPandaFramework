@@ -108,10 +108,12 @@ public class ExcelTool : EditorWindow
     //[MenuItem("UPandaGF/Tools/ExcelTool/生成数据类和数据容器类")]
     private void GenerateExcelInfo()
     {
+        Debug.Log(PathAddHead(EXCEL_PATH));
         //记下在指定路径中的所有Excel文件 用于生成对应的3个文件
         DirectoryInfo dInfo = Directory.CreateDirectory(PathAddHead(EXCEL_PATH));
         //得到指定路径中的所有文件信息 相当于就是得到所有的Excel表
         FileInfo[] files = dInfo.GetFiles();
+        Debug.Log(files.Length);
         //数据表容器
         DataTableCollection tableCollection;
         for (int i = 0; i < files.Length; i++)
@@ -195,10 +197,11 @@ public class ExcelTool : EditorWindow
     /// <param name="table"></param>
     private void GenerateExcelBinary(DataTable table)
     {
+        string path = Application.streamingAssetsPath + "/" + DATA_BINARY_PATH;
         //没有路径创建路径
-        if (!Directory.Exists(PathAddHead(DATA_BINARY_PATH))) Directory.CreateDirectory(PathAddHead(DATA_BINARY_PATH));
+        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
         //创建一个2进制文件进行写入
-        using (FileStream fs = new FileStream(PathAddHead(DATA_BINARY_PATH) + table.TableName + SUFFIX, FileMode.OpenOrCreate, FileAccess.Write))
+        using (FileStream fs = new FileStream(path + table.TableName + SUFFIX, FileMode.OpenOrCreate, FileAccess.Write))
         {
             //存储具体的excel对应的2进制信息
             //1.先要存储 需要写多少行的数据 方便读取
