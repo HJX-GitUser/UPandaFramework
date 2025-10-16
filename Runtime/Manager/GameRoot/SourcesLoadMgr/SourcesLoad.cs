@@ -24,15 +24,15 @@ namespace UPandaGF
         /// <summary>
         /// 资源关联数据存储的位置
         /// </summary>
-        public string assetRefSavePath = "/Data/";
+        private string assetRefSavePath = "/Data/";
         /// <summary>
         /// 资源关联数据文件名
         /// </summary>
-        public string assetRefName = "assetData";
+        private string assetRefName = "assetData";
         /// <summary>
         /// 资源关联存储文件后缀
         /// </summary>
-        public string assetRefextension = ".assetref";
+        private string assetRefextension = ".assetref";
         public void Init(AssetLoaddingMethod arg0, ABLoadMgr arg2)
         {
             method = arg0;
@@ -301,9 +301,13 @@ namespace UPandaGF
 
 
             byte[] bytes = File.ReadAllBytes(filePath);
+            string AESKEY = "111a222aaabbbccc";
+            string AESIV = "111b222aaabbbccc";
+            bytes = AESEncryption.AESDecrypt(bytes, AESKEY, AESIV);
             using (MemoryStream ms = new MemoryStream(bytes))
             {
                 BinaryFormatter bf = new BinaryFormatter();
+
                 obj = bf.Deserialize(ms) as ABSourcesRelated;
                 ms.Close();
             }

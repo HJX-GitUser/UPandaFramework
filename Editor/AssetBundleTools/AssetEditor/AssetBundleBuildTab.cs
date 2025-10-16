@@ -22,11 +22,10 @@ namespace AssetBundleBrowser
         [SerializeField]
         private Vector2 m_ScrollPosition;
 
-
         class ToggleData
         {
-            internal ToggleData(bool s, 
-                string title, 
+            internal ToggleData(bool s,
+                string title,
                 string tooltip,
                 List<string> onToggles,
                 BuildAssetBundleOptions opt = BuildAssetBundleOptions.None)
@@ -46,6 +45,7 @@ namespace AssetBundleBrowser
         }
 
         private AssetBundleInspectTab m_InspectTab;
+        private AssetBundleBrowserMain m_Main;
 
         [SerializeField]
         private BuildTabData m_UserData;
@@ -55,7 +55,7 @@ namespace AssetBundleBrowser
         ToggleData m_CopyToStreaming;
         GUIContent m_TargetContent;
         GUIContent m_CompressionContent;
-        internal enum CompressOptions
+        public enum CompressOptions
         {
             Uncompressed = 0,
             StandardCompression,
@@ -70,10 +70,12 @@ namespace AssetBundleBrowser
         int[] m_CompressionValues = { 0, 1, 2 };
 
 
-        internal AssetBundleBuildTab()
+        internal AssetBundleBuildTab(AssetBundleBrowserMain arg)
         {
             m_AdvancedSettings = false;
             m_UserData = new BuildTabData();
+            m_Main = arg;
+            m_Main.m_BuildTabData = m_UserData;
             m_UserData.m_OnToggles = new List<string>();
             m_UserData.m_UseDefaultPath = true;
         }
@@ -94,7 +96,6 @@ namespace AssetBundleBrowser
         internal void OnEnable(EditorWindow parent)
         {
             m_InspectTab = (parent as AssetBundleBrowserMain).m_InspectTab;
-
             //LoadData...
             var dataPath = System.IO.Path.GetFullPath(".");
             dataPath = dataPath.Replace("\\", "/");
@@ -106,10 +107,13 @@ namespace AssetBundleBrowser
                 FileStream file = File.Open(dataPath, FileMode.Open);
                 var data = bf.Deserialize(file) as BuildTabData;
                 if (data != null)
+                {
                     m_UserData = data;
+                    m_Main.m_BuildTabData = m_UserData;
+                }
                 file.Close();
             }
-            
+
             m_ToggleData = new List<ToggleData>();
             m_ToggleData.Add(new ToggleData(
                 false,
@@ -163,7 +167,7 @@ namespace AssetBundleBrowser
             m_TargetContent = new GUIContent("Build Target", "Choose target platform to build for.");
             m_CompressionContent = new GUIContent("Compression", "Choose no compress, standard (LZMA), or chunk based (LZ4)");
 
-            if(m_UserData.m_UseDefaultPath)
+            if (m_UserData.m_UseDefaultPath)
             {
                 ResetPathToDefault();
             }
@@ -181,14 +185,15 @@ namespace AssetBundleBrowser
             GUILayout.BeginVertical();
 
             // build target
-            using (new EditorGUI.DisabledScope (!AssetBundleModel.Model.DataSource.CanSpecifyBuildTarget)) {
+            using (new EditorGUI.DisabledScope(!AssetBundleModel.Model.DataSource.CanSpecifyBuildTarget))
+            {
                 ValidBuildTarget tgt = (ValidBuildTarget)EditorGUILayout.EnumPopup(m_TargetContent, m_UserData.m_BuildTarget);
                 if (tgt != m_UserData.m_BuildTarget)
                 {
                     m_UserData.m_BuildTarget = tgt;
-                    if(m_UserData.m_UseDefaultPath)
+                    if (m_UserData.m_UseDefaultPath)
                     {
-                        m_UserData.m_OutputPath = "AssetBundles/";
+                        m_UserData.m_OutputPath = "Assets/AssetBundles/";
                         m_UserData.m_OutputPath += m_UserData.m_BuildTarget.ToString();
                         //EditorUserBuildSettings.SetPlatformSettings(EditorUserBuildSettings.activeBuildTarget.ToString(), "AssetBundleOutputPath", m_OutputPath);
                     }
@@ -197,7 +202,8 @@ namespace AssetBundleBrowser
 
 
             ////output path
-            using (new EditorGUI.DisabledScope (!AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory)) {
+            using (new EditorGUI.DisabledScope(!AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory))
+            {
                 EditorGUILayout.Space();
                 GUILayout.BeginHorizontal();
                 var newPath = EditorGUILayout.TextField("Output Path", m_UserData.m_OutputPath);
@@ -244,15 +250,16 @@ namespace AssetBundleBrowser
             }
 
             // advanced options
-            using (new EditorGUI.DisabledScope (!AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions)) {
+            using (new EditorGUI.DisabledScope(!AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions))
+            {
                 EditorGUILayout.Space();
                 m_AdvancedSettings = EditorGUILayout.Foldout(m_AdvancedSettings, "Advanced Settings");
-                if(m_AdvancedSettings)
+                if (m_AdvancedSettings)
                 {
                     var indent = EditorGUI.indentLevel;
                     EditorGUI.indentLevel = 1;
                     CompressOptions cmp = (CompressOptions)EditorGUILayout.IntPopup(
-                        m_CompressionContent, 
+                        m_CompressionContent,
                         (int)m_UserData.m_Compression,
                         m_CompressionOptions,
                         m_CompressionValues);
@@ -283,7 +290,7 @@ namespace AssetBundleBrowser
 
             // build.
             EditorGUILayout.Space();
-            if (GUILayout.Button("Build") )
+            if (GUILayout.Button("Build"))
             {
                 GenerateAssetBundleInfo();
                 EditorApplication.delayCall += ExecuteBuild;
@@ -294,7 +301,8 @@ namespace AssetBundleBrowser
 
         private void ExecuteBuild()
         {
-            if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory) {
+            if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory)
+            {
                 if (string.IsNullOrEmpty(m_UserData.m_OutputPath))
                     BrowseForFolder();
 
@@ -318,8 +326,8 @@ namespace AssetBundleBrowser
                                 Directory.Delete(m_UserData.m_OutputPath, true);
 
                             if (m_CopyToStreaming.state)
-                            if (Directory.Exists(m_streamingPath))
-                                Directory.Delete(m_streamingPath, true);
+                                if (Directory.Exists(m_streamingPath))
+                                    Directory.Delete(m_streamingPath, true);
                         }
                         catch (System.Exception e)
                         {
@@ -333,7 +341,8 @@ namespace AssetBundleBrowser
 
             BuildAssetBundleOptions opt = BuildAssetBundleOptions.None;
 
-            if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions) {
+            if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions)
+            {
                 if (m_UserData.m_Compression == CompressOptions.Uncompressed)
                     opt |= BuildAssetBundleOptions.UncompressedAssetBundle;
                 else if (m_UserData.m_Compression == CompressOptions.ChunkBasedCompression)
@@ -358,11 +367,11 @@ namespace AssetBundleBrowser
                 m_InspectTab.RefreshBundles();
             };
 
-            AssetBundleModel.Model.DataSource.BuildAssetBundles (buildInfo);
+            AssetBundleModel.Model.DataSource.BuildAssetBundles(buildInfo);
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
-            if(m_CopyToStreaming.state)
+            if (m_CopyToStreaming.state)
                 DirectoryCopy(m_UserData.m_OutputPath, m_streamingPath);
 
         }
@@ -430,6 +439,10 @@ namespace AssetBundleBrowser
 
                 byte[] bytes = ms.GetBuffer();
                 //ToDo:..在这里可以做一些加密的工作
+                string AESKEY = "111a222aaabbbccc";
+                string AESIV = "111b222aaabbbccc";
+                bytes = AESEncryption.AESEncrypt(bytes, AESKEY, AESIV);
+
                 File.WriteAllBytes(SAVE_PATH + assetRefName + assetRefextension, bytes);
                 ms.Close();
             }
@@ -472,7 +485,7 @@ namespace AssetBundleBrowser
                 var gamePath = System.IO.Path.GetFullPath(".");
                 gamePath = gamePath.Replace("\\", "/");
                 if (newPath.StartsWith(gamePath) && newPath.Length > gamePath.Length)
-                    newPath = newPath.Remove(0, gamePath.Length+1);
+                    newPath = newPath.Remove(0, gamePath.Length + 1);
                 m_UserData.m_OutputPath = newPath;
                 //EditorUserBuildSettings.SetPlatformSettings(EditorUserBuildSettings.activeBuildTarget.ToString(), "AssetBundleOutputPath", m_OutputPath);
             }
@@ -486,7 +499,7 @@ namespace AssetBundleBrowser
         }
 
         //Note: this is the provided BuildTarget enum with some entries removed as they are invalid in the dropdown
-        internal enum ValidBuildTarget
+        public enum ValidBuildTarget
         {
             //NoTarget = -2,        --doesn't make sense
             //iPhone = -1,          --deprecated
@@ -523,13 +536,13 @@ namespace AssetBundleBrowser
         }
 
         [System.Serializable]
-        internal class BuildTabData
+        public class BuildTabData
         {
-            internal List<string> m_OnToggles;
-            internal ValidBuildTarget m_BuildTarget = ValidBuildTarget.StandaloneWindows;
-            internal CompressOptions m_Compression = CompressOptions.StandardCompression;
-            internal string m_OutputPath = string.Empty;
-            internal bool m_UseDefaultPath = true;
+            public List<string> m_OnToggles;
+            public ValidBuildTarget m_BuildTarget = ValidBuildTarget.StandaloneWindows;
+            public CompressOptions m_Compression = CompressOptions.StandardCompression;
+            public string m_OutputPath = string.Empty;
+            public bool m_UseDefaultPath = true;
         }
     }
 

@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Net;
 using System;
+using static AssetBundleBrowser.AssetBundleBuildTab;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute("Unity.AssetBundleBrowser.Editor.Tests")]
 
@@ -56,6 +57,8 @@ namespace AssetBundleBrowser
         const float k_ToolbarPadding = 15;
         const float k_MenubarPadding = 32;
 
+        public BuildTabData m_BuildTabData;
+
         [MenuItem("UPandaGF/AB°ü¹¤¾ß/AssetBundle Browser")]
 
         static void ShowWindow()
@@ -80,13 +83,12 @@ namespace AssetBundleBrowser
 
         private void OnEnable()
         {
-
             Rect subPos = GetSubWindowArea();
             if (m_ManageTab == null)
                 m_ManageTab = new AssetBundleManageTab();
             m_ManageTab.OnEnable(subPos, this);
             if (m_BuildTab == null)
-                m_BuildTab = new AssetBundleBuildTab();
+                m_BuildTab = new AssetBundleBuildTab(this);
             m_BuildTab.OnEnable(this);
             if (m_InspectTab == null)
                 m_InspectTab = new AssetBundleInspectTab();
@@ -95,7 +97,7 @@ namespace AssetBundleBrowser
             if (m_UpLoadABTab == null)
             {
                 m_UpLoadABTab = new UpLoadABEditor();
-                m_UpLoadABTab.OnEnable();
+                m_UpLoadABTab.OnEnable(this);
             }
 
             m_RefreshTexture = EditorGUIUtility.FindTexture("Refresh");

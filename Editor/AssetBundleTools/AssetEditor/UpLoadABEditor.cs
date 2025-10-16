@@ -1,3 +1,4 @@
+using AssetBundleBrowser;
 using GluonGui.WorkspaceWindow.Views.WorkspaceExplorer;
 using System;
 using System.Collections;
@@ -9,23 +10,45 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+using static AssetBundleBrowser.AssetBundleBuildTab;
 
 /// <summary>
 /// 上传更新AB包
 /// </summary>
 internal class UpLoadABEditor
 {
-    public UpLoadABEditorConfig Config;
+    public enum ContactMethod
+    {
+        None = 0,
+        FTP = 1,
+    }
+    //通讯方式
+    public ContactMethod contactMethod;
+
+    public FTPUpLoadABConfig Config;
     [SerializeField]
     private Vector2 m_ScrollPosition;
 
-    public void OnEnable()
+    private AssetBundleBrowserMain abMainE;
+
+    //本地AB包路径
+    public string LocalABPath;
+
+    public void OnEnable(AssetBundleBrowserMain bm)
     {
-        if (Config == null)
+        abMainE = bm;
+        int c = EditorPrefs.GetInt("UpLoadABEditor_contactMethod", (int)contactMethod);
+        contactMethod = (ContactMethod)c;
+        LocalABPath = abMainE.m_BuildTabData.m_OutputPath;
+        GetFTPConfig();
+    }
+
+    private void GetFTPConfig()
+    {
+        if (contactMethod == ContactMethod.FTP && Config == null)
         {
-            Config = new UpLoadABEditorConfig();
+            Config = new FTPUpLoadABConfig(abMainE.m_BuildTabData.m_BuildTarget.ToString());
             Config.UpABURL = EditorPrefs.GetString("UpLoadABEditor_UpABURL", Config.UpABURL);
-            Config.LocalABPath = EditorPrefs.GetString("UpLoadABEditor_LocalABPath", Config.LocalABPath);
             Config.Ftp_UserName = EditorPrefs.GetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
             Config.Ftp_Password = EditorPrefs.GetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
         }
@@ -39,37 +62,26 @@ internal class UpLoadABEditor
         GUILayout.Label(new GUIContent("资源包上传页签"), centeredStyle);
         EditorGUILayout.Space();
         GUILayout.BeginVertical();
-        Config.UpABURL = EditorGUILayout.TextField("上传地址", Config.UpABURL);
-
-        Config.LocalABPath = EditorGUILayout.TextField("本地资源路径", Config.LocalABPath);
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-        if (GUILayout.Button("Browse", GUILayout.MaxWidth(75f)))
-        {
-            BrowseForFolder();
-        }
-        GUILayout.EndHorizontal();
+        if (!LocalABPath.Equals(abMainE.m_BuildTabData.m_OutputPath))
+            LocalABPath = abMainE.m_BuildTabData.m_OutputPath;
+        EditorGUILayout.LabelField("本地资源路径", LocalABPath);
         if (GUILayout.Button("创建AB包对比文件"))
         {
             CreateABCompareFile();
         }
         EditorGUILayout.Space(10);
-        EditorGUILayout.LabelField("FTP通信凭证:");
-        Config.Ftp_UserName = EditorGUILayout.TextField("ftp用户名", Config.Ftp_UserName);
-        Config.Ftp_Password = EditorGUILayout.TextField("ftp密码", Config.Ftp_Password);
-        EditorGUILayout.Space();
-
-        if (GUILayout.Button("上传AB包和对比文件"))
+        contactMethod = (ContactMethod)EditorGUILayout.EnumPopup("上传方式", contactMethod);
+        switch (contactMethod)
         {
-            UpLoadAllABFile();
+            case ContactMethod.FTP:
+                FTPGUI();
+                break;
         }
-
-        EditorGUILayout.Space(10);
-
+        EditorGUILayout.Space(30);
         if (GUILayout.Button("复制资源到StreamingAssets"))
         {
             //string savePath = EditorUtility.OpenFolderPanel("复制路径选择", Application.streamingAssetsPath, string.Empty);
-            string savePath = Config.LocalABPath.Substring(Config.LocalABPath.IndexOf("Assets") + "Assets".Length);
+            string savePath = LocalABPath.Substring(LocalABPath.IndexOf("Assets") + "Assets".Length);
             savePath = Application.streamingAssetsPath + savePath;
             if (!Directory.Exists(savePath))
             {
@@ -78,13 +90,11 @@ internal class UpLoadABEditor
             MoveABToStreamingAssets(savePath);
         }
 
-        EditorGUILayout.Space(10);
+        EditorGUILayout.Space(20);
         if (GUILayout.Button("打印persistentDataPath路径"))
         {
             DebugPath();
         }
-
-        EditorGUILayout.Space(20);
         if (GUILayout.Button("保存"))
         {
             SaveData();
@@ -93,13 +103,27 @@ internal class UpLoadABEditor
         EditorGUILayout.EndScrollView();
     }
 
+    private void FTPGUI()
+    {
+        GetFTPConfig();
+        Config.UpABURL = EditorGUILayout.TextField("上传地址", Config.UpABURL);
+        EditorGUILayout.LabelField("FTP通信凭证:");
+        Config.Ftp_UserName = EditorGUILayout.TextField("ftp用户名", Config.Ftp_UserName);
+        Config.Ftp_Password = EditorGUILayout.TextField("ftp密码", Config.Ftp_Password);
+        if (GUILayout.Button("上传AB包和对比文件"))
+        {
+            UpLoadAllABFile();
+        }
+    }
+
+
     /// <summary>
     /// 上传
     /// </summary>
     private void UpLoadAllABFile()
     {
         Debug.Log($"开始上传：{Config.UpABURL}");
-        DirectoryInfo directory = Directory.CreateDirectory(Config.LocalABPath);
+        DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
         FileInfo[] fileInfos = directory.GetFiles();
         foreach (FileInfo fileInfo in fileInfos)
         {
@@ -124,14 +148,14 @@ internal class UpLoadABEditor
     /// </summary>
     private void BrowseForFolder()
     {
-        var newPath = EditorUtility.OpenFolderPanel("Bundle Folder", Config.LocalABPath, string.Empty);
+        var newPath = EditorUtility.OpenFolderPanel("Bundle Folder", LocalABPath, string.Empty);
         if (!string.IsNullOrEmpty(newPath))
         {
             var gamePath = System.IO.Path.GetFullPath(".");
             gamePath = gamePath.Replace("\\", "/");
             if (newPath.StartsWith(gamePath) && newPath.Length > gamePath.Length)
                 newPath = newPath.Remove(0, gamePath.Length + 1);
-            Config.LocalABPath = newPath;
+            LocalABPath = newPath;
         }
     }
 
@@ -140,7 +164,10 @@ internal class UpLoadABEditor
     /// </summary>
     public void ResetPathToDefault()
     {
-        Config = new UpLoadABEditorConfig();
+        if (contactMethod == ContactMethod.FTP)
+        {
+            Config = new FTPUpLoadABConfig(abMainE.m_BuildTabData.m_BuildTarget.ToString());
+        }
         Debug.Log("已重置");
         SaveData();
     }
@@ -150,10 +177,13 @@ internal class UpLoadABEditor
     /// </summary>
     public void SaveData()
     {
-        EditorPrefs.SetString("UpLoadABEditor_UpABURL", Config.UpABURL);
-        EditorPrefs.SetString("UpLoadABEditor_LocalABPath", Config.LocalABPath);
-        EditorPrefs.SetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
-        EditorPrefs.SetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
+        EditorPrefs.SetInt("UpLoadABEditor_contactMethod", (int)contactMethod);
+        if (contactMethod == ContactMethod.FTP)
+        {
+            EditorPrefs.SetString("UpLoadABEditor_UpABURL", Config.UpABURL);
+            EditorPrefs.SetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
+            EditorPrefs.SetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
+        }
         Debug.Log("界面信息已保存");
     }
 
@@ -252,10 +282,10 @@ internal class UpLoadABEditor
             string assetPath = AssetDatabase.GetAssetPath(asset);
             //判断选取的资源是不是AB包文件夹下的，不是的话报错
             string judge_fileName = assetPath.Substring(0, assetPath.LastIndexOf('/'));
-            if (judge_fileName != Config.LocalABPath)
+            if (judge_fileName != LocalABPath)
             {
-                if (judge_fileName != Config.LocalABPath.Substring(0, Config.LocalABPath.LastIndexOf('/')))
-                    Debug.LogError($"（{judge_fileName}）无法复制，你只能选\"{Config.LocalABPath}\"路径下的资源");
+                if (judge_fileName != LocalABPath.Substring(0, LocalABPath.LastIndexOf('/')))
+                    Debug.LogError($"（{judge_fileName}）无法复制，你只能选\"{LocalABPath}\"路径下的资源");
                 continue;
             }
             //截取路径当中的文件名 用于作为 StreamingAssets中的文件名
@@ -302,7 +332,7 @@ internal class UpLoadABEditor
             return;
         }
 
-        DirectoryInfo directory = Directory.CreateDirectory(Config.LocalABPath);
+        DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
         FileInfo[] fileInfos = directory.GetFiles();
         foreach (var file in fileInfos)
         {
@@ -327,7 +357,7 @@ internal class UpLoadABEditor
     public void CreateABCompareFile()
     {
         //获取文件夹信息
-        DirectoryInfo directory = Directory.CreateDirectory(Config.LocalABPath);
+        DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
         //获取该目录下的所有文件信息
         FileInfo[] fileInfos = directory.GetFiles();
 
@@ -347,13 +377,13 @@ internal class UpLoadABEditor
         //因为循环完毕后 会在最后有一个 | 符号 所以 把它去掉
         if (abCompareInfo.Length == 0)
         {
-            Debug.LogError("对比文件创建失败！请检查资源路径：" + Config.LocalABPath);
+            Debug.LogError("对比文件创建失败！请检查资源路径：" + LocalABPath);
             return;
         }
         abCompareInfo = abCompareInfo.Substring(0, abCompareInfo.Length - 1);
         //存储拼接好的 AB包资源信息
-        int _index = Config.LocalABPath.IndexOf('/', 1);
-        string rawPath = Config.LocalABPath.Substring(_index, Config.LocalABPath.Length - _index);
+        int _index = LocalABPath.IndexOf('/', 1);
+        string rawPath = LocalABPath.Substring(_index, LocalABPath.Length - _index);
         string nPath = $"{Application.dataPath}{rawPath}/ABCompareInfo.txt";
         File.WriteAllText(nPath, abCompareInfo);
         AssetDatabase.Refresh();
@@ -387,17 +417,23 @@ internal class UpLoadABEditor
 }
 
 [System.Serializable]
-public class UpLoadABEditorConfig
+public class FTPUpLoadABConfig
 {
     //[Tooltip("上传AB包地址")]
-    public string UpABURL = "ftp://127.0.0.1/AssetBundles/StandaloneWindows/";
-    //本地AB包路径
-    public string LocalABPath = "Assets/AssetBundles/StandaloneWindows";
+    public string UpABURL;
+
     //FTP通信凭证
     //ftp用户名
-    public string Ftp_UserName = "Admin";
+    public string Ftp_UserName;
     //ftp密码
-    public string Ftp_Password = "Admin123";
+    public string Ftp_Password;
+
+    public FTPUpLoadABConfig(string BuidTarget)
+    {
+        UpABURL = $"ftp://127.0.0.1/AssetBundles/{BuidTarget}/";
+        Ftp_UserName = "Admin";
+        Ftp_Password = "Admin123";
+    }
 }
 
 
