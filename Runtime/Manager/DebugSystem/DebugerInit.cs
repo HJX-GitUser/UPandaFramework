@@ -16,7 +16,6 @@ namespace UPandaGF
         {
             string filePath = Path.Combine(configPath, fileName);
             string url = SourcesLoad.GetStreamingAssetsPath(filePath);
-            Debug.Log(url);
             UnityWebRequest request = UnityWebRequest.Get(url);
             yield return request.SendWebRequest();
 
