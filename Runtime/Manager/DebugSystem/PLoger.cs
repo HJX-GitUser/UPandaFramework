@@ -69,7 +69,6 @@ namespace UPandaGF
         }
         #endregion
 
-
         private static string GenerateLog(string log)
         {
             StringBuilder stringBuilder = new StringBuilder($"<{cfg.logHeadFix}>  ", 100);

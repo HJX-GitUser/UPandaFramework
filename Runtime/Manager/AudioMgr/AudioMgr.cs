@@ -2,12 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.PlayerLoop;
 
 public class AudioMgr : BaseSingleton<AudioMgr>
 {
     //唯一的背景音乐组件
     private AudioSource bkMusic = null;
+    //唯一的音效播放组件
+    private AudioSource uniqueSound = null;
 
     //音乐大小
     private float bkValue = 1;
@@ -53,6 +54,20 @@ public class AudioMgr : BaseSingleton<AudioMgr>
             bkMusic.Play();
         });
     }
+
+    public void PlayBKMusic(AudioClip clip)
+    {
+        if (bkMusic == null)
+        {
+            GameObject obj = new GameObject("BKMusic");
+            bkMusic = obj.AddComponent<AudioSource>();
+        }
+        bkMusic.clip = clip;
+        bkMusic.loop = true;
+        bkMusic.volume = bkValue;
+        bkMusic.Play();
+    }
+
     /// <summary>
     /// 暂停背景音乐
     /// </summary>
@@ -79,6 +94,64 @@ public class AudioMgr : BaseSingleton<AudioMgr>
         if (bkMusic == null) { return; }
         bkMusic.volume = bkValue;
     }
+
+    /// <summary>
+    /// 播放唯一音效
+    /// </summary>
+    /// <param name="AcPath"></param>
+    public void PlayUniqueSound(string AcPath)
+    {
+        if (soundObj == null)
+        {
+            soundObj = new GameObject("Sound");
+        }
+        if (uniqueSound == null) uniqueSound = soundObj.AddComponent<AudioSource>();
+        ResMgr.Instance.LoadAsync<AudioClip>(AcPath, (clip) =>
+        {
+            uniqueSound.clip = clip;
+            bkMusic.loop = false;
+            bkMusic.volume = soundValue;
+            bkMusic.Play();
+        });
+    }
+    /// <summary>
+    /// 播放唯一音效
+    /// </summary>
+    /// <param name="AcPath"></param>
+    public void PlayUniqueSound(AudioClip clip)
+    {
+        if (soundObj == null)
+        {
+            soundObj = new GameObject("Sound");
+        }
+        if (uniqueSound == null) uniqueSound = soundObj.AddComponent<AudioSource>();
+        uniqueSound.clip = clip;
+        bkMusic.loop = false;
+        bkMusic.volume = soundValue;
+        bkMusic.Play();
+    }
+
+    /// <summary>
+    /// 暂停唯一音效
+    /// </summary>
+    public void PauseUniqueSound(bool isPause = true)
+    {
+        if (uniqueSound == null) { return; }
+        if (isPause)
+            uniqueSound.Pause();
+        else
+            uniqueSound.Play();
+    }
+
+    /// <summary>
+    /// 停止唯一音效
+    /// </summary>
+    public void StopUniqueSound()
+    {
+        if (uniqueSound == null) { return; }
+        uniqueSound.Stop();
+    }
+
     /// <summary>
     /// 播放音效
     /// </summary>
