@@ -8,9 +8,6 @@ using UnityEngine;
 /// <typeparam name="T"></typeparam>
 public class BaseMonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
 {
-    //在Unity中，通常不需要考虑多线程，因为Unity是单线程的。
-    //但是如果在子线程中访问Instance，可能会出现问题。
-    //不过Unity的API大多只能在主线程使用，所以这个问题不大。
     private static T instance;
     public static T Instance
     {
