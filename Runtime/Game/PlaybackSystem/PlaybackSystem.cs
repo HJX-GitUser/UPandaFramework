@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
@@ -10,6 +12,8 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
     private static string SAVE_PATH;
     private static string FILE_EXTENSION = ".pb";// 存储文件后缀
     public Dictionary<int, PlayerbackRecordComponent> playerbackRecords = new Dictionary<int, PlayerbackRecordComponent>();
+
+    private float timeRecord;
 
     protected override void Initialize()
     {
@@ -23,12 +27,28 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
 
     public void SaveData()
     {
+        StartCoroutine(IE_Save());
+    }
+
+    private IEnumerator IE_Save()
+    {
         PlaybackSaveData data = new PlaybackSaveData();
+        data.total = timeRecord;
         foreach (var item in playerbackRecords.Values)
         {
             data.datas.Add(item.recordData);
         }
-        Save(data, "RecordData");
+        Debug.Log($"保存{data.datas.Count}个对象的数据");
+        Task task = Task.Run(() =>
+        {
+            Save(data, "RecordData");
+        });
+        while (!task.IsCompleted)
+        {
+            Debug.Log("保存中...");
+            yield return null;
+        }
+        Debug.Log($"保存完成");
     }
 
     /// <summary>
@@ -53,7 +73,7 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
             BinaryFormatter bf = new BinaryFormatter();
             bf.Serialize(ms, obj);
 
-            byte[] bytes = ms.GetBuffer();
+            byte[] bytes = CompressData(ms.GetBuffer());
             //ToDo:..在这里可以做一些加密的工作
             File.WriteAllBytes(path, bytes);
             ms.Close();
@@ -75,7 +95,8 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
         }
         T obj = null;
 
-        byte[] bytes = File.ReadAllBytes(SAVE_PATH + fileName + FILE_EXTENSION);
+        byte[] bytes = DecompressData(File.ReadAllBytes(SAVE_PATH + fileName + FILE_EXTENSION));
+
         //ToDo..这里可以根据规则做解密的工作
         using (MemoryStream ms = new MemoryStream(bytes))
         {
@@ -86,10 +107,44 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
         return obj;
     }
 
+    /// <summary>
+    /// 压缩
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    private byte[] CompressData(byte[] data)
+    {
+        using (MemoryStream ms = new MemoryStream())
+        {
+            using (GZipStream gz = new GZipStream(ms, System.IO.Compression.CompressionLevel.Optimal))
+            {
+                gz.Write(data, 0, data.Length);
+            }
+            return ms.ToArray();
+        }
+    }
+
+    /// <summary>
+    /// 解压
+    /// </summary>
+    /// <param name="compressedData"></param>
+    /// <returns></returns>
+    private byte[] DecompressData(byte[] compressedData)
+    {
+        using (MemoryStream ms = new MemoryStream(compressedData))
+        using (GZipStream gz = new GZipStream(ms, System.IO.Compression.CompressionMode.Decompress))
+        using (MemoryStream resultStream = new MemoryStream())
+        {
+            gz.CopyTo(resultStream);
+            return resultStream.ToArray();
+        }
+    }
+
 
     public void EnableRecord()
     {
         Debug.Log("start record");
+        timeRecord = Time.time;
         foreach (var item in playerbackRecords.Values)
         {
             item.SetRecord(true);
@@ -98,7 +153,8 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
 
     public void DisableeRecord()
     {
-        Debug.Log("stop record");
+        timeRecord = Time.time - timeRecord;
+        Debug.Log($"stop record,reocrd time:{timeRecord}");
         foreach (var item in playerbackRecords.Values)
         {
             item.SetRecord(false);
@@ -107,8 +163,23 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
 
     public void Replay()
     {
-        PlaybackSaveData data = Load<PlaybackSaveData>("RecordData");
-        Debug.Log(data.datas.Count);
+        StartCoroutine(IE_Replay());
+    }
+
+    private IEnumerator IE_Replay()
+    {
+        PlaybackSaveData data = null;
+        Debug.Log("开始加载数据");
+        Task task = Task.Run(() =>
+        {
+            data = Load<PlaybackSaveData>("RecordData");
+        });
+        while (!task.IsCompleted)
+        {
+            Debug.Log("加载中...");
+            yield return null;
+        }
+        Debug.Log("加载结束：" + data.datas.Count);
         foreach (var item in data.datas)
         {
             playerbackRecords[item.instanceID].Replay(item.playbackRecordDatas);
@@ -120,6 +191,7 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
 [System.Serializable]
 public class PlaybackSaveData
 {
+    public float total = 0;
     public List<PlayerbackRecordComponentArg> datas = new List<PlayerbackRecordComponentArg>();
 }
 
