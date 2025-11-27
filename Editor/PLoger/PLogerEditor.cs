@@ -7,7 +7,7 @@ public class PLogerEditor
         ScriptingDefineSymbols.AddScriptingDefineSymbol("OPEN_PLOG");
     }
 
-    [MenuItem("UPandaGF/日志系统/关闭日志", false, 1)]
+    [MenuItem("UPandaGF/日志系统/剔除日志", false, 1)]
     public static void ClosePLoger()
     {
         ScriptingDefineSymbols.RemoveScriptingDefineSymbol("OPEN_PLOG");

@@ -2,16 +2,9 @@
 Unity的前端框架
 ## 目录结构介绍
 ---
-
-### **Editor**
-以下工具在Tools菜单目录里使用
 #### AssetBundleTools 
 **AB包管理工具**
-1. 可以给AB包生成MD5码并生成对比文件
-2. 上传AB包到指定资源服务器
-
-#### ExcelDll 
-**读取Excel的插件**
+UPandaGF->AB包工具->Assetbudle Broswer
 
 #### ExcelTool 
 **Excel工具**
@@ -38,15 +31,14 @@ Unity的前端框架
 ---
 
 #### Singleton
-##### BaseSingleton
+##### LazySingletonBase
 单例基类 懒汉模式
-##### BaseMonoSingleton
-继承了MonoBehavior的单例基类
-过场景会移除,用的时候生成,过场景建议手动删除
-这个可以也自己手动管理挂载到场景上
-##### BaseMonoSingletonAuto
-自动生成到场景的单例基类，需要时直接用。
-继承这种单例模式可以让其一直存在在场景中
+##### EagerSingletonBase
+单例基类 饿汉模式
+##### LazyMonoSingletonBase
+继承MonoBehaviour的单例基类，懒汉模式
+##### EagerMonoSingletonBase
+继承MonoBehaviour的单例基类，饿汉模式
 
 
 #### PublicMono
