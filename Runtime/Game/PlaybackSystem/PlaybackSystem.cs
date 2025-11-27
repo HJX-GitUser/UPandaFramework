@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -10,14 +10,14 @@ using UnityEngine;
 public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
 {
     private static string SAVE_PATH;
-    private static string FILE_EXTENSION = ".pb";// ´æ´¢ÎÄ¼şºó×º
+    private static string FILE_EXTENSION = ".pb";// å­˜å‚¨æ–‡ä»¶åç¼€
     public Dictionary<int, PlayerbackRecordComponent> playerbackRecords = new Dictionary<int, PlayerbackRecordComponent>();
 
     private float timeRecord;
 
     protected override void Initialize()
     {
-        SAVE_PATH = Application.persistentDataPath + "/Data/";// Êı¾İÀà´æ´¢µÄÎ»ÖÃ
+        SAVE_PATH = Application.persistentDataPath + "/Data/";// æ•°æ®ç±»å­˜å‚¨çš„ä½ç½®
     }
 
     public void RegisterRecordComponent(PlayerbackRecordComponent arg)
@@ -38,27 +38,27 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
         {
             data.datas.Add(item.recordData);
         }
-        Debug.Log($"±£´æ{data.datas.Count}¸ö¶ÔÏóµÄÊı¾İ");
+        Debug.Log($"ä¿å­˜{data.datas.Count}ä¸ªå¯¹è±¡çš„æ•°æ®");
         Task task = Task.Run(() =>
         {
             Save(data, "RecordData");
         });
         while (!task.IsCompleted)
         {
-            Debug.Log("±£´æÖĞ...");
+            Debug.Log("ä¿å­˜ä¸­...");
             yield return null;
         }
-        Debug.Log($"±£´æÍê³É");
+        Debug.Log($"ä¿å­˜å®Œæˆ");
     }
 
     /// <summary>
-    /// ´æ´¢Àà¶ÔÏóÊı¾İ
+    /// å­˜å‚¨ç±»å¯¹è±¡æ•°æ®
     /// </summary>
-    /// <param name="obj">Êı¾İÀà</param>
-    /// <param name="fileName">´æ´¢ÎÄ¼şÃû³Æ</param>
+    /// <param name="obj">æ•°æ®ç±»</param>
+    /// <param name="fileName">å­˜å‚¨æ–‡ä»¶åç§°</param>
     private void Save(object obj, string fileName)
     {
-        //ÏÈÅĞ¶ÏÂ·¾¶ÎÄ¼ş¼ĞÓĞÃ»ÓĞ
+        //å…ˆåˆ¤æ–­è·¯å¾„æ–‡ä»¶å¤¹æœ‰æ²¡æœ‰
         if (!Directory.Exists(SAVE_PATH))
         {
             Directory.CreateDirectory(SAVE_PATH);
@@ -67,28 +67,28 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
         string path = SAVE_PATH + fileName + FILE_EXTENSION;
         Debug.Log("data save path:" + path);
 
-        //¸ÄÓÃÄÚ´æÁ÷µÄ·½Ê½¿ÉÒÔ¶ÔÊı¾İÔÙ×öĞ©²Ù×÷£¬±ÈÈç½øĞĞ¼ÓÃÜ
+        //æ”¹ç”¨å†…å­˜æµçš„æ–¹å¼å¯ä»¥å¯¹æ•°æ®å†åšäº›æ“ä½œï¼Œæ¯”å¦‚è¿›è¡ŒåŠ å¯†
         using (MemoryStream ms = new MemoryStream())
         {
             BinaryFormatter bf = new BinaryFormatter();
             bf.Serialize(ms, obj);
 
             byte[] bytes = CompressData(ms.GetBuffer());
-            //ToDo:..ÔÚÕâÀï¿ÉÒÔ×öÒ»Ğ©¼ÓÃÜµÄ¹¤×÷
+            //ToDo:..åœ¨è¿™é‡Œå¯ä»¥åšä¸€äº›åŠ å¯†çš„å·¥ä½œ
             File.WriteAllBytes(path, bytes);
             ms.Close();
         }
 
     }
     /// <summary>
-    /// ¶ÁÈ¡2½øÖÆÊı¾İ£¬²¢×ª»»³É¶ÔÏó
+    /// è¯»å–2è¿›åˆ¶æ•°æ®ï¼Œå¹¶è½¬æ¢æˆå¯¹è±¡
     /// </summary>
-    /// <typeparam name="T">¶ÔÏóÀàĞÍ</typeparam>
-    /// <param name="fileName">´æ´¢ÎÄ¼şÃû³Æ</param>
-    /// <returns>Êı¾İ¶ÔÏó</returns>
+    /// <typeparam name="T">å¯¹è±¡ç±»å‹</typeparam>
+    /// <param name="fileName">å­˜å‚¨æ–‡ä»¶åç§°</param>
+    /// <returns>æ•°æ®å¯¹è±¡</returns>
     private T Load<T>(string fileName) where T : class
     {
-        //Èç¹û²»´æÔÚÕâ¸öÎÄ¼ş ¾ÍÖ±½Ó·µ»Ø·ºĞÍ¶ÔÏóµÄÄ¬ÈÏÖµ
+        //å¦‚æœä¸å­˜åœ¨è¿™ä¸ªæ–‡ä»¶ å°±ç›´æ¥è¿”å›æ³›å‹å¯¹è±¡çš„é»˜è®¤å€¼
         if (!File.Exists(SAVE_PATH + fileName + FILE_EXTENSION))
         {
             return default(T);
@@ -97,7 +97,7 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
 
         byte[] bytes = DecompressData(File.ReadAllBytes(SAVE_PATH + fileName + FILE_EXTENSION));
 
-        //ToDo..ÕâÀï¿ÉÒÔ¸ù¾İ¹æÔò×ö½âÃÜµÄ¹¤×÷
+        //ToDo..è¿™é‡Œå¯ä»¥æ ¹æ®è§„åˆ™åšè§£å¯†çš„å·¥ä½œ
         using (MemoryStream ms = new MemoryStream(bytes))
         {
             BinaryFormatter bf = new BinaryFormatter();
@@ -108,7 +108,7 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
     }
 
     /// <summary>
-    /// Ñ¹Ëõ
+    /// å‹ç¼©
     /// </summary>
     /// <param name="data"></param>
     /// <returns></returns>
@@ -125,7 +125,7 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
     }
 
     /// <summary>
-    /// ½âÑ¹
+    /// è§£å‹
     /// </summary>
     /// <param name="compressedData"></param>
     /// <returns></returns>
@@ -169,17 +169,17 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
     private IEnumerator IE_Replay()
     {
         PlaybackSaveData data = null;
-        Debug.Log("¿ªÊ¼¼ÓÔØÊı¾İ");
+        Debug.Log("å¼€å§‹åŠ è½½æ•°æ®");
         Task task = Task.Run(() =>
         {
             data = Load<PlaybackSaveData>("RecordData");
         });
         while (!task.IsCompleted)
         {
-            Debug.Log("¼ÓÔØÖĞ...");
+            Debug.Log("åŠ è½½ä¸­...");
             yield return null;
         }
-        Debug.Log("¼ÓÔØ½áÊø£º" + data.datas.Count);
+        Debug.Log("åŠ è½½ç»“æŸï¼š" + data.datas.Count);
         foreach (var item in data.datas)
         {
             playerbackRecords[item.instanceID].Replay(item.playbackRecordDatas);
