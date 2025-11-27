@@ -13,7 +13,7 @@ namespace UPandaGF
     /// <summary>
     /// 读取二进制的内容，通过反射得到数据，并把数据存入容器。再用这个二进制数据管理器统一管理
     /// </summary>
-    public class BinaryDataMgr : BaseSingleton<BinaryDataMgr>
+    public class BinaryDataMgr : LazySingletonBase<BinaryDataMgr>
     {
         /// <summary>
         /// 数据类存储的位置

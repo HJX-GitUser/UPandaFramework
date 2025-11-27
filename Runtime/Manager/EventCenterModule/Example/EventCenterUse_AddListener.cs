@@ -1,7 +1,7 @@
 using UnityEngine;
 using UPandaGF;
 
-public class EnentCenterUse_AddListener : MonoBehaviour
+public class EventCenterUse_AddListener : MonoBehaviour
 {
 
     private void OnEnable()

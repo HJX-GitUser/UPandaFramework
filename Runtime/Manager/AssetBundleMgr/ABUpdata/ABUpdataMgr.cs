@@ -20,9 +20,9 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// AB包更新
+    /// 资源更新组件
     /// </summary>
-    public class ABUpdataMgr : BaseMonoSingleton<ABUpdataMgr>
+    public class ABUpdataMgr : MonoBehaviour
     {
         private bool hasInit = false;
         /// <summary>
@@ -69,7 +69,7 @@ namespace UPandaGF
         public UnityAction<string> updataMessage;//更新信息事件
         public UnityAction<bool> updataCompleteEvent;//更新信息事件
 
-        protected override void Initialize()
+        protected void Awake()
         {
             if (!hasInit)
             {

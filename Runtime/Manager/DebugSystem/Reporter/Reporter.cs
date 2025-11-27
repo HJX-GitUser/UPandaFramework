@@ -596,7 +596,7 @@ public class Reporter : MonoBehaviour
 	void Start()
 	{
 		logDate = System.DateTime.Now.ToString();
-		StartCoroutine("readInfo");
+		StartCoroutine(readInfo());
 	}
 
 	//clear all logs
@@ -1649,6 +1649,7 @@ public class Reporter : MonoBehaviour
 	int gestureCount = 0;
 	bool isGestureDone()
 	{
+		//return false;
 		if (Application.platform == RuntimePlatform.Android ||
 			Application.platform == RuntimePlatform.IPhonePlayer) {
 			if (Input.touches.Length != 1) {
@@ -1818,6 +1819,11 @@ public class Reporter : MonoBehaviour
 	float lastUpdate2 = 0;
 #endif
 
+	public void ShowLogWindows()
+	{
+		doShow();
+    }
+
 	void doShow()
 	{
 		show = true;
@@ -1850,10 +1856,9 @@ public class Reporter : MonoBehaviour
 #endif
 
 		calculateStartIndex();
-		if (!show && isGestureDone()) {
-			doShow();
-		}
-
+		//if (!show && isGestureDone()) {
+		//	doShow();
+		//}
 
 		if (threadedLogs.Count > 0) {
 			lock (threadedLogs) {
@@ -2040,7 +2045,8 @@ public class Reporter : MonoBehaviour
 	void OnApplicationQuit()
 	{
 		PlayerPrefs.SetInt("Reporter_currentView", (int)currentView);
-		PlayerPrefs.SetInt("Reporter_show", (show == true) ? 1 : 0);
+		//layerPrefs.SetInt("Reporter_show", (show == true) ? 1 : 0);
+		PlayerPrefs.SetInt("Reporter_show", 0);
 		PlayerPrefs.SetInt("Reporter_collapse", (collapse == true) ? 1 : 0);
 		PlayerPrefs.SetInt("Reporter_clearOnNewSceneLoaded", (clearOnNewSceneLoaded == true) ? 1 : 0);
 		PlayerPrefs.SetInt("Reporter_showTime", (showTime == true) ? 1 : 0);

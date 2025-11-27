@@ -25,16 +25,20 @@ namespace UPandaGF
         persistentDataPath
     }
 
+    public class GFLoadedEvent : EventArgBase
+    {
+        public override int EventID => typeof(GFLoadedEvent).GetHashCode();
+
+    }
+
     [AddComponentMenu("UPandaGF/GameRoot")]
-    public class UPGameRoot : BaseMonoSingleton<UPGameRoot>
+    public class UPGameRoot : EagerMonoSingletonBase<UPGameRoot>
     {
         #region Component
-        private DebugerInit debugerInit;
-        private PublicMono monoMgr;
-        private ABUpdataMgr abUpdataMgr;
-        private ABLoadMgr abLoadMgr;
-        private SourcesLoad sourcesLoadMgr;
-        private BinaryDataMgrInit binaryDataMgr;
+        private DebugerInit debugerInit;//日志系统
+        private ABUpdataMgr abUpdataMgr;//资源更新组件
+        private SourcesLoad sourcesLoadMgr;//资源加载组件
+        private BinaryDataMgrInit binaryDataMgr;//数据管理
         #endregion
 
         #region Config
@@ -51,10 +55,13 @@ namespace UPandaGF
         /// 资源远端更新配置
         /// </summary>
         public ABUpdataMgrArg assetUpdataConfig;
-       
+
+        public bool EnableDebugModel = false;
+        public Reporter reporter;
+
 
         //初始加载场景
-        public string firstScenePath = "Assets/Scenes/InitScene.unity";
+        //public string firstScenePath = "Assets/Scenes/InitScene.unity";
 
         #endregion
 
@@ -62,16 +69,16 @@ namespace UPandaGF
         {
             SetComponent();
         }
-        protected override void Initialize()
+        protected override void OnAwake()
         {
             SetComponent();
-#if !UNITY_EDITOR
             if (method == AssetLoaddingMethod.Editor)
             {
-                method = AssetLoaddingMethod.Assetbundles;
                 aBRootPath = ABRootPath.streamingAssetsPath;
-            }
+#if !UNITY_EDITOR
+                method = AssetLoaddingMethod.Assetbundles;
 #endif
+            }
             StartCoroutine(Init());
         }
 
@@ -79,6 +86,8 @@ namespace UPandaGF
         {
             yield return StartCoroutine(debugerInit.Init());
             abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);
+            ABLoadMgr abLoadMgr = ABLoadMgr.Instance;
+            abLoadMgr.MainName = MainName;
             switch (aBRootPath)
             {
                 case ABRootPath.streamingAssetsPath:
@@ -89,20 +98,16 @@ namespace UPandaGF
                     yield return StartCoroutine(abUpdataMgr.StartUpadateAssets());
                     break;
             }
-            abLoadMgr.MainName = MainName;
-            abLoadMgr.Init();
             sourcesLoadMgr.Init(method, abLoadMgr);
             OnSourceInited();
         }
 
         private void SetComponent()
         {
-            monoMgr = InitComponent<PublicMono>();
-            debugerInit = InitComponent<DebugerInit>();
-            abUpdataMgr = InitComponent<ABUpdataMgr>();
-            abLoadMgr = InitComponent<ABLoadMgr>();
-            sourcesLoadMgr = InitComponent<SourcesLoad>();
-            binaryDataMgr = InitComponent<BinaryDataMgrInit>();
+            if (debugerInit == null) debugerInit = InitComponent<DebugerInit>();
+            if (abUpdataMgr == null) abUpdataMgr = InitComponent<ABUpdataMgr>();
+            if (sourcesLoadMgr == null) sourcesLoadMgr = InitComponent<SourcesLoad>();
+            if (binaryDataMgr == null) binaryDataMgr = InitComponent<BinaryDataMgrInit>();
         }
 
         private T InitComponent<T>() where T : Component
@@ -119,10 +124,55 @@ namespace UPandaGF
 
         private void OnSourceInited()
         {
-            PLoger.Log($"场景加载： {firstScenePath}");
-            sourcesLoadMgr.LoadSceneAsync(firstScenePath);
+            //PLoger.Log_red($"GameRoot Initialization completed!");
+            //PLoger.Log_green($"GameRoot Initialization completed!");
+            //PLoger.Log_blue($"GameRoot Initialization completed!");
+            //PLoger.Log_yellow($"GameRoot Initialization completed!");
+            //PLoger.Log_cyan($"GameRoot Initialization completed!");
+            //PLoger.LogFormat("<color=yellow>{0}</color>", "GameRoot Initialization completed!");
+            PLoger.Log_white($"GameRoot Initialization completed!");
+            EventCenter.Instance.EventTrigger(new GFLoadedEvent());
+        }
+
+        /// <summary>
+        /// 获取StreamingAssets的路径（适用于所有平台）
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static string GetStreamingAssetsPath()
+        {
+            string path = "";
+#if UNITY_EDITOR
+            path = Application.streamingAssetsPath;
+#else
+            // 判断平台类型，获取对应的路径
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                // Android平台上，StreamingAssets路径是通过jar包访问的
+                path = "jar:file://" + Application.dataPath + "!/assets";
+            }
+            else if (Application.platform == RuntimePlatform.IPhonePlayer)
+            {
+                // iOS平台，StreamingAssets在应用包的根目录
+                path = "file://" + Path.Combine(Application.dataPath, "Raw");
+            }
+            else
+            {
+                // 其他平台（Windows, Mac, Linux, WebGL等），可以直接使用Application.streamingAssetsPath
+                path = Application.streamingAssetsPath;
+            }
+#endif
+            return path;
+        }
+
+
+        public ISourcesLoad GetSourcesLoadComponent()
+        {
+            return sourcesLoadMgr;
         }
     }
 }
+
+
 
 

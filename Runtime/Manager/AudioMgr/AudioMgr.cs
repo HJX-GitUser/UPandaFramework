@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class AudioMgr : BaseSingleton<AudioMgr>
+public class AudioMgr : LazySingletonBase<AudioMgr>
 {
     //唯一的背景音乐组件
     private AudioSource bkMusic = null;

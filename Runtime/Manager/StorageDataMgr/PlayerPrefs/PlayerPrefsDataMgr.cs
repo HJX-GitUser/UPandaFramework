@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-public class PlayerPrefsDataMgr : BaseSingleton<PlayerPrefsDataMgr>
+public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
 {
     /// <summary>
     /// ¥Ú”°π§æﬂ

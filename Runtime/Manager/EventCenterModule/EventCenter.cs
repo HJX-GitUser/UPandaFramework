@@ -67,7 +67,7 @@ namespace UPandaGF
     /// <summary>
     /// 事件中心
     /// </summary>
-    public class EventCenter : BaseSingleton<EventCenter>
+    public class EventCenter : LazySingletonBase<EventCenter>
     {
         private Dictionary<int, object> eventDic = new Dictionary<int, object>();
         private readonly object lockObj = new object(); // 用于同步的锁对象
