@@ -11,6 +11,12 @@ public class OnLoadCompleteExample : MonoBehaviour
     private void Awake()
     {
         EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnGFLoadedEvent);
+        EventCenter.Instance.AddEventListener<SceneMgr_SceneAsynLoadProgress>(SceneAsynLoadProgress);
+    }
+
+    private void SceneAsynLoadProgress(SceneMgr_SceneAsynLoadProgress arg0)
+    {
+        Debug.Log($"Scene load :{arg0.progress * 100}%");
     }
 
     private void OnGFLoadedEvent(GFLoadedEvent arg0)
