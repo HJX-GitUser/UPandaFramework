@@ -9,7 +9,7 @@ using UPandaGF;
 /// <summary>
 /// 场景切换模块,
 /// </summary>
-public class SceneMgr : BaseSingleton<SceneMgr>
+public class SceneMgr : LazySingletonBase<SceneMgr>
 {
     /// <summary>
     /// 同步

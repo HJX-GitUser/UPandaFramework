@@ -57,7 +57,7 @@ public class PoolData
 /// <summary>
 /// 对象池模块
 /// </summary>
-public class PoolMgr : BaseSingleton<PoolMgr>
+public class PoolMgr : LazySingletonBase<PoolMgr>
 {
     /// <summary>
     /// 对象池容器

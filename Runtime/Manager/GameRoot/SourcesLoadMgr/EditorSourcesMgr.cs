@@ -10,7 +10,7 @@ namespace UPandaGF
     /// <summary>
     /// 编辑器环境 资源加载
     /// </summary>
-    public class EditorSourcesMgr : BaseSingleton<EditorSourcesMgr>
+    public class EditorSourcesMgr : LazySingletonBase<EditorSourcesMgr>
     {
         public T Load<T>(string path) where T : UnityEngine.Object
         {

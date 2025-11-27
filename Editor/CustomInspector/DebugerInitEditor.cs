@@ -1,3 +1,4 @@
+using log4net.Util;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -28,4 +29,6 @@ public class DebugerInitEditor : Editor
             AssetDatabase.Refresh();
         }
     }
+
+    
 }

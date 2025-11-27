@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -13,7 +14,7 @@ namespace UPandaGF
     /// <summary>
     /// 资源加载封装
     /// </summary>
-    public class SourcesLoad : BaseMonoSingleton<SourcesLoad>
+    public class SourcesLoad : MonoBehaviour, ISourcesLoad
     {
         private AssetLoaddingMethod method;
         private ABLoadMgr abLoadMgr;
@@ -44,6 +45,8 @@ namespace UPandaGF
             string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
             sourceRef = LoadABSourcesRelated(assetRefpath);
         }
+
+
         /// <summary>
         /// 加载资源 泛型
         /// </summary>
@@ -196,37 +199,15 @@ namespace UPandaGF
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static string GetStreamingAssetsPath(string fileName)
+
+        /// <summary>
+        /// 加载文件内容
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public string LoadTextFileFromStreamingAssets(string fileName)
         {
-            string path = "";
-
-            // 判断平台类型，获取对应的路径
-            if (Application.platform == RuntimePlatform.Android)
-            {
-                // Android平台上，StreamingAssets路径是通过jar包访问的
-                path = "jar:file://" + Application.dataPath + "!/assets/" + fileName;
-            }
-            else if (Application.platform == RuntimePlatform.IPhonePlayer)
-            {
-                // iOS平台，StreamingAssets在应用包的根目录
-                path = "file://" + Path.Combine(Application.dataPath, "Raw") + "/" + fileName;
-            }
-            else
-            {
-                // 其他平台（Windows, Mac, Linux, WebGL等），可以直接使用Application.streamingAssetsPath
-                path = Application.streamingAssetsPath + "/" + fileName;
-            }
-
-#if UNITY_EDITOR
-            path = Application.streamingAssetsPath + "/" + fileName;
-#endif
-            return path;
-        }
-
-        // 加载文件内容
-        public static string LoadTextFile(string fileName)
-        {
-            string path = GetStreamingAssetsPath(fileName);
+            string path = UPGameRoot.GetStreamingAssetsPath() + "/" + fileName;
 
             // 判断平台是否是Android
             if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.WebGLPlayer)
@@ -240,7 +221,7 @@ namespace UPandaGF
             }
         }
 
-        private static string LoadTextFileFromWebRequest(string path)
+        private string LoadTextFileFromWebRequest(string path)
         {
             using (var request = UnityWebRequest.Get(path))
             {
@@ -266,7 +247,7 @@ namespace UPandaGF
         // 加载文件内容 异步
         public IEnumerator LoadTextFileAsync(string fileName, UnityAction<string> callback)
         {
-            string path = GetStreamingAssetsPath(fileName);
+            string path = UPGameRoot.GetStreamingAssetsPath() + "/" + fileName;
             yield return StartCoroutine(LoadTextFileFromAsync(fileName, callback));
         }
         //加载文本文件

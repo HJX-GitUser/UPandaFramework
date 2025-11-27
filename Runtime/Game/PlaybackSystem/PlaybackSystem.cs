@@ -7,7 +7,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
+public class PlaybackSystem : LazyMonoSingletonBase<PlaybackSystem>
 {
     private static string SAVE_PATH;
     private static string FILE_EXTENSION = ".pb";// 存储文件后缀
@@ -15,7 +15,7 @@ public class PlaybackSystem : BaseMonoSingleton<PlaybackSystem>
 
     private float timeRecord;
 
-    protected override void Initialize()
+    protected override void OnAwake()
     {
         SAVE_PATH = Application.persistentDataPath + "/Data/";// 数据类存储的位置
     }

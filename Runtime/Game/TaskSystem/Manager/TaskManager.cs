@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UPandaGF
 {
-    public class TaskManager : BaseMonoSingleton<TaskManager>
+    public class TaskManager : LazyMonoSingletonBase<TaskManager>
     {
         public List<Task> tasks;
         private GameObject taskNode;

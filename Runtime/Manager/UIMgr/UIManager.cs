@@ -20,7 +20,7 @@ public enum E_UI_Layer
 /// 1.管理所有显示的面板
 /// 2.提供给外部 显示和隐藏等等接口
 /// </summary>
-public class UIManager : BaseSingleton<UIManager>
+public class UIManager : LazySingletonBase<UIManager>
 {
     private const string UI_RESOURCES_PATH = "UI/";
 

@@ -8,7 +8,7 @@ namespace UPandaGF
     /// <summary>
     /// AB包加载管理器
     /// </summary>
-    public class ABLoadMgr : BaseMonoSingleton<ABLoadMgr>
+    public class ABLoadMgr : LazyMonoSingletonBase<ABLoadMgr>
     {
         private bool isInit = false;
         //主包
@@ -33,24 +33,25 @@ namespace UPandaGF
         [HideInInspector]
         public string MainName;
 
-        protected override void Initialize()
-        {
-            if (!isInit) Init();
-        }
 
-        public void Init()
+        private void Init()
         {
             isInit = true;
             if (PathUrl == null || PathUrl == "")
             {
                 PathUrl = Application.streamingAssetsPath + "/AB/PC/";
-                PLoger.Log("AB包加载路径：" + PathUrl);
             }
             if (MainName == null || MainName == "")
             {
                 MainName = "PC";
-                PLoger.LogError("资源包主包名称未设置，默认为PC");
+                
             }
+            PLoger.Log($"AB包加载路径：{PathUrl}\n资源包主包：{MainName}");
+        }
+
+        private void Start()
+        {
+            if (!isInit) Init();
         }
         /// <summary>
         /// 加载主包 和 配置文件

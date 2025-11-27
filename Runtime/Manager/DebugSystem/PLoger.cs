@@ -38,6 +38,42 @@ namespace UPandaGF
             UnityEngine.Debug.Log(GenerateLog(obj.ToString()));
         }
         [Conditional("OPEN_PLOG")]
+        public static void Log_red(object obj)
+        {
+            if (cfg == null || !cfg.openLog) return;
+            UnityEngine.Debug.Log(GenerateLog($"<color=red>{obj.ToString()}</color>"));
+        }
+        [Conditional("OPEN_PLOG")]
+        public static void Log_green(object obj)
+        {
+            if (cfg == null || !cfg.openLog) return;
+            UnityEngine.Debug.Log(GenerateLog($"<color=green>{obj.ToString()}</color>"));
+        }
+        [Conditional("OPEN_PLOG")]
+        public static void Log_blue(object obj)
+        {
+            if (cfg == null || !cfg.openLog) return;
+            UnityEngine.Debug.Log(GenerateLog($"<color=blue>{obj.ToString()}</color>"));
+        }
+        [Conditional("OPEN_PLOG")]
+        public static void Log_yellow(object obj)
+        {
+            if (cfg == null || !cfg.openLog) return;
+            UnityEngine.Debug.Log(GenerateLog($"<color=yellow>{obj.ToString()}</color>"));
+        }
+        [Conditional("OPEN_PLOG")]
+        public static void Log_white(object obj)
+        {
+            if (cfg == null || !cfg.openLog) return;
+            UnityEngine.Debug.Log(GenerateLog($"<color=white>{obj.ToString()}</color>"));
+        }
+        [Conditional("OPEN_PLOG")]
+        public static void Log_cyan(object obj)
+        {
+            if (cfg == null || !cfg.openLog) return;
+            UnityEngine.Debug.Log(GenerateLog($"<color=cyan>{obj.ToString()}</color>"));
+        }
+        [Conditional("OPEN_PLOG")]
         public static void LogFormat(object obj, params object[] args)
         {
             if (cfg == null || !cfg.openLog) return;
