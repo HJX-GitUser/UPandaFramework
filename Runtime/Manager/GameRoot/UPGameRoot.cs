@@ -85,6 +85,7 @@ namespace UPandaGF
         private IEnumerator Init()
         {
             yield return StartCoroutine(debugerInit.Init());
+            binaryDataMgr.Init();
             abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);
             ABLoadMgr abLoadMgr = ABLoadMgr.Instance;
             abLoadMgr.MainName = MainName;

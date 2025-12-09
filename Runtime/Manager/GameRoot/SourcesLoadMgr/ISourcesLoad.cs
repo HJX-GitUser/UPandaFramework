@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 namespace UPandaGF
 {
@@ -25,12 +26,14 @@ namespace UPandaGF
         /// <param name="callback"></param>
         void LoadAsync(string path, System.Type type, UnityAction<UnityEngine.Object> callback);
 
+
         /// <summary>
         /// 场景加载
         /// </summary>
         /// <param name="path"></param>
         /// <param name="callback"></param>
         void LoadSceneAsync(string path, UnityAction callback = null);
+        void LoadSceneAsync(string path, LoadSceneMode loadSceneMode, UnityAction callback = null);
 
         /// <summary>
         /// 加载程序集 （HybridCLR）

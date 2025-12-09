@@ -166,22 +166,31 @@ namespace AssetBundleBrowser
         private void OnGUI()
         {
             ModeToggle();
-            switch (m_Mode)
+            try
             {
-                case Mode.Builder:
-                    m_BuildTab.OnGUI();
-                    break;
-                case Mode.Inspect:
-                    m_InspectTab.OnGUI(GetSubWindowArea());
-                    break;
-                case Mode.UpLoadAB:
-                    m_UpLoadABTab.OnGUI();
-                    break;
-                case Mode.Browser:
-                default:
-                    m_ManageTab.OnGUI(GetSubWindowArea());
-                    break;
+                switch (m_Mode)
+                {
+                    case Mode.Builder:
+                        m_BuildTab.OnGUI();
+                        break;
+                    case Mode.Inspect:
+                        m_InspectTab.OnGUI(GetSubWindowArea());
+                        break;
+                    case Mode.UpLoadAB:
+                        m_UpLoadABTab.OnGUI();
+                        break;
+                    case Mode.Browser:
+                    default:
+                        m_ManageTab.OnGUI(GetSubWindowArea());
+                        break;
+                }
             }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                instance.Close();
+            }
+            
         }
 
         void ModeToggle()
@@ -189,6 +198,7 @@ namespace AssetBundleBrowser
             GUILayout.BeginHorizontal();
             GUILayout.Space(k_ToolbarPadding);
             bool clicked = false;
+            if (m_RefreshTexture == null) m_RefreshTexture = EditorGUIUtility.FindTexture("Refresh");
             switch (m_Mode)
             {
                 case Mode.Browser:

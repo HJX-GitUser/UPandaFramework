@@ -2,8 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UPandaGF;
 
+/// <summary>
+/// 游戏启动案例
+/// </summary>
 public class OnLoadCompleteExample : MonoBehaviour
 {
     public string firstScene = "Assets/Scenes/InitScene.unity";
@@ -25,7 +29,7 @@ public class OnLoadCompleteExample : MonoBehaviour
         sourcesLoad = UPGameRoot.Instance.GetSourcesLoadComponent();
         sourcesLoad.LoadSceneAsync(firstScene, () =>
         {
-            PLoger.LogError("<color=blue>进入场景</color>");
+            PLoger.Log("<color=blue>进入场景</color>");
         });
     }
 }

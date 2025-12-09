@@ -6,8 +6,10 @@ using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using UnityEngine;
+using UPandaGF;
 
-public class PlaybackSystem : LazyMonoSingletonBase<PlaybackSystem>
+
+public class PlaybackSystem : EagerMonoSingletonBase<PlaybackSystem>
 {
     private static string SAVE_PATH;
     private static string FILE_EXTENSION = ".pb";// 存储文件后缀
@@ -15,13 +17,19 @@ public class PlaybackSystem : LazyMonoSingletonBase<PlaybackSystem>
 
     private float timeRecord;
 
+    private bool isRecording = false;
+
     protected override void OnAwake()
     {
-        SAVE_PATH = Application.persistentDataPath + "/Data/";// 数据类存储的位置
+        SAVE_PATH = Application.persistentDataPath + "/PlaybackSystemData/";// 数据类存储的位置
     }
 
     public void RegisterRecordComponent(PlayerbackRecordComponent arg)
     {
+        if (playerbackRecords.ContainsKey(arg.instanceID))
+        {
+            Debug.LogError($"{arg.instanceID}存在相同id,{arg.transform.name}/{playerbackRecords[arg.instanceID].name}");
+        }
         playerbackRecords[arg.instanceID] = arg;
     }
 
@@ -39,7 +47,7 @@ public class PlaybackSystem : LazyMonoSingletonBase<PlaybackSystem>
             data.datas.Add(item.recordData);
         }
         Debug.Log($"保存{data.datas.Count}个对象的数据");
-        Task task = Task.Run(() =>
+        System.Threading.Tasks.Task task = System.Threading.Tasks.Task.Run(() =>
         {
             Save(data, "RecordData");
         });
@@ -145,19 +153,25 @@ public class PlaybackSystem : LazyMonoSingletonBase<PlaybackSystem>
     {
         Debug.Log("start record");
         timeRecord = Time.time;
-        foreach (var item in playerbackRecords.Values)
-        {
-            item.SetRecord(true);
-        }
+        isRecording = true;
     }
 
     public void DisableeRecord()
     {
         timeRecord = Time.time - timeRecord;
         Debug.Log($"stop record,reocrd time:{timeRecord}");
-        foreach (var item in playerbackRecords.Values)
+        isRecording = false;
+    }
+    float _rt = 0;
+    private void FixedUpdate()
+    {
+        if (isRecording)
         {
-            item.SetRecord(false);
+            _rt = Time.time;
+            foreach (var item in playerbackRecords.Values)
+            {
+                item.AddData(Time.time - timeRecord);
+            }
         }
     }
 
@@ -169,8 +183,8 @@ public class PlaybackSystem : LazyMonoSingletonBase<PlaybackSystem>
     private IEnumerator IE_Replay()
     {
         PlaybackSaveData data = null;
-        Debug.Log("开始加载数据");
-        Task task = Task.Run(() =>
+        PLoger.Log("开始加载数据");
+        System.Threading.Tasks.Task task = System.Threading.Tasks.Task.Run(() =>
         {
             data = Load<PlaybackSaveData>("RecordData");
         });
@@ -182,7 +196,12 @@ public class PlaybackSystem : LazyMonoSingletonBase<PlaybackSystem>
         Debug.Log("加载结束：" + data.datas.Count);
         foreach (var item in data.datas)
         {
-            playerbackRecords[item.instanceID].Replay(item.playbackRecordDatas);
+            if(!playerbackRecords.ContainsKey(item.instanceID))
+            {
+                Debug.LogError($"{item.instanceID} is null");
+                continue;
+            }
+            playerbackRecords[item.instanceID].SetReplayData(item.playbackRecordDatas);
         }
     }
 

@@ -17,12 +17,13 @@ namespace UPandaGF
         /// </summary>
         public string extension = ".binary";
 
+        public BinaryDataMgr BinaryDataMgr { get => binaryDataMgr; }
 
         public void Init()
         {
             savePath = Application.persistentDataPath + savePath;
             binaryDataMgr = BinaryDataMgr.Instance;
-            binaryDataMgr.InitData();
+            binaryDataMgr.InitData(savePath, extension);
         }
     }
 }

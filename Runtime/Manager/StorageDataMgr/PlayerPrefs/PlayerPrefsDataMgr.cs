@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using UPandaGF;
 
 public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
 {
@@ -12,9 +13,7 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
     /// <param name="db">ÄÚÈÝ</param>
     private void MyDebug(string db)
     {
-#if UNITY_EDITOR
-        //Debug.Log(db);
-#endif
+        PLoger.Log(db);
     }
     /// <summary>
     /// ´æ´¢Êý¾Ý

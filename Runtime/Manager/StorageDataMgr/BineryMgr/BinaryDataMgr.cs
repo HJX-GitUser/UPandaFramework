@@ -29,16 +29,18 @@ namespace UPandaGF
         /// Excel配置的 2进制数据类的 存储位置路径
         /// 路径和ExcelTool里的数据存储路径一致
         /// </summary>
-        private static string DATA_BINARY_PATH = Application.streamingAssetsPath + "/BinaryData/";
+        private static string DATA_BINARY_PATH = Application.persistentDataPath + "/BinaryData/";
         /// <summary>
         /// 用于存储 所有Excel表数据容器类 的容器
         /// </summary>
         private Dictionary<string, object> tableDic = new Dictionary<string, object>();
 
 
-        public void InitData()
+        public void InitData(string savePath, string extension)
         {
-
+            DATA_BINARY_PATH =  savePath;
+            FILE_EXTENSION = extension;
+            PLoger.Log($"BinaryDataMgr Init!\n存储路径：{DATA_BINARY_PATH}，后缀：{FILE_EXTENSION}");
         }
         /// <summary>
         /// 加载Excel表的2进制数据到内存中 

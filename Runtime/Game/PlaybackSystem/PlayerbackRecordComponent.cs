@@ -5,41 +5,72 @@ using UnityEngine;
 
 public class PlayerbackRecordComponent : MonoBehaviour
 {
-    private bool recordState = false;//记录状态
     public int instanceID;
     public PlayerbackRecordComponentArg recordData;
 
+    /// <summary>
+    /// 回放索引
+    /// </summary>
+    private int replayIndex = 0;
+
     private void Reset()
     {
-        instanceID = transform.GetInstanceID();
+        RefreshID();
+    }
+
+    public void RefreshID()
+    {
+        instanceID = UniqueIDGenerator.GenerateID();
     }
 
     void Start()
     {
         recordData = new PlayerbackRecordComponentArg();
         recordData.instanceID = instanceID;
-        recordData.playbackRecordDatas = new List<PlaybackRecordData>();
         PlaybackSystem.Instance.RegisterRecordComponent(this);
     }
-
-    private float startTime;
-    public void SetRecord(bool arg)
+    /// <summary>
+    /// 重置记录
+    /// </summary>
+    public void ResetData()
     {
-        recordState = arg;
-        if (arg) startTime = Time.time;
+        recordData.playbackRecordDatas = new List<PlaybackRecordData>();
     }
-
-    private void FixedUpdate()
+    /// <summary>
+    /// 新增数据
+    /// </summary>
+    /// <param name="timestamp"></param>
+    public void AddData(float timestamp)
     {
-        if (recordState)
-        {
-            recordData.AddData(new PlaybackRecordData(Time.time - startTime, transform.position, transform.rotation, transform.localScale));
-        }
+        recordData.AddData(new PlaybackRecordData(timestamp, transform.position, transform.rotation, transform.localScale));
     }
-
-    public void Replay(List<PlaybackRecordData> arg)
+    /// <summary>
+    /// 回放数据设置
+    /// </summary>
+    /// <param name="arg"></param>
+    public void SetReplayData(List<PlaybackRecordData> arg)
     {
+        replayIndex = 0;
+        recordData.playbackRecordDatas = arg;
         StartCoroutine(IReplay(arg));
+    }
+
+    public void SetReplay(float timestamp)
+    {
+        if (recordData.playbackRecordDatas == null || recordData.playbackRecordDatas.Count == 0) return;
+        
+    }
+
+    private void GetRecordDatasIndex(float timestamp)
+    {
+        int recordIndex = 0;
+        if (timestamp > recordData.playbackRecordDatas[replayIndex].timeStamp)
+        {
+        }
+        else
+        {
+
+        }
     }
 
     private IEnumerator IReplay(List<PlaybackRecordData> arg)

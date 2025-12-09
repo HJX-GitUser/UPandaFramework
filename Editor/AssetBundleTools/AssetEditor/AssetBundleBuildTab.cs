@@ -100,6 +100,7 @@ namespace AssetBundleBrowser
             var dataPath = System.IO.Path.GetFullPath(".");
             dataPath = dataPath.Replace("\\", "/");
             dataPath += "/Library/AssetBundleBrowserBuild.dat";
+            Debug.LogWarning("AssetBundleBrowser:" + dataPath);
 
             if (File.Exists(dataPath))
             {
@@ -109,6 +110,9 @@ namespace AssetBundleBrowser
                 if (data != null)
                 {
                     m_UserData = data;
+                    if (m_Main is null) Debug.LogError("m_Main is null");
+                    if (m_Main.m_BuildTabData is null) Debug.LogError("m_Main.m_BuildTabData is null");
+                    if (m_UserData is null) Debug.LogError("m_UserData is null");
                     m_Main.m_BuildTabData = m_UserData;
                 }
                 file.Close();

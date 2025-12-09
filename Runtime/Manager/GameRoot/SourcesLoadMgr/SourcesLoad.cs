@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 namespace UPandaGF
 {
@@ -104,6 +105,10 @@ namespace UPandaGF
         /// <param name="callback"></param>
         public void LoadSceneAsync(string path, UnityAction callback = null)
         {
+            LoadSceneAsync(path, LoadSceneMode.Single, callback);
+        }
+        public void LoadSceneAsync(string path, LoadSceneMode loadSceneMode, UnityAction callback = null)
+        {
 
             if (path.Substring(path.LastIndexOf('/')).Length == 0)
             {
@@ -115,7 +120,7 @@ namespace UPandaGF
             switch (method)
             {
                 case AssetLoaddingMethod.Editor:
-                    sceneMgr.LoadSceneAsyn(sceneName, callback);
+                    sceneMgr.LoadSceneAsyn(sceneName, loadSceneMode, callback);
                     break;
                 case AssetLoaddingMethod.Assetbundles:
                     if (!sourceRef.sourcesDic.ContainsKey(path))
@@ -127,7 +132,7 @@ namespace UPandaGF
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.LoadSceneResAsync(arg.packageName, arg.sourceName, () =>
                     {
-                        sceneMgr.LoadSceneAsyn(sceneName, callback);
+                        sceneMgr.LoadSceneAsyn(sceneName, loadSceneMode, callback);
                     });
                     break;
             }
