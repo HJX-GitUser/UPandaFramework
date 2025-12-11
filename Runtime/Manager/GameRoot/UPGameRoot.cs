@@ -86,7 +86,7 @@ namespace UPandaGF
             switch (aBRootPath)
             {
                 case ABRootPath.streamingAssetsPath:
-                    abLoadMgr.PathUrl = Application.streamingAssetsPath + "/" + LoadAssetPath;
+                    abLoadMgr.PathUrl = StreamingAssetsLoader.CombinePath(LoadAssetPath);
                     break;
                 case ABRootPath.persistentDataPath:
                     abLoadMgr.PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;

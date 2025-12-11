@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -11,21 +12,17 @@ namespace UPandaGF
     public interface IAssetsLoader
     {
         /// <summary>
-        /// 加载资源 泛型
+        /// 加载AB包资源
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="path"></param>
-        /// <param name="callback"></param>
+        /// <returns></returns>
+        public Task<T> LoadAsync<T>(string path) where T : UnityEngine.Object;
+
         void LoadAsync<T>(string path, UnityAction<T> callback) where T : UnityEngine.Object;
 
-        /// <summary>
-        /// 加载资源
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="type"></param>
-        /// <param name="callback"></param>
+        public Task<UnityEngine.Object> LoadAsync(string path, System.Type type);
         void LoadAsync(string path, System.Type type, UnityAction<UnityEngine.Object> callback);
-
 
         /// <summary>
         /// 场景加载
@@ -54,7 +51,6 @@ namespace UPandaGF
         /// </summary>
         /// <returns></returns>
         public void ClearAB();
-
     }
 
 

@@ -13,15 +13,15 @@ namespace UPandaGF
 
         public IEnumerator Init()
         {
-            yield return System.Threading.Tasks.Task.Run(async () =>
+            yield return StartCoroutine(StreamingAssetsLoader.LoadTextFile(configPath + fileName, (arg) =>
             {
-                string configData = await StreamingAssetsLoader.LoadTextFileAsync(configPath + fileName);
+                string configData = arg;
                 if (configData != null)
                 {
                     logConfig = JsonUtility.FromJson<LogConfig>(configData);
                     PLoger.InitLog(logConfig);
                 }
-            });
+            }));
         }
 
        

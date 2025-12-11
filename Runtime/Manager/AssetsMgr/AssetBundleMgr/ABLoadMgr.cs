@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -44,7 +45,7 @@ namespace UPandaGF
             if (MainName == null || MainName == "")
             {
                 MainName = "PC";
-                
+
             }
             PLoger.Log($"AB包加载路径：{PathUrl}\n资源包主包：{MainName}");
         }
@@ -63,6 +64,20 @@ namespace UPandaGF
             {
                 mainAB = AssetBundle.LoadFromFile(PathUrl + MainName);
                 manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+            }
+        }
+
+        public AssetBundle GetAssetBundle(string abName)
+        {
+            if(abDic.ContainsKey(abName))
+            {
+                return abDic[abName];
+            }
+            else
+            {
+                AssetBundle p = AssetBundle.LoadFromFile(PathUrl + abName);
+                abDic.Add(abName, p);
+                return p;
             }
         }
 
@@ -86,96 +101,125 @@ namespace UPandaGF
             }
         }
 
-        #region 同步加载 (不再支持同步加载)
-        ///// <summary>
-        ///// 泛型资源同步加载
-        ///// </summary>
-        ///// <typeparam name="T"></typeparam>
-        ///// <param name="abName">ab包名</param>
-        ///// <param name="resName">资源名</param>
-        ///// <returns></returns>
-        //public T LoadRes<T>(string abName, string resName) where T : Object
-        //{
-        //    //加载依赖包
-        //    LoadDependencies(abName);
-        //    //加载目标包
-        //    if (!abDic.ContainsKey(abName))
-        //    {
-        //        AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + abName);
-        //        abDic.Add(abName, ab);
-        //    }
-        //    //得到加载出来的资源
-        //    T obj = abDic[abName].LoadAsset<T>(resName);
-        //    //如果是GameObject 因为GameObject 100%都是需要实例化的
-        //    //所以直接实例化
-        //    if (obj is GameObject)
-        //        return Instantiate(obj);
-        //    else
-        //        return obj;
-        //}
-        ///// <summary>
-        /////  Type同步加载指定资源
-        /////  这个主要是给Lua脚本调用
-        ///// </summary>
-        ///// <param name="abName"></param>
-        ///// <param name="resName"></param>
-        ///// <param name="type"></param>
-        ///// <returns></returns>
-        //public Object LoadRes(string abName, string resName, System.Type type)
-        //{
-        //    //加载依赖包
-        //    LoadDependencies(abName);
-        //    //加载目标包
-        //    if (!abDic.ContainsKey(abName))
-        //    {
-        //        AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + abName);
-        //        abDic.Add(abName, ab);
-        //    }
-        //    //得到加载出来的资源
-        //    Object obj = abDic[abName].LoadAsset(resName, type);
-        //    if (obj is GameObject)
-        //        return Instantiate(obj);
-        //    else
-        //        return obj;
-
-        //}
-        ///// <summary>
-        ///// 名字 同步加载指定资源
-        ///// </summary>
-        ///// <param name="abName"></param>
-        ///// <param name="resName"></param>
-        ///// <returns></returns>
-        //public Object LoadRes(string abName, string resName)
-        //{
-        //    //加载依赖包
-        //    LoadDependencies(abName);
-        //    //加载目标包
-        //    if (!abDic.ContainsKey(abName))
-        //    {
-        //        AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + abName);
-        //        abDic.Add(abName, ab);
-        //    }
-
-        //    //得到加载出来的资源
-        //    Object obj = abDic[abName].LoadAsset(resName);
-        //    //如果是GameObject 因为GameObject 100%都是需要实例化的
-        //    //所以我们直接实例化
-        //    if (obj is GameObject)
-        //        return Instantiate(obj);
-        //    else
-        //        return obj;
-        //}
-        #endregion
-
-
         #region 异步加载
         /// <summary>
-        /// 泛型异步加载资源
+        /// 异步加载资源
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="abName"></param>
-        /// <param name="resName"></param>
-        /// <param name="callBack"></param>
+        /// <param name="abName">AB包名</param>
+        /// <param name="resName">资源名</param>
+        public async Task<T> LoadResAsync<T>(string abName, string resName) where T : Object
+        {
+            //加载依赖包
+            //加载主包
+            LoadMainAB();
+            //获取依赖包
+            string[] strs = manifest.GetAllDependencies(abName);
+            for (int i = 0; i < strs.Length; i++)
+            {
+                if (!abDic.ContainsKey(strs[i]))
+                {
+                    abDic.Add(strs[i], null);
+                    //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + strs[i]);
+                    //abDic.Add(strs[i], ab);
+                    AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + strs[i]);
+                    while (!req.isDone)
+                    {
+                        await System.Threading.Tasks.Task.Yield();
+                    }
+                    abDic[strs[i]] = req.assetBundle;
+                }
+                else
+                {
+                    while (abDic[strs[i]] == null)//如果为null说明资源正在异步加载中
+                    {
+                        await System.Threading.Tasks.Task.Yield();
+                    }
+                }
+            }
+            //加载目标包
+            if (!abDic.ContainsKey(abName))
+            {
+                abDic.Add(abName, null);
+                AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + abName);
+                while (!req.isDone)
+                {
+                    await System.Threading.Tasks.Task.Yield();
+                }
+                abDic[abName] = req.assetBundle;
+            }
+            else
+            {
+                while (abDic[abName] == null)
+                {
+                    await System.Threading.Tasks.Task.Yield();
+                }
+            }
+
+            AssetBundleRequest abq = abDic[abName].LoadAssetAsync<T>(resName);
+            while (!abq.isDone)
+            {
+                await System.Threading.Tasks.Task.Yield();
+            }
+            return abq.asset as T;
+        }
+
+        public async Task<Object> LoadResAsync(string abName, string resName, System.Type type)
+        {
+            //加载依赖包
+            //加载主包
+            LoadMainAB();
+            //获取依赖包
+            string[] strs = manifest.GetAllDependencies(abName);
+            for (int i = 0; i < strs.Length; i++)
+            {
+                if (!abDic.ContainsKey(strs[i]))
+                {
+                    abDic.Add(strs[i], null);
+                    //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + strs[i]);
+                    //abDic.Add(strs[i], ab);
+                    AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + strs[i]);
+                    while (!req.isDone)
+                    {
+                        await System.Threading.Tasks.Task.Yield();
+                    }
+                    abDic[strs[i]] = req.assetBundle;
+                }
+                else
+                {
+                    while (abDic[strs[i]] == null)//如果为null说明资源正在异步加载中
+                    {
+                        await System.Threading.Tasks.Task.Yield();
+                    }
+                }
+            }
+            //加载目标包
+            if (!abDic.ContainsKey(abName))
+            {
+                abDic.Add(abName, null);
+                AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + abName);
+                while (!req.isDone)
+                {
+                    await System.Threading.Tasks.Task.Yield();
+                }
+                abDic[abName] = req.assetBundle;
+            }
+            else
+            {
+                while (abDic[abName] == null)
+                {
+                    await System.Threading.Tasks.Task.Yield();
+                }
+            }
+
+            AssetBundleRequest abq = abDic[abName].LoadAssetAsync(resName, type);
+            while (!abq.isDone)
+            {
+                await System.Threading.Tasks.Task.Yield();
+            }
+            return abq.asset;
+        }
+
         public void LoadResAsync<T>(string abName, string resName, UnityAction<T> callBack) where T : Object
         {
             StartCoroutine(ReallyLoadResAsync<T>(abName, resName, callBack));
@@ -230,13 +274,7 @@ namespace UPandaGF
             yield return abq;
             callBack(abq.asset as T);
         }
-        /// <summary>
-        /// Type异步加载资源
-        /// </summary>
-        /// <param name="abName"></param>
-        /// <param name="resName"></param>
-        /// <param name="type"></param>
-        /// <param name="callBack"></param>
+
         public void LoadResAsync(string abName, string resName, System.Type type, UnityAction<Object> callBack)
         {
             StartCoroutine(ReallyLoadResAsync(abName, resName, type, callBack));
@@ -290,17 +328,11 @@ namespace UPandaGF
             yield return abq;
             callBack(abq.asset);
         }
-        /// <summary>
-        /// 名字 异步加载 指定资源
-        /// </summary>
-        /// <param name="abName"></param>
-        /// <param name="resName"></param>
-        /// <param name="callBack"></param>
+
         public void LoadResAsync(string abName, string resName, UnityAction<Object> callBack)
         {
             StartCoroutine(ReallyLoadResAsync(abName, resName, callBack));
         }
-
         private IEnumerator ReallyLoadResAsync(string abName, string resName, UnityAction<Object> callBack)
         {
             //加载依赖包

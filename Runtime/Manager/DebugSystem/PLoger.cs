@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UPandaGF
 {
-    public class PLoger
+    public static class PLoger
     {
         public static LogConfig cfg;
         [Conditional("OPEN_PLOG")]
