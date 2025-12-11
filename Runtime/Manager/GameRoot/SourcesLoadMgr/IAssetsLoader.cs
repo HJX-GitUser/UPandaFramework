@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 namespace UPandaGF
 {
-    public interface ISourcesLoad
+    public interface IAssetsLoader
     {
         /// <summary>
         /// 加载资源 泛型

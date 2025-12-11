@@ -11,7 +11,7 @@ using UPandaGF;
 public class OnLoadCompleteExample : MonoBehaviour
 {
     public string firstScene = "Assets/Scenes/InitScene.unity";
-    ISourcesLoad sourcesLoad;
+    IAssetsLoader sourcesLoad;
     private void Awake()
     {
         EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnGFLoadedEvent);
@@ -26,7 +26,7 @@ public class OnLoadCompleteExample : MonoBehaviour
     private void OnGFLoadedEvent(GFLoadedEvent arg0)
     {
         PLoger.Log_white("框架加载结束，进入游戏逻辑");
-        sourcesLoad = UPGameRoot.Instance.GetSourcesLoadComponent();
+        sourcesLoad = UPGameRoot.Instance.GetSourcesLoad();
         sourcesLoad.LoadSceneAsync(firstScene, () =>
         {
             PLoger.Log("<color=blue>进入场景</color>");

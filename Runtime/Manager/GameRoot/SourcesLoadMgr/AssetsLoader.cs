@@ -1,10 +1,9 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -15,7 +14,7 @@ namespace UPandaGF
     /// <summary>
     /// 资源加载封装
     /// </summary>
-    public class SourcesLoad : MonoBehaviour, ISourcesLoad
+    public class AssetsLoader : MonoBehaviour, IAssetsLoader
     {
         private AssetLoaddingMethod method;
         private ABLoadMgr abLoadMgr;
@@ -43,8 +42,10 @@ namespace UPandaGF
             sceneMgr = SceneMgr.Instance;
 
             //资源关联数据
-            string assetRefpath = Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
-            sourceRef = LoadABSourcesRelated(assetRefpath);
+            string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
+            //yield return StartCoroutine(LoadTextFileFromStreamingAssets_Async(assetRefpath, (arg) => { }));
+            byte[] b = LoadBinaryDataFromStreamingAssets(assetRefpath);
+            sourceRef = LoadABSourcesRelated(b);
         }
 
 
@@ -54,7 +55,7 @@ namespace UPandaGF
         /// <typeparam name="T"></typeparam>
         /// <param name="path"></param>
         /// <param name="callback"></param>
-        public void LoadAsync<T>(string path, UnityAction<T> callback) where T : Object
+        public void LoadAsync<T>(string path, UnityAction<T> callback) where T : UnityEngine.Object
         {
             switch (method)
             {
@@ -79,7 +80,7 @@ namespace UPandaGF
         /// <param name="path"></param>
         /// <param name="type"></param>
         /// <param name="callback"></param>
-        public void LoadAsync(string path, System.Type type, UnityAction<Object> callback)
+        public void LoadAsync(string path, System.Type type, UnityAction<UnityEngine.Object> callback)
         {
             switch (method)
             {
@@ -200,100 +201,170 @@ namespace UPandaGF
 
         #region StreamingAssets资源获取
         /// <summary>
-        /// 获取StreamingAssets的路径（适用于所有平台）
+        /// 加载文本文件
         /// </summary>
-        /// <param name="fileName"></param>
+        /// <param name="filePath"></param>
         /// <returns></returns>
-
-        /// <summary>
-        /// 加载文件内容
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        public string LoadTextFileFromStreamingAssets(string fileName)
+        private string LoadTextFileFromStreamingAssets(string filePath)
         {
-            string path = UPGameRoot.GetStreamingAssetsPath() + "/" + fileName;
-
-            // 判断平台是否是Android
+            string fullPath = Application.streamingAssetsPath + filePath;
             if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.WebGLPlayer)
             {
-                return LoadTextFileFromWebRequest(path);
+                using (var request = UnityWebRequest.Get(fullPath))
+                {
+                    request.SendWebRequest();
+
+                    while (!request.isDone)
+                    {
+                        // 等待文件加载完成
+                    }
+
+                    if (request.result == UnityWebRequest.Result.Success)
+                    {
+                        return request.downloadHandler.text;
+                    }
+                    else
+                    {
+                        Debug.LogError("Failed to load file from Android StreamingAssets: " + request.error);
+                        return null;
+                    }
+                }
             }
             else
             {
-                // 其他平台，直接读取文件
-                return File.ReadAllText(path);
+                return File.ReadAllText(fullPath);
             }
+
         }
 
-        private string LoadTextFileFromWebRequest(string path)
+        private IEnumerator LoadTextFileFromStreamingAssets_Async(string filePath, UnityAction<string> callback)
         {
-            using (var request = UnityWebRequest.Get(path))
+            string fullPath = Application.streamingAssetsPath + filePath;
+            string text = null;
+            if (Application.platform == RuntimePlatform.Android ||
+                Application.platform == RuntimePlatform.WebGLPlayer)
             {
-                request.SendWebRequest();
-
-                while (!request.isDone)
+                using (UnityWebRequest request = UnityWebRequest.Get(fullPath))
                 {
-                    // 等待文件加载完成
+                    request.SendWebRequest();
+                    yield return request;
+                    if (request.result == UnityWebRequest.Result.Success)
+                    {
+                        text = request.downloadHandler.text;
+                    }
+                    else
+                    {
+                        PLoger.LogError("Failed to load file from WebGL StreamingAssets: " + request.error);
+                    }
                 }
-
-                if (request.result == UnityWebRequest.Result.Success)
+            }
+            else
+            {
+                try
                 {
-                    return request.downloadHandler.text;
+                    text = File.ReadAllText(fullPath);
                 }
-                else
+                catch (Exception e)
                 {
-                    Debug.LogError("Failed to load file from Android StreamingAssets: " + request.error);
+                    PLoger.LogError($"Failed to read binary data at {fullPath}: {e.Message}");
+                }
+            }
+            callback?.Invoke(text);
+
+        }
+
+        /// <summary>
+        /// 加载二进制文件
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        private byte[] LoadBinaryDataFromStreamingAssets(string filePath)
+        {
+            string fullPath = Application.streamingAssetsPath + filePath;
+            if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.WebGLPlayer)
+            {
+                using (var request = UnityWebRequest.Get(fullPath))
+                {
+                    request.SendWebRequest();
+
+                    while (!request.isDone)
+                    {
+                        // 等待文件加载完成
+                    }
+
+                    if (request.result == UnityWebRequest.Result.Success)
+                    {
+                        return request.downloadHandler.data;
+                    }
+                    else
+                    {
+                        Debug.LogError("Failed to load file from Android StreamingAssets: " + request.error);
+                        return null;
+                    }
+                }
+            }
+            else
+            {
+                try
+                {
+                    return File.ReadAllBytes(fullPath);
+                }
+                catch (Exception e)
+                {
+                    PLoger.LogError($"Failed to read binary data at {fullPath}: {e.Message}");
                     return null;
                 }
             }
+
         }
 
-        // 加载文件内容 异步
-        public IEnumerator LoadTextFileAsync(string fileName, UnityAction<string> callback)
+        public IEnumerator LoadBinaryDataFromStreamingAssets_Async(string filePath, UnityAction<byte[]> callback)
         {
-            string path = UPGameRoot.GetStreamingAssetsPath() + "/" + fileName;
-            yield return StartCoroutine(LoadTextFileFromAsync(fileName, callback));
-        }
-        //加载文本文件
-        private IEnumerator LoadTextFileFromAsync(string path, UnityAction<string> callback)
-        {
-            using (UnityWebRequest request = UnityWebRequest.Get(path))
+            string fullPath = Application.streamingAssetsPath + filePath;
+            byte[] bytes = null;
+            if (Application.platform == RuntimePlatform.Android ||
+                Application.platform == RuntimePlatform.WebGLPlayer)
             {
-                request.SendWebRequest();
-
-                yield return request;
-
-                if (request.result == UnityWebRequest.Result.Success)
+                using (UnityWebRequest www = UnityWebRequest.Get(fullPath))
                 {
-                    callback?.Invoke(request.downloadHandler.text);
-                }
-                else
-                {
-                    Debug.LogError("Failed to load file from WebGL StreamingAssets: " + request.error);
-                    callback?.Invoke(null);
+                    www.downloadHandler = new DownloadHandlerBuffer();
+                    var operation = www.SendWebRequest();
+                    yield return operation;
+
+                    if (www.result != UnityWebRequest.Result.Success)
+                    {
+                        PLoger.Log($"Failed to load binary data at {fullPath}: {www.error}");
+                    }
+                    else
+                    {
+                        bytes = www.downloadHandler.data;
+                    }
                 }
             }
+            else
+            {
+                try
+                {
+                    bytes = File.ReadAllBytes(filePath);
+                }
+                catch (Exception e)
+                {
+                    PLoger.LogError($"Failed to read binary data at {fullPath}: {e.Message}");
+                }
+            }
+            callback?.Invoke(bytes);
         }
+
         #endregion
-
-        private ABSourcesRelated LoadABSourcesRelated(string filePath)
+        private ABSourcesRelated LoadABSourcesRelated(byte[] bytes)
         {
-            if (!File.Exists(filePath))
-            {
-                return null;
-            }
             ABSourcesRelated obj = null;
-
-
-            byte[] bytes = File.ReadAllBytes(filePath);
             string AESKEY = "111a222aaabbbccc";
             string AESIV = "111b222aaabbbccc";
             bytes = AESEncryption.AESDecrypt(bytes, AESKEY, AESIV);
             using (MemoryStream ms = new MemoryStream(bytes))
             {
                 BinaryFormatter bf = new BinaryFormatter();
-
                 obj = bf.Deserialize(ms) as ABSourcesRelated;
                 ms.Close();
             }

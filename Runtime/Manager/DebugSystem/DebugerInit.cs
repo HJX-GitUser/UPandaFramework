@@ -1,10 +1,7 @@
-using System;
 using System.Collections;
-using System.IO;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.Networking;
+using System;
+using System.Threading.Tasks;
 
 namespace UPandaGF
 {
@@ -16,21 +13,18 @@ namespace UPandaGF
 
         public IEnumerator Init()
         {
-            string filePath = Path.Combine(configPath, fileName);
-            string url = UPGameRoot.GetStreamingAssetsPath() + "/" + filePath;
-            UnityWebRequest request = UnityWebRequest.Get(url);
-            yield return request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.Success)
+            yield return System.Threading.Tasks.Task.Run(async () =>
             {
-                logConfig = JsonUtility.FromJson<LogConfig>(request.downloadHandler.text);
-            }
-            else
-            {
-                Debug.LogError("Failed to load debugConfig!  " + request.error);
-            }
-            PLoger.InitLog(logConfig);
+                string configData = await StreamingAssetsLoader.LoadTextFileAsync(configPath + fileName);
+                if (configData != null)
+                {
+                    logConfig = JsonUtility.FromJson<LogConfig>(configData);
+                    PLoger.InitLog(logConfig);
+                }
+            });
         }
+
+       
     }
 }
 
