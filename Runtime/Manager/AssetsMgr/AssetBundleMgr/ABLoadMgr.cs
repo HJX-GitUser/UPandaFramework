@@ -17,9 +17,7 @@ namespace UPandaGF
         //主包依赖获取配置文件
         private AssetBundleManifest manifest = null;
 
-        //选择存储 AB包的容器
-        //AB包不能够重复加载 否则会报错
-        //字典用来存储 AB包对象
+        //存储 AB包对象(AB包不能够重复加载 否则会报错)
         private Dictionary<string, AssetBundle> abDic = new Dictionary<string, AssetBundle>();
 
         /// <summary>

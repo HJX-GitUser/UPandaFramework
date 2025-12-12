@@ -46,16 +46,15 @@ public class ResInfo<T> : ResInfoBase
         --refCount;
         if (refCount < 0) Debug.Log($"{asset}:该资源引用计数小于0！需自行检查加载和卸载的执行次数");
     }
-
-
 }
 
-
 /// <summary>
-/// Resources加载资源
+/// Resources路径资源加载加载
 /// </summary>
-public class ResMgr : LazyMonoSingletonBase<ResMgr> 
+public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
 {
+    private const string splicName_T = "_T_";
+    private const string splicName_Object = "_O_";
     /// <summary>
     /// 存储 加载过 或 加载中 的资源
     /// key是资源名 （路径+资源类型）拼接
@@ -69,14 +68,19 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     /// <returns></returns>
     public T Load<T>(string path) where T : UnityEngine.Object
     {
-        string resName = path + "_" + typeof(T).Name;
+        string resName = path + splicName_T + typeof(T).Name;
         ResInfo<T> info;
         if (!resDic.ContainsKey(resName))
         {
             T res = Resources.Load<T>(path);
+            if (res == null)
+            {
+                Debug.LogError($"资源加载失败：{path}");
+                return null;
+            }
             info = new ResInfo<T>();
             info.asset = res;
-            info. AddRefCount();
+            info.AddRefCount();
             resDic.Add(resName, info);
             return res;
         }
@@ -89,18 +93,23 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
                 //关掉正在异步加载资源状态的协程，直接用同步的方式加载
                 StopCoroutine(info.coroutine);
                 T res = Resources.Load<T>(path);
+                if (res == null)
+                {
+                    Debug.LogError($"资源加载失败：{path}");
+                    return null;
+                }
                 info.asset = res;
                 info.callback?.Invoke(res);
                 info.callback = null;
                 info.coroutine = null;
-                return res;//如果资源时GameObject类中需要自己再实例化
+                return res;//如果资源是GameObject，需要自己再实例化
             }
             else
             {
                 return info.asset;
             }
         }
-        
+
     }
     /// <summary>
     /// Type同步加载资源
@@ -108,14 +117,18 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     /// <param name="path"></param>
     /// <param name="type"></param>
     /// <returns></returns>
-    [Obsolete("\n警告!\n禁止和Load<T>方式混用，所有资源加载必须用同一种加载方式")]
     public UnityEngine.Object Load(string path, System.Type type)
     {
-        string resName = path + "_" + type.Name;
+        string resName = path + splicName_Object + type.Name;
         ResInfo<UnityEngine.Object> info;
         if (!resDic.ContainsKey(resName))
         {
             UnityEngine.Object res = Resources.Load(path, type);
+            if (res == null)
+            {
+                Debug.LogError($"资源加载失败：{path}");
+                return null;
+            }
             info = new ResInfo<UnityEngine.Object>();
             info.asset = res;
             info.AddRefCount();
@@ -131,6 +144,11 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
                 //关掉正在异步加载资源状态的协程，直接用同步的方式加载
                 StopCoroutine(info.coroutine);
                 UnityEngine.Object res = Resources.Load(path, type);
+                if (res == null)
+                {
+                    Debug.LogError($"资源加载失败：{path}");
+                    return null;
+                }
                 info.asset = res;
                 info.callback?.Invoke(res);
                 info.callback = null;
@@ -151,7 +169,7 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     /// <param name="callback">回调</param>
     public void LoadAsync<T>(string path, UnityAction<T> callback) where T : UnityEngine.Object
     {
-        string resName = path + "_" + typeof(T).Name;
+        string resName = path + splicName_T + typeof(T).Name;
         ResInfo<T> info;
         if (!resDic.ContainsKey(resName))//如果字典里不包含该资源
         {
@@ -182,7 +200,7 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     {
         ResourceRequest r = Resources.LoadAsync<T>(path);
         yield return r;
-        string resName = path + "_" + typeof(T).Name;
+        string resName = path + splicName_T + typeof(T).Name;
         if (resDic.ContainsKey(resName))
         {
             ResInfo<T> resInfo = resDic[resName] as ResInfo<T>;
@@ -192,20 +210,17 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
             if (resInfo.refCount == 0)//如果引用为0则删除
             {
                 UnLoadAsset_NoSubAssetsCount<T>(path, resInfo.isDel);
+                // 通知所有等待的回调加载失败
+                resInfo.callback?.Invoke(null);
             }
             else
             {
                 resInfo.callback?.Invoke(resInfo.asset);//通过委托把加载好的资源传出去
-
-                //资源传出去后把回调和协程置空 避免引用占用
-                resInfo.callback = null;
-                resInfo.coroutine = null;
             }
+            //资源传出去后把回调和协程置空 避免引用占用
+            resInfo.callback = null;
+            resInfo.coroutine = null;
         }
-        //if (r.asset is GameObject)
-        //    callback(GameObject.Instantiate(r.asset) as T);
-        //else
-        //    callback(r.asset as T);
     }
     /// <summary>
     /// 禁止和LoadAsync<T>方式混用。
@@ -214,10 +229,9 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     /// <param name="path">资源路径</param>
     /// <param name="type">类型，用typeof(class)得到</param>
     /// <param name="callback">回调 </param>
-    [Obsolete("\n警告!\n禁止和LoadAsync<T>方式混用，所有资源加载必须用同一种加载方式")]
     public void LoadAsync(string path, Type type, UnityAction<UnityEngine.Object> callback)
     {
-        string resName = path + "_" + type.Name;
+        string resName = path + splicName_Object + type.Name;
         ResInfo<UnityEngine.Object> info;
         if (!resDic.ContainsKey(resName))//如果字典里不包含该资源
         {
@@ -248,7 +262,7 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     {
         ResourceRequest r = Resources.LoadAsync(path, type);
         yield return r;
-        string resName = path + "_" + type.Name;
+        string resName = path + splicName_Object + type.Name;
         if (resDic.ContainsKey(resName))
         {
             ResInfo<UnityEngine.Object> resInfo = resDic[resName] as ResInfo<UnityEngine.Object>;
@@ -258,20 +272,17 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
             if (resInfo.refCount == 0)//如果引用为0则删除
             {
                 UnLoadAsset_NoSubAssetsCount(path, type, resInfo.isDel);
+                // 通知所有等待的回调加载失败
+                resInfo.callback?.Invoke(null);
             }
             else
             {
                 resInfo.callback?.Invoke(resInfo.asset);//通过委托把加载好的资源传出去
-                //资源传出去后把回调和协程置空 避免引用占用
-                resInfo.callback = null;
-                resInfo.coroutine = null;
             }
-
+            //资源传出去后把回调和协程置空 避免引用占用
+            resInfo.callback = null;
+            resInfo.coroutine = null;
         }
-        //if (r.asset is GameObject)
-        //    callback(GameObject.Instantiate(r.asset));
-        //else
-        //    callback(r.asset);
     }
     /// <summary>
     /// 卸载指定资源
@@ -282,7 +293,7 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     /// <param name="callBack"></param>
     public void UnLoadAsset<T>(string path, bool isDel = false, UnityAction<T> callBack = null)
     {
-        string resName = path + "_" + typeof(T).Name;
+        string resName = path + splicName_T + typeof(T).Name;
         if (resDic.ContainsKey(resName))
         {
             ResInfo<T> resInfo = resDic[resName] as ResInfo<T>;
@@ -291,7 +302,15 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
             if (resInfo.asset != null && resInfo.refCount == 0 && resInfo.isDel)//资源已加载结束的状态
             {
                 resDic.Remove(resName);
-                Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
+                if (resInfo.asset is GameObject)
+                {
+                    // GameObject需要Destroy
+                    Destroy(resInfo.asset as GameObject);
+                }
+                else
+                {
+                    Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
+                }
             }
             else if (resInfo.asset == null)//资源异步加载中的状态
             {
@@ -312,7 +331,7 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     /// <param name="callBack"></param>
     private void UnLoadAsset_NoSubAssetsCount<T>(string path, bool isDel = false, UnityAction<T> callBack = null)
     {
-        string resName = path + "_" + typeof(T).Name;
+        string resName = path + splicName_T + typeof(T).Name;
         if (resDic.ContainsKey(resName))
         {
             ResInfo<T> resInfo = resDic[resName] as ResInfo<T>;
@@ -321,7 +340,15 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
             if (resInfo.asset != null && resInfo.refCount == 0 && resInfo.isDel)//资源已加载结束的状态
             {
                 resDic.Remove(resName);
-                Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
+                if (resInfo.asset is GameObject)
+                {
+                    // GameObject需要Destroy
+                    Destroy(resInfo.asset as GameObject);
+                }
+                else
+                {
+                    Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
+                }
             }
             else if (resInfo.asset == null)//资源异步加载中的状态
             {
@@ -343,7 +370,7 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     /// <param name="callBack"></param>
     public void UnLoadAsset(string path, Type type, bool isDel = false, UnityAction<UnityEngine.Object> callBack = null)
     {
-        string resName = path + "_" + type.Name;
+        string resName = path + splicName_Object + type.Name;
         if (resDic.ContainsKey(resName))
         {
             ResInfo<UnityEngine.Object> resInfo = resDic[resName] as ResInfo<UnityEngine.Object>;
@@ -352,7 +379,15 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
             if (resInfo.asset != null && resInfo.refCount == 0)//资源已加载结束的状态
             {
                 resDic.Remove(resName);
-                Resources.UnloadAsset(resInfo.asset);
+                if (resInfo.asset is GameObject)
+                {
+                    // GameObject需要Destroy
+                    Destroy(resInfo.asset as GameObject);
+                }
+                else
+                {
+                    Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
+                }
             }
             else if (resInfo.asset == null)//资源异步加载中的状态
             {
@@ -371,7 +406,7 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     /// <param name="callBack"></param>
     private void UnLoadAsset_NoSubAssetsCount(string path, Type type, bool isDel = false, UnityAction<UnityEngine.Object> callBack = null)
     {
-        string resName = path + "_" + type.Name;
+        string resName = path + splicName_Object + type.Name;
         if (resDic.ContainsKey(resName))
         {
             ResInfo<UnityEngine.Object> resInfo = resDic[resName] as ResInfo<UnityEngine.Object>;
@@ -380,7 +415,15 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
             if (resInfo.asset != null && resInfo.refCount == 0)//资源已加载结束的状态
             {
                 resDic.Remove(resName);
-                Resources.UnloadAsset(resInfo.asset);
+                if (resInfo.asset is GameObject)
+                {
+                    // GameObject需要Destroy
+                    Destroy(resInfo.asset as GameObject);
+                }
+                else
+                {
+                    Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
+                }
             }
             else if (resInfo.asset == null)//资源异步加载中的状态
             {
@@ -426,10 +469,25 @@ public class ResMgr : LazyMonoSingletonBase<ResMgr>
     /// <returns></returns>
     public int GetAssetsRefCount<T>(string path)
     {
-        string resName = path + "_" + typeof(T).Name;
+        string resName = path + splicName_T + typeof(T).Name;
         if (resDic.ContainsKey(resName))
         {
             return (resDic[resName] as ResInfo<T>).refCount;
+        }
+        return 0;
+    }
+    /// <summary>
+    /// 获取资源的引用计数
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public int GetAssetsRefCount(string path, Type type)
+    {
+        string resName = path + splicName_Object + type.Name;
+        if (resDic.ContainsKey(resName))
+        {
+            return (resDic[resName] as ResInfo<UnityEngine.Object>).refCount;
         }
         return 0;
     }

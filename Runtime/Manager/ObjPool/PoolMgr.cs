@@ -88,7 +88,7 @@ public class PoolMgr : LazySingletonBase<PoolMgr>
         {
             //通过异步加载资源 创建对象给外部用
             //这里也可以改成用AB包加载
-            ResMgr.Instance.LoadAsync<GameObject>(name, (obj) =>
+            ResourcesLoader.Instance.LoadAsync<GameObject>(name, (obj) =>
             {
                 obj.name = name;
                 callback(obj);

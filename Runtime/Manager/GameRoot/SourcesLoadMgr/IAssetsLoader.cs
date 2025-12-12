@@ -17,11 +17,9 @@ namespace UPandaGF
         /// <typeparam name="T"></typeparam>
         /// <param name="path"></param>
         /// <returns></returns>
-        public Task<T> LoadAsync<T>(string path) where T : UnityEngine.Object;
-
+        Task<T> LoadAsync<T>(string path) where T : UnityEngine.Object;
         void LoadAsync<T>(string path, UnityAction<T> callback) where T : UnityEngine.Object;
-
-        public Task<UnityEngine.Object> LoadAsync(string path, System.Type type);
+        Task<UnityEngine.Object> LoadAsync(string path, System.Type type);
         void LoadAsync(string path, System.Type type, UnityAction<UnityEngine.Object> callback);
 
         /// <summary>
@@ -37,20 +35,20 @@ namespace UPandaGF
         /// </summary>
         /// <param name="path"></param>
         /// <param name="callback"></param>
-        public void LoadAssemblyAsync(string path, UnityAction<Assembly> callback);
+        void LoadAssemblyAsync(string path, UnityAction<Assembly> callback);
 
         /// <summary>
         /// 资源卸载
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="abName">ab包的包名</param>
         /// <returns></returns>
-        public bool UnLoadAB(string path);
+        bool UnLoadAB(string abName);
 
         /// <summary>
         /// 清空AB资源
         /// </summary>
         /// <returns></returns>
-        public void ClearAB();
+        void ClearAB();
     }
 
 

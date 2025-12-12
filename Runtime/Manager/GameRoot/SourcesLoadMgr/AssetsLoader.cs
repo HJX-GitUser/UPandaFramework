@@ -127,11 +127,6 @@ namespace UPandaGF
         }
 
 
-        /// <summary>
-        /// 场景加载
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="callback"></param>
         public void LoadSceneAsync(string path, UnityAction callback = null)
         {
             LoadSceneAsync(path, LoadSceneMode.Single, callback);
@@ -167,11 +162,6 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>
-        /// 加载程序集 （HybridCLR）
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="callback"></param>
         public void LoadAssemblyAsync(string path, UnityAction<Assembly> callback)
         {
             Assembly hotUpdateAss = null;
@@ -189,17 +179,12 @@ namespace UPandaGF
 #endif
         }
 
-        /// <summary>
-        /// AB包卸载
-        /// </summary>
-        /// <param name="name">ab包的包名</param>
-        /// <returns></returns>
-        public bool UnLoadAB(string name)
+        public bool UnLoadAB(string abName)
         {
             bool isUnload = false;
             if (method == AssetLoaddingMethod.Assetbundles)
             {
-                isUnload = abLoadMgr.UnLoadAB(name);
+                isUnload = abLoadMgr.UnLoadAB(abName);
             }
             else
             {
@@ -208,10 +193,6 @@ namespace UPandaGF
             return isUnload;
         }
 
-        /// <summary>
-        /// 清空AB资源
-        /// </summary>
-        /// <returns></returns>
         public void ClearAB()
         {
             if (method == AssetLoaddingMethod.Assetbundles)

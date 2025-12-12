@@ -38,10 +38,10 @@ public class UIManager : LazySingletonBase<UIManager>
 
     public UIManager()
     {
-        uiCamera = GameObject.Instantiate(ResMgr.Instance.Load<GameObject>(UI_RESOURCES_PATH + "UICamera")).GetComponent<Camera>();
+        uiCamera = GameObject.Instantiate(ResourcesLoader.Instance.Load<GameObject>(UI_RESOURCES_PATH + "UICamera")).GetComponent<Camera>();
         GameObject.DontDestroyOnLoad(uiCamera.gameObject);
         //创建Canvas 让其过场景的时候 不被移除
-        GameObject obj = GameObject.Instantiate(ResMgr.Instance.Load<GameObject>(UI_RESOURCES_PATH + "Canvas"));
+        GameObject obj = GameObject.Instantiate(ResourcesLoader.Instance.Load<GameObject>(UI_RESOURCES_PATH + "Canvas"));
         uiCanvas = obj.GetComponent<Canvas>();
         uiCanvas.worldCamera = uiCamera;
         canvasRectTransform = obj.transform as RectTransform;
@@ -56,7 +56,7 @@ public class UIManager : LazySingletonBase<UIManager>
         system = canvasRectTransform.Find("System");
 
         //创建EventSystem 让其过场景的时候 不被移除
-        uiEventSystem = GameObject.Instantiate(ResMgr.Instance.Load<GameObject>("UI/EventSystem")).GetComponent<EventSystem>();
+        uiEventSystem = GameObject.Instantiate(ResourcesLoader.Instance.Load<GameObject>("UI/EventSystem")).GetComponent<EventSystem>();
         GameObject.DontDestroyOnLoad(uiEventSystem.gameObject);
     }
 
@@ -105,7 +105,7 @@ public class UIManager : LazySingletonBase<UIManager>
             return;
         }
 
-        ResMgr.Instance.LoadAsync<GameObject>(UI_RESOURCES_PATH + panelName, (res) =>
+        ResourcesLoader.Instance.LoadAsync<GameObject>(UI_RESOURCES_PATH + panelName, (res) =>
         {
             //把UI面板作为 Canvas的子对象
             //并且 要设置它的相对位置
