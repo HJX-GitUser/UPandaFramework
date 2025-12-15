@@ -51,7 +51,7 @@ public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBe
         }
     }
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    //[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void InitializeOnLoad()
     {
         // 在场景加载前强制初始化实例（模拟饿汉模式）

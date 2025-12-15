@@ -184,7 +184,7 @@ public class StreamingAssetsLoader
     }
 
     /// <summary>
-    /// 加载二进制文件
+    /// 加载二进制文件，【警告！】别在WebGL平台使用该方法
     /// </summary>
     /// <param name="relativePath"></param>
     /// <returns></returns>

@@ -94,8 +94,7 @@ namespace UPandaGF
                     break;
             }
             //yield return StartCoroutine(sourcesLoadMgr.Init(method, abLoadMgr));
-            sourcesLoadMgr.Init(method, abLoadMgr);
-            OnInited();
+            sourcesLoadMgr.Init(method, abLoadMgr, OnInited);
         }
 
         private void SetComponent()

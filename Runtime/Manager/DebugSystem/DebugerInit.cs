@@ -15,7 +15,9 @@ namespace UPandaGF
 
         private void Reset()
         {
+#if UNITY_EDITOR
             LoadConfigFromFile();
+#endif
         }
         public IEnumerator Init()
         {
