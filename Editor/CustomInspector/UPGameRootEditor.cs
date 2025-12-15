@@ -31,6 +31,7 @@ namespace UPandaGF
                     break;
             }
             EditorGUILayout.Space(10);
+#if OPEN_PLOG
             if(!EditorApplication.isPlaying)
             {
                 ShowArg("EnableDebugModel", "启动调试模式");
@@ -52,6 +53,7 @@ namespace UPandaGF
                     }
                 }
             }
+#endif
             serializedObject.ApplyModifiedProperties();
         }
 

@@ -26,6 +26,11 @@ namespace AssetBundleBrowser
             }
         }
 
+        //public static AssetBundleBrowserMain GetInstance()
+        //{
+        //    return instance;
+        //}
+
         internal const float kButtonWidth = 150;
 
         enum Mode
@@ -88,7 +93,7 @@ namespace AssetBundleBrowser
                 m_ManageTab = new AssetBundleManageTab();
             m_ManageTab.OnEnable(subPos, this);
             if (m_BuildTab == null)
-                m_BuildTab = new AssetBundleBuildTab(this);
+                m_BuildTab = new AssetBundleBuildTab();
             m_BuildTab.OnEnable(this);
             if (m_InspectTab == null)
                 m_InspectTab = new AssetBundleInspectTab();

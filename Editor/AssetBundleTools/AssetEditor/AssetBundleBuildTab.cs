@@ -45,7 +45,7 @@ namespace AssetBundleBrowser
         }
 
         private AssetBundleInspectTab m_InspectTab;
-        private AssetBundleBrowserMain m_Main;
+        private static AssetBundleBrowserMain m_Main;
 
         [SerializeField]
         private BuildTabData m_UserData;
@@ -70,12 +70,11 @@ namespace AssetBundleBrowser
         int[] m_CompressionValues = { 0, 1, 2 };
 
 
-        internal AssetBundleBuildTab(AssetBundleBrowserMain arg)
+        internal AssetBundleBuildTab()
         {
             m_AdvancedSettings = false;
             m_UserData = new BuildTabData();
-            m_Main = arg;
-            m_Main.m_BuildTabData = m_UserData;
+            
             m_UserData.m_OnToggles = new List<string>();
             m_UserData.m_UseDefaultPath = true;
         }
@@ -95,12 +94,13 @@ namespace AssetBundleBrowser
         }
         internal void OnEnable(EditorWindow parent)
         {
-            m_InspectTab = (parent as AssetBundleBrowserMain).m_InspectTab;
+            m_Main = (parent as AssetBundleBrowserMain);
+            m_InspectTab = m_Main.m_InspectTab;
             //LoadData...
             var dataPath = System.IO.Path.GetFullPath(".");
             dataPath = dataPath.Replace("\\", "/");
             dataPath += "/Library/AssetBundleBrowserBuild.dat";
-            Debug.LogWarning("AssetBundleBrowser:" + dataPath);
+            //Debug.LogWarning("AssetBundleBrowser:" + dataPath);
 
             if (File.Exists(dataPath))
             {
@@ -110,9 +110,6 @@ namespace AssetBundleBrowser
                 if (data != null)
                 {
                     m_UserData = data;
-                    if (m_Main is null) Debug.LogError("m_Main is null");
-                    if (m_Main.m_BuildTabData is null) Debug.LogError("m_Main.m_BuildTabData is null");
-                    if (m_UserData is null) Debug.LogError("m_UserData is null");
                     m_Main.m_BuildTabData = m_UserData;
                 }
                 file.Close();

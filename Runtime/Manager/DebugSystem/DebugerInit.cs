@@ -2,6 +2,8 @@ using System.Collections;
 using UnityEngine;
 using System;
 using System.Threading.Tasks;
+using System.IO;
+using System.ComponentModel;
 
 namespace UPandaGF
 {
@@ -11,6 +13,10 @@ namespace UPandaGF
         private string fileName = "LogConfig.json";
         public LogConfig logConfig;
 
+        private void Reset()
+        {
+            LoadConfigFromFile();
+        }
         public IEnumerator Init()
         {
             yield return StartCoroutine(StreamingAssetsLoader.LoadTextFile(configPath + fileName, (arg) =>
@@ -24,7 +30,37 @@ namespace UPandaGF
             }));
         }
 
-       
+        public string GetConfigDateFullPath => StreamingAssetsLoader.CombinePath(configPath + fileName);
+        public string GetConfigDateFilePath => StreamingAssetsLoader.CombinePath(configPath);
+
+
+        private void LoadConfigFromFile()
+        {
+            try
+            {
+                string configPath = GetConfigDateFullPath;
+                if (File.Exists(configPath))
+                {
+                    string jsonData = File.ReadAllText(configPath);
+                    logConfig = JsonUtility.FromJson<LogConfig>(jsonData);
+                }
+                else
+                {
+                    if (!Directory.Exists(GetConfigDateFilePath))
+                    {
+                        Directory.CreateDirectory(GetConfigDateFilePath);
+                    }
+                    logConfig = new LogConfig();
+                    string json = JsonUtility.ToJson(logConfig);
+                    File.WriteAllText(GetConfigDateFullPath, json);
+                    Debug.Log("日志配置已保存：" + GetConfigDateFullPath);
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"加载日志配置失败: {e.Message}");
+            }
+        }
     }
 }
 

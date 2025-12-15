@@ -1,34 +1,83 @@
-using log4net.Util;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
 using UPandaGF;
 
 [CustomEditor(typeof(DebugerInit))]
 public class DebugerInitEditor : Editor
 {
     string savePath;
-    public override void OnInspectorGUI()
-    {
-        base.OnInspectorGUI();
+    private DebugerInit component;
+    private LogConfig config;
 
-        if (GUILayout.Button("保存配置"))
+    private void OnEnable()
+    {
+        EditorSceneManager.sceneSaved += OnSceneSaved;
+        if (component == null)
         {
-            string data = JsonUtility.ToJson((target as DebugerInit).logConfig, true);
-            savePath = Application.streamingAssetsPath + "/Data/";
-            if (!Directory.Exists(savePath))
+            component = target as DebugerInit;
+        }
+        if (config == null)
+        {
+            LoadConfigFromFile();
+        }
+    }
+    private void LoadConfigFromFile()
+    {
+        try
+        {
+            string configPath = component.GetConfigDateFullPath;
+            if (File.Exists(configPath))
             {
-                Directory.CreateDirectory(savePath);
+                string jsonData = File.ReadAllText(configPath);
+                config = JsonUtility.FromJson<LogConfig>(jsonData);
+                //Debug.Log("日志配置加载成功");
             }
-            savePath += "LogConfig.json";
-            File.WriteAllText(savePath, data);
-            Debug.Log("日志配置已保存：" + savePath);
-            AssetDatabase.Refresh();
+            else
+            {
+                // 文件不存在时创建默认配置
+                config = component.logConfig;
+                Debug.LogWarning($"{configPath} 配置文件不存在，已创建默认配置");
+                SaveConfig();
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"加载日志配置失败: {e.Message}");
         }
     }
 
-    
+    private void OnDisable()
+    {
+        EditorSceneManager.sceneSaved -= OnSceneSaved;
+    }
+
+    private void OnSceneSaved(Scene scene)
+    {
+        //Debug.Log($"{config.addHeadFix}:{component.logConfig.addHeadFix}");
+        if (ShouldSaveConfig()) return;
+        SaveConfig();
+    }
+
+    private void SaveConfig()
+    {
+        config = new LogConfig(component.logConfig);
+        string data = JsonUtility.ToJson(config, true);
+        savePath = component.GetConfigDateFilePath;
+        if (!Directory.Exists(savePath))
+        {
+            Directory.CreateDirectory(savePath);
+        }
+        File.WriteAllText(component.GetConfigDateFullPath, data);
+        Debug.Log("日志配置已保存：" + savePath);
+        AssetDatabase.Refresh();
+    }
+
+    private bool ShouldSaveConfig()
+    {
+        if (component == null || component.logConfig == null || config == null) return false;
+        return component.logConfig.Equals(config);
+    }
 }

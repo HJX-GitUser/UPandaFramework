@@ -107,7 +107,8 @@ namespace UPandaGF
 
         private static string GenerateLog(string log)
         {
-            StringBuilder stringBuilder = new StringBuilder($"<{cfg.logHeadFix}>  ", 100);
+            StringBuilder stringBuilder = new StringBuilder(100);
+            if (cfg.addHeadFix) stringBuilder.Append($"<{cfg.logHeadFix}>  ");
             if (cfg.openTime) stringBuilder.Append($"{DateTime.Now.ToString("hh:mm:ss-fff")}  ");
             if (cfg.showThreadID) stringBuilder.Append($"ThreadID:{Thread.CurrentThread.ManagedThreadId}\n");
             stringBuilder.Append(log);

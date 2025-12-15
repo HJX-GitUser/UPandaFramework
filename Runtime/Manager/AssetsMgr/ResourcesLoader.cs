@@ -112,7 +112,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
 
     }
     /// <summary>
-    /// Type同步加载资源
+    /// [Type]同步加载资源
     /// </summary>
     /// <param name="path"></param>
     /// <param name="type"></param>
@@ -209,6 +209,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
 
             if (resInfo.refCount == 0)//如果引用为0则删除
             {
+                Debug.LogError($"[T]资源:{path}，已卸载");
                 UnLoadAsset_NoSubAssetsCount<T>(path, resInfo.isDel);
                 // 通知所有等待的回调加载失败
                 resInfo.callback?.Invoke(null);
@@ -222,13 +223,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             resInfo.coroutine = null;
         }
     }
-    /// <summary>
-    /// 禁止和LoadAsync<T>方式混用。
-    /// 所有资源加载必须同意加载方式
-    /// </summary>
-    /// <param name="path">资源路径</param>
-    /// <param name="type">类型，用typeof(class)得到</param>
-    /// <param name="callback">回调 </param>
+  
     public void LoadAsync(string path, Type type, UnityAction<UnityEngine.Object> callback)
     {
         string resName = path + splicName_Object + type.Name;
@@ -271,6 +266,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
 
             if (resInfo.refCount == 0)//如果引用为0则删除
             {
+                Debug.LogError($"[Type]资源:{path}，已卸载");
                 UnLoadAsset_NoSubAssetsCount(path, type, resInfo.isDel);
                 // 通知所有等待的回调加载失败
                 resInfo.callback?.Invoke(null);
@@ -285,7 +281,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         }
     }
     /// <summary>
-    /// 卸载指定资源
+    /// 卸载泛型加载的资源
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="path"></param>
@@ -362,7 +358,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
     }
 
     /// <summary>
-    /// 卸载指定资源 (type)
+    /// 卸载[Type]加载的资源 
     /// </summary>
     /// <param name="path"></param>
     /// <param name="type"></param>
@@ -462,7 +458,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         callback?.Invoke();
     }
     /// <summary>
-    /// 获取资源的引用计数
+    /// 获取泛型加载资源的引用计数
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="path"></param>
@@ -477,7 +473,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         return 0;
     }
     /// <summary>
-    /// 获取资源的引用计数
+    /// 获取[Type]加载资源的引用计数
     /// </summary>
     /// <param name="path"></param>
     /// <param name="type"></param>
