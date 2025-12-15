@@ -133,7 +133,7 @@ namespace UPandaGF
         /// 获取资源加载接口
         /// </summary>
         /// <returns></returns>
-        public IAssetsLoader GetSourcesLoad()
+        public IAssetsLoader GetAssetsLoader()
         {
             return sourcesLoadMgr;
         }

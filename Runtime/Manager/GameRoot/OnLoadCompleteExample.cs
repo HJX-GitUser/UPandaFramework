@@ -26,8 +26,12 @@ public class OnLoadCompleteExample : MonoBehaviour
     private void OnGFLoadedEvent(GFLoadedEvent arg0)
     {
         PLoger.Log_white("框架加载结束，进入游戏逻辑");
-        sourcesLoad = UPGameRoot.Instance.GetSourcesLoad();
-        sourcesLoad.LoadSceneAsync(firstScene, () =>
+        sourcesLoad = UPGameRoot.Instance.GetAssetsLoader();
+        //sourcesLoad.LoadSceneAsync(firstScene, () =>
+        //{
+        //    PLoger.Log("<color=blue>进入场景</color>");
+        //});
+        SceneMgr.Instance.LoadSceneAsyn("InitScene", () =>
         {
             PLoger.Log("<color=blue>进入场景</color>");
         });
