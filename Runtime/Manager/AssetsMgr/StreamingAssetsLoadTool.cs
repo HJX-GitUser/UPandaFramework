@@ -46,7 +46,6 @@ public class StreamingAssetsLoader
 
     private static string CombineRelativePath(string relativePath)
     {
-
         if (relativePath[0] != '/')
         {
             //Debug.LogWarning($"path[0] is not '/'.  path[0]:{relativePath[0]}");
@@ -61,6 +60,9 @@ public class StreamingAssetsLoader
     /// </summary>
     /// <param name="relativePath"></param>
     /// <returns></returns>
+#if UNITY_WEBGL
+    [Obsolete("【警告】别在WebGL平台使用同步方法[LoadTextFile],用异步方法加载[LoadTextFileAsync]",true)]
+#endif
     public static string LoadTextFile(string relativePath)
     {
         string fullPath = CombineRelativePath(relativePath);
@@ -81,7 +83,7 @@ public class StreamingAssetsLoader
                 }
                 else
                 {
-                    Debug.LogError("Failed to load file from Android StreamingAssets: " + request.error);
+                    Debug.LogError($"{fullPath} 加载失败:\n{request.error}");
                     return null;
                 }
             }
@@ -118,7 +120,7 @@ public class StreamingAssetsLoader
 
                 if (www.result != UnityWebRequest.Result.Success)
                 {
-                    Debug.LogError($"Failed to load file at {fullPath}: {www.error}");
+                    Debug.LogError($"{fullPath} 加载失败:\n{www.error}");
                 }
                 else
                 {
@@ -136,7 +138,7 @@ public class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to read file at {fullPath}: {e.Message}");
+                Debug.LogError($"{fullPath} 加载失败:\n{e.Message}");
             }
         }
         return data;
@@ -147,7 +149,7 @@ public class StreamingAssetsLoader
     /// <param name="relativePath"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static IEnumerator LoadTextFile(string relativePath, UnityAction<string> callback)
+    public static IEnumerator LoadTextFileAsync(string relativePath, UnityAction<string> callback)
     {
         string fullPath = CombineRelativePath(relativePath);
         string text = null;
@@ -164,7 +166,7 @@ public class StreamingAssetsLoader
                 }
                 else
                 {
-                    PLoger.LogError("Failed to load file from WebGL StreamingAssets: " + request.error);
+                    PLoger.LogError($"{fullPath} 加载失败:\n{request.error} ");
                 }
             }
         }
@@ -176,7 +178,7 @@ public class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                PLoger.LogError($"Failed to read binary data at {fullPath}: {e.Message}");
+                PLoger.LogError($"{fullPath} 加载失败:\n{e.Message}");
             }
         }
         callback?.Invoke(text);
@@ -184,10 +186,13 @@ public class StreamingAssetsLoader
     }
 
     /// <summary>
-    /// 加载二进制文件，【警告！】别在WebGL平台使用该方法
+    /// 加载二进制文件
     /// </summary>
     /// <param name="relativePath"></param>
     /// <returns></returns>
+#if UNITY_WEBGL
+    [Obsolete("【警告】别在WebGL平台使用同步方法[LoadBinaryData],用异步方法加载[LoadBinaryDataAsync]", true)]
+#endif
     public static byte[] LoadBinaryData(string relativePath)
     {
         string fullPath = CombineRelativePath(relativePath);
@@ -208,7 +213,7 @@ public class StreamingAssetsLoader
                 }
                 else
                 {
-                    Debug.LogError("Failed to load file from Android StreamingAssets: " + request.error);
+                    Debug.LogError($"{fullPath} 加载失败:\n{request.error}");
                     return null;
                 }
             }
@@ -221,7 +226,7 @@ public class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                PLoger.LogError($"Failed to read binary data at {fullPath}: {e.Message}");
+                PLoger.LogError($"{fullPath} 加载失败: \n{e.Message}");
                 return null;
             }
         }
@@ -249,7 +254,7 @@ public class StreamingAssetsLoader
 
                 if (www.result != UnityWebRequest.Result.Success)
                 {
-                    throw new Exception($"Failed to load binary data at {fullPath}: {www.error}");
+                    throw new Exception($"{fullPath} 加载失败: \n{www.error}");
                 }
 
                 return www.downloadHandler.data;
@@ -263,7 +268,7 @@ public class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                throw new Exception($"Failed to read binary data at {fullPath}: {e.Message}");
+                throw new Exception($"{fullPath} 加载失败: \n {e.Message}");
             }
         }
 
@@ -276,7 +281,7 @@ public class StreamingAssetsLoader
     /// <param name="relativePath"></param>
     /// <param name="callback"></param>
     /// <returns></returns>
-    public static IEnumerator LoadBinaryData(string relativePath, UnityAction<byte[]> callback)
+    public static IEnumerator LoadBinaryDataAsync(string relativePath, UnityAction<byte[]> callback)
     {
         string fullPath = CombineRelativePath(relativePath);
         byte[] bytes = null;

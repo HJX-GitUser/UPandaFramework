@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UPandaGF
+namespace UPandaGF.RunTime.TaskSystem
 {
     public class TaskManager : LazyMonoSingletonBase<TaskManager>
     {

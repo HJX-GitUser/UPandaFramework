@@ -15,13 +15,13 @@ namespace UPandaGF
 
         private void Reset()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR && OPEN_PLOG
             LoadConfigFromFile();
 #endif
         }
         public IEnumerator Init()
         {
-            yield return StartCoroutine(StreamingAssetsLoader.LoadTextFile(configPath + fileName, (arg) =>
+            yield return StartCoroutine(StreamingAssetsLoader.LoadTextFileAsync(configPath + fileName, (arg) =>
             {
                 string configData = arg;
                 if (configData != null)

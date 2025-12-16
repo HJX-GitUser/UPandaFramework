@@ -8,7 +8,7 @@ using System.Collections;
 
 public class ReporterEditor : Editor
 {
-    [MenuItem("UPandaGF/日志系统/创建运行时日志显示")]
+    //[MenuItem("UPandaGF/日志系统/创建运行时日志显示")]
     public static void CreateReporter()
     {
         const int ReporterExecOrder = -12000;

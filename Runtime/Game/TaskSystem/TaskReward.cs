@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UPandaGF
+namespace UPandaGF.RunTime.TaskSystem
 {
     // 定义任务奖励类型的枚举
     public enum TaskRewardType

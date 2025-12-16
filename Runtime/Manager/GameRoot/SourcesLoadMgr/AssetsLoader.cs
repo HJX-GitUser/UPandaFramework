@@ -35,7 +35,7 @@ namespace UPandaGF
         /// 资源关联存储文件后缀
         /// </summary>
         private string assetRefextension = ".assetref";
-        public async void Init(AssetLoaddingMethod arg0, ABLoadMgr arg2, UnityAction callback)
+        public async Task Init(AssetLoaddingMethod arg0, ABLoadMgr arg2)
         {
             method = arg0;
             abLoadMgr = arg2;
@@ -46,7 +46,6 @@ namespace UPandaGF
             string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
             byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
             sourceRef = LoadABSourcesRelated(b);
-            callback?.Invoke();
         }
 
         public async Task<T> LoadAsync<T>(string path) where T : UnityEngine.Object

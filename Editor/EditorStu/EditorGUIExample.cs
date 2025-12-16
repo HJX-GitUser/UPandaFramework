@@ -48,19 +48,15 @@ public class EditorGUIExample : EditorWindow
         //而EditorGUILayout 类似于 GUILayout
         //是一个带有自动布局功能的 EditorGUI 绘制工具类
 
-        //我们经常会将 EditorGUI 和 GUI 混合使用 来制作一些编辑器拓展功能
-        //但是由于更多时候我们会用到自动布局功能
-        //因此我们接下来着重讲解 EditorGUILayout 中的功能
-        //EditorGUI和它的区别仅仅是需要自己设置位置而已
-
-        //详细内容：https://docs.unity.cn/cn/2022.3/ScriptReference/EditorGUILayout.html
+        //详细文档：https://docs.unity.cn/cn/2022.3/ScriptReference/EditorGUILayout.html
     }
 
     [MenuItem("UPandaGF/Tools/EditorGUI控件备忘录")]
     private static void OpenLesson3()
     {
+        Debug.Log("EditorGUIExample");
         EditorGUIExample win = EditorWindow.GetWindow<EditorGUIExample>("EditorGUI控件备忘录");
-        //win.titleContent = new GUIContent("窗口标题设置");
+        //win.titleContent = new GUIContent("窗口标题");
         win.Show();
     }
     int layer;

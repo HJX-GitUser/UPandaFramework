@@ -21,7 +21,9 @@ public class DebugerInitEditor : Editor
         }
         if (config == null)
         {
+#if OPEN_PLOG
             LoadConfigFromFile();
+#endif
         }
     }
     private void LoadConfigFromFile()
@@ -56,9 +58,11 @@ public class DebugerInitEditor : Editor
 
     private void OnSceneSaved(Scene scene)
     {
+#if OPEN_PLOG
         //Debug.Log($"{config.addHeadFix}:{component.logConfig.addHeadFix}");
         if (ShouldSaveConfig()) return;
         SaveConfig();
+#endif
     }
 
     private void SaveConfig()

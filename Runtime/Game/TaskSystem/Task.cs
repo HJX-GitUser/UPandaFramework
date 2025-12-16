@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace UPandaGF
+namespace UPandaGF.RunTime.TaskSystem
 {
     // ÈÎÎñ×´Ì¬Ã¶¾Ù
     public enum TaskStatus

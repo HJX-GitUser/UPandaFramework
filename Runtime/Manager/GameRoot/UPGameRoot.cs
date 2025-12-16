@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Threading.Tasks;
 
 namespace UPandaGF
 {
@@ -82,20 +83,34 @@ namespace UPandaGF
             binaryDataMgr.Init();
             abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);
             ABLoadMgr abLoadMgr = ABLoadMgr.Instance;
-            abLoadMgr.MainName = MainName;
+
+            bool IsLoadedOnStreammingAssets = true;
+            string PathUrl = "";
             switch (aBRootPath)
             {
                 case ABRootPath.streamingAssetsPath:
-                    abLoadMgr.PathUrl = StreamingAssetsLoader.CombinePath(LoadAssetPath);
+                    PathUrl = StreamingAssetsLoader.CombinePath(LoadAssetPath);
+                    IsLoadedOnStreammingAssets = true;
                     break;
                 case ABRootPath.persistentDataPath:
-                    abLoadMgr.PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;
+                    PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;
+                    IsLoadedOnStreammingAssets = false;
                     yield return StartCoroutine(abUpdataMgr.StartUpadateAssets());
                     break;
             }
-            //yield return StartCoroutine(sourcesLoadMgr.Init(method, abLoadMgr));
-            sourcesLoadMgr.Init(method, abLoadMgr, OnInited);
+            Task abLoadMgrInitTask = abLoadMgr.Init(IsLoadedOnStreammingAssets, PathUrl, MainName);
+            while (!abLoadMgrInitTask.IsCompleted)
+            {
+                yield return null;
+            }
+            Task sourcesLoadMgrTask = sourcesLoadMgr.Init(method, abLoadMgr);
+            while (!sourcesLoadMgrTask.IsCompleted)
+            {
+                yield return null;
+            }
+            OnInited();
         }
+
 
         private void SetComponent()
         {

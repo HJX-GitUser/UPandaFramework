@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UPandaGF;
 
 /// <summary>
@@ -14,8 +13,14 @@ public class OnLoadCompleteExample : MonoBehaviour
     IAssetsLoader sourcesLoad;
     private void Awake()
     {
-        EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnGFLoadedEvent);
-        EventCenter.Instance.AddEventListener<SceneMgr_SceneAsynLoadProgress>(SceneAsynLoadProgress);
+        EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnGFLoadedEvent);//框架加载结束事件
+        EventCenter.Instance.AddEventListener<SceneMgr_SceneAsynLoadProgress>(SceneAsynLoadProgress);//场景加载进度
+    }
+
+    private void OnDestroy()
+    {
+        EventCenter.Instance.RemoveEventListener<GFLoadedEvent>(OnGFLoadedEvent);
+        EventCenter.Instance.RemoveEventListener<SceneMgr_SceneAsynLoadProgress>(SceneAsynLoadProgress);
     }
 
     private void SceneAsynLoadProgress(SceneMgr_SceneAsynLoadProgress arg0)

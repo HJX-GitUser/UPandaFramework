@@ -1,4 +1,7 @@
+using System.IO;
 using UnityEditor;
+using UnityEngine;
+
 public class PLogerEditor
 {
     [MenuItem("UPandaGF/日志系统/启动日志", false, 0)]
@@ -11,6 +14,13 @@ public class PLogerEditor
     public static void ClosePLoger()
     {
         ScriptingDefineSymbols.RemoveScriptingDefineSymbol("OPEN_PLOG");
+        string configPath = Application.streamingAssetsPath + "/Data/LogConfig.json";
+        if(File.Exists(configPath))
+        {
+            File.Delete(configPath);
+            Debug.Log("LogConfig.json已删除");
+            AssetDatabase.Refresh();
+        }
     }
-   
+
 }
