@@ -154,7 +154,7 @@ namespace UPandaGF
                         return;
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    abLoadMgr.LoadSceneResAsync(arg.packageName, arg.sourceName, () =>
+                    abLoadMgr.GetAssetBundle(arg.packageName, (bundle) =>
                     {
                         sceneMgr.LoadSceneAsyn(sceneName, loadSceneMode, callback);
                     });

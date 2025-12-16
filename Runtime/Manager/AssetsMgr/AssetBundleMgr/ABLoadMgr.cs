@@ -41,6 +41,7 @@ namespace UPandaGF
         [HideInInspector]
         public string MainName;
 
+        #region 初始化
 
         public async Task Init(bool isLoadedOnStreammingAssets, string pathUrl, string mainName)
         {
@@ -81,6 +82,9 @@ namespace UPandaGF
             Debug.Log($"AB包加载路径：{PathUrl}\n资源包主包：{MainName}");
         }
 
+        #endregion
+
+        #region 加载AssetBundle
         /// <summary>
         /// 加载AssetBundle
         /// </summary>
@@ -144,6 +148,58 @@ namespace UPandaGF
             }
         }
 
+        private IEnumerator LoadAssetBundle(string abName, UnityAction<AssetBundle> callback)
+        {
+            string fullPath = Path.Combine(PathUrl, abName);
+            AssetBundle ab = null;
+            if (IsLoadedOnStreammingAssets)
+            {
+                // 对于StreamingAssets路径（特别是WebGL和Android），使用UnityWebRequest
+                using (UnityWebRequest webRequest = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
+                {
+                    yield return webRequest.SendWebRequest();
+                    //检查请求结果
+                    if (webRequest.result != UnityWebRequest.Result.Success)
+                    {
+                        Debug.LogError($"AssetBundle加载失败\n{fullPath}\n{webRequest.error}");
+                        callback.Invoke(null);
+                        yield break;
+                    }
+
+                    ab = DownloadHandlerAssetBundle.GetContent(webRequest);
+                    if (ab == null)
+                    {
+                        Debug.LogError($"AssetBundle加载失败\n{fullPath}");
+                        callback.Invoke(null);
+                        yield break;
+                    }
+                }
+            }
+            else
+            {
+                // 对于本地文件路径，使用LoadFromFileAsync
+                AssetBundleCreateRequest createRequest = AssetBundle.LoadFromFileAsync(fullPath);
+                if (createRequest == null)
+                {
+                    Debug.LogError($"AssetBundle加载失败\n{fullPath}");
+                    callback.Invoke(null);
+                    yield break;
+                }
+                yield return createRequest;
+                ab = createRequest.assetBundle;
+                if (ab == null)
+                {
+                    Debug.LogError($"AssetBundle加载失败\n{fullPath}");
+                    callback.Invoke(null);
+                    yield break;
+                }
+            }
+            callback(ab);
+        }
+
+        #endregion
+
+        #region 通过AssetBundle 获取资源
         /// <summary>
         /// 通过AssetBundle 获取资源
         /// </summary>
@@ -160,6 +216,7 @@ namespace UPandaGF
             }
             return abq.asset as T;
         }
+
         private async Task<UnityEngine.Object> LoadAsset(AssetBundle bundle, string assetName, System.Type type)
         {
             AssetBundleRequest abq = bundle.LoadAssetAsync(assetName, type);
@@ -170,20 +227,22 @@ namespace UPandaGF
             return abq.asset;
         }
 
-        public async Task<AssetBundle> GetAssetBundle(string abName)
+        private IEnumerator LoadAsset<T>(AssetBundle bundle, string assetName, UnityAction<T> callback) where T : UnityEngine.Object
         {
-            if (abDic.ContainsKey(abName))
-            {
-                return abDic[abName];
-            }
-            else
-            {
-                AssetBundle p = await LoadAssetBundle(abName);
-                abDic.Add(abName, p);
-                return p;
-            }
+            AssetBundleRequest abq = bundle.LoadAssetAsync<T>(assetName);
+            yield return abq;
+            callback(abq.asset as T);
         }
 
+        private IEnumerator LoadAsset(AssetBundle bundle, string assetName, System.Type type, UnityAction<UnityEngine.Object> callback)
+        {
+            AssetBundleRequest abq = bundle.LoadAssetAsync(assetName, type);
+            yield return abq;
+            callback(abq.asset);
+        }
+        #endregion
+
+        #region 加载指定包以及依赖包
         /// <summary>
         /// 加载指定包以及依赖包
         /// </summary>
@@ -219,9 +278,59 @@ namespace UPandaGF
             }
             return abDic[abName];
         }
+        private IEnumerator LoadDependenciesAndAimBundle(string abName, UnityAction<AssetBundle> callback)
+        {
+            if (mainAB == null || manifest == null)
+            {
+                Debug.LogError("主包未加载");
+                callback(null);
+                yield break;
+            };
+            //获取依赖包
+            string[] strs = manifest.GetAllDependencies(abName);
+            for (int i = 0; i < strs.Length; i++)
+            {
+                if (!abDic.ContainsKey(strs[i]))
+                {
+                    yield return StartCoroutine(LoadAssetBundle(strs[i], (arg) =>
+                    {
+                        abDic.Add(strs[i], arg);
+                    }));
+                }
+            }
+            //加载目标包
+            if (!abDic.ContainsKey(abName))
+            {
+                yield return StartCoroutine(LoadAssetBundle(abName, (arg) =>
+                {
+                    abDic.Add(abName, arg);
+                }));
+            }
 
+            if (abDic[abName] == null)
+            {
+                abDic.Remove(abName);
+                callback(null);
+                yield break;
+            }
+            callback(abDic[abName]);
+        }
 
-        #region 异步加载
+        public async Task<AssetBundle> GetAssetBundle(string abName)
+        {
+            return await LoadDependenciesAndAimBundle(abName);
+        }
+
+        public void GetAssetBundle(string abName, UnityAction<AssetBundle> callback)
+        {
+            StartCoroutine(LoadDependenciesAndAimBundle(abName, (arg) =>
+            {
+                callback(arg);
+            }));
+        }
+        #endregion
+
+        #region 异步加载Assets资源
         /// <summary>
         /// 异步加载资源
         /// </summary>
@@ -242,215 +351,48 @@ namespace UPandaGF
 
         public void LoadResAsync<T>(string abName, string resName, UnityAction<T> callBack) where T : Object
         {
-            StartCoroutine(ReallyLoadResAsync<T>(abName, resName, callBack));
+            StartCoroutine(ReallyLoadResAsync(abName, resName, callBack));
         }
         private IEnumerator ReallyLoadResAsync<T>(string abName, string resName, UnityAction<T> callBack) where T : Object
         {
-            //获取依赖包
-            string[] strs = manifest.GetAllDependencies(abName);
-            for (int i = 0; i < strs.Length; i++)
+            yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, (arg) =>
             {
-                if (!abDic.ContainsKey(strs[i]))
-                {
-                    abDic.Add(strs[i], null);
-                    //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + strs[i]);
-                    //abDic.Add(strs[i], ab);
-                    AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + strs[i]);
-                    yield return req;
-
-                    abDic[strs[i]] = req.assetBundle;
-                }
-                else
-                {
-                    while (abDic[strs[i]] == null)//如果为null说明资源正在异步加载中
-                    {
-                        yield return 0;
-                    }
-                }
-            }
-
-
-            //加载目标包
-            if (!abDic.ContainsKey(abName))
+                //目标包和依赖包加载结束，arg是目标包， abDic[abName]也能得到目标包
+            }));
+            if (abDic[abName] == null)
             {
-                abDic.Add(abName, null);
-                //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + abName);
-                AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + abName);
-                yield return req;
-
-                abDic[abName] = req.assetBundle;
+                callBack(null);
+                yield break;
             }
-            else
-            {
-                while (abDic[abName] == null)
-                {
-                    yield return 0;
-                }
-            }
-            AssetBundleRequest abq = abDic[abName].LoadAssetAsync<T>(resName);
-            yield return abq;
-            callBack(abq.asset as T);
+            StartCoroutine(LoadAsset(abDic[abName], resName, callBack));
         }
 
         public void LoadResAsync(string abName, string resName, System.Type type, UnityAction<Object> callBack)
         {
             StartCoroutine(ReallyLoadResAsync(abName, resName, type, callBack));
         }
-        private IEnumerator ReallyLoadResAsync(string abName, string resName, System.Type type, UnityAction<Object> callBack)
-        {
-            //获取依赖包
-            string[] strs = manifest.GetAllDependencies(abName);
-            for (int i = 0; i < strs.Length; i++)
-            {
-                if (!abDic.ContainsKey(strs[i]))
-                {
-                    abDic.Add(strs[i], null);
-                    //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + strs[i]);
-                    //abDic.Add(strs[i], ab);
-                    AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + strs[i]);
-                    yield return req;
-
-                    abDic[strs[i]] = req.assetBundle;
-                }
-                else
-                {
-                    while (abDic[strs[i]] == null)//如果为null说明资源正在异步加载中
-                    {
-                        yield return 0;
-                    }
-                }
-            }
-            //加载目标包
-            if (!abDic.ContainsKey(abName))
-            {
-                abDic.Add(abName, null);
-                //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + abName);
-                AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + abName);
-                yield return req;
-
-                abDic[abName] = req.assetBundle;
-            }
-            else
-            {
-                while (abDic[abName] == null)
-                {
-                    yield return 0;
-                }
-            }
-            //异步加载包中资源
-            AssetBundleRequest abq = abDic[abName].LoadAssetAsync(resName, type);
-            yield return abq;
-            callBack(abq.asset);
-        }
-
         public void LoadResAsync(string abName, string resName, UnityAction<Object> callBack)
         {
-            StartCoroutine(ReallyLoadResAsync(abName, resName, callBack));
+            StartCoroutine(ReallyLoadResAsync(abName, resName, typeof(Object), callBack));
         }
-        private IEnumerator ReallyLoadResAsync(string abName, string resName, UnityAction<Object> callBack)
+        private IEnumerator ReallyLoadResAsync(string abName, string resName, System.Type type, UnityAction<Object> callBack)
         {
-            //获取依赖包
-            string[] strs = manifest.GetAllDependencies(abName);
-            for (int i = 0; i < strs.Length; i++)
+            yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, (arg) =>
             {
-                if (!abDic.ContainsKey(strs[i]))
-                {
-                    abDic.Add(strs[i], null);
-                    //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + strs[i]);
-                    //abDic.Add(strs[i], ab);
-                    AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + strs[i]);
-                    yield return req;
-
-                    abDic[strs[i]] = req.assetBundle;
-                }
-                else
-                {
-                    while (abDic[strs[i]] == null)//如果为null说明资源正在异步加载中
-                    {
-                        yield return 0;
-                    }
-                }
-            }
-            //加载目标包
-            if (!abDic.ContainsKey(abName))
+                //目标包和依赖包加载结束，arg是目标包， abDic[abName]也能得到目标包
+            }));
+            if (abDic[abName] == null)
             {
-                abDic.Add(abName, null);
-                //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + abName);
-                AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + abName);
-                yield return req;
-
-                abDic[abName] = req.assetBundle;
+                callBack(null);
+                yield break;
             }
-            else
-            {
-                while (abDic[abName] == null)
-                {
-                    yield return 0;
-                }
-            }
-            //异步加载包中资源
-            AssetBundleRequest abq = abDic[abName].LoadAssetAsync(resName);
-            yield return abq;
-            callBack(abq.asset);
-        }
-
-        /// <summary>
-        /// 加载场景资源
-        /// </summary>
-        /// <param name="abName"></param>
-        /// <param name="resName"></param>
-        /// <param name="callBack"></param>
-        public void LoadSceneResAsync(string abName, string resName, UnityAction callBack)
-        {
-            StartCoroutine(ReallyLoadSceneResAsync(abName, resName, callBack));
-        }
-        private IEnumerator ReallyLoadSceneResAsync(string abName, string resName, UnityAction callBack)
-        {
-            //获取依赖包
-            string[] strs = manifest.GetAllDependencies(abName);
-            for (int i = 0; i < strs.Length; i++)
-            {
-                if (!abDic.ContainsKey(strs[i]))
-                {
-                    abDic.Add(strs[i], null);
-                    //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + strs[i]);
-                    //abDic.Add(strs[i], ab);
-                    AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + strs[i]);
-                    yield return req;
-
-                    abDic[strs[i]] = req.assetBundle;
-                }
-                else
-                {
-                    while (abDic[strs[i]] == null)//如果为null说明资源正在异步加载中
-                    {
-                        yield return 0;
-                    }
-                }
-            }
-            //加载目标包
-            if (!abDic.ContainsKey(abName))
-            {
-                abDic.Add(abName, null);
-                //AssetBundle ab = AssetBundle.LoadFromFile(PathUrl + abName);
-                AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(PathUrl + abName);
-                yield return req;
-
-                abDic[abName] = req.assetBundle;
-            }
-            else
-            {
-                while (abDic[abName] == null)
-                {
-                    yield return 0;
-                }
-            }
-            callBack();
+            StartCoroutine(LoadAsset(abDic[abName], resName, type, callBack));
         }
         #endregion
 
+        #region 卸载AB包的方法
         /// <summary>
-        /// 卸载AB包的方法
+        /// 卸载AB包
         /// </summary>
         /// <param name="name"></param>
         public bool UnLoadAB(string name)
@@ -478,7 +420,7 @@ namespace UPandaGF
             //卸载主包
             mainAB = null;
         }
-
+        #endregion
     }
 }
 
