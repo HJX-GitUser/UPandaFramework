@@ -1,118 +1,50 @@
 # UPandaFramework
+
 Unity的前端框架
-## 目录结构介绍
----
-#### AssetBundleTools 
-**AB包管理工具**
+
+## 模块介绍
+
+### 日志系统
+
+1.对Debug进行了封装，可以剔除日志，避免运行过程中的字符串拼接照成的性能损耗。
+UPandaGF->启动日志/剔除日志
+2.可配置日志输出到本地
+3.整合了LogView，可以在项目出包后开启日志面板查看日志输出，调试信息等。
+
+### 资源管理
+
+1.AB包打包工具
+基于官方的Assetbudle Broswer进行扩展，新增资源上传页签，创建资源对比文件进行热更新
 UPandaGF->AB包工具->Assetbudle Broswer
 
-#### ExcelTool 
+2.IAssetsLoader
+AB包加载接口
+IAssetsLoader loader = UPGameRoot.Instance.GetAssetsLoader()
+直接用编辑器里的路径加载资源，开发过程中UPGameRoot的Inspector面板可以切换为Edior模式加载资源。打包时再切换为AssetBundle模式
+
+3.ResourcesLoader
+封装Unity内置的Resources.Load方法，避免资源重复加载，增加引用计数和异步加载状态管理
+
+4.StreamingAssetsLoadTool
+StreamingAssets路径下的资源加载工具，处理好了跨平台兼容性，提供多种加载方式
+
+### 数据表
+
+#### ExcelTool
+
 **Excel工具**
-1. 根据Excel配置的数据生成数据类和数据容器类
-2. 把Excel里的数据生成二进制文件放入StreamingAssets里，用BinaryDataMgr类得到相关数据
 
-#### CreatDirectory 项目目录生成工具
+1.  根据Excel配置的数据生成数据类和数据容器类
+2.  把Excel里的数据生成二进制文件放入StreamingAssets里，用BinaryDataMgr类得到相关数据
 
-1. 3rd 第三方插件和资源目录
-2. ArtAssets 艺术资源目录
-3. Resources
-4. Scene
-5. StreamingAssets
-6. Scripts
-7. AssetBundle
-
----
-### **Extend**代码扩展
-
----
-
-### **Manager**开发工具
-
----
-
-#### Singleton
-##### LazySingletonBase
-单例基类 懒汉模式
-##### EagerSingletonBase
-单例基类 饿汉模式
-##### LazyMonoSingletonBase
-继承MonoBehaviour的单例基类，懒汉模式
-##### EagerMonoSingletonBase
-继承MonoBehaviour的单例基类，饿汉模式
-
-
-#### PublicMono
-**公共Mono模块**
-1. 利用帧更新或定时更新处理逻辑
-2. 利用协同程序处理逻辑
-3. 可以统一执行管理帧更新或定时更新相关逻辑
-
-不继承MonoBehaviour的脚本也能利用该工具实现以上逻辑
-
-```C#
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-/// <summary>
-/// 使用方式
-/// </summary>
-public class HowUseMonoMgr
-{
-    /// <summary>
-    /// 调用该方法就可以让MyUpdate()方法在每帧调用
-    /// </summary>
-    public void EnableMyUpdate()
-    {
-        MonoMgr.Instance.AddUpdateListener(MyUpdate);
-    }
-    public void DisableMyUpdate()
-    {
-        MonoMgr.Instance.RemoveUpdateListener(MyUpdate);
-    }
-
-    private void MyUpdate()
-    {
-        Debug.Log("更新");
-    }
-    /// <summary>
-    /// 开启协程的方式
-    /// </summary>
-    public void StartMyIEnumerator()
-    {
-        MonoMgr.Instance.StartCoroutine(SelfIEnumerator());
-    }
-
-    private IEnumerator SelfIEnumerator()
-    {
-        Debug.Log("开启协程");
-        yield return new WaitForSeconds(3f);
-        Debug.Log("协程结束");
-    }
-}
-
-```
-
-#### ObjPool 
-**对象池**
-
-对象池还需要优化，目前提供基础功能
-使用前对象需要做成预制体放进Resources里
-```C#
-//对象在Hierarchy中放回对象池后是否按层级结构存放
-//建议打包的时候设为false，可以节约一点性能
-//默认是true
-PoolMgr.isOpenLayout;
-
-PoolMgr.Instance.GetObj(string name)//可以得到对象。
-//name是在Resources里的路径，也被用作对象的标识，存的时候也必须是一样的
-PoolMgr.Instance.PushObj(string name, GameObject obj)//把对象放入对象池。
-```
+### 事件系统
 
 #### EventCenterModule
-**事件中心模块**
-示例场景：EventCenterUse
+
+**事件中心**
 
 监听、移除：
+
 ```C#
 using UnityEngine;
 
@@ -147,7 +79,7 @@ public class EnentCenterUse_AddListener : MonoBehaviour
     }
 }
 
-public class EnentTest1 : EventArgBase//声名事件
+public class EnentTest1 : EventArgBase//声名事件对象
 {
     public override int EventID => typeof(EnentTest1).GetHashCode();
     public string arg0 { get;private set; }
@@ -160,7 +92,9 @@ public class EnentTest1 : EventArgBase//声名事件
 
 
 ```
+
 触发示例：
+
 ```C#
 using UnityEngine;
 

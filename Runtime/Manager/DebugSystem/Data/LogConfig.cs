@@ -22,10 +22,9 @@ namespace UPandaGF
         public bool showThreadID = true;
         [Header("日志文件储存开关")]
         public bool logSave = false;
-        [Header("是否显示FPS")]
-        public bool showFPS = true;
         [Header("文件储存路径")]
         public string logFileSavePath = "Output Log/";
+       
         public string LogFileSavePath { get { return Application.persistentDataPath + "/" + logFileSavePath; } }
         public string LogFileName { get { return Application.productName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm") + ".log"; } }
 
@@ -38,7 +37,6 @@ namespace UPandaGF
             openTime = arg.openTime;
             showThreadID = arg.showThreadID;
             logSave = arg.logSave;
-            showFPS = arg.showFPS;
             logFileSavePath = arg.logFileSavePath;
         }
 
@@ -46,9 +44,9 @@ namespace UPandaGF
         {
             if (!(other is LogConfig config)) return false;
 
-            return (openLog, addHeadFix, logHeadFix, openTime, showThreadID, logSave, showFPS, logFileSavePath)
+            return (openLog, addHeadFix, logHeadFix, openTime, showThreadID, logSave, logFileSavePath)
                 .Equals((other.openLog, other.addHeadFix, other.logHeadFix, other.openTime,
-                        other.showThreadID, other.logSave, other.showFPS, other.logFileSavePath));
+                        other.showThreadID, other.logSave, other.logFileSavePath));
         }
 
 

@@ -58,12 +58,12 @@ namespace UPandaGF
             GameObject obj = new GameObject("UPGameRoot");
             obj.AddComponent<UPGameRoot>();
 
-            if (GameObject.FindObjectOfType<OnLoadCompleteExample>() != null)
+            if (GameObject.FindObjectOfType<GameLaunchExample>() != null)
             {
                 return;
             }
             GameObject obj2 = new GameObject("OnLoadCompleteExample");
-            obj2.AddComponent<OnLoadCompleteExample>();
+            obj2.AddComponent<GameLaunchExample>();
         }
     }
 }

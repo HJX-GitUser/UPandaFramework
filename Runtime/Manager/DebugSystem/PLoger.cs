@@ -22,12 +22,6 @@ namespace UPandaGF
                 PLogHelper unityLogHelper = logObj.AddComponent<PLogHelper>();
                 unityLogHelper.InitLogFileModule(cfg.logFileSavePath, cfg.LogFileName);
             }
-            if (cfg.showFPS || UPGameRoot.Instance.EnableDebugModel)
-            {
-                GameObject fpsObj = new GameObject("FPS");
-                GameObject.DontDestroyOnLoad(fpsObj);
-                fpsObj.AddComponent<ShowFPS>();
-            }
         }
 
         #region ∆’Õ®»’÷æ

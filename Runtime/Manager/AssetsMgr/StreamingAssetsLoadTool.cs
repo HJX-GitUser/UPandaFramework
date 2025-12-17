@@ -10,7 +10,7 @@ using UPandaGF;
 /// <summary>
 /// StreamingAssetsº”‘ÿπ§æﬂ
 /// </summary>
-public class StreamingAssetsLoader
+public static class StreamingAssetsLoader
 {
     private static string streamingAssetsPath = GetStreamingAssetsPath();
     public static string StreamingAssetsPath => streamingAssetsPath;

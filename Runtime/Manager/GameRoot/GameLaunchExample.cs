@@ -7,7 +7,7 @@ using UPandaGF;
 /// <summary>
 /// ÓÎÏ·Æô¶¯°¸Àý
 /// </summary>
-public class OnLoadCompleteExample : MonoBehaviour
+public class GameLaunchExample : MonoBehaviour
 {
     public string firstScene = "Assets/Scenes/InitScene.unity";
     IAssetsLoader sourcesLoad;
