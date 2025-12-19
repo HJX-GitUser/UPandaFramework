@@ -28,7 +28,6 @@ namespace UPandaGF
 
     public class GFLoadedEvent : EventArgBase
     {
-        public override int EventID => typeof(GFLoadedEvent).GetHashCode();
 
     }
 

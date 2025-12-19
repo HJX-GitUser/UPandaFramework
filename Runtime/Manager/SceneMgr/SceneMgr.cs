@@ -61,7 +61,6 @@ public class SceneMgr : LazySingletonBase<SceneMgr>
 /// </summary>
 public class SceneMgr_SceneAsynLoadProgress : EventArgBase
 {
-    public override int EventID => typeof(SceneMgr_SceneAsynLoadProgress).GetHashCode();
     /// <summary>
     /// ╪сть╫Ь╤х
     /// </summary>
