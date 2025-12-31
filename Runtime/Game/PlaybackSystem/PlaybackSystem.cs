@@ -183,7 +183,7 @@ public class PlaybackSystem : EagerMonoSingletonBase<PlaybackSystem>
     private IEnumerator IE_Replay()
     {
         PlaybackSaveData data = null;
-        PLoger.Log("开始加载数据");
+        PLogger.Log("开始加载数据");
         System.Threading.Tasks.Task task = System.Threading.Tasks.Task.Run(() =>
         {
             data = Load<PlaybackSaveData>("RecordData");

@@ -38,7 +38,7 @@ namespace UPandaGF
             abLoadMgr = arg2;
             editorSourcesMgr = EditorSourcesMgr.Instance;
             sceneMgr = SceneMgr.Instance;
-            PLoger.Log("AssetsLoader init");
+            PLogger.Log("AssetsLoader init");
             //资源关联数据
             string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
             byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
@@ -56,7 +56,7 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Assetbundles:
                     if (!sourceRef.sourcesDic.ContainsKey(path))
                     {
-                        PLoger.LogError("该资源不存在：" + path);
+                        PLogger.LogError("该资源不存在：" + path);
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
                     asset = await abLoadMgr.LoadResAsync<T>(arg.packageName, arg.sourceName);
@@ -76,7 +76,7 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Assetbundles:
                     if (!sourceRef.sourcesDic.ContainsKey(path))
                     {
-                        PLoger.LogError("该资源不存在：" + path);
+                        PLogger.LogError("该资源不存在：" + path);
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
                     asset = await abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, type);
@@ -95,7 +95,7 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Assetbundles:
                     if (!sourceRef.sourcesDic.ContainsKey(path))
                     {
-                        PLoger.LogError("该资源不存在：" + path);
+                        PLogger.LogError("该资源不存在：" + path);
                         return;
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
@@ -114,7 +114,7 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Assetbundles:
                     if (!sourceRef.sourcesDic.ContainsKey(path))
                     {
-                        PLoger.LogError("该资源不存在：" + path);
+                        PLogger.LogError("该资源不存在：" + path);
                         return;
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
@@ -133,7 +133,7 @@ namespace UPandaGF
 
             if (path.Substring(path.LastIndexOf('/')).Length == 0)
             {
-                PLoger.LogError($"路径异常：{path}");
+                PLogger.LogError($"路径异常：{path}");
                 return;
             }
             string sceneName = path.Substring(path.LastIndexOf('/') + 1);
@@ -146,7 +146,7 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Assetbundles:
                     if (!sourceRef.sourcesDic.ContainsKey(path))
                     {
-                        PLoger.LogError("该资源不存在：" + path);
+                        PLogger.LogError("该资源不存在：" + path);
                         callback?.Invoke();
                         return;
                     }

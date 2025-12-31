@@ -13,7 +13,7 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
     /// <param name="db">ÄÚÈÝ</param>
     private void MyDebug(string db)
     {
-        PLoger.Log(db);
+        PLogger.Log(db);
     }
     /// <summary>
     /// ´æ´¢Êý¾Ý

@@ -2,7 +2,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-public class PLogerEditor
+public class PLoggerEditor
 {
     [MenuItem("UPandaGF/日志系统/启动日志", false, 0)]
     public static void EnablePLoger()

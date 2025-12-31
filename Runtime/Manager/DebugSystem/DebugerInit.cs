@@ -54,7 +54,7 @@ namespace UPandaGF
                 if (configData != null)
                 {
                     logConfig = JsonUtility.FromJson<LogConfig>(configData);
-                    PLoger.InitLog(logConfig);
+                    PLogger.InitLog(logConfig);
                 }
             }));
         }

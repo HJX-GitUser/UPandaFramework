@@ -40,7 +40,7 @@ namespace UPandaGF
         {
             DATA_BINARY_PATH =  savePath;
             FILE_EXTENSION = extension;
-            PLoger.Log($"BinaryDataMgr Init!\n存储路径：{DATA_BINARY_PATH}，后缀：{FILE_EXTENSION}");
+            PLogger.Log($"BinaryDataMgr Init!\n存储路径：{DATA_BINARY_PATH}，后缀：{FILE_EXTENSION}");
         }
         /// <summary>
         /// 加载Excel表的2进制数据到内存中 

@@ -21,7 +21,7 @@ public class EventCenterUse_AddListener : MonoBehaviour
     private void TestEvent1(EventArgBase arg0)
     {
         EnentTest1 arg = arg0 as EnentTest1;
-        PLoger.Log($"事件触发1 参数：{arg.arg0}");
+        PLogger.Log($"事件触发1 参数：{arg.arg0}");
     }
 }
 

@@ -49,25 +49,11 @@ namespace UPandaGF
             MainName = mainName;
             mainAB = await LoadAssetBundle(MainName);
             manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+
+            LoadMainAssetBundleManifest();
+
         }
 
-        private void Start()
-        {
-            if (!isInit)
-            {
-                isInit = true;
-                if (PathUrl == null || PathUrl == "")
-                {
-                    PathUrl = Application.streamingAssetsPath + "/AB/PC/";
-                    IsLoadedOnStreammingAssets = true;
-                }
-                if (MainName == null || MainName == "")
-                {
-                    MainName = "PC";
-                }
-                LoadMainAssetBundleManifest();
-            }
-        }
 
         /// <summary>
         /// 加载主包 和 配置文件

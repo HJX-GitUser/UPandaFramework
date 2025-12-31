@@ -55,7 +55,7 @@ namespace UPandaGF.RunTime.TaskSystem
 
         public void CompleteTask()
         {
-            PLoger.Log("Complete");
+            PLogger.Log("Complete");
         }
 
     }

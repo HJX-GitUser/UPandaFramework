@@ -84,7 +84,7 @@ namespace UPandaGF
             {
                 // 不存在则创建（支持多级目录）
                 Directory.CreateDirectory(localFilePath);
-                PLoger.Log("资源路径创建成功：" + localFilePath);
+                PLogger.Log("资源路径创建成功：" + localFilePath);
             }
             abCompareInfoLocalPath = localFilePath + configArg.comparativeDocumentName + ".txt";
             abCompare_Tmp_InfoLocalPath = localFilePath + configArg.comparativeDocumentName + "_TMP.txt";
@@ -100,10 +100,10 @@ namespace UPandaGF
         public IEnumerator StartUpadateAssets()
         {
             bool isLoaded = false;
-            PLoger.Log("启动资源更新检查");
+            PLogger.Log("启动资源更新检查");
             CheckUpdata((arg) =>
             {
-                if (!arg) PLoger.Log("资源更新失败");
+                if (!arg) PLogger.Log("资源更新失败");
                 isLoaded = true;
                 updataCompleteEvent?.Invoke(arg);
             },
@@ -115,7 +115,7 @@ namespace UPandaGF
             {
                 yield return 0;
             }
-            PLoger.Log("更新流程结束");
+            PLogger.Log("更新流程结束");
 
         }
 
@@ -277,7 +277,7 @@ namespace UPandaGF
                 if (!isOver)
                 {
                     --ReDownTimes;
-                    PLoger.LogError($"对比文件下载失败，剩余加载次数：{ReDownTimes}");
+                    PLogger.LogError($"对比文件下载失败，剩余加载次数：{ReDownTimes}");
                 }
             }
             //告诉外部成功与否
@@ -334,7 +334,7 @@ namespace UPandaGF
             }
             catch (System.Exception ex)
             {
-                PLoger.LogError(fileName + "下载失败:" + ex.Message);
+                PLogger.LogError(fileName + "下载失败:" + ex.Message);
                 return false;
             }
         }

@@ -73,6 +73,7 @@ namespace UPandaGF
                 method = AssetLoaddingMethod.Assetbundles;
 #endif
             }
+
             StartCoroutine(Init());
         }
 
@@ -80,27 +81,31 @@ namespace UPandaGF
         {
             yield return StartCoroutine(debugerInit.Init());
             binaryDataMgr.Init();
-            abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);
-            ABLoadMgr abLoadMgr = ABLoadMgr.Instance;
 
-            bool IsLoadedOnStreammingAssets = true;
-            string PathUrl = "";
-            switch (aBRootPath)
+            ABLoadMgr abLoadMgr = ABLoadMgr.Instance;
+            if (method == AssetLoaddingMethod.Assetbundles)
             {
-                case ABRootPath.streamingAssetsPath:
-                    PathUrl = StreamingAssetsLoader.CombinePath(LoadAssetPath);
-                    IsLoadedOnStreammingAssets = true;
-                    break;
-                case ABRootPath.persistentDataPath:
-                    PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;
-                    IsLoadedOnStreammingAssets = false;
-                    yield return StartCoroutine(abUpdataMgr.StartUpadateAssets());
-                    break;
-            }
-            Task abLoadMgrInitTask = abLoadMgr.Init(IsLoadedOnStreammingAssets, PathUrl, MainName);
-            while (!abLoadMgrInitTask.IsCompleted)
-            {
-                yield return null;
+                abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);
+
+                bool IsLoadedOnStreammingAssets = true;
+                string PathUrl = "";
+                switch (aBRootPath)
+                {
+                    case ABRootPath.streamingAssetsPath:
+                        PathUrl = StreamingAssetsLoader.CombinePath(LoadAssetPath);
+                        IsLoadedOnStreammingAssets = true;
+                        break;
+                    case ABRootPath.persistentDataPath:
+                        PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;
+                        IsLoadedOnStreammingAssets = false;
+                        yield return StartCoroutine(abUpdataMgr.StartUpadateAssets());
+                        break;
+                }
+                Task abLoadMgrInitTask = abLoadMgr.Init(IsLoadedOnStreammingAssets, PathUrl, MainName);
+                while (!abLoadMgrInitTask.IsCompleted)
+                {
+                    yield return null;
+                }
             }
             Task sourcesLoadMgrTask = sourcesLoadMgr.Init(method, abLoadMgr);
             while (!sourcesLoadMgrTask.IsCompleted)
@@ -139,7 +144,7 @@ namespace UPandaGF
             //PLoger.Log_yellow($"GameRoot Initialization completed!");
             //PLoger.Log_cyan($"GameRoot Initialization completed!");
             //PLoger.LogFormat("<color=yellow>{0}</color>", "GameRoot Initialization completed!");
-            PLoger.Log_white($"GameRoot Initialization completed!");
+            PLogger.Log_white($"GameRoot Initialization completed!");
             EventCenter.Instance.EventTrigger(new GFLoadedEvent());
         }
 

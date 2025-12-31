@@ -30,7 +30,7 @@ namespace UPandaGF
                 }
                 else
                 {
-                    PLoger.LogWarning($"id：{id} 的方法试图重复加入监听!");
+                    PLogger.LogWarning($"id：{id} 的方法试图重复加入监听!");
                 }
             }
 

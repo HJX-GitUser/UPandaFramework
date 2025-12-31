@@ -166,7 +166,7 @@ public static class StreamingAssetsLoader
                 }
                 else
                 {
-                    PLoger.LogError($"{fullPath} º”‘ÿ ß∞‹:\n{request.error} ");
+                    PLogger.LogError($"{fullPath} º”‘ÿ ß∞‹:\n{request.error} ");
                 }
             }
         }
@@ -178,7 +178,7 @@ public static class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                PLoger.LogError($"{fullPath} º”‘ÿ ß∞‹:\n{e.Message}");
+                PLogger.LogError($"{fullPath} º”‘ÿ ß∞‹:\n{e.Message}");
             }
         }
         callback?.Invoke(text);
@@ -226,7 +226,7 @@ public static class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                PLoger.LogError($"{fullPath} º”‘ÿ ß∞‹: \n{e.Message}");
+                PLogger.LogError($"{fullPath} º”‘ÿ ß∞‹: \n{e.Message}");
                 return null;
             }
         }
@@ -296,7 +296,7 @@ public static class StreamingAssetsLoader
 
                 if (www.result != UnityWebRequest.Result.Success)
                 {
-                    PLoger.Log($"Failed to load binary data at {fullPath}: {www.error}");
+                    PLogger.Log($"Failed to load binary data at {fullPath}: {www.error}");
                 }
                 else
                 {
@@ -312,7 +312,7 @@ public static class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                PLoger.LogError($"Failed to read binary data at {fullPath}: {e.Message}");
+                PLogger.LogError($"Failed to read binary data at {fullPath}: {e.Message}");
             }
         }
         callback?.Invoke(bytes);
