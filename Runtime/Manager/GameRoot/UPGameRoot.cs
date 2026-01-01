@@ -17,14 +17,7 @@ namespace UPandaGF
         Assetbundles,//使用AssetBundle加载资源
     }
 
-    /// <summary>
-    /// AB包根路径
-    /// </summary>
-    public enum ABRootPath
-    {
-        streamingAssetsPath,
-        persistentDataPath
-    }
+
 
     public class GFLoadedEvent : EventArgBase
     {
@@ -44,13 +37,11 @@ namespace UPandaGF
         #region Config
         //[Header("资源加载方式")]
         public AssetLoaddingMethod method;
-        //[Header("资源加载根路径")]
-        public ABRootPath aBRootPath;
-        //[Header("资源路径")]
+        public bool enableAssetUpdate;//启动资源更新
+        //[Header("资源相对路径")]
         public string LoadAssetPath = "AssetBundles/StandaloneWindows/";
         //[Header("主包名")]
         public string MainName = "StandaloneWindows";
-
         /// <summary>
         /// 资源远端更新配置
         /// </summary>
@@ -66,14 +57,6 @@ namespace UPandaGF
         protected override void OnAwake()
         {
             SetComponent();
-            if (method == AssetLoaddingMethod.Editor)
-            {
-                aBRootPath = ABRootPath.streamingAssetsPath;
-#if !UNITY_EDITOR
-                method = AssetLoaddingMethod.Assetbundles;
-#endif
-            }
-
             StartCoroutine(Init());
         }
 
@@ -86,22 +69,11 @@ namespace UPandaGF
             if (method == AssetLoaddingMethod.Assetbundles)
             {
                 abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);
-
-                bool IsLoadedOnStreammingAssets = true;
-                string PathUrl = "";
-                switch (aBRootPath)
+                if (enableAssetUpdate)
                 {
-                    case ABRootPath.streamingAssetsPath:
-                        PathUrl = StreamingAssetsLoader.CombinePath(LoadAssetPath);
-                        IsLoadedOnStreammingAssets = true;
-                        break;
-                    case ABRootPath.persistentDataPath:
-                        PathUrl = Application.persistentDataPath + "/" + LoadAssetPath;
-                        IsLoadedOnStreammingAssets = false;
-                        yield return StartCoroutine(abUpdataMgr.StartUpadateAssets());
-                        break;
+                    yield return StartCoroutine(abUpdataMgr.StartUpadateAssets());
                 }
-                Task abLoadMgrInitTask = abLoadMgr.Init(IsLoadedOnStreammingAssets, PathUrl, MainName);
+                Task abLoadMgrInitTask = abLoadMgr.Init(LoadAssetPath, MainName);
                 while (!abLoadMgrInitTask.IsCompleted)
                 {
                     yield return null;

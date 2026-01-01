@@ -2,6 +2,15 @@ using System.Collections.Generic;
 
 namespace UPandaGF
 {
+    /// <summary>
+    /// AB包加载路径
+    /// </summary>
+    public enum ABLoodPath
+    {
+        streamingAssetsPath,
+        persistentDataPath,
+        remotePath
+    }
     ///// <summary>
     ///// AB资源关联信息
     /// </summary>
@@ -28,6 +37,10 @@ namespace UPandaGF
         /// 资源名
         /// </summary>
         public string sourceName;
+        /// <summary>
+        /// 资源加载根路径
+        /// </summary>
+        public ABLoodPath loodPath;
         public ABRelatedArg(string arg0, string arg1)
         {
             packageName = arg0;

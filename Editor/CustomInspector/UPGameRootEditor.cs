@@ -32,7 +32,7 @@ namespace UPandaGF
             }
             EditorGUILayout.Space(10);
 #if OPEN_PLOG
-            if(!EditorApplication.isPlaying)
+            if (!EditorApplication.isPlaying)
             {
                 ShowArg("EnableDebugModel", "启动调试模式");
                 if (component.EnableDebugModel)
@@ -70,12 +70,10 @@ namespace UPandaGF
 
         private void AssetbundlesEditorGUI()
         {
-            ShowArg("aBRootPath", "根路径");
-            if (component.aBRootPath == ABRootPath.persistentDataPath)
-            {
+            ShowArg("enableAssetUpdate", "启动资源更新");
+            if (component.enableAssetUpdate)
                 ShowArg("assetUpdataConfig", "资源更新配置");
-                EditorGUILayout.Space();
-            }
+            EditorGUILayout.Space();
             ShowArg("LoadAssetPath", "资源路径");
             ShowArg("MainName", "主包名");
         }

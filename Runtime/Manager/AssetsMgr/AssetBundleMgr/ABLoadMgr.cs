@@ -17,8 +17,8 @@ namespace UPandaGF
         /// <summary>
         /// 是否从StreamingAssets路径下加载
         /// </summary>
-        [HideInInspector]
-        public bool IsLoadedOnStreammingAssets = true;
+        // [HideInInspector]
+        // public bool IsLoadedOnStreammingAssets = true;
         //主包
         private AssetBundle mainAB = null;
         //主包依赖获取配置文件
@@ -28,7 +28,7 @@ namespace UPandaGF
         private Dictionary<string, AssetBundle> abDic = new Dictionary<string, AssetBundle>();
 
         /// <summary>
-        /// 获取AB包加载路径
+        /// 获取AB包加载路径（相对路径）
         /// </summary>
         [HideInInspector]
         public string PathUrl;
@@ -40,88 +40,108 @@ namespace UPandaGF
         public string MainName;
 
         #region 初始化
-
-        public async Task Init(bool isLoadedOnStreammingAssets, string pathUrl, string mainName)
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="pathUrl">相对路径</param>
+        /// <param name="mainName">主包名</param>
+        /// <returns></returns>
+        public async Task Init(string pathUrl, string mainName)
         {
             isInit = true;
-            IsLoadedOnStreammingAssets = isLoadedOnStreammingAssets;
             PathUrl = pathUrl;
             MainName = mainName;
-            mainAB = await LoadAssetBundle(MainName);
-            manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
-
-            LoadMainAssetBundleManifest();
-
+            try
+            {
+                // 加载主包 和 配置文件
+                // 加载所有包是 通过它才能得到依赖信息
+                mainAB = await LoadAssetBundle(MainName, ABLoodPath.streamingAssetsPath);
+                manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+                Debug.Log($"AB包加载路径：{PathUrl}\n资源包主包：{MainName}");
+            }
+            catch
+            {
+                PLogger.LogError($"AssetBundleManifest 加载失败，主包必须放置在StreamingAssets路径");
+            }
         }
-
-
-        /// <summary>
-        /// 加载主包 和 配置文件
-        /// 加载所有包是 通过它才能得到依赖信息
-        /// </summary>
-        private async void LoadMainAssetBundleManifest()
-        {
-            mainAB = await LoadAssetBundle(MainName);
-            manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
-            Debug.Log($"AB包加载路径：{PathUrl}\n资源包主包：{MainName}");
-        }
-
         #endregion
 
         #region 加载AssetBundle
+
+        private string GetFullPath(ABLoodPath loodPath)
+        {
+            string fullPath = "";
+            switch (loodPath)
+            {
+                case ABLoodPath.streamingAssetsPath:
+                    fullPath = StreamingAssetsLoader.CombinePath(PathUrl);
+                    break;
+                case ABLoodPath.persistentDataPath:
+                    fullPath = Application.persistentDataPath + "/" + PathUrl;
+                    break;
+                case ABLoodPath.remotePath:
+                    fullPath = PathUrl;
+                    break;
+            }
+            return fullPath;
+        }
         /// <summary>
         /// 加载AssetBundle
         /// </summary>
-        /// <param name="abName"></param>
+        /// <param name="abName">包名</param>
+        /// <param name="IsLoadedOnStreammingAssets">是否是本地加载</param>
         /// <returns></returns>
-        private async Task<AssetBundle> LoadAssetBundle(string abName)
+        private async Task<AssetBundle> LoadAssetBundle(string abName, ABLoodPath loodPath)
         {
-            string fullPath = Path.Combine(PathUrl, abName);
+            //string fullPath = Path.Combine(PathUrl, abName);
+            string fullPath = Path.Combine(GetFullPath(loodPath), abName);
             AssetBundle ab = null;
             try
             {
-                if (IsLoadedOnStreammingAssets)
+                switch (loodPath)
                 {
-                    // 对于StreamingAssets路径（特别是WebGL和Android），使用UnityWebRequest
-                    using (UnityWebRequest webRequest = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
-                    {
-                        webRequest.SendWebRequest();
-                        while (!webRequest.isDone)
+                    case ABLoodPath.remotePath:
+                    case ABLoodPath.streamingAssetsPath:
+                        // 对于StreamingAssets路径（特别是WebGL和Android），使用UnityWebRequest
+                        using (UnityWebRequest webRequest = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
+                        {
+                            webRequest.SendWebRequest();
+                            while (!webRequest.isDone)
+                            {
+                                await System.Threading.Tasks.Task.Yield();
+                            }
+                            //检查请求结果
+                            if (webRequest.result != UnityWebRequest.Result.Success)
+                            {
+                                Debug.LogError($"AssetBundle加载失败\n{fullPath}\n{webRequest.error}");
+                                return null;
+                            }
+
+                            ab = DownloadHandlerAssetBundle.GetContent(webRequest);
+                            if (ab == null)
+                            {
+                                Debug.LogError($"AssetBundle加载失败\n{fullPath}");
+                            }
+                        }
+                        break;
+                    case ABLoodPath.persistentDataPath:
+                        // 对于本地文件路径，使用LoadFromFileAsync
+                        AssetBundleCreateRequest createRequest = AssetBundle.LoadFromFileAsync(fullPath);
+                        if (createRequest == null)
+                        {
+                            Debug.LogError($"AssetBundle加载失败\n{fullPath}");
+                            return null;
+                        }
+                        while (!createRequest.isDone)
                         {
                             await System.Threading.Tasks.Task.Yield();
                         }
-                        //检查请求结果
-                        if (webRequest.result != UnityWebRequest.Result.Success)
-                        {
-                            Debug.LogError($"AssetBundle加载失败\n{fullPath}\n{webRequest.error}");
-                            return null;
-                        }
-
-                        ab = DownloadHandlerAssetBundle.GetContent(webRequest);
+                        ab = createRequest.assetBundle;
                         if (ab == null)
                         {
                             Debug.LogError($"AssetBundle加载失败\n{fullPath}");
                         }
-                    }
-                }
-                else
-                {
-                    // 对于本地文件路径，使用LoadFromFileAsync
-                    AssetBundleCreateRequest createRequest = AssetBundle.LoadFromFileAsync(fullPath);
-                    if (createRequest == null)
-                    {
-                        Debug.LogError($"AssetBundle加载失败\n{fullPath}");
-                        return null;
-                    }
-                    while (!createRequest.isDone)
-                    {
-                        await System.Threading.Tasks.Task.Yield();
-                    }
-                    ab = createRequest.assetBundle;
-                    if (ab == null)
-                    {
-                        Debug.LogError($"AssetBundle加载失败\n{fullPath}");
-                    }
+                        break;
                 }
                 return ab;
             }
@@ -132,51 +152,54 @@ namespace UPandaGF
             }
         }
 
-        private IEnumerator LoadAssetBundle(string abName, UnityAction<AssetBundle> callback)
+        private IEnumerator LoadAssetBundle(string abName, ABLoodPath loodPath, UnityAction<AssetBundle> callback)
         {
-            string fullPath = Path.Combine(PathUrl, abName);
+            // string fullPath = Path.Combine(PathUrl, abName);
+            string fullPath = Path.Combine(GetFullPath(loodPath), abName);
             AssetBundle ab = null;
-            if (IsLoadedOnStreammingAssets)
+            switch (loodPath)
             {
-                // 对于StreamingAssets路径（特别是WebGL和Android），使用UnityWebRequest
-                using (UnityWebRequest webRequest = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
-                {
-                    yield return webRequest.SendWebRequest();
-                    //检查请求结果
-                    if (webRequest.result != UnityWebRequest.Result.Success)
+                case ABLoodPath.remotePath:
+                case ABLoodPath.streamingAssetsPath:
+                    // 对于StreamingAssets路径（特别是WebGL和Android），使用UnityWebRequest
+                    using (UnityWebRequest webRequest = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
                     {
-                        Debug.LogError($"AssetBundle加载失败\n{fullPath}\n{webRequest.error}");
+                        yield return webRequest.SendWebRequest();
+                        //检查请求结果
+                        if (webRequest.result != UnityWebRequest.Result.Success)
+                        {
+                            Debug.LogError($"AssetBundle加载失败\n{fullPath}\n{webRequest.error}");
+                            callback.Invoke(null);
+                            yield break;
+                        }
+
+                        ab = DownloadHandlerAssetBundle.GetContent(webRequest);
+                        if (ab == null)
+                        {
+                            Debug.LogError($"AssetBundle加载失败\n{fullPath}");
+                            callback.Invoke(null);
+                            yield break;
+                        }
+                    }
+                    break;
+                case ABLoodPath.persistentDataPath:
+                    // 对于本地文件路径，使用LoadFromFileAsync
+                    AssetBundleCreateRequest createRequest = AssetBundle.LoadFromFileAsync(fullPath);
+                    if (createRequest == null)
+                    {
+                        Debug.LogError($"AssetBundle加载失败\n{fullPath}");
                         callback.Invoke(null);
                         yield break;
                     }
-
-                    ab = DownloadHandlerAssetBundle.GetContent(webRequest);
+                    yield return createRequest;
+                    ab = createRequest.assetBundle;
                     if (ab == null)
                     {
                         Debug.LogError($"AssetBundle加载失败\n{fullPath}");
                         callback.Invoke(null);
                         yield break;
                     }
-                }
-            }
-            else
-            {
-                // 对于本地文件路径，使用LoadFromFileAsync
-                AssetBundleCreateRequest createRequest = AssetBundle.LoadFromFileAsync(fullPath);
-                if (createRequest == null)
-                {
-                    Debug.LogError($"AssetBundle加载失败\n{fullPath}");
-                    callback.Invoke(null);
-                    yield break;
-                }
-                yield return createRequest;
-                ab = createRequest.assetBundle;
-                if (ab == null)
-                {
-                    Debug.LogError($"AssetBundle加载失败\n{fullPath}");
-                    callback.Invoke(null);
-                    yield break;
-                }
+                    break;
             }
             callback(ab);
         }
@@ -231,7 +254,7 @@ namespace UPandaGF
         /// 加载指定包以及依赖包
         /// </summary>
         /// <param name="abName"></param>
-        private async Task<AssetBundle> LoadDependenciesAndAimBundle(string abName)
+        private async Task<AssetBundle> LoadDependenciesAndAimBundle(string abName, ABLoodPath loodPath)
         {
             if (mainAB == null || manifest == null)
             {
@@ -244,14 +267,14 @@ namespace UPandaGF
             {
                 if (!abDic.ContainsKey(strs[i]))
                 {
-                    AssetBundle ab = await LoadAssetBundle(strs[i]);
+                    AssetBundle ab = await LoadAssetBundle(strs[i], loodPath);
                     abDic.Add(strs[i], ab);
                 }
             }
             //加载目标包
             if (!abDic.ContainsKey(abName))
             {
-                AssetBundle ab = await LoadAssetBundle(abName);
+                AssetBundle ab = await LoadAssetBundle(abName, loodPath);
                 abDic.Add(abName, ab);
             }
 
@@ -262,7 +285,7 @@ namespace UPandaGF
             }
             return abDic[abName];
         }
-        private IEnumerator LoadDependenciesAndAimBundle(string abName, UnityAction<AssetBundle> callback)
+        private IEnumerator LoadDependenciesAndAimBundle(string abName, ABLoodPath loodPath, UnityAction<AssetBundle> callback)
         {
             if (mainAB == null || manifest == null)
             {
@@ -276,19 +299,19 @@ namespace UPandaGF
             {
                 if (!abDic.ContainsKey(strs[i]))
                 {
-                    yield return StartCoroutine(LoadAssetBundle(strs[i], (arg) =>
-                    {
-                        abDic.Add(strs[i], arg);
-                    }));
+                    yield return StartCoroutine(LoadAssetBundle(strs[i], loodPath, (arg) =>
+                     {
+                         abDic.Add(strs[i], arg);
+                     }));
                 }
             }
             //加载目标包
             if (!abDic.ContainsKey(abName))
             {
-                yield return StartCoroutine(LoadAssetBundle(abName, (arg) =>
-                {
-                    abDic.Add(abName, arg);
-                }));
+                yield return StartCoroutine(LoadAssetBundle(abName, loodPath, (arg) =>
+                 {
+                     abDic.Add(abName, arg);
+                 }));
             }
 
             if (abDic[abName] == null)
@@ -300,17 +323,17 @@ namespace UPandaGF
             callback(abDic[abName]);
         }
 
-        public async Task<AssetBundle> GetAssetBundle(string abName)
+        public async Task<AssetBundle> GetAssetBundle(string abName, ABLoodPath loodPath)
         {
-            return await LoadDependenciesAndAimBundle(abName);
+            return await LoadDependenciesAndAimBundle(abName, loodPath);
         }
 
-        public void GetAssetBundle(string abName, UnityAction<AssetBundle> callback)
+        public void GetAssetBundle(string abName, ABLoodPath loodPath, UnityAction<AssetBundle> callback)
         {
-            StartCoroutine(LoadDependenciesAndAimBundle(abName, (arg) =>
-            {
-                callback(arg);
-            }));
+            StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) =>
+             {
+                 callback(arg);
+             }));
         }
         #endregion
 
@@ -321,26 +344,26 @@ namespace UPandaGF
         /// <typeparam name="T"></typeparam>
         /// <param name="abName">AB包名</param>
         /// <param name="resName">资源名</param>
-        public async Task<T> LoadResAsync<T>(string abName, string resName) where T : UnityEngine.Object
+        public async Task<T> LoadResAsync<T>(string abName, string resName, ABLoodPath loodPath) where T : UnityEngine.Object
         {
-            await LoadDependenciesAndAimBundle(abName);
+            await LoadDependenciesAndAimBundle(abName, loodPath);
             return await LoadAsset<T>(abDic[abName], resName);
         }
 
-        public async Task<Object> LoadResAsync(string abName, string resName, System.Type type)
+        public async Task<Object> LoadResAsync(string abName, string resName, System.Type type, ABLoodPath loodPath)
         {
-            await LoadDependenciesAndAimBundle(abName);
+            await LoadDependenciesAndAimBundle(abName, loodPath);
             return await LoadAsset(abDic[abName], resName, type);
         }
 
-        public void LoadResAsync<T>(string abName, string resName, UnityAction<T> callBack) where T : Object
+        public void LoadResAsync<T>(string abName, string resName, ABLoodPath loodPath, UnityAction<T> callBack) where T : Object
         {
-            StartCoroutine(ReallyLoadResAsync(abName, resName, callBack));
+            StartCoroutine(ReallyLoadResAsync(abName, resName, loodPath, callBack));
         }
-        private IEnumerator ReallyLoadResAsync<T>(string abName, string resName, UnityAction<T> callBack) where T : Object
+        private IEnumerator ReallyLoadResAsync<T>(string abName, string resName, ABLoodPath loodPath, UnityAction<T> callBack) where T : Object
         {
-            yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, (arg) =>
-            {
+            yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) =>
+             {
                 //目标包和依赖包加载结束，arg是目标包， abDic[abName]也能得到目标包
             }));
             if (abDic[abName] == null)
@@ -351,20 +374,20 @@ namespace UPandaGF
             StartCoroutine(LoadAsset(abDic[abName], resName, callBack));
         }
 
-        public void LoadResAsync(string abName, string resName, System.Type type, UnityAction<Object> callBack)
+        public void LoadResAsync(string abName, string resName, System.Type type, ABLoodPath loodPath, UnityAction<Object> callBack)
         {
-            StartCoroutine(ReallyLoadResAsync(abName, resName, type, callBack));
+            StartCoroutine(ReallyLoadResAsync(abName, resName, type, loodPath, callBack));
         }
-        public void LoadResAsync(string abName, string resName, UnityAction<Object> callBack)
+        public void LoadResAsync(string abName, string resName, ABLoodPath loodPath, UnityAction<Object> callBack)
         {
-            StartCoroutine(ReallyLoadResAsync(abName, resName, typeof(Object), callBack));
+            StartCoroutine(ReallyLoadResAsync(abName, resName, typeof(Object), loodPath, callBack));
         }
-        private IEnumerator ReallyLoadResAsync(string abName, string resName, System.Type type, UnityAction<Object> callBack)
+        private IEnumerator ReallyLoadResAsync(string abName, string resName, System.Type type, ABLoodPath loodPath, UnityAction<Object> callBack)
         {
-            yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, (arg) =>
-            {
-                //目标包和依赖包加载结束，arg是目标包， abDic[abName]也能得到目标包
-            }));
+            yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) =>
+             {
+                 //目标包和依赖包加载结束，arg是目标包， abDic[abName]也能得到目标包
+             }));
             if (abDic[abName] == null)
             {
                 callBack(null);

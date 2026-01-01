@@ -59,7 +59,7 @@ namespace UPandaGF
                         PLogger.LogError("该资源不存在：" + path);
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    asset = await abLoadMgr.LoadResAsync<T>(arg.packageName, arg.sourceName);
+                    asset = await abLoadMgr.LoadResAsync<T>(arg.packageName, arg.sourceName, arg.loodPath);
                     break;
             }
             return asset;
@@ -79,7 +79,7 @@ namespace UPandaGF
                         PLogger.LogError("该资源不存在：" + path);
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    asset = await abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, type);
+                    asset = await abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, type, arg.loodPath);
                     break;
             }
             return asset;
@@ -99,7 +99,7 @@ namespace UPandaGF
                         return;
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, callback);
+                    abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, arg.loodPath, callback);
                     break;
             }
         }
@@ -118,7 +118,7 @@ namespace UPandaGF
                         return;
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, type, callback);
+                    abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, type, arg.loodPath, callback);
                     break;
             }
         }
@@ -151,7 +151,7 @@ namespace UPandaGF
                         return;
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    abLoadMgr.GetAssetBundle(arg.packageName, (bundle) =>
+                    abLoadMgr.GetAssetBundle(arg.packageName, arg.loodPath, (bundle) =>
                     {
                         sceneMgr.LoadSceneAsyn(sceneName, loadSceneMode, callback);
                     });
