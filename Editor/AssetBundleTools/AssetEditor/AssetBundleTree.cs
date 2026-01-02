@@ -250,7 +250,7 @@ namespace AssetBundleBrowser
         void CreateNewBundle(object context)
         {
             AssetBundleModel.BundleFolderConcreteInfo folder = null;
-            var selectedNodes = context as List<AssetBundleModel.BundleTreeItem>;
+            List<AssetBundleModel.BundleTreeItem> selectedNodes = context as List<AssetBundleModel.BundleTreeItem>;
             if (selectedNodes != null && selectedNodes.Count > 0)
             {
                 folder = selectedNodes[0].bundle as AssetBundleModel.BundleFolderConcreteInfo;

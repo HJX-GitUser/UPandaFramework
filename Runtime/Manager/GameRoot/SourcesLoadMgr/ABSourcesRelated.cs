@@ -5,11 +5,11 @@ namespace UPandaGF
     /// <summary>
     /// AB包加载路径
     /// </summary>
-    public enum ABLoodPath
+    public enum ABLoadPath
     {
-        streamingAssetsPath,
-        persistentDataPath,
-        remotePath
+        StreamingAssetsPath,
+        PersistentDataPath,
+        RemotePath
     }
     ///// <summary>
     ///// AB资源关联信息
@@ -40,11 +40,12 @@ namespace UPandaGF
         /// <summary>
         /// 资源加载根路径
         /// </summary>
-        public ABLoodPath loodPath;
-        public ABRelatedArg(string arg0, string arg1)
+        public ABLoadPath loodPath;
+        public ABRelatedArg(string arg0, string arg1,ABLoadPath arg2)
         {
             packageName = arg0;
             sourceName = arg1;
+            loodPath = arg2;
         }
     }
 }

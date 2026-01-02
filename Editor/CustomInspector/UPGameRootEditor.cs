@@ -63,7 +63,7 @@ namespace UPandaGF
             EditorGUILayout.HelpBox("把资源添加到AssetBundle后，需要更新资源关联数据才能加载", MessageType.Info);
             if (GUILayout.Button("更新资源关联数据"))
             {
-                AssetBundleBuildTab.GenerateAssetBundleInfo();
+                //AssetBundleBuildTab.GenerateAssetBundleInfo();
             }
             EditorGUILayout.Space();
         }

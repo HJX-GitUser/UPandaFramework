@@ -17,7 +17,7 @@ namespace UPandaGF
 #if UNITY_EDITOR
             return AssetDatabase.LoadAssetAtPath<T>(path);
 #else
-            PLoger.LogError("无法加载资源，Editor环境下才能使用此方法");
+            PLogger.LogError("无法加载资源，Editor环境下才能使用此方法");
             return null;
 #endif
         }
@@ -27,7 +27,7 @@ namespace UPandaGF
 #if UNITY_EDITOR
             return AssetDatabase.LoadAssetAtPath(path, type);
 #else
-            PLoger.LogError("无法加载资源，Editor环境下才能使用此方法");
+            PLogger.LogError("无法加载资源，Editor环境下才能使用此方法");
             return null;
 #endif
         }

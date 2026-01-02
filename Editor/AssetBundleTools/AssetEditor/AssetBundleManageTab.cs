@@ -113,7 +113,7 @@ namespace AssetBundleBrowser
                 if (m_AssetListState == null)
                     m_AssetListState = new TreeViewState();
 
-                var headerState = AssetListTree.CreateDefaultMultiColumnHeaderState();// multiColumnTreeViewRect.width);
+                MultiColumnHeaderState headerState = AssetListTree.CreateDefaultMultiColumnHeaderState();// multiColumnTreeViewRect.width);
                 if (MultiColumnHeaderState.CanOverwriteSerializedFields(m_AssetListMCHState, headerState))
                     MultiColumnHeaderState.OverwriteSerializedFields(m_AssetListMCHState, headerState);
                 m_AssetListMCHState = headerState;
