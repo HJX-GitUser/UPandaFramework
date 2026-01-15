@@ -39,6 +39,7 @@ public class GameLaunchExample : MonoBehaviour
 
         if (gr.method == AssetLoaddingMethod.Editor)
         {
+            //这是直接加载场景的方式
             SceneMgr.Instance.LoadSceneAsyn("InitScene", () =>
             {
                 PLogger.Log("<color=blue>进入场景</color>");
@@ -46,6 +47,7 @@ public class GameLaunchExample : MonoBehaviour
         }
         else if (gr.method == AssetLoaddingMethod.Assetbundles)
         {
+            //这是场景作为AssetBundle加载的方式
             sourcesLoad.LoadSceneAsync(firstScene, () =>
             {
                 PLogger.Log("<color=blue>进入场景</color>");
