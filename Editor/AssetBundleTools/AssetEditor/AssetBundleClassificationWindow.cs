@@ -244,7 +244,15 @@ public class AssetBundleClassificationWindow : EditorWindow
     {
         //资源关联数据
         string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
-        byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
+        byte[] b = null;
+        if (File.Exists(assetRefpath))
+        {
+            b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
+        }
+        else
+        {
+            Debug.LogWarning($"资源关联数据未创建！");
+        }
         ABSourcesRelated sourcesRelated;
         if (b != null)
         {

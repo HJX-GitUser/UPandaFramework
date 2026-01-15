@@ -34,7 +34,7 @@ namespace UPandaGF
 #if OPEN_PLOG
             if (!EditorApplication.isPlaying)
             {
-                ShowArg("EnableDebugModel", "启动调试模式");
+                ShowArg("EnableDebugModel", "启动日志窗口");
                 if (component.EnableDebugModel)
                 {
                     if (component.reporter == null)
