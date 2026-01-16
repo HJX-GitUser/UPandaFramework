@@ -293,18 +293,14 @@ namespace AssetBundleBrowser
             EditorGUILayout.Space();
             if (GUILayout.Button("Build"))
             {
-                AssetBundleClassificationWindow.ShowWindow(() =>
-                {
-                    ExecuteBuild();
-                });
-
+                AssetBundleClassificationWindow.ShowWindow();
                 //EditorApplication.delayCall += ExecuteBuild;
             }
             GUILayout.EndVertical();
             EditorGUILayout.EndScrollView();
         }
 
-        private void ExecuteBuild()
+        public void ExecuteBuild()
         {
             if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory)
             {

@@ -7,6 +7,7 @@ using UPandaGF;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine.Events;
 using System.Threading.Tasks;
+using AssetBundleBrowser;
 
 /// <summary>
 /// AssetBundle分类窗口
@@ -14,9 +15,8 @@ using System.Threading.Tasks;
 public class AssetBundleClassificationWindow : EditorWindow
 {
     //[MenuItem("UPandaGF/Tools/AssetBundeCheck")]
-    public static void ShowWindow(UnityAction callback)
+    public static void ShowWindow()
     {
-        buildCallback = callback;
         AssetBundleClassificationWindow window = GetWindow<AssetBundleClassificationWindow>();
         window.titleContent = new GUIContent("打包窗口");
         window.minSize = new Vector2(500, 400);
@@ -24,7 +24,6 @@ public class AssetBundleClassificationWindow : EditorWindow
     }
 
     private ABSourcesRelated sourcesRelated;
-    public static UnityAction buildCallback;
     /// <summary>
     /// key是包名
     /// </summary>
@@ -63,10 +62,9 @@ public class AssetBundleClassificationWindow : EditorWindow
         RefreshAssetBundleList();
     }
 
-    private void OnDestroy()
-    {
-        buildCallback = null;
-    }
+    //private void OnDestroy()
+    //{
+    //}
 
     private void OnGUI()
     {
@@ -92,13 +90,12 @@ public class AssetBundleClassificationWindow : EditorWindow
     }
     private void DrawToolbar()
     {
-        GUILayout.BeginHorizontal(EditorStyles.toolbar);
+       GUILayout.BeginHorizontal(EditorStyles.toolbar);
 
         if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
         {
             RefreshAssetBundleList();
         }
-
         GUILayout.Space(10);
         GUILayout.Label("搜索:", GUILayout.Width(40));
         string newSearch = GUILayout.TextField(searchFilter, EditorStyles.toolbarSearchField, GUILayout.Width(200));
@@ -110,19 +107,9 @@ public class AssetBundleClassificationWindow : EditorWindow
         GUILayout.FlexibleSpace();
         if (GUILayout.Button("构建 AssetBundle", EditorStyles.toolbarButton, GUILayout.Width(120)))
         {
-            //ShowBuildWindow();
             GenerateAssetBundleInfo();
-            buildCallback?.Invoke();
-            GetWindow<AssetBundleClassificationWindow>().Close();
+            EditorApplication.delayCall += AssetBundleBrowserMain.instance.m_BuildTab.ExecuteBuild;
         }
-
-        EditorGUI.BeginDisabledGroup(selectedBundle == null);
-        //if (GUILayout.Button("删除选中", EditorStyles.toolbarButton, GUILayout.Width(80)))
-        //{
-        //    DeleteSelectedBundle();
-        //}
-        EditorGUI.EndDisabledGroup();
-
         GUILayout.EndHorizontal();
     }
 
@@ -255,7 +242,7 @@ public class AssetBundleClassificationWindow : EditorWindow
         {
             Debug.LogWarning($"资源关联数据未创建！\n{assetRefpath}");
         }
-        
+
         if (b != null)
         {
             sourcesRelated = LoadABSourcesRelated(b);
