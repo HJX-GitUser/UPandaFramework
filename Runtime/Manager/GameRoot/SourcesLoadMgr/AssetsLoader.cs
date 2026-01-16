@@ -176,6 +176,20 @@ namespace UPandaGF
 #endif
         }
 
+        public async Task<Assembly> LoadAssemblyAsync(string path)
+        {
+            Assembly hotUpdateAss = null;
+#if !UNITY_EDITOR
+            TextAsset dllAsset = await LoadAsync<TextAsset>(path);
+            hotUpdateAss = Assembly.Load(dllAsset.bytes);
+#else
+            // Editor下无需加载，直接查找获得HotUpdate程序集
+            string AssemblyName = Path.GetFileName(path).Split('.')[0];
+            hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == AssemblyName);
+#endif
+            return hotUpdateAss;
+        }
+
         public bool UnLoadAB(string abName)
         {
             bool isUnload = false;

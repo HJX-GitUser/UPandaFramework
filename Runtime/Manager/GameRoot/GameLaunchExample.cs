@@ -10,6 +10,11 @@ using UPandaGF;
 /// </summary>
 public class GameLaunchExample : MonoBehaviour
 {
+    [Header("加载热更程序集")]
+    public bool loadHotUpdateScripts = false;//HybridCLR
+    [Header("热更程序集资源路径")]
+    public string HybridCLRScriptsPath = "Assets/HotUpdate/MainScripts.dll.bytes";
+    [Header("加载场景")]
     public string firstScene = "Assets/Scenes/InitScene.unity";
     IAssetsLoader sourcesLoad;
     private void Awake()
@@ -29,7 +34,7 @@ public class GameLaunchExample : MonoBehaviour
         PLogger.Log($"Scene load :{arg0.progress * 100}%");
     }
 
-    private void OnGFLoadedEvent(GFLoadedEvent arg0)
+    private async void OnGFLoadedEvent(GFLoadedEvent arg0)
     {
 
         PLogger.Log_white("框架加载结束，进入游戏逻辑");
@@ -37,10 +42,17 @@ public class GameLaunchExample : MonoBehaviour
 
         sourcesLoad = gr.GetAssetsLoader();
 
+        if (loadHotUpdateScripts)
+        {
+            await sourcesLoad.LoadAssemblyAsync(HybridCLRScriptsPath);
+        }
+
         if (gr.method == AssetLoaddingMethod.Editor)
         {
+            string sceneName = firstScene.Substring(firstScene.LastIndexOf('/') + 1);
+            sceneName = sceneName.Split('.')[0];
             //这是直接加载场景的方式
-            SceneMgr.Instance.LoadSceneAsyn("InitScene", () =>
+            SceneMgr.Instance.LoadSceneAsyn(sceneName, () =>
             {
                 PLogger.Log("<color=blue>进入场景</color>");
             });

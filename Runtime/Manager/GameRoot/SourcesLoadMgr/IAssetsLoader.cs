@@ -36,6 +36,7 @@ namespace UPandaGF
         /// <param name="path"></param>
         /// <param name="callback"></param>
         void LoadAssemblyAsync(string path, UnityAction<Assembly> callback);
+        Task<Assembly> LoadAssemblyAsync(string path);
 
         /// <summary>
         /// ×ÊÔ´Ð¶ÔØ

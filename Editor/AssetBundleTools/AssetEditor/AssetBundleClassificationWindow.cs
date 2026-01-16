@@ -22,6 +22,8 @@ public class AssetBundleClassificationWindow : EditorWindow
         window.minSize = new Vector2(500, 400);
         window.Show();
     }
+
+    private ABSourcesRelated sourcesRelated;
     public static UnityAction buildCallback;
     /// <summary>
     /// key是包名
@@ -245,15 +247,15 @@ public class AssetBundleClassificationWindow : EditorWindow
         //资源关联数据
         string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
         byte[] b = null;
-        if (File.Exists(assetRefpath))
+        if (StreamingAssetsLoader.CheckFile(assetRefpath))
         {
             b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
         }
         else
         {
-            Debug.LogWarning($"资源关联数据未创建！");
+            Debug.LogWarning($"资源关联数据未创建！\n{assetRefpath}");
         }
-        ABSourcesRelated sourcesRelated;
+        
         if (b != null)
         {
             sourcesRelated = LoadABSourcesRelated(b);
@@ -508,16 +510,16 @@ public class AssetBundleClassificationWindow : EditorWindow
 
         // 获取所有设置了AssetBundle标签的资源
         string[] allAssetBundleNames = AssetDatabase.GetAllAssetBundleNames();
-
+        ABLoadPath anLP = ABLoadPath.StreamingAssetsPath;
         foreach (string bundleName in allAssetBundleNames)
         {
+            anLP = sourcesDic.ContainsKey(bundleName) ? sourcesDic[bundleName] : ABLoadPath.StreamingAssetsPath;
             AssetBundleInfo info = new AssetBundleInfo
             {
                 name = bundleName,
                 assets = new List<string>(),
-                loadPath = sourcesDic[bundleName]
+                loadPath = anLP
             };
-
             // 获取该AssetBundle中的所有资源路径
             string[] assetPaths = AssetDatabase.GetAssetPathsFromAssetBundle(bundleName);
             info.assets.AddRange(assetPaths);
@@ -605,146 +607,5 @@ public class AssetBundleClassificationWindow : EditorWindow
         {
             return $"{(bytes / (1024.0 * 1024.0)):0.0} MB";
         }
-    }
-
-    private void ShowBuildWindow()
-    {
-        EditorWindow.GetWindow<AssetBundleBuildWindow>("构建 AssetBundle");
-    }
-
-    private void DeleteSelectedBundle()
-    {
-        if (selectedBundle != null &&
-            EditorUtility.DisplayDialog("删除AssetBundle",
-                $"确定要删除AssetBundle '{selectedBundle.name}' 吗？",
-                "删除", "取消"))
-        {
-            // 清除AssetBundle标签
-            foreach (string assetPath in selectedBundle.assets)
-            {
-                AssetImporter importer = AssetImporter.GetAtPath(assetPath);
-                if (importer != null)
-                {
-                    importer.assetBundleName = "";
-                    importer.SaveAndReimport();
-                }
-            }
-
-            RefreshAssetBundleList();
-            selectedBundle = null;
-            showDetails = false;
-        }
-    }
-}
-
-public class AssetBundleBuildWindow : EditorWindow
-{
-    private BuildTarget buildTarget = BuildTarget.StandaloneWindows;
-    private BuildAssetBundleOptions options = BuildAssetBundleOptions.None;
-    private string outputPath = "AssetBundles";
-
-    private void OnGUI()
-    {
-        GUILayout.Label("构建设置", EditorStyles.boldLabel);
-
-        buildTarget = (BuildTarget)EditorGUILayout.EnumPopup("目标平台", buildTarget);
-
-        options = (BuildAssetBundleOptions)EditorGUILayout.EnumFlagsField("构建选项", options);
-
-        GUILayout.Space(10);
-
-        GUILayout.Label("输出路径", EditorStyles.boldLabel);
-        GUILayout.BeginHorizontal();
-        outputPath = GUILayout.TextField(outputPath);
-        if (GUILayout.Button("浏览", GUILayout.Width(60)))
-        {
-            string selectedPath = EditorUtility.OpenFolderPanel("选择输出目录", outputPath, "");
-            if (!string.IsNullOrEmpty(selectedPath))
-            {
-                outputPath = selectedPath;
-            }
-        }
-        GUILayout.EndHorizontal();
-
-        GUILayout.Space(20);
-
-        if (GUILayout.Button("开始构建", GUILayout.Height(30)))
-        {
-            BuildAssetBundles();
-        }
-    }
-
-    private void BuildAssetBundles()
-    {
-        if (!Directory.Exists(outputPath))
-        {
-            Directory.CreateDirectory(outputPath);
-        }
-
-        BuildPipeline.BuildAssetBundles(outputPath, options, buildTarget);
-        EditorUtility.DisplayDialog("构建完成", "AssetBundle构建完成！", "确定");
-
-        // 刷新主窗口
-        var mainWindow = EditorWindow.GetWindow<AssetBundleClassificationWindow>();
-        if (mainWindow != null)
-        {
-            mainWindow.RefreshAssetBundleList();
-        }
-    }
-}
-
-public static class AssetBundleContextMenu
-{
-    [MenuItem("Assets/设置 AssetBundle 名称", false, 30)]
-    public static void SetAssetBundleName()
-    {
-        foreach (Object obj in Selection.objects)
-        {
-            string path = AssetDatabase.GetAssetPath(obj);
-            AssetImporter importer = AssetImporter.GetAtPath(path);
-
-            if (importer != null)
-            {
-                string bundleName = Path.GetFileNameWithoutExtension(path).ToLower();
-                importer.assetBundleName = bundleName;
-                importer.SaveAndReimport();
-
-                Debug.Log($"设置 AssetBundle 名称: {path} -> {bundleName}");
-            }
-        }
-
-        AssetDatabase.Refresh();
-    }
-
-    [MenuItem("Assets/设置 AssetBundle 名称", true)]
-    public static bool ValidateSetAssetBundleName()
-    {
-        return Selection.objects.Length > 0;
-    }
-
-    [MenuItem("Assets/清除 AssetBundle 名称", false, 31)]
-    public static void ClearAssetBundleName()
-    {
-        foreach (Object obj in Selection.objects)
-        {
-            string path = AssetDatabase.GetAssetPath(obj);
-            AssetImporter importer = AssetImporter.GetAtPath(path);
-
-            if (importer != null)
-            {
-                importer.assetBundleName = "";
-                importer.SaveAndReimport();
-
-                Debug.Log($"清除 AssetBundle 名称: {path}");
-            }
-        }
-
-        AssetDatabase.Refresh();
-    }
-
-    [MenuItem("Assets/清除 AssetBundle 名称", true)]
-    public static bool ValidateClearAssetBundleName()
-    {
-        return Selection.objects.Length > 0;
     }
 }

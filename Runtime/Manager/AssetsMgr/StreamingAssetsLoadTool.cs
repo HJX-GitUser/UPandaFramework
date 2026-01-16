@@ -1,3 +1,4 @@
+using DG.Tweening.Plugins.Core.PathCore;
 using System;
 using System.Collections;
 using System.IO;
@@ -33,7 +34,7 @@ public static class StreamingAssetsLoader
             else if (Application.platform == RuntimePlatform.IPhonePlayer)
             {
                 // iOS平台，StreamingAssets在应用包的根目录
-                path = "file://" + Path.Combine(Application.dataPath, "Raw");
+                path = "file://" + System.IO.Path.Combine(Application.dataPath, "Raw");
             }
             else
             {
@@ -326,6 +327,15 @@ public static class StreamingAssetsLoader
     public static string CombinePath(string path)
     {
         return CombineRelativePath(path);
+    }
+
+    /// <summary>
+    /// 检查路径是否存在
+    /// </summary>
+    /// <returns></returns>
+    public static bool CheckFile(string relativePath)
+    {
+        return File.Exists(CombineRelativePath(relativePath));
     }
 }
 
