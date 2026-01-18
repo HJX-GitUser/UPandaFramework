@@ -39,6 +39,11 @@ namespace UPandaGF
         [HideInInspector]
         public string MainName;
 
+        /// <summary>
+        /// 远程加载地址
+        /// </summary>
+        public string remoteURL = "http://127.0.0.1:8090/";
+
         #region 初始化
         /// <summary>
         /// 初始化
@@ -77,10 +82,12 @@ namespace UPandaGF
                     fullPath = StreamingAssetsLoader.CombinePath(PathUrl);
                     break;
                 case ABLoadPath.PersistentDataPath:
-                    fullPath = Application.persistentDataPath + "/" + PathUrl;
+                    //fullPath = Application.persistentDataPath + "/" + PathUrl;
+                    fullPath = Path.Combine(Application.persistentDataPath, PathUrl); ;
                     break;
                 case ABLoadPath.RemotePath:
-                    fullPath = PathUrl;
+                    //fullPath = remoteURL + "/" + PathUrl;
+                    fullPath = Path.Combine(remoteURL, PathUrl); ; ;
                     break;
             }
             return fullPath;
@@ -365,8 +372,8 @@ namespace UPandaGF
         {
             yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) =>
              {
-                //目标包和依赖包加载结束，arg是目标包， abDic[abName]也能得到目标包
-            }));
+                 //目标包和依赖包加载结束，arg是目标包， abDic[abName]也能得到目标包
+             }));
             if (abDic[abName] == null)
             {
                 callBack(null);

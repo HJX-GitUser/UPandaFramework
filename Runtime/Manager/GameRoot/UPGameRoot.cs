@@ -46,6 +46,12 @@ namespace UPandaGF
         /// 资源远端更新配置
         /// </summary>
         public ABUpdataMgrArg assetUpdataConfig;
+
+        /// <summary>
+        /// 远程加载地址
+        /// </summary>
+        public string reomoteURL = "http://127.0.0.1:8090/";
+
         public bool EnableDebugModel = false;
         #endregion
         public Reporter reporter;
@@ -66,6 +72,7 @@ namespace UPandaGF
             binaryDataMgr.Init();
 
             ABLoadMgr abLoadMgr = ABLoadMgr.Instance;
+            abLoadMgr.remoteURL = reomoteURL;
             if (method == AssetLoaddingMethod.Assetbundles)
             {
                 abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);

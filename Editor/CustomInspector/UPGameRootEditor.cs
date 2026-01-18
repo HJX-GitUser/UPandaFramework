@@ -74,6 +74,8 @@ namespace UPandaGF
             if (component.enableAssetUpdate)
                 ShowArg("assetUpdataConfig", "资源更新配置");
             EditorGUILayout.Space();
+            EditorGUILayout.Space();
+            ShowArg("reomoteURL", "远程加载URL");   
             ShowArg("LoadAssetPath", "资源路径");
             ShowArg("MainName", "主包名");
         }
