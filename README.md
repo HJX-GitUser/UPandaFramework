@@ -26,6 +26,7 @@ Unity 的前端框架
      IAssetsLoader loader = UPGameRoot.Instance.GetAssetsLoader();
      ```
    - 直接用编辑器里的路径加载资源，开发过程中 `UPGameRoot` 的 Inspector 面板可以切换为 Editor 模式加载资源，打包时再切换为 AssetBundle 模式。
+   - AssetBundle支持本地加载、远程加载或者资源更新下载到本地后加载
 
 3. **ResourcesLoader**
    - 封装 Unity 内置的 `Resources.Load` 方法，避免资源重复加载，增加引用计数和异步加载状态管理。
