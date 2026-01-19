@@ -40,6 +40,11 @@ namespace UPandaGF
         public string MainName;
 
         /// <summary>
+        /// 主包加载路径
+        /// </summary>
+        public ABLoadPath MainPackageLoadPath  = ABLoadPath.StreamingAssetsPath;
+
+        /// <summary>
         /// 远程加载地址
         /// </summary>
         public string remoteURL = "http://127.0.0.1:8090/";
@@ -50,23 +55,25 @@ namespace UPandaGF
         /// </summary>
         /// <param name="pathUrl">相对路径</param>
         /// <param name="mainName">主包名</param>
+        /// <param name="mainLoadPath">主包加载路径</param>
         /// <returns></returns>
-        public async Task Init(string pathUrl, string mainName)
+        public async Task Init(string pathUrl, string mainName, ABLoadPath mainLoadPath)
         {
             isInit = true;
             PathUrl = pathUrl;
             MainName = mainName;
+            MainPackageLoadPath = mainLoadPath;
             try
             {
                 // 加载主包 和 配置文件
                 // 加载所有包是 通过它才能得到依赖信息
-                mainAB = await LoadAssetBundle(MainName, ABLoadPath.StreamingAssetsPath);
+                mainAB = await LoadAssetBundle(MainName, MainPackageLoadPath);
                 manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
                 Debug.Log($"AB包加载路径：{PathUrl}\n资源包主包：{MainName}");
             }
             catch
             {
-                PLogger.LogError($"AssetBundleManifest 加载失败，主包必须放置在StreamingAssets路径");
+                PLogger.LogError($"AssetBundleManifest 主包加载失败");
             }
         }
         #endregion

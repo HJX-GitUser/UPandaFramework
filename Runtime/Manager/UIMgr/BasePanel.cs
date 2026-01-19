@@ -39,7 +39,7 @@ namespace UPandaGF
     };
 
 
-        protected virtual void Awake()
+        private void Awake()
         {
             FindChildrenUIComponent<Button>();
             FindChildrenUIComponent<Slider>();
@@ -47,12 +47,13 @@ namespace UPandaGF
             FindChildrenUIComponent<InputField>();
             FindChildrenUIComponent<ScrollRect>();
             FindChildrenUIComponent<Dropdown>();
-
             FindChildrenUIComponent<Image>();
             FindChildrenUIComponent<Text>();
-            FindChildrenUIComponent<TextMeshPro>();
+            FindChildrenUIComponent<TMP_Text>();
+            OnAwake();
         }
 
+        protected virtual void OnAwake() { }
 
         /// <summary>
         /// 在子类重写显示逻辑

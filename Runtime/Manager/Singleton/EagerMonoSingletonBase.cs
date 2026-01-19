@@ -30,28 +30,28 @@ public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBe
             {
                 // 在场景中查找是否已存在实例
                 _instance = FindObjectOfType<T>();
-
+                GameObject singletonObject;
                 if (_instance == null)
                 {
                     // 创建新的GameObject来挂载单例组件
-                    GameObject singletonObject = new GameObject();
+                    singletonObject = new GameObject();
                     _instance = singletonObject.AddComponent<T>();
                     singletonObject.name = typeof(T).ToString() + "_EagerSingleton";
-
                     // 立即初始化
-                    DontDestroyOnLoad(singletonObject);
                     Debug.Log($"[{typeof(T)}] 创建单例实例(Eager)");
                 }
                 else
                 {
                     Debug.Log($"[{typeof(T)}] 使用场景中已存在的实例");
+                    singletonObject = _instance.gameObject;
                 }
+                DontDestroyOnLoad(singletonObject);
             }
             return _instance;
         }
     }
 
-    //[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    //[UnityEngine.RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void InitializeOnLoad()
     {
         // 在场景加载前强制初始化实例（模拟饿汉模式）

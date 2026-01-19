@@ -78,6 +78,7 @@ namespace UPandaGF
             ShowArg("reomoteURL", "远程加载URL");   
             ShowArg("LoadAssetPath", "资源路径");
             ShowArg("MainName", "主包名");
+            ShowArg("MainPackageLoadPath", "主包加载路径");
         }
 
 

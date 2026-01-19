@@ -32,6 +32,7 @@ namespace UPandaGF
         private ABUpdataMgr abUpdataMgr;//资源更新组件
         private AssetsLoader sourcesLoadMgr;//资源加载组件
         private BinaryDataMgrInit binaryDataMgr;//数据管理
+        private UIManager UIManager;//UI
         #endregion
 
         #region Config
@@ -42,6 +43,7 @@ namespace UPandaGF
         public string LoadAssetPath = "AssetBundles/StandaloneWindows/";
         //[Header("主包名")]
         public string MainName = "StandaloneWindows";
+        public ABLoadPath MainPackageLoadPath = ABLoadPath.StreamingAssetsPath;//主包加载方式
         /// <summary>
         /// 资源远端更新配置
         /// </summary>
@@ -80,7 +82,7 @@ namespace UPandaGF
                 {
                     yield return StartCoroutine(abUpdataMgr.StartUpadateAssets());
                 }
-                Task abLoadMgrInitTask = abLoadMgr.Init(LoadAssetPath, MainName);
+                Task abLoadMgrInitTask = abLoadMgr.Init(LoadAssetPath, MainName, MainPackageLoadPath);
                 while (!abLoadMgrInitTask.IsCompleted)
                 {
                     yield return null;
@@ -101,6 +103,7 @@ namespace UPandaGF
             if (abUpdataMgr == null) abUpdataMgr = InitComponent<ABUpdataMgr>();
             if (sourcesLoadMgr == null) sourcesLoadMgr = InitComponent<AssetsLoader>();
             if (binaryDataMgr == null) binaryDataMgr = InitComponent<BinaryDataMgrInit>();
+            if(UIManager == null) UIManager = InitComponent<UIManager>();
         }
 
         private T InitComponent<T>() where T : Component
@@ -134,6 +137,12 @@ namespace UPandaGF
         public IAssetsLoader GetAssetsLoader()
         {
             return sourcesLoadMgr;
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            PLogger.LogWarning("UPGameRoot Destory!!!");
         }
     }
 }

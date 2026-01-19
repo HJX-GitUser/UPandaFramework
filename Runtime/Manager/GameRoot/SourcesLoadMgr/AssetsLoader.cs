@@ -185,7 +185,14 @@ namespace UPandaGF
 #else
             // Editor下无需加载，直接查找获得HotUpdate程序集
             string AssemblyName = Path.GetFileName(path).Split('.')[0];
-            hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == AssemblyName);
+            try
+            {
+                hotUpdateAss = System.AppDomain.CurrentDomain.GetAssemblies().First(a => a.GetName().Name == AssemblyName);
+            }
+            catch (System.Exception e)
+            {
+                PLogger.LogError($"{AssemblyName}\n{e}");
+            }
 #endif
             return hotUpdateAss;
         }

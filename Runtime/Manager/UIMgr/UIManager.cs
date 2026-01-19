@@ -32,10 +32,8 @@ namespace UPandaGF
     /// 1.管理所有显示的面板
     /// 2.提供给外部 显示和隐藏等等接口
     /// </summary>
-    public class UIManager : LazySingletonBase<UIManager>
+    public class UIManager : LazyMonoSingletonBase<UIManager>
     {
-
-
         public Dictionary<string, BasePanel> panelDic = new Dictionary<string, BasePanel>();
 
         private Transform bot;
@@ -43,40 +41,44 @@ namespace UPandaGF
         private Transform top;
         private Transform system;
 
-        private Camera uiCamera;
-        private Canvas uiCanvas;
+        public Camera uiCamera;
+        public Canvas uiCanvas;
         private EventSystem uiEventSystem;
-        public RectTransform canvasRectTransform;
+        private RectTransform canvasRectTransform;
 
         private ResourcesLoader resourcesLoader;
         private IAssetsLoader assetsLoader;
 
-        public UIManager()
+        protected override void OnAwake()
         {
-            resourcesLoader = ResourcesLoader.Instance;
-            uiCamera = GameObject.Instantiate(resourcesLoader.Load<GameObject>("UI/UICamera")).GetComponent<Camera>();
-            GameObject.DontDestroyOnLoad(uiCamera.gameObject);
-            //创建Canvas 让其过场景的时候 不被移除
-            GameObject obj = GameObject.Instantiate(ResourcesLoader.Instance.Load<GameObject>("UI/Canvas"));
-            uiCanvas = obj.GetComponent<Canvas>();
-            uiCanvas.worldCamera = uiCamera;
-            canvasRectTransform = obj.transform as RectTransform;
-            GameObject.DontDestroyOnLoad(obj);
+            Init();
+        }
 
+        public void Init()
+        {
+            assetsLoader = UPGameRoot.Instance.GetAssetsLoader();
+            resourcesLoader = ResourcesLoader.Instance;
+            if (uiCamera == null)
+                uiCamera = GameObject.Instantiate(resourcesLoader.Load<GameObject>("UI/UICamera")).GetComponent<Camera>();
+            //创建Canvas 让其过场景的时候 不被移除
+            if (uiCanvas == null)
+            {
+                GameObject obj = GameObject.Instantiate(ResourcesLoader.Instance.Load<GameObject>("UI/Canvas"));
+                uiCanvas = obj.GetComponent<Canvas>();
+                uiCanvas.worldCamera = uiCamera;
+            }
+            canvasRectTransform = uiCanvas.transform as RectTransform;
             //找到各层
             bot = canvasRectTransform.Find("Bot");
             mid = canvasRectTransform.Find("Mid");
             top = canvasRectTransform.Find("Top");
             system = canvasRectTransform.Find("System");
 
-            //创建EventSystem 让其过场景的时候 不被移除
-            uiEventSystem = GameObject.Instantiate(ResourcesLoader.Instance.Load<GameObject>("UI/EventSystem")).GetComponent<EventSystem>();
-            GameObject.DontDestroyOnLoad(uiEventSystem.gameObject);
-        }
 
-        public void Init()
-        {
-            assetsLoader = UPGameRoot.Instance.GetAssetsLoader();
+
+            //创建EventSystem 让其过场景的时候 不被移除
+            //uiEventSystem = GameObject.Instantiate(ResourcesLoader.Instance.Load<GameObject>("UI/EventSystem")).GetComponent<EventSystem>();
+            //GameObject.DontDestroyOnLoad(uiEventSystem.gameObject);
         }
 
         /// <summary>
@@ -157,6 +159,50 @@ namespace UPandaGF
             }
         }
 
+        public async Task<T> ShowPanelAsync<T>(string loadPath, AssetLoadMethod loadMethod = AssetLoadMethod.Resources, E_UI_Layer layer = E_UI_Layer.Mid) where T : BasePanel
+        {
+            if (panelDic.ContainsKey(loadPath))
+            {
+                panelDic[loadPath].OnOpen();
+                //避免面板重复加载 如果存在该面板 即直接显示 调用回调函数后  直接return 不再处理后面的异步加载逻辑
+                return panelDic[loadPath] as T;
+            }
+
+            GameObject uiObj = await loadUIObj(loadPath, loadMethod);
+            if (uiObj != null)
+            {
+                //把UI面板作为 Canvas的子对象
+                //并且 要设置它的相对位置
+                //找到父对象 底显示在对应的层
+                Transform father = this.bot;
+                switch (layer)
+                {
+                    case E_UI_Layer.Mid:
+                        father = this.mid;
+                        break;
+                    case E_UI_Layer.Top:
+                        father = this.top;
+                        break;
+                    case E_UI_Layer.System:
+                        father = this.system;
+                        break;
+                }
+                //设置父对象  设置相对位置和大小
+                uiObj.transform.SetParent(father);
+                uiObj.transform.localPosition = Vector3.zero;
+                uiObj.transform.localScale = Vector3.one;
+                (uiObj.transform as RectTransform).offsetMax = Vector2.zero;
+                (uiObj.transform as RectTransform).offsetMin = Vector2.zero;
+                //得到预设体身上的面板脚本
+                T panel = uiObj.GetComponent<T>();
+                panel.OnOpen();
+                panelDic.Add(loadPath, panel);
+                return panel;
+            }
+
+            return null;
+        }
+
         private async Task<GameObject> loadUIObj(string loadPath, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
         {
             GameObject uiObj = null;
@@ -178,7 +224,7 @@ namespace UPandaGF
                     if (assetsLoader != null) uiObj = await assetsLoader.LoadAsync<GameObject>(loadPath);
                     break;
             }
-            return uiObj;
+            return Instantiate(uiObj);
         }
 
 

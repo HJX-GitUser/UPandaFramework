@@ -29,23 +29,22 @@ public abstract class LazyMonoSingletonBase<T> : MonoBehaviour where T : MonoBeh
                 {
                     // 在场景中查找是否已存在实例
                     _instance = FindObjectOfType<T>();
-
+                    GameObject singletonObject;
                     if (_instance == null)
                     {
                         // 创建新的GameObject来挂载单例组件
-                        GameObject singletonObject = new GameObject();
+                        singletonObject = new GameObject();
                         _instance = singletonObject.AddComponent<T>();
                         singletonObject.name = typeof(T).ToString() + "_LazySingleton";
-
-                        // 标记为不销毁，跨场景保持
-                        DontDestroyOnLoad(singletonObject);
-
                         Debug.Log($"[{typeof(T)}] 创建单例实例(Lazy)");
                     }
                     else
                     {
                         Debug.Log($"[{typeof(T)}] 使用场景中已存在的实例");
+                        singletonObject = _instance.gameObject;
                     }
+                    // 标记为不销毁，跨场景保持
+                    DontDestroyOnLoad(singletonObject);
                 }
                 return _instance;
             }
