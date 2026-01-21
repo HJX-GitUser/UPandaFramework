@@ -124,11 +124,11 @@ namespace UPandaGF
         }
 
 
-        public void LoadSceneAsync(string path, UnityAction callback = null)
+        public void LoadSceneAsync(string path, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null)
         {
-            LoadSceneAsync(path, LoadSceneMode.Single, callback);
+            LoadSceneAsync(path, LoadSceneMode.Single, assetLoadComplete, sceneLoadComplete);
         }
-        public void LoadSceneAsync(string path, LoadSceneMode loadSceneMode, UnityAction callback = null)
+        public void LoadSceneAsync(string path, LoadSceneMode loadSceneMode, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null)
         {
 
             if (path.Substring(path.LastIndexOf('/')).Length == 0)
@@ -141,19 +141,21 @@ namespace UPandaGF
             switch (method)
             {
                 case AssetLoaddingMethod.Editor:
-                    sceneMgr.LoadSceneAsyn(sceneName, loadSceneMode, callback);
+                    assetLoadComplete?.Invoke();
+                    sceneMgr.LoadSceneAsyn(sceneName, loadSceneMode, sceneLoadComplete);
                     break;
                 case AssetLoaddingMethod.Assetbundles:
                     if (!sourceRef.sourcesDic.ContainsKey(path))
                     {
                         PLogger.LogError("该资源不存在：" + path);
-                        callback?.Invoke();
+                        assetLoadComplete?.Invoke();
                         return;
                     }
                     ABRelatedArg arg = sourceRef.sourcesDic[path];
                     abLoadMgr.GetAssetBundle(arg.packageName, arg.loodPath, (bundle) =>
                     {
-                        sceneMgr.LoadSceneAsyn(sceneName, loadSceneMode, callback);
+                        assetLoadComplete?.Invoke();
+                        sceneMgr.LoadSceneAsyn(sceneName, loadSceneMode, sceneLoadComplete);
                     });
                     break;
             }

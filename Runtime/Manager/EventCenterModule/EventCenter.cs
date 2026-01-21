@@ -7,7 +7,7 @@ namespace UPandaGF
     /// <summary>
     /// 事件参数
     /// </summary>
-    public class PD_EventInfo<T> where T : EventArgBase
+    internal class PD_EventInfo<T> where T : EventArgBase
     {
         private UnityAction<T> actions;
         private HashSet<int> actionIDs; // 使用 HashSet 更高效地避免重复

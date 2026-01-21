@@ -26,9 +26,10 @@ namespace UPandaGF
         /// 场景加载
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="callback"></param>
-        void LoadSceneAsync(string path, UnityAction callback = null);
-        void LoadSceneAsync(string path, LoadSceneMode loadSceneMode, UnityAction callback = null);
+        /// <param name="assetLoadComplete">场景资源加载结束回调</param>
+        /// <param name="sceneLoadComplete">场景加载结束回调</param>
+        void LoadSceneAsync(string path, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null);
+        void LoadSceneAsync(string path, LoadSceneMode loadSceneMode, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null);
 
         /// <summary>
         /// 加载程序集 （HybridCLR）

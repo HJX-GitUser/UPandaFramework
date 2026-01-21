@@ -90,7 +90,7 @@ public class AssetBundleClassificationWindow : EditorWindow
     }
     private void DrawToolbar()
     {
-       GUILayout.BeginHorizontal(EditorStyles.toolbar);
+        GUILayout.BeginHorizontal(EditorStyles.toolbar);
 
         if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
         {
@@ -189,7 +189,6 @@ public class AssetBundleClassificationWindow : EditorWindow
 
                 // 获取资源的名字
                 string assetName = Path.GetFileNameWithoutExtension(assetPath);
-
                 // 创建一个 AssetInfo 对象，并添加到列表中
                 ABLoadPath arg = sourcesDic[assetBundleName];
                 ABRelatedArg assetInfo = new ABRelatedArg(assetBundleName, assetName, arg);

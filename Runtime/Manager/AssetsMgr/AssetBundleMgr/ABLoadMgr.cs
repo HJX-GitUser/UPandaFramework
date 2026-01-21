@@ -42,12 +42,14 @@ namespace UPandaGF
         /// <summary>
         /// 主包加载路径
         /// </summary>
-        public ABLoadPath MainPackageLoadPath  = ABLoadPath.StreamingAssetsPath;
+        public ABLoadPath MainPackageLoadPath = ABLoadPath.StreamingAssetsPath;
 
         /// <summary>
         /// 远程加载地址
         /// </summary>
         public string remoteURL = "http://127.0.0.1:8090/";
+
+        private EventCenter eventCenter => EventCenter.Instance;
 
         #region 初始化
         /// <summary>
@@ -79,7 +81,6 @@ namespace UPandaGF
         #endregion
 
         #region 加载AssetBundle
-
         private string GetFullPath(ABLoadPath loodPath)
         {
             string fullPath = "";
@@ -103,13 +104,15 @@ namespace UPandaGF
         /// 加载AssetBundle
         /// </summary>
         /// <param name="abName">包名</param>
-        /// <param name="IsLoadedOnStreammingAssets">是否是本地加载</param>
+        /// <param name="loodPath">加载方式</param>
+        /// <param name="progressEvent">加载进度</param>
         /// <returns></returns>
         private async Task<AssetBundle> LoadAssetBundle(string abName, ABLoadPath loodPath)
         {
             //string fullPath = Path.Combine(PathUrl, abName);
             string fullPath = Path.Combine(GetFullPath(loodPath), abName);
             AssetBundle ab = null;
+            ABLoadProgressEvent aBLoadProgessEvent = new ABLoadProgressEvent(abName, loodPath, 0, false);
             try
             {
                 switch (loodPath)
@@ -120,8 +123,12 @@ namespace UPandaGF
                         using (UnityWebRequest webRequest = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
                         {
                             webRequest.SendWebRequest();
+                            
                             while (!webRequest.isDone)
                             {
+                                aBLoadProgessEvent.progress = webRequest.downloadProgress;
+                                //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}:下载进度：{aBLoadProgessEvent.progress}");
+                                eventCenter.EventTrigger(aBLoadProgessEvent);
                                 await System.Threading.Tasks.Task.Yield();
                             }
                             //检查请求结果
@@ -130,7 +137,6 @@ namespace UPandaGF
                                 Debug.LogError($"AssetBundle加载失败\n{fullPath}\n{webRequest.error}");
                                 return null;
                             }
-
                             ab = DownloadHandlerAssetBundle.GetContent(webRequest);
                             if (ab == null)
                             {
@@ -148,6 +154,9 @@ namespace UPandaGF
                         }
                         while (!createRequest.isDone)
                         {
+                            aBLoadProgessEvent.progress = createRequest.progress;
+                            //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}:加载进度：{aBLoadProgessEvent.progress}");
+                            eventCenter.EventTrigger(aBLoadProgessEvent);
                             await System.Threading.Tasks.Task.Yield();
                         }
                         ab = createRequest.assetBundle;
@@ -157,6 +166,9 @@ namespace UPandaGF
                         }
                         break;
                 }
+                aBLoadProgessEvent.progress = 1;
+                aBLoadProgessEvent.isDown = true;
+                eventCenter.EventTrigger(aBLoadProgessEvent);
                 return ab;
             }
             catch (System.Exception e)
@@ -171,6 +183,7 @@ namespace UPandaGF
             // string fullPath = Path.Combine(PathUrl, abName);
             string fullPath = Path.Combine(GetFullPath(loodPath), abName);
             AssetBundle ab = null;
+            ABLoadProgressEvent aBLoadProgessEvent = new ABLoadProgressEvent(abName, loodPath, 0, false);
             switch (loodPath)
             {
                 case ABLoadPath.RemotePath:
@@ -178,7 +191,14 @@ namespace UPandaGF
                     // 对于StreamingAssets路径（特别是WebGL和Android），使用UnityWebRequest
                     using (UnityWebRequest webRequest = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
                     {
-                        yield return webRequest.SendWebRequest();
+                        webRequest.SendWebRequest();
+                        while (!webRequest.isDone)
+                        {
+                            aBLoadProgessEvent.progress = webRequest.downloadProgress;
+                            // PLogger.Log_yellow($"{aBLoadProgessEvent.abName}:下载进度：{aBLoadProgessEvent.progress}");
+                            eventCenter.EventTrigger(aBLoadProgessEvent);
+                            yield return null;
+                        }
                         //检查请求结果
                         if (webRequest.result != UnityWebRequest.Result.Success)
                         {
@@ -186,7 +206,6 @@ namespace UPandaGF
                             callback.Invoke(null);
                             yield break;
                         }
-
                         ab = DownloadHandlerAssetBundle.GetContent(webRequest);
                         if (ab == null)
                         {
@@ -205,7 +224,13 @@ namespace UPandaGF
                         callback.Invoke(null);
                         yield break;
                     }
-                    yield return createRequest;
+                    while (!createRequest.isDone)
+                    {
+                        aBLoadProgessEvent.progress = createRequest.progress;
+                        //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}:加载进度：{aBLoadProgessEvent.progress}");
+                        eventCenter.EventTrigger(aBLoadProgessEvent);
+                        yield return null;
+                    }
                     ab = createRequest.assetBundle;
                     if (ab == null)
                     {
@@ -215,9 +240,12 @@ namespace UPandaGF
                     }
                     break;
             }
+            aBLoadProgessEvent.progress = 1;
+            aBLoadProgessEvent.isDown = true;
+            //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}：{aBLoadProgessEvent.progress}");
+            eventCenter.EventTrigger(aBLoadProgessEvent);
             callback(ab);
         }
-
         #endregion
 
         #region 通过AssetBundle 获取资源
@@ -443,6 +471,43 @@ namespace UPandaGF
             mainAB = null;
         }
         #endregion
+
+        /// <summary>
+        /// 根据字节数得到大小
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        private string FormatFileSize(long bytes)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB" };
+            int order = 0;
+            double size = bytes;
+            while (size >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                size = size / 1024;
+            }
+            return $"{size:0.##} {sizes[order]}";
+        }
+        
+    }
+    /// <summary>
+    /// AB包加载进度事件
+    /// </summary>
+    public class ABLoadProgressEvent : EventArgBase
+    {
+        public string abName;
+        public ABLoadPath loadPath;
+        public float progress;
+        public bool isDown;
+
+        public ABLoadProgressEvent(string abName, ABLoadPath loadPath, float progress, bool isDown)
+        {
+            this.abName = abName;
+            this.loadPath = loadPath;
+            this.progress = progress;
+            this.isDown = isDown;
+        }
     }
 }
 

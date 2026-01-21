@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -42,12 +43,29 @@ public class SceneMgr : LazySingletonBase<SceneMgr>
     {
         PublicMono.Instance.StartCoroutine(ReallyLoadSceneAsyn(sceneName, loadSceneMode, Callback));
     }
+    public async Task LoadSceneAsyn(string sceneName)
+    {
+        await LoadSceneAsyn(sceneName, LoadSceneMode.Single);
+    }
+    public async Task LoadSceneAsyn(string sceneName, LoadSceneMode loadSceneMode)
+    {
+        bool isLoaded = false;
+        LoadSceneAsyn(sceneName, loadSceneMode, () =>
+        {
+            isLoaded = true;
+        });
+        while (!isLoaded)
+        {
+            await Task.Yield();
+        }
+    }
+
     private IEnumerator ReallyLoadSceneAsyn(string sceneName, LoadSceneMode loadSceneMode, UnityAction Callback = null)
     {
         AsyncOperation ao = SceneManager.LoadSceneAsync(sceneName, loadSceneMode);
         while (!ao.isDone)
         {
-            // 事件中心 向外分发 进度情况  外面想用就用
+            // 事件中心 向外分发 进度情况
             EventCenter.Instance.EventTrigger(new SceneMgr_SceneAsynLoadProgress(ao.progress));
             yield return 0;
         }
