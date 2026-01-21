@@ -14,7 +14,6 @@ using AssetBundleBrowser;
 /// </summary>
 public class AssetBundleClassificationWindow : EditorWindow
 {
-    //[MenuItem("UPandaGF/Tools/AssetBundeCheck")]
     public static void ShowWindow()
     {
         AssetBundleClassificationWindow window = GetWindow<AssetBundleClassificationWindow>();
@@ -88,6 +87,8 @@ public class AssetBundleClassificationWindow : EditorWindow
         result.Apply();
         return result;
     }
+
+
     private void DrawToolbar()
     {
         GUILayout.BeginHorizontal(EditorStyles.toolbar);
@@ -105,7 +106,9 @@ public class AssetBundleClassificationWindow : EditorWindow
         }
 
         GUILayout.FlexibleSpace();
-        if (GUILayout.Button("构建 AssetBundle", EditorStyles.toolbarButton, GUILayout.Width(120)))
+
+        //if (GUILayout.Button("构建 AssetBundle",  EditorStyles.toolbarButton, GUILayout.Width(120)))
+        if (EditorGUIExtensions.ColorButton("构建 AssetBundle", Color.green, EditorStyles.toolbarButton, GUILayout.Width(120)))
         {
             GenerateAssetBundleInfo();
             EditorApplication.delayCall += AssetBundleBrowserMain.instance.m_BuildTab.ExecuteBuild;
@@ -255,7 +258,7 @@ public class AssetBundleClassificationWindow : EditorWindow
             if (!sourcesDic.ContainsKey(item.packageName))
             {
                 sourcesDic.Add(item.packageName, item.loodPath);
-                Debug.Log($"{item.packageName}:{item.loodPath}");
+                //Debug.Log($"{item.packageName}:{item.loodPath}");
             }
         }
     }
@@ -340,18 +343,16 @@ public class AssetBundleClassificationWindow : EditorWindow
         // 交替行背景色
         if (index % 2 == 0)
         {
-            GUI.backgroundColor = new Color(0.9f, 0.9f, 0.9f, 0.5f);
+            GUI.backgroundColor = new Color(0, 0, 0, 0.8f);
         }
-
-        GUILayout.BeginHorizontal(EditorStyles.helpBox);
-        GUI.backgroundColor = originalColor;
-
         // 选中状态
         bool isSelected = selectedBundle == bundleInfo;
         if (isSelected)
         {
-            GUI.backgroundColor = new Color(0.3f, 0.5f, 0.9f, 0.3f);
+            GUI.backgroundColor = new Color(0f, 1f, 1f, 1f);
         }
+        GUILayout.BeginHorizontal(EditorStyles.helpBox);
+        GUI.backgroundColor = originalColor;
 
         // 名称
         if (GUILayout.Button(bundleInfo.name, GetRowStyle(),
@@ -411,12 +412,12 @@ public class AssetBundleClassificationWindow : EditorWindow
 
         lastClickTime = currentTime;
     }
-
+    private Vector2 detailsscrollPosition;
     private void DrawDetailsPanel()
     {
         GUILayout.Space(5);
         EditorGUILayout.LabelField("详细信息", EditorStyles.boldLabel);
-
+        detailsscrollPosition = GUILayout.BeginScrollView(detailsscrollPosition, GUILayout.Height(150));
         GUILayout.BeginVertical(EditorStyles.helpBox);
 
         // 基本信息
@@ -488,6 +489,7 @@ public class AssetBundleClassificationWindow : EditorWindow
         }
 
         GUILayout.EndVertical();
+        GUILayout.EndScrollView();
     }
 
     public void RefreshAssetBundleList()
@@ -546,12 +548,20 @@ public class AssetBundleClassificationWindow : EditorWindow
 
     private string GetBuildPathForBundle(string bundleName)
     {
+        AssetBundleBrowserMain assetBundleBrowserMain = AssetBundleBrowserMain.instance;
+        string m_OutputPath = assetBundleBrowserMain.m_BuildTabData.m_OutputPath;
+        string result = "AssetBundles/";
+        int startIndex = m_OutputPath.IndexOf("AssetBundles/");
+        if (startIndex != -1)
+        {
+            result = m_OutputPath.Substring(startIndex);
+        }
         // 这里需要根据你的构建输出路径进行调整
         string[] possiblePaths =
         {
-            Path.Combine(Application.streamingAssetsPath, bundleName),
-            Path.Combine(Application.dataPath, "../AssetBundles", bundleName),
-            Path.Combine(System.Environment.CurrentDirectory, "AssetBundles", bundleName)
+            $"{Application.dataPath}/{result}/{bundleName}",
+            $"{Application.streamingAssetsPath}/{result}/{bundleName}",
+            $"{System.Environment.CurrentDirectory}/{result}/{bundleName}"
         };
 
         foreach (string path in possiblePaths)
@@ -593,5 +603,20 @@ public class AssetBundleClassificationWindow : EditorWindow
         {
             return $"{(bytes / (1024.0 * 1024.0)):0.0} MB";
         }
+    }
+}
+
+public static class EditorGUIExtensions
+{
+    public static bool ColorButton(string text, Color color, GUIStyle style = null, params GUILayoutOption[] options)
+    {
+        var oldColor = GUI.backgroundColor;
+        GUI.backgroundColor = color;
+
+        var buttonStyle = style ?? EditorStyles.miniButton;
+        bool result = GUILayout.Button(text, buttonStyle, options);
+
+        GUI.backgroundColor = oldColor;
+        return result;
     }
 }

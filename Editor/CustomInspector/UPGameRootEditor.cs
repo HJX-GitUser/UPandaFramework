@@ -79,6 +79,10 @@ namespace UPandaGF
             ShowArg("LoadAssetPath", "资源路径");
             ShowArg("MainName", "主包名");
             ShowArg("MainPackageLoadPath", "主包加载路径");
+            if (GUILayout.Button("reset"))
+            {
+
+            }
         }
 
 
