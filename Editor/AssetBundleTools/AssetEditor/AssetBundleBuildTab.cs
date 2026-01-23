@@ -291,7 +291,7 @@ namespace AssetBundleBrowser
 
             // build.
             EditorGUILayout.Space();
-            if (GUILayout.Button("Build"))
+            if (GUILayout.Button("Build Window"))
             {
                 AssetBundleClassificationWindow.ShowWindow();
                 //EditorApplication.delayCall += ExecuteBuild;
