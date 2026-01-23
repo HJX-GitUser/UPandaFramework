@@ -227,7 +227,7 @@ public class AssetBundleClassificationWindow : EditorWindow
             File.WriteAllBytes(SAVE_PATH + assetRefName + assetRefextension, bytes);
             ms.Close();
         }
-        Debug.Log("资源关联数据已保存至：" + SAVE_PATH + assetRefName + assetRefextension);
+        Debug.Log("资源数据已保存至：" + SAVE_PATH + assetRefName + assetRefextension);
 
     }
 
@@ -417,14 +417,13 @@ public class AssetBundleClassificationWindow : EditorWindow
     {
         GUILayout.Space(5);
         EditorGUILayout.LabelField("详细信息", EditorStyles.boldLabel);
-        detailsscrollPosition = GUILayout.BeginScrollView(detailsscrollPosition, GUILayout.Height(150));
         GUILayout.BeginVertical(EditorStyles.helpBox);
-
+        detailsscrollPosition = GUILayout.BeginScrollView(detailsscrollPosition, GUILayout.Height(150));
         // 基本信息
         EditorGUILayout.LabelField("名称:", selectedBundle.name);
         EditorGUILayout.LabelField("大小:", FormatFileSize(selectedBundle.size));
-        EditorGUILayout.LabelField("路径:", selectedBundle.path);
         EditorGUILayout.LabelField("加载方式:", selectedBundle.loadPath.ToString());
+        EditorGUILayout.LabelField("路径:", selectedBundle.path);
 
         if (selectedBundle.isVariant)
         {
@@ -487,9 +486,8 @@ public class AssetBundleClassificationWindow : EditorWindow
         {
             EditorGUILayout.LabelField("无依赖");
         }
-
-        GUILayout.EndVertical();
         GUILayout.EndScrollView();
+        GUILayout.EndVertical();
     }
 
     public void RefreshAssetBundleList()
