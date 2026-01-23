@@ -299,7 +299,6 @@ namespace AssetBundleBrowser
             GUILayout.EndVertical();
             EditorGUILayout.EndScrollView();
         }
-
         public void ExecuteBuild()
         {
             if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory)

@@ -147,6 +147,10 @@ public class AssetBundleClassificationWindow : EditorWindow
         }
 
         GUILayout.FlexibleSpace();
+        if (GUILayout.Button("更新配置", EditorStyles.toolbarButton, GUILayout.Width(120)))
+        {
+            GenerateAssetBundleInfo();
+        }
 
         //if (GUILayout.Button("构建 AssetBundle",  EditorStyles.toolbarButton, GUILayout.Width(120)))
         if (EditorGUIExtensions.ColorButton("Build All", Color.green, EditorStyles.toolbarButton, GUILayout.Width(120)))
@@ -396,13 +400,6 @@ public class AssetBundleClassificationWindow : EditorWindow
         GUI.backgroundColor = originalColor;
 
         // 名称
-        //if (GUILayout.Button(bundleInfo.name, GetRowStyle(),
-        //    GUILayout.Width(nameColumnWidth), GUILayout.MinWidth(nameColumnWidth)))
-        //{
-        //    HandleBundleClick(bundleInfo);
-        //}
-
-        // 修改名称绘制部分，添加右键菜单支持
         Rect nameRect = GUILayoutUtility.GetRect(
             new GUIContent(bundleInfo.name),
             GetRowStyle(),
@@ -462,7 +459,7 @@ public class AssetBundleClassificationWindow : EditorWindow
         if (selectedBundle == bundleInfo && (currentTime - lastClickTime) < doubleClickTime)
         {
             // 双击 - 在Project窗口中定位
-           UnityEngine. Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(bundleInfo.path);
+            UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(bundleInfo.path);
             if (obj != null)
             {
                 EditorUtility.FocusProjectWindow();
@@ -680,14 +677,20 @@ public class AssetBundleClassificationWindow : EditorWindow
         GenericMenu menu = new GenericMenu();
 
         // Build菜单项
-        menu.AddItem(new GUIContent("Build"), false, () =>
+        menu.AddItem(new GUIContent("Build/Build This Bundle"), false, () =>
         {
-            ShowBuildSubMenu(bundleInfo);
+            BuildSingleAssetBundle(bundleInfo.name);
+        });
+
+        // 2. 构建选中的AssetBundle及其依赖
+        menu.AddItem(new GUIContent("Build/Build This Bundle + Dependencies"), false, () =>
+        {
+            BuildAssetBundleWithDependencies(bundleInfo.name);
         });
 
         menu.AddSeparator("");
 
-        // 1. 定位到文件/在Project中高亮
+        //定位到文件/在Project中高亮
         if (bundleInfo.assets != null && bundleInfo.assets.Count > 0)
         {
             menu.AddItem(new GUIContent("在Project中高亮"), false, () =>
@@ -714,13 +717,13 @@ public class AssetBundleClassificationWindow : EditorWindow
             menu.AddDisabledItem(new GUIContent("在Project中高亮(无资源)"));
         }
 
-        // 2. 复制名称
+        //复制名称
         menu.AddItem(new GUIContent("复制包名"), false, () =>
         {
             EditorGUIUtility.systemCopyBuffer = bundleInfo.name;
         });
 
-        // 3. 在资源管理器中显示(如果已构建)
+        //在资源管理器中显示(如果已构建)
         if (bundleInfo.path != "未构建" && !string.IsNullOrEmpty(bundleInfo.path))
         {
             menu.AddItem(new GUIContent("在资源管理器中显示"), false, () =>
@@ -743,13 +746,13 @@ public class AssetBundleClassificationWindow : EditorWindow
 
         menu.AddSeparator("");
 
-        // 4. 复制路径
+        //复制路径
         menu.AddItem(new GUIContent("复制AssetBundle路径"), false, () =>
         {
             EditorGUIUtility.systemCopyBuffer = bundleInfo.path;
         });
 
-        // 5. 复制加载路径枚举
+        //复制加载路径枚举
         menu.AddItem(new GUIContent($"复制加载路径:{bundleInfo.loadPath}"), false, () =>
         {
             EditorGUIUtility.systemCopyBuffer = $"ABLoadPath.{bundleInfo.loadPath}";
@@ -797,11 +800,11 @@ public class AssetBundleClassificationWindow : EditorWindow
             return;
         }
 
-        if (!EditorUtility.DisplayDialog("构建确认",
-            $"确定要构建 '{bundleName}' 吗？\n\n注意：这将只构建指定的AssetBundle，不包括其依赖。", "确定", "取消"))
-        {
-            return;
-        }
+        //if (!EditorUtility.DisplayDialog("构建确认",
+        //    $"注意：这将只构建指定的AssetBundle:{bundleName}，不包括其依赖。", "确定", "取消"))
+        //{
+        //    return;
+        //}
 
         try
         {
@@ -881,6 +884,8 @@ public class AssetBundleClassificationWindow : EditorWindow
             // 10. 刷新列表
             RefreshAssetBundleList();
 
+
+            AssetDatabase.Refresh();
         }
         catch (Exception e)
         {
@@ -903,13 +908,11 @@ public class AssetBundleClassificationWindow : EditorWindow
             Debug.LogWarning("正在构建中，请等待完成...");
             return;
         }
-
-        if (!EditorUtility.DisplayDialog("构建确认",
-            $"确定要构建 '{bundleName}' 及其所有依赖吗？", "确定", "取消"))
-        {
-            return;
-        }
-
+        //if (!EditorUtility.DisplayDialog("构建确认",
+        //    $"确定要构建 '{bundleName}' 及其所有依赖吗？", "确定", "取消"))
+        //{
+        //    return;
+        //}
         try
         {
             isBuildingSingle = true;
@@ -1007,6 +1010,8 @@ public class AssetBundleClassificationWindow : EditorWindow
 
             // 10. 刷新列表
             RefreshAssetBundleList();
+
+            AssetDatabase.Refresh();
 
         }
         catch (Exception e)
