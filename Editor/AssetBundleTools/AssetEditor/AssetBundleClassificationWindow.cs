@@ -23,7 +23,7 @@ public class AssetBundleClassificationWindow : EditorWindow
     {
         AssetBundleClassificationWindow window = GetWindow<AssetBundleClassificationWindow>();
         window.titleContent = new GUIContent("打包窗口");
-        window.minSize = new Vector2(500, 400);
+        window.position = new Rect(100, 100, 550, 600);//设置初始位置和大小
         window.Show();
     }
 
@@ -42,7 +42,8 @@ public class AssetBundleClassificationWindow : EditorWindow
     // 列宽
     private float nameColumnWidth = 150f;
     private float sizeColumnWidth = 100f;
-    private float dependenciesColumnWidth = 150f;
+    private float dependenciesColumnWidth = 100f;
+    private float pathColumnWidth = 200f;
     private float lastClickTime = 0;
     private float doubleClickTime = 0.3f;
     private int sortColumn = 0; // 0: 名称, 1: 大小, 2: 依赖数
@@ -170,21 +171,28 @@ public class AssetBundleClassificationWindow : EditorWindow
         {
             SortAssetBundles(0);
         }
-
-        // 大小列
-        if (DrawSortableHeader("大小", 1, sizeColumnWidth))
+        // 依赖列
+        if (DrawSortableHeader("依赖数量", 1, dependenciesColumnWidth))
         {
             SortAssetBundles(1);
         }
 
-        // 依赖列
-        if (DrawSortableHeader("依赖数量", 2, dependenciesColumnWidth))
+        // 大小列
+        if (DrawSortableHeader("大小", 2, sizeColumnWidth))
         {
             SortAssetBundles(2);
         }
 
         // 路径列
-        GUILayout.Label("加载方式", EditorStyles.toolbarButton, GUILayout.MinWidth(200));
+        if (GUILayout.Button(new GUIContent("加载配置"), EditorStyles.toolbarButton,
+            GUILayout.Width(pathColumnWidth), GUILayout.MinWidth(pathColumnWidth)))
+        {
+            EditorUtility.DisplayDialog("提示",
+                 $"SreamingAssets : 资源从SreamingAssets路径加载.\n\n" +
+                 $"PersistentDataPath : 资源从PersistentDataPath路径加载，该资源需要先下载到本地，主要配合热更新使用.\n\n" +
+                 $"RemotePath : 资源直接从远程路径加载", 
+                 "确定");
+        }
 
         GUILayout.EndHorizontal();
     }
@@ -202,7 +210,7 @@ public class AssetBundleClassificationWindow : EditorWindow
             GUILayout.Width(width), GUILayout.MinWidth(width));
     }
 
-    #region 资源关联数据
+    #region 资源引用数据
     /// <summary>
     /// 资源数据存储的位置
     /// </summary>
@@ -424,18 +432,19 @@ public class AssetBundleClassificationWindow : EditorWindow
             }
         }
 
+        // 依赖数量
+        GUILayout.Label(bundleInfo.dependencies.Count.ToString(), GetRowStyle(),
+            GUILayout.Width(dependenciesColumnWidth), GUILayout.MinWidth(dependenciesColumnWidth));
 
         // 大小
         GUILayout.Label(FormatFileSize(bundleInfo.size), GetRowStyle(),
             GUILayout.Width(sizeColumnWidth), GUILayout.MinWidth(sizeColumnWidth));
 
-        // 依赖数量
-        GUILayout.Label(bundleInfo.dependencies.Count.ToString(), GetRowStyle(),
-            GUILayout.Width(dependenciesColumnWidth), GUILayout.MinWidth(dependenciesColumnWidth));
-
         // 路径
         //GUILayout.Label(bundleInfo.loadPath.ToString(), GetRowStyle(), GUILayout.MinWidth(200));
-        bundleInfo.loadPath = (ABLoadPath)EditorGUILayout.EnumPopup(bundleInfo.loadPath, GUILayout.MinWidth(200));
+        float lableW = pathColumnWidth - 40;
+        lableW = Mathf.Clamp(lableW, 20, pathColumnWidth - 40);
+        bundleInfo.loadPath = (ABLoadPath)EditorGUILayout.EnumPopup(bundleInfo.loadPath, GUILayout.Width(lableW), GUILayout.MinWidth(lableW));
         sourcesDic[bundleInfo.name] = bundleInfo.loadPath;
         GUILayout.FlexibleSpace();
 
@@ -818,7 +827,7 @@ public class AssetBundleClassificationWindow : EditorWindow
             GenerateAssetBundleInfo();
 
             // 2. 获取构建配置
-            var buildTab = AssetBundleBrowserMain.instance?.m_BuildTab;
+            AssetBundleBuildTab buildTab = AssetBundleBrowserMain.instance?.m_BuildTab;
             if (buildTab == null)
             {
                 Debug.LogError("无法获取AssetBundleBrowser的BuildTab");
@@ -826,8 +835,8 @@ public class AssetBundleClassificationWindow : EditorWindow
             }
 
             // 3. 获取构建参数
-            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            var buildOptions = BuildAssetBundleOptions.None;
+            BuildTarget buildTarget = (BuildTarget)buildTab.M_UserData.m_BuildTarget;
+            BuildAssetBundleOptions buildOptions = buildTab.GetOpt();
 
             // 4. 创建临时构建目标目录
             string outputPath = AssetBundleBrowserMain.instance.m_BuildTabData.m_OutputPath;
@@ -883,8 +892,6 @@ public class AssetBundleClassificationWindow : EditorWindow
 
             // 10. 刷新列表
             RefreshAssetBundleList();
-
-
             AssetDatabase.Refresh();
         }
         catch (Exception e)
@@ -925,7 +932,7 @@ public class AssetBundleClassificationWindow : EditorWindow
             GenerateAssetBundleInfo();
 
             // 2. 获取构建配置
-            var buildTab = AssetBundleBrowserMain.instance?.m_BuildTab;
+            AssetBundleBuildTab buildTab = AssetBundleBrowserMain.instance?.m_BuildTab;
             if (buildTab == null)
             {
                 Debug.LogError("无法获取AssetBundleBrowser的BuildTab");
@@ -949,8 +956,9 @@ public class AssetBundleClassificationWindow : EditorWindow
             }
 
             // 4. 获取构建参数
-            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            var buildOptions = BuildAssetBundleOptions.None;
+            // 3. 获取构建参数
+            BuildTarget buildTarget = (BuildTarget)buildTab.M_UserData.m_BuildTarget;
+            BuildAssetBundleOptions buildOptions = buildTab.GetOpt();
 
             // 5. 创建临时构建目标目录
             string outputPath = AssetBundleBrowserMain.instance.m_BuildTabData.m_OutputPath;

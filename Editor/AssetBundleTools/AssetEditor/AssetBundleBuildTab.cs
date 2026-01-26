@@ -49,6 +49,7 @@ namespace AssetBundleBrowser
 
         [SerializeField]
         private BuildTabData m_UserData;
+        public BuildTabData M_UserData => m_UserData;
 
         List<ToggleData> m_ToggleData;
         ToggleData m_ForceRebuild;
@@ -118,55 +119,55 @@ namespace AssetBundleBrowser
             m_ToggleData = new List<ToggleData>();
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Exclude Type Information",
-                "Do not include type information within the asset bundle (don't write type tree).",
+                "排除类型信息[Exclude Type Information]",
+                "不要在资源包中包含类型信息（不要编写类型树）[Do not include type information within the asset bundle (don't write type tree).]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.DisableWriteTypeTree));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Force Rebuild",
-                "Force rebuild the asset bundles",
+                "强制重建[Force Rebuild]",
+                "强制重新构建资源包[Force rebuild the asset bundles]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.ForceRebuildAssetBundle));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Ignore Type Tree Changes",
-                "Ignore the type tree changes when doing the incremental build check.",
+                "忽略类型树更改[Ignore Type Tree Changes]",
+                "在进行增量构建检查时，忽略类型树的变化[Ignore the type tree changes when doing the incremental build check.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.IgnoreTypeTreeChanges));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Append Hash",
-                "Append the hash to the assetBundle name.",
+                "追加哈希[Append Hash]",
+                "将哈希值附加到assetBundle名称上[Append the hash to the assetBundle name.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.AppendHashToAssetBundleName));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Strict Mode",
-                "Do not allow the build to succeed if any errors are reporting during it.",
+                "严格模式[Strict Mode]",
+                "如果在构建过程中报告了任何错误，则不允许构建成功。[Do not allow the build to succeed if any errors are reporting during it.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.StrictMode));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Dry Run Build",
-                "Do a dry run build.",
+                "试运行构建[Dry Run Build]",
+                "进行一次模拟构建[Do a dry run build.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.DryRunBuild));
 
 
             m_ForceRebuild = new ToggleData(
                 false,
-                "Clear Folders",
-                "Will wipe out all contents of build directory as well as StreamingAssets/AssetBundles if you are choosing to copy build there.",
+                "清理文件夹[Clear Folders]",
+                "如果您选择将构建内容复制到StreamingAssets/AssetBundles，则此操作将清除构建目录以及该目录中所有内容。[Will wipe out all contents of build directory as well as StreamingAssets/AssetBundles if you are choosing to copy build there.]",
                 m_UserData.m_OnToggles);
             m_CopyToStreaming = new ToggleData(
                 false,
-                "Copy to StreamingAssets",
-                "After build completes, will copy all build content to " + m_streamingPath + " for use in stand-alone player.",
+                "[Copy to StreamingAssets]",
+                "[After build completes, will copy all build content to " + m_streamingPath + " for use in stand-alone player.]",
                 m_UserData.m_OnToggles);
 
             m_TargetContent = new GUIContent("Build Target", "Choose target platform to build for.");
-            m_CompressionContent = new GUIContent("Compression", "Choose no compress, standard (LZMA), or chunk based (LZ4)");
+            m_CompressionContent = new GUIContent("压缩[Compression]", "Choose no compress, standard (LZMA), or chunk based (LZ4)");
 
             if (m_UserData.m_UseDefaultPath)
             {
@@ -254,7 +255,7 @@ namespace AssetBundleBrowser
             using (new EditorGUI.DisabledScope(!AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions))
             {
                 EditorGUILayout.Space();
-                m_AdvancedSettings = EditorGUILayout.Foldout(m_AdvancedSettings, "Advanced Settings");
+                m_AdvancedSettings = EditorGUILayout.Foldout(m_AdvancedSettings, "高级设置[Advanced Settings]");
                 if (m_AdvancedSettings)
                 {
                     var indent = EditorGUI.indentLevel;
@@ -339,20 +340,7 @@ namespace AssetBundleBrowser
                     Directory.CreateDirectory(m_UserData.m_OutputPath);
             }
 
-            BuildAssetBundleOptions opt = BuildAssetBundleOptions.None;
-
-            if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions)
-            {
-                if (m_UserData.m_Compression == CompressOptions.Uncompressed)
-                    opt |= BuildAssetBundleOptions.UncompressedAssetBundle;
-                else if (m_UserData.m_Compression == CompressOptions.ChunkBasedCompression)
-                    opt |= BuildAssetBundleOptions.ChunkBasedCompression;
-                foreach (var tog in m_ToggleData)
-                {
-                    if (tog.state)
-                        opt |= tog.option;
-                }
-            }
+            BuildAssetBundleOptions opt = GetOpt();
 
             ABBuildInfo buildInfo = new ABBuildInfo();
 
@@ -376,6 +364,24 @@ namespace AssetBundleBrowser
 
         }
 
+        public BuildAssetBundleOptions GetOpt()
+        {
+            BuildAssetBundleOptions opt = BuildAssetBundleOptions.None;
+            if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions)
+            {
+                if (m_UserData.m_Compression == CompressOptions.Uncompressed)
+                    opt |= BuildAssetBundleOptions.UncompressedAssetBundle;
+                else if (m_UserData.m_Compression == CompressOptions.ChunkBasedCompression)
+                    opt |= BuildAssetBundleOptions.ChunkBasedCompression;
+                foreach (ToggleData tog in m_ToggleData)
+                {
+                    if (tog.state)
+                        opt |= tog.option;
+                }
+            }
+            Debug.Log($"BuildAssetBundleOptions:{opt.ToString()}");
+            return opt;
+        }
 
 
         private static void DirectoryCopy(string sourceDirName, string destDirName)

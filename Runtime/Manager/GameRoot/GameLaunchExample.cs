@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
@@ -46,7 +47,7 @@ public class GameLaunchExample : MonoBehaviour
     private async void OnGFLoadedEvent(GFLoadedEvent arg0)
     {
         PLogger.Log_white("框架加载结束，进入游戏逻辑");
-        simpleLoadUI.SetMessage(1f, "程序加载完成");
+        simpleLoadUI.SetMessage(1f, "AOT程序加载完成");
         await Task.Delay(1000);
         UPGameRoot gr = UPGameRoot.Instance;
 
@@ -54,49 +55,40 @@ public class GameLaunchExample : MonoBehaviour
 
         if (loadHotUpdateScripts)
         {
+            int count = 0;
             for (int i = 0; i < HybridCLRScriptsList.Length; i++)
             {
                 simpleLoadUI.SetMessage(i / HybridCLRScriptsList.Length, "热更新程序集加载中...");
-                await sourcesLoad.LoadAssemblyAsync(HybridCLRScriptsList[i]);
+                Assembly assembly = await sourcesLoad.LoadAssemblyAsync(HybridCLRScriptsList[i]);
+                if (assembly != null)
+                {
+                    count++;
+                }
             }
-
-            simpleLoadUI.SetMessage(1, "程序热更完成");
+            if (count == HybridCLRScriptsList.Length)
+                simpleLoadUI.SetMessage(1, "程序热更完成");
+            else
+                simpleLoadUI.SetMessage(1, "程序热更失败！！！");
             await Task.Delay(1000);
             simpleLoadUI.SetMessage(0.5f, "泛型注册...");
             onAssemblyLoaded?.Invoke();
             await Task.Delay(1000);
             simpleLoadUI.SetMessage(1, "泛型注册完成");
         }
-        if (gr.method == AssetLoaddingMethod.Editor)
+        simpleLoadUI.SetMessage(0f, "开始获取场景资源");
+        EventCenter.Instance.AddEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
+        //这是场景作为AssetBundle加载的方式
+        sourcesLoad.LoadSceneAsync(firstScene, () =>
         {
-            string sceneName = firstScene.Substring(firstScene.LastIndexOf('/') + 1);
-            sceneName = sceneName.Split('.')[0];
-            //这是直接加载场景的方式
-            SceneMgr.Instance.LoadSceneAsyn(sceneName, async () =>
-            {
-                PLogger.Log("<color=blue>进入场景</color>");
-                simpleLoadUI.SetMessage(1, "场景资源加载完成");
-                await Task.Delay(1000);
-                uiManager.ClosePanel("UI/LoadUI");
-            });
-        }
-        else if (gr.method == AssetLoaddingMethod.Assetbundles)
+            EventCenter.Instance.RemoveEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
+        },
+        async () =>
         {
-            simpleLoadUI.SetMessage(0f, "开始获取场景资源");
-            EventCenter.Instance.AddEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
-            //这是场景作为AssetBundle加载的方式
-            sourcesLoad.LoadSceneAsync(firstScene, () =>
-            {
-                EventCenter.Instance.RemoveEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
-            },
-            async () =>
-            {
-                PLogger.Log("<color=blue>进入场景</color>");
-                simpleLoadUI.SetMessage(1, "场景加载完成");
-                await Task.Delay(1000);
-                uiManager.ClosePanel("UI/LoadUI");
-            });
-        }
+            PLogger.Log("<color=blue>进入场景</color>");
+            simpleLoadUI.SetMessage(1, "场景加载完成");
+            await Task.Delay(1000);
+            uiManager.ClosePanel("UI/LoadUI");
+        });
     }
 
     private void AssetLoadProgressEvent(ABLoadProgressEvent arg0)
