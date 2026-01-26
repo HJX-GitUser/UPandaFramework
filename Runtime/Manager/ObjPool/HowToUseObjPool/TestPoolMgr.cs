@@ -1,22 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UPandaGF;
 
 public class TestPoolMgr : MonoBehaviour
 {
     List<GameObject> cubes = new List<GameObject>();
     List<GameObject> spheres = new List<GameObject>();
-
+    public bool LoadAsync = false;
+    public AssetLoadMethod loadMethod;
     public string obj1Path = "Obj1";
     public string obj2Path = "Obj2";
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
+   
     // Update is called once per frame
-    void Update()
+    async void Update()
     {
         if (Input.GetKeyDown(KeyCode.P))
         {
@@ -35,26 +32,40 @@ public class TestPoolMgr : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            //PoolMgr.Instance.GetObjAsync(obj1Path, (obj) =>
-            //{
-            //    obj.transform.position = new Vector3(Random.Range(0, 11), Random.Range(0, 11), Random.Range(0, 11));
-            //    cubes.Add(obj);
-            //});
-            GameObject obj = PoolMgr.Instance.GetObj(obj1Path);
-            obj.transform.position = new Vector3(Random.Range(-11, 11), Random.Range(0, 11), Random.Range(0, 11));
-            cubes.Add(obj);
+
+            if (LoadAsync)
+            {
+                GameObject obj = await PoolMgr.Instance.GetObjAsync(obj1Path, loadMethod);
+                obj.transform.position = new Vector3(Random.Range(0, 11), Random.Range(0, 11), Random.Range(0, 11));
+                cubes.Add(obj);
+
+            }
+            else
+            {
+                GameObject obj = PoolMgr.Instance.GetObj(obj1Path, loadMethod);
+                obj.transform.position = new Vector3(Random.Range(-11, 11), Random.Range(0, 11), Random.Range(0, 11));
+                cubes.Add(obj);
+            }
+
         }
 
         if (Input.GetKeyDown(KeyCode.W))
         {
-            //PoolMgr.Instance.GetObjAsync(obj2Path, (obj) =>
-            //{
-            //    obj.transform.position = new Vector3(Random.Range(0, 11), Random.Range(0, 11), Random.Range(0, 11));
-            //    spheres.Add(obj);
-            //});
-            GameObject obj = PoolMgr.Instance.GetObj(obj2Path);
-            obj.transform.position = new Vector3(Random.Range(-11, 11), Random.Range(0, 11), Random.Range(0, 11));
-            spheres.Add(obj);
+
+            if (LoadAsync)
+            {
+                GameObject obj = await PoolMgr.Instance.GetObjAsync(obj2Path, loadMethod);
+                obj.transform.position = new Vector3(Random.Range(0, 11), Random.Range(0, 11), Random.Range(0, 11));
+                spheres.Add(obj);
+            }
+            else
+            {
+                GameObject obj = PoolMgr.Instance.GetObj(obj2Path, loadMethod);
+                obj.transform.position = new Vector3(Random.Range(-11, 11), Random.Range(0, 11), Random.Range(0, 11));
+                spheres.Add(obj);
+            }
+
         }
     }
+
 }

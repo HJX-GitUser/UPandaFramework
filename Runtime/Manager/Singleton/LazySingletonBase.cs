@@ -46,8 +46,10 @@ public abstract class LazySingletonBase<T> where T : class, new()
         {
             throw new InvalidOperationException($"{typeof(T).Name} 已经是单例，不能重复创建");
         }
+        OnInit();
     }
 
+    protected virtual void OnInit() { }
     /// <summary>
     /// 释放单例实例
     /// </summary>

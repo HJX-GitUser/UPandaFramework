@@ -19,15 +19,6 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// 资源加载方式
-    /// </summary>
-    public enum AssetLoadMethod
-    {
-        Resources,
-        AssetBundle
-    }
-
-    /// <summary>
     /// UI管理器
     /// 1.管理所有显示的面板
     /// 2.提供给外部 显示和隐藏等等接口

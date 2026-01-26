@@ -28,7 +28,7 @@ public abstract class EagerSingletonBase<T> where T : class, new()
     /// </summary>
     static EagerSingletonBase()
     {
-        Console.WriteLine($"[EagerSingleton] 预创建 {typeof(T).Name} 实例");
+        Debug.Log($"[EagerSingleton] 预创建 {typeof(T).Name} 实例");
     }
 
     /// <summary>
@@ -36,7 +36,9 @@ public abstract class EagerSingletonBase<T> where T : class, new()
     /// </summary>
     protected EagerSingletonBase()
     {
+        OnInit();
     }
+    protected virtual void OnInit() { }
 
     /// <summary>
     /// 释放单例实例
