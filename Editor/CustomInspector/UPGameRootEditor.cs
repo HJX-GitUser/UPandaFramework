@@ -44,6 +44,7 @@ namespace UPandaGF
                         CreateReporter(arg);
                         component.reporter = component.GetComponentInChildren<Reporter>();
                     }
+                    EditorGUILayout.HelpBox("启动该选项，在运行时可以点击左上角按钮启动日志面板，用于打包项目时调试，正式包取消勾选", MessageType.Info);
                 }
                 else
                 {

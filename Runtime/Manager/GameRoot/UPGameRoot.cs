@@ -104,6 +104,7 @@ namespace UPandaGF
             if (sourcesLoadMgr == null) sourcesLoadMgr = InitComponent<AssetsLoader>();
             if (binaryDataMgr == null) binaryDataMgr = InitComponent<BinaryDataMgrInit>();
             if(UIManager == null) UIManager = InitComponent<UIManager>();
+            UIManager.Init();
         }
 
         private T InitComponent<T>() where T : Component

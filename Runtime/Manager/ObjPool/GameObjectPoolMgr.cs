@@ -1,7 +1,6 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Unity.VisualScripting.TextureAssets;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -22,7 +21,7 @@ namespace UPandaGF
         /// <param name="poolObj">对象池</param>
         public PoolData(GameObject obj, GameObject poolObj)
         {
-            if (PoolMgr.isOpenLayout && poolObj != null)
+            if (GameObjectPoolMgr.isOpenLayout && poolObj != null)
             {
                 fatherObj = new GameObject(obj.name + "_F");
                 fatherObj.transform.SetParent(poolObj.transform);
@@ -39,7 +38,7 @@ namespace UPandaGF
         {
             obj.SetActive(false);
             poolList.Push(obj);
-            if (PoolMgr.isOpenLayout)
+            if (GameObjectPoolMgr.isOpenLayout)
                 obj.transform.SetParent(fatherObj.transform);
         }
 
@@ -52,21 +51,21 @@ namespace UPandaGF
             GameObject obj = null;
             obj = poolList.Pop();
             obj.SetActive(true);
-            if (PoolMgr.isOpenLayout)
+            if (GameObjectPoolMgr.isOpenLayout)
                 obj.transform.parent = null;
             return obj;
         }
     }
 
     /// <summary>
-    /// 对象池模块
+    /// GameObject对象池
     /// </summary>
-    public class PoolMgr : LazySingletonBase<PoolMgr>
+    public class GameObjectPoolMgr : LazySingletonBase<GameObjectPoolMgr>
     {
         /// <summary>
         /// 对象池容器
         /// </summary>
-        public Dictionary<string, PoolData> poolDic = new Dictionary<string, PoolData>();
+        public Dictionary<string, PoolData> poolDic;
         /// <summary>
         /// 对象池Obj
         /// </summary>
@@ -83,7 +82,8 @@ namespace UPandaGF
 
         protected override void OnInit()
         {
-            PLogger.Log("PoolMgr Init!");
+            Debug.Log("PoolMgr Init!");
+            poolDic = new Dictionary<string, PoolData>();
             resourcesLoader = ResourcesLoader.Instance;
             assetsLoader = UPGameRoot.Instance.GetAssetsLoader();
         }
@@ -149,7 +149,13 @@ namespace UPandaGF
             return result;
         }
 
-
+        /// <summary>
+        /// 取对象【同步】
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="loadMethod"></param>
+        /// <returns></returns>
+        [Obsolete("使用AssetBundle时不支持该方法")]
         public GameObject GetObj(string path, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
         {
             GameObject obj = null;

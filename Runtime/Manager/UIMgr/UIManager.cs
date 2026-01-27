@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-
+using UnityEngine.UI;
 
 namespace UPandaGF
 {
@@ -42,21 +42,18 @@ namespace UPandaGF
 
         protected override void OnAwake()
         {
-            Init();
-        }
-
-        public void Init()
-        {
             assetsLoader = UPGameRoot.Instance.GetAssetsLoader();
             resourcesLoader = ResourcesLoader.Instance;
+        }
+        public void Init()
+        {
             if (uiCamera == null)
-                uiCamera = GameObject.Instantiate(resourcesLoader.Load<GameObject>("UI/UICamera")).GetComponent<Camera>();
-            //创建Canvas 让其过场景的时候 不被移除
+            {
+                uiCamera = InitCamera();
+            }
             if (uiCanvas == null)
             {
-                GameObject obj = GameObject.Instantiate(ResourcesLoader.Instance.Load<GameObject>("UI/Canvas"));
-                uiCanvas = obj.GetComponent<Canvas>();
-                uiCanvas.worldCamera = uiCamera;
+                uiCanvas = InitUICanvas(uiCamera);
             }
             canvasRectTransform = uiCanvas.transform as RectTransform;
             //找到各层
@@ -64,12 +61,63 @@ namespace UPandaGF
             mid = canvasRectTransform.Find("Mid");
             top = canvasRectTransform.Find("Top");
             system = canvasRectTransform.Find("System");
+        }
 
+        private Camera InitCamera()
+        {
+            GameObject obj = new GameObject("UICamera");
+            obj.transform.SetParent(transform);
+            Camera camera = obj.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.Depth;
+            camera.cullingMask = 1 << LayerMask.NameToLayer("UI");
+            return camera;
+        }
 
+        private Canvas InitUICanvas(Camera camera)
+        {
+            GameObject obj = new GameObject("Canvas", typeof(RectTransform));
+            RectTransform canvasRect = obj.GetComponent<RectTransform>();
+            canvasRect.SetParent(transform);
+            canvasRect.localScale = Vector3.one;
+            obj.layer = LayerMask.NameToLayer("UI");
+            Canvas canvas = obj.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = camera;
+            canvas.sortingOrder = -10;
+            CanvasScaler canvasScaler = obj.AddComponent<CanvasScaler>();
+            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            canvasScaler.referenceResolution = new Vector2(1920, 1080);
+            canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
+            canvasScaler.referencePixelsPerUnit = 100;
+            obj.AddComponent<GraphicRaycaster>();
+            RectTransform Bot = new GameObject("Bot", typeof(RectTransform)).GetComponent<RectTransform>();
+            RectTransform Mid = new GameObject("Mid", typeof(RectTransform)).GetComponent<RectTransform>();
+            RectTransform Top = new GameObject("Top", typeof(RectTransform)).GetComponent<RectTransform>();
+            RectTransform System = new GameObject("System", typeof(RectTransform)).GetComponent<RectTransform>();
+            SetRect(Bot, canvasRect);
+            SetRect(Mid, canvasRect);
+            SetRect(Top, canvasRect);
+            SetRect(System, canvasRect);
+            EventSystem eventSystem = FindAnyObjectByType<EventSystem>();
+            if (eventSystem == null)
+            {
+                GameObject eventObj = new GameObject("EventSystem");
+                eventSystem = eventObj.AddComponent<EventSystem>();
+                eventObj.AddComponent<StandaloneInputModule>();
+            }
+            return canvas;
+        }
 
-            //创建EventSystem 让其过场景的时候 不被移除
-            //uiEventSystem = GameObject.Instantiate(ResourcesLoader.Instance.Load<GameObject>("UI/EventSystem")).GetComponent<EventSystem>();
-            //GameObject.DontDestroyOnLoad(uiEventSystem.gameObject);
+        private void SetRect(RectTransform rect, RectTransform parent)
+        {
+            rect.SetParent(parent);
+            rect.localPosition = Vector3.zero;
+            rect.localScale = Vector3.one;
+            rect.gameObject.layer = LayerMask.NameToLayer("UI");
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.sizeDelta = Vector2.zero;
         }
 
         /// <summary>

@@ -29,7 +29,7 @@ public abstract class LazySingletonBase<T> where T : class, new()
                     {
                         _instance = new T();
                         _isInitialized = true;
-                        Console.WriteLine($"[LazySingleton] 创建 {typeof(T).Name} 实例");
+                        Debug.Log($"[LazySingleton] 创建 {typeof(T).Name} 实例");
                     }
                 }
             }
@@ -63,7 +63,7 @@ public abstract class LazySingletonBase<T> where T : class, new()
             }
             _instance = null;
             _isInitialized = false;
-            Console.WriteLine($"[LazySingleton] 释放 {typeof(T).Name} 实例");
+            Debug.Log($"[LazySingleton] 释放 {typeof(T).Name} 实例");
         }
     }
 }
