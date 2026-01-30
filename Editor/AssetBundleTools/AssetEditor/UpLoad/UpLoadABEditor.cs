@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
-using static AssetBundleBrowser.AssetBundleBuildTab;
 
 /// <summary>
 /// 上传更新AB包
@@ -21,11 +20,12 @@ internal class UpLoadABEditor
     {
         None = 0,
         FTP = 1,
+        HTTP = 2,
     }
     //通讯方式
     public ContactMethod contactMethod;
-
-    public FTPUpLoadABConfig Config;
+    private UpLoadFTP upLoadFTP;
+    public HTTPUpLoadABConfig HTTPConfig;
     [SerializeField]
     private Vector2 m_ScrollPosition;
 
@@ -40,18 +40,16 @@ internal class UpLoadABEditor
         int c = EditorPrefs.GetInt("UpLoadABEditor_contactMethod", (int)contactMethod);
         contactMethod = (ContactMethod)c;
         LocalABPath = abMainE.m_BuildTabData.m_OutputPath;
-        GetFTPConfig();
     }
 
-    private void GetFTPConfig()
+    private FTPUpLoadABConfig GetFTPConfig()
     {
-        if (contactMethod == ContactMethod.FTP && Config == null)
+        if (contactMethod == ContactMethod.FTP && upLoadFTP == null)
         {
-            Config = new FTPUpLoadABConfig(abMainE.m_BuildTabData.m_BuildTarget.ToString());
-            Config.UpABURL = EditorPrefs.GetString("UpLoadABEditor_UpABURL", Config.UpABURL);
-            Config.Ftp_UserName = EditorPrefs.GetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
-            Config.Ftp_Password = EditorPrefs.GetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
+           
+            upLoadFTP = new UpLoadFTP(abMainE.m_BuildTabData.m_BuildTarget.ToString());
         }
+        return upLoadFTP.GetConfig;
     }
 
     public void OnGUI()
@@ -75,6 +73,9 @@ internal class UpLoadABEditor
         {
             case ContactMethod.FTP:
                 FTPGUI();
+                break;
+            case ContactMethod.HTTP:
+                HTTPGUI();
                 break;
         }
         EditorGUILayout.Space(30);
@@ -105,32 +106,28 @@ internal class UpLoadABEditor
 
     private void FTPGUI()
     {
-        GetFTPConfig();
-        Config.UpABURL = EditorGUILayout.TextField("上传地址", Config.UpABURL);
+        FTPUpLoadABConfig FTPConfig = GetFTPConfig();
+        FTPConfig.UpABURL = EditorGUILayout.TextField("上传地址", FTPConfig.UpABURL);
         EditorGUILayout.LabelField("FTP通信凭证:");
-        Config.Ftp_UserName = EditorGUILayout.TextField("ftp用户名", Config.Ftp_UserName);
-        Config.Ftp_Password = EditorGUILayout.TextField("ftp密码", Config.Ftp_Password);
+        FTPConfig.Ftp_UserName = EditorGUILayout.TextField("ftp用户名", FTPConfig.Ftp_UserName);
+        FTPConfig.Ftp_Password = EditorGUILayout.TextField("ftp密码", FTPConfig.Ftp_Password);
         if (GUILayout.Button("上传AB包和对比文件"))
         {
-            UpLoadAllABFile();
+            DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
+            if (contactMethod == ContactMethod.FTP)
+            {
+                upLoadFTP.UpLoadAllABFile(LocalABPath);
+            }
         }
     }
 
-
-    /// <summary>
-    /// 上传
-    /// </summary>
-    private void UpLoadAllABFile()
+    private void HTTPGUI()
     {
-        Debug.Log($"开始上传：{Config.UpABURL}");
-        DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
-        FileInfo[] fileInfos = directory.GetFiles();
-        foreach (FileInfo fileInfo in fileInfos)
+        if(HTTPConfig == null) HTTPConfig = new HTTPUpLoadABConfig();
+        HTTPConfig.serverUrl = EditorGUILayout.TextField("上传地址", HTTPConfig.serverUrl);
+        if (GUILayout.Button("开始上传"))
         {
-            if (IsABAssets(fileInfo))
-            {
-                FtpUploadFile(fileInfo.FullName, fileInfo.Name);
-            }
+            Debug.Log("功能待完成");
         }
     }
 
@@ -166,10 +163,9 @@ internal class UpLoadABEditor
     {
         if (contactMethod == ContactMethod.FTP)
         {
-            Config = new FTPUpLoadABConfig(abMainE.m_BuildTabData.m_BuildTarget.ToString());
+            upLoadFTP.ResetData(abMainE.m_BuildTabData.m_BuildTarget.ToString());
+            Debug.Log("FTP已重置");
         }
-        Debug.Log("已重置");
-        SaveData();
     }
 
     /// <summary>
@@ -178,70 +174,10 @@ internal class UpLoadABEditor
     public void SaveData()
     {
         EditorPrefs.SetInt("UpLoadABEditor_contactMethod", (int)contactMethod);
-        if (contactMethod == ContactMethod.FTP)
-        {
-            EditorPrefs.SetString("UpLoadABEditor_UpABURL", Config.UpABURL);
-            EditorPrefs.SetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
-            EditorPrefs.SetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
-        }
+        if (contactMethod == ContactMethod.FTP) upLoadFTP.SaveData();
         Debug.Log("界面信息已保存");
     }
 
-    /// <summary>
-    /// 上传AB包和对比文件
-    /// </summary>
-    /// <param name="filePath"></param>
-    /// <param name="fileName"></param>
-    private async void FtpUploadFile(string filePath, string fileName)
-    {
-        await Task.Run(() =>
-        {
-            try
-            {
-                //1.创建一个FTP连接 用于上传
-                FtpWebRequest req = FtpWebRequest.Create(new Uri(Config.UpABURL + fileName)) as FtpWebRequest;
-                //2.设置一个通信凭证 这样才能上传
-                NetworkCredential n = new NetworkCredential(Config.Ftp_UserName, Config.Ftp_Password);
-                req.Credentials = n;
-                //3.其它设置
-                //  设置代理为null
-                req.Proxy = null;
-                //  请求完毕后 是否关闭控制连接
-                req.KeepAlive = false;
-                //  操作命令-上传
-                req.Method = WebRequestMethods.Ftp.UploadFile;
-                //  指定传输的类型 2进制
-                req.UseBinary = true;
-                //4.上传文件
-                //  ftp的流对象
-                Stream upLoadStream = req.GetRequestStream();
-                //  读取文件信息 写入该流对象
-                using (FileStream file = File.OpenRead(filePath))
-                {
-                    //一点一点的上传内容
-                    byte[] bytes = new byte[1024];
-                    //返回值 代表读取了多少个字节
-                    int contentLength = file.Read(bytes, 0, bytes.Length);
-                    while (contentLength != 0)
-                    {
-                        //写入到上传流中
-                        upLoadStream.Write(bytes, 0, contentLength);
-                        //写完再读
-                        contentLength = file.Read(bytes, 0, bytes.Length);
-                    }
-                    //循环完毕后 上传结束
-                    file.Close();
-                    upLoadStream.Close();
-
-                }
-                Debug.Log(fileName + "上传成功");
-            }
-            catch (Exception ex)
-            {
-                Debug.Log(fileName + "上传失败，错误信息：" + ex.Message);
-            }
-        });
-    }
     /// <summary>
     /// 打印persistentDataPath路径
     /// </summary>
@@ -415,25 +351,3 @@ internal class UpLoadABEditor
 
     }
 }
-
-[System.Serializable]
-public class FTPUpLoadABConfig
-{
-    //[Tooltip("上传AB包地址")]
-    public string UpABURL;
-
-    //FTP通信凭证
-    //ftp用户名
-    public string Ftp_UserName;
-    //ftp密码
-    public string Ftp_Password;
-
-    public FTPUpLoadABConfig(string BuidTarget)
-    {
-        UpABURL = $"ftp://127.0.0.1/AssetBundles/{BuidTarget}/";
-        Ftp_UserName = "Admin";
-        Ftp_Password = "Admin123";
-    }
-}
-
-

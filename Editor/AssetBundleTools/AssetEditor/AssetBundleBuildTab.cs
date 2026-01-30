@@ -47,6 +47,8 @@ namespace AssetBundleBrowser
         private AssetBundleInspectTab m_InspectTab;
         private static AssetBundleBrowserMain m_Main;
 
+        private AssetBundleClassificationWindow assetBundleClassification;
+
         [SerializeField]
         private BuildTabData m_UserData;
         public BuildTabData M_UserData => m_UserData;
@@ -173,6 +175,13 @@ namespace AssetBundleBrowser
             {
                 ResetPathToDefault();
             }
+            if (assetBundleClassification == null) assetBundleClassification = new AssetBundleClassificationWindow();
+            RepaintAssetBundleClassification();
+        }
+
+        public void RepaintAssetBundleClassification()
+        {
+            assetBundleClassification.ShowWindow();
         }
 
         internal void OnGUI()
@@ -291,12 +300,15 @@ namespace AssetBundleBrowser
             }
 
             // build.
-            EditorGUILayout.Space();
-            if (GUILayout.Button("Build Window"))
-            {
-                AssetBundleClassificationWindow.ShowWindow();
-                //EditorApplication.delayCall += ExecuteBuild;
-            }
+            EditorGUILayout.Space(10);
+            //if (GUILayout.Button("Build Window"))
+            //{
+            //    //AssetBundleClassificationWindow.ShowWindow();
+            //    //EditorApplication.delayCall += ExecuteBuild;
+            //}
+           
+            assetBundleClassification.OnGUI();
+
             GUILayout.EndVertical();
             EditorGUILayout.EndScrollView();
         }
