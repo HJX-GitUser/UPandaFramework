@@ -213,7 +213,10 @@ namespace AssetBundleBrowser
                         m_ManageTab.ForceReloadData();
                     break;
                 case Mode.Builder:
-                    GUILayout.Space(m_RefreshTexture.width + k_ToolbarPadding);
+                    //GUILayout.Space(m_RefreshTexture.width + k_ToolbarPadding);
+                    clicked = GUILayout.Button(m_RefreshTexture);
+                    if (clicked)
+                        m_BuildTab.RepaintAssetBundleClassification();
                     break;
                 case Mode.Inspect:
                     clicked = GUILayout.Button(m_RefreshTexture);

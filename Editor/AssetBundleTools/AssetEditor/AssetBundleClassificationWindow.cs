@@ -14,11 +14,12 @@ using System;
 using UnityEditor.Compilation;
 using System.Threading;
 
-/// <summary>
-/// AssetBundle分类窗口
-/// </summary>
+
 namespace AssetBundleBrowser
 {
+    /// <summary>
+    /// AssetBundle分类窗口
+    /// </summary>
     internal class AssetBundleClassificationWindow
     {
         public void ShowWindow()
@@ -92,20 +93,27 @@ namespace AssetBundleBrowser
 
         public void OnGUI()
         {
-            if (ABargs == null || ABargs.Count() == 0) return;
             // 显示构建进度
             if (isBuildingSingle)
             {
                 //DrawBuildProgress();
             }
             DrawToolbar();
-            DrawHeaders();
-            DrawAssetBundleList();
-
-            if (showDetails && selectedBundle != null)
+            if (ABargs == null || ABargs.Count() == 0)
             {
-                DrawDetailsPanel();
+                GUILayout.Space(5);
+                EditorGUILayout.LabelField("AssetBundle is null!!!", EditorStyles.boldLabel);
             }
+            else
+            {
+                DrawHeaders();
+                DrawAssetBundleList();
+                if (showDetails && selectedBundle != null)
+                {
+                    DrawDetailsPanel();
+                }
+            }
+          
         }
 
         // 显示构建进度
@@ -132,18 +140,25 @@ namespace AssetBundleBrowser
         {
             GUILayout.BeginHorizontal(EditorStyles.toolbar);
 
-            if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
-            {
-                RefreshAssetBundleList();
-            }
+            //if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
+            //{
+            //    RefreshAssetBundleList();
+            //}
             GUILayout.Space(10);
-            GUILayout.Label("搜索:", GUILayout.Width(40));
             string newSearch = GUILayout.TextField(searchFilter, EditorStyles.toolbarSearchField, GUILayout.Width(200));
             if (newSearch != searchFilter)
             {
                 searchFilter = newSearch;
             }
-
+            if (GUILayout.Button("搜索", EditorStyles.toolbarButton, GUILayout.Width(40)))
+            {
+                if(GetFilteredAssetBundles().Count() == 0)
+                {
+                    searchFilter = "";
+                }
+                RefreshAssetBundleList();
+            }
+            //GUILayout.Label("搜索:", GUILayout.Width(40));
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("更新配置", EditorStyles.toolbarButton, GUILayout.Width(120)))
             {
@@ -569,7 +584,6 @@ namespace AssetBundleBrowser
         public void RefreshAssetBundleList()
         {
             assetBundleInfos.Clear();
-
             // 获取所有设置了AssetBundle标签的资源
             string[] allAssetBundleNames = AssetDatabase.GetAllAssetBundleNames();
             ABLoadPath anLP = ABLoadPath.StreamingAssetsPath;
@@ -618,8 +632,8 @@ namespace AssetBundleBrowser
 
             // 初始排序
             SortAssetBundles(0);
-            ABargs = GetFilteredAssetBundles();
             showDetails = false;
+            ABargs = GetFilteredAssetBundles();
         }
 
         private string GetBuildPathForBundle(string bundleName)
