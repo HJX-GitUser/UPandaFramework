@@ -96,7 +96,7 @@ namespace AssetBundleBrowser
             // 显示构建进度
             if (isBuildingSingle)
             {
-                //DrawBuildProgress();
+                DrawBuildProgress();
             }
             DrawToolbar();
             if (ABargs == null || ABargs.Count() == 0)
@@ -119,7 +119,7 @@ namespace AssetBundleBrowser
         // 显示构建进度
         private void DrawBuildProgress()
         {
-            Rect progressRect = new Rect(0, 0, 100, 20);
+            Rect progressRect = new Rect(0, 0, 200, 20);
             EditorGUI.ProgressBar(progressRect, buildProgress, $"正在构建: {currentBuildingBundle}");
         }
 
@@ -832,6 +832,9 @@ namespace AssetBundleBrowser
         // 构建单个AssetBundle
         private async void BuildSingleAssetBundle(string bundleName)
         {
+            // 1. 记录开始时间（Ticks为100纳秒单位）
+            long startTicks = System.DateTime.UtcNow.Ticks;
+
             if (isBuildingSingle)
             {
                 Debug.LogWarning("正在构建中，请等待完成...");
@@ -934,11 +937,19 @@ namespace AssetBundleBrowser
                 currentBuildingBundle = "";
                 buildProgress = 0f;
             }
+
+            // 2. 计算耗时并输出（转换为毫秒）
+            long endTicks = System.DateTime.UtcNow.Ticks;
+            double durationMs = (endTicks - startTicks) / 10000.0; // 1 Tick = 100纳秒 → 1毫秒 = 10000 Ticks 1毫秒等于1,000,000纳秒
+            UnityEngine.Debug.Log($"打包执行耗时：{(durationMs / 1000):F2} 秒");
         }
 
         // 构建AssetBundle及其依赖
         private async void BuildAssetBundleWithDependencies(string bundleName)
         {
+            // 1. 记录开始时间（Ticks为100纳秒单位）
+            long startTicks = System.DateTime.UtcNow.Ticks;
+
             if (isBuildingSingle)
             {
                 Debug.LogWarning("正在构建中，请等待完成...");
@@ -1061,6 +1072,10 @@ namespace AssetBundleBrowser
                 currentBuildingBundle = "";
                 buildProgress = 0f;
             }
+            // 2. 计算耗时并输出（转换为毫秒）
+            long endTicks = System.DateTime.UtcNow.Ticks;
+            double durationMs = (endTicks - startTicks) / 10000.0; // 1 Tick = 100纳秒 → 1毫秒 = 10000 Ticks 1毫秒等于1,000,000纳秒
+            UnityEngine.Debug.Log($"打包执行耗时：{(durationMs / 1000):F2} 秒");
         }
 
         // 递归收集AssetBundle的依赖
