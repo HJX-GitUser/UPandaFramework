@@ -25,7 +25,7 @@ internal class UpLoadABEditor
     //通讯方式
     public ContactMethod contactMethod;
     private UpLoadFTP upLoadFTP;
-    public HTTPUpLoadABConfig HTTPConfig;
+    //public UpLoadHTTP upLoadHTTP;
     [SerializeField]
     private Vector2 m_ScrollPosition;
 
@@ -123,11 +123,12 @@ internal class UpLoadABEditor
 
     private void HTTPGUI()
     {
-        if(HTTPConfig == null) HTTPConfig = new HTTPUpLoadABConfig();
-        HTTPConfig.serverUrl = EditorGUILayout.TextField("上传地址", HTTPConfig.serverUrl);
-        if (GUILayout.Button("开始上传"))
+        //if (upLoadHTTP == null) upLoadHTTP = new UpLoadHTTP();
+        ////upLoadHTTP.HTTPConfig.serverUrl = EditorGUILayout.TextField("上传地址", upLoadHTTP. HTTPConfig.serverUrl);
+        //upLoadHTTP.OnGUI();
+        if (GUILayout.Button("HTTP 上传工具"))
         {
-            Debug.Log("功能待完成");
+            NginxUploader.ShowWindow();
         }
     }
 

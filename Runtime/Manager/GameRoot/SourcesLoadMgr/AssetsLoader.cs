@@ -43,6 +43,7 @@ namespace UPandaGF
             string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
             byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
             sourceRef = LoadABSourcesRelated(b);
+            abLoadMgr.SetABSourcesRelated(sourceRef);
         }
 
         public async Task<T> LoadAsync<T>(string path) where T : UnityEngine.Object
@@ -58,8 +59,8 @@ namespace UPandaGF
                     {
                         PLogger.LogError("该资源不存在：" + path);
                     }
-                    ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    asset = await abLoadMgr.LoadResAsync<T>(arg.packageName, arg.sourceName, arg.loodPath);
+                    AssetRelatedArg arg = sourceRef.sourcesDic[path];
+                    asset = await abLoadMgr.LoadResAsync<T>(arg.bundleName, arg.sourceName, sourceRef.GetABLoadPath(arg));
                     break;
             }
             return asset;
@@ -78,8 +79,8 @@ namespace UPandaGF
                     {
                         PLogger.LogError("该资源不存在：" + path);
                     }
-                    ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    asset = await abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, type, arg.loodPath);
+                    AssetRelatedArg arg = sourceRef.sourcesDic[path];
+                    asset = await abLoadMgr.LoadResAsync(arg.bundleName, arg.sourceName, type, sourceRef.GetABLoadPath(arg));
                     break;
             }
             return asset;
@@ -98,8 +99,8 @@ namespace UPandaGF
                         PLogger.LogError("该资源不存在：" + path);
                         return;
                     }
-                    ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, arg.loodPath, callback);
+                    AssetRelatedArg arg = sourceRef.sourcesDic[path];
+                    abLoadMgr.LoadResAsync(arg.bundleName, arg.sourceName, sourceRef.GetABLoadPath(arg), callback);
                     break;
             }
         }
@@ -117,8 +118,8 @@ namespace UPandaGF
                         PLogger.LogError("该资源不存在：" + path);
                         return;
                     }
-                    ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    abLoadMgr.LoadResAsync(arg.packageName, arg.sourceName, type, arg.loodPath, callback);
+                    AssetRelatedArg arg = sourceRef.sourcesDic[path];
+                    abLoadMgr.LoadResAsync(arg.bundleName, arg.sourceName, type, sourceRef.GetABLoadPath(arg), callback);
                     break;
             }
         }
@@ -151,8 +152,8 @@ namespace UPandaGF
                         assetLoadComplete?.Invoke();
                         return;
                     }
-                    ABRelatedArg arg = sourceRef.sourcesDic[path];
-                    abLoadMgr.GetAssetBundle(arg.packageName, arg.loodPath, (bundle) =>
+                    AssetRelatedArg arg = sourceRef.sourcesDic[path];
+                    abLoadMgr.GetAssetBundle(arg.bundleName, sourceRef.GetABLoadPath(arg), (bundle) =>
                     {
                         assetLoadComplete?.Invoke();
                         sceneMgr.LoadSceneAsyn(sceneName, loadSceneMode, sceneLoadComplete);

@@ -235,7 +235,7 @@ namespace AssetBundleBrowser
             {
                 tempMode = m_Mode;
                 //Debug.Log($"ÇÐ»»Ò³Ç©{tempMode}");
-                if(tempMode == Mode.Builder)
+                if (tempMode == Mode.Builder)
                 {
                     m_BuildTab.RepaintAssetBundleClassification();
                 }

@@ -51,6 +51,8 @@ namespace UPandaGF
 
         private EventCenter eventCenter => EventCenter.Instance;
 
+        private ABSourcesRelated sourceRef;
+
         #region 初始化
         /// <summary>
         /// 初始化
@@ -73,10 +75,15 @@ namespace UPandaGF
                 manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
                 Debug.Log($"AB包加载路径：{PathUrl}\n资源包主包：{MainName}");
             }
-            catch
+            catch(System.Exception e)
             {
-                PLogger.LogError($"AssetBundleManifest 主包加载失败");
+                PLogger.LogError($"AssetBundleManifest 主包({MainName}:{mainLoadPath})加载失败:\n{e}");
             }
+        }
+
+        public void SetABSourcesRelated(ABSourcesRelated arg)
+        {
+            sourceRef = arg;
         }
         #endregion
 
@@ -123,7 +130,7 @@ namespace UPandaGF
                         using (UnityWebRequest webRequest = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
                         {
                             webRequest.SendWebRequest();
-                            
+
                             while (!webRequest.isDone)
                             {
                                 aBLoadProgessEvent.progress = webRequest.downloadProgress;
@@ -489,7 +496,7 @@ namespace UPandaGF
             }
             return $"{size:0.##} {sizes[order]}";
         }
-        
+
     }
     /// <summary>
     /// AB包加载进度事件

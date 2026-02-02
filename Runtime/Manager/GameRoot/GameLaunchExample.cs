@@ -94,6 +94,6 @@ public class GameLaunchExample : MonoBehaviour
     private void AssetLoadProgressEvent(ABLoadProgressEvent arg0)
     {
         string messageInfo = arg0.loadPath == ABLoadPath.RemotePath ? "下载" : "加载";
-        simpleLoadUI.SetMessage(arg0.progress, $"【{arg0.abName}】 正在{messageInfo}...");
+        simpleLoadUI.SetMessage(arg0.progress, $"【{arg0.abName}】 正在{messageInfo}");
     }
 }

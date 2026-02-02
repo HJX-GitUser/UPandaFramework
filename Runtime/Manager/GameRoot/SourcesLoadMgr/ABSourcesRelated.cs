@@ -5,6 +5,7 @@ namespace UPandaGF
     /// <summary>
     /// AB包加载路径
     /// </summary>
+    [System.Serializable]
     public enum ABLoadPath
     {
         StreamingAssetsPath,
@@ -12,42 +13,58 @@ namespace UPandaGF
         RemotePath
     }
     ///// <summary>
-    ///// AB资源引用信息
+    ///// 资源信息
     /// </summary>
     [System.Serializable]
     public class ABSourcesRelated
     {
         /// <summary>
-        /// key是编辑器里的路径
+        /// AssetBunde数据 key是包名
         /// </summary>
-        public Dictionary<string, ABRelatedArg> sourcesDic = new Dictionary<string, ABRelatedArg>();
+        public Dictionary<string, AssetBundleLoadInfo> bundleInfo = new Dictionary<string, AssetBundleLoadInfo>();
+        /// <summary>
+        /// 资源加载信息 key是编辑器里的路径
+        /// </summary>
+        public Dictionary<string, AssetRelatedArg> sourcesDic = new Dictionary<string, AssetRelatedArg>();
+
+        public ABLoadPath GetABLoadPath(AssetRelatedArg arg)
+        {
+            return bundleInfo[arg.bundleName].loadPath;
+        }
     }
 
     /// <summary>
-    /// AB引用数据
+    /// 资源信息 记录每个资源对应的加载数据
     /// </summary>
     [System.Serializable]
-    public class ABRelatedArg
+    public class AssetRelatedArg
     {
         /// <summary>
         /// AB包名
         /// </summary>
-        public string packageName;
+        public string bundleName;
         /// <summary>
         /// 资源名
         /// </summary>
         public string sourceName;
-        /// <summary>
-        /// 资源加载根路径
-        /// </summary>
-        public ABLoadPath loodPath;
-       
-        public ABRelatedArg(string arg0, string arg1, ABLoadPath arg2)
+
+        public AssetRelatedArg(string arg0, string arg1)
         {
-            packageName = arg0;
+            bundleName = arg0;
             sourceName = arg1;
-            loodPath = arg2;
         }
+    }
+
+    /// <summary>
+    /// AssetBundle信息
+    /// </summary>
+    [System.Serializable]
+    public class AssetBundleLoadInfo
+    {
+        public string bundleName;//包名
+        public long size;//大小
+        public string md5;//MD5码
+        public ABLoadPath loadPath;//加载路径
     }
 }
 

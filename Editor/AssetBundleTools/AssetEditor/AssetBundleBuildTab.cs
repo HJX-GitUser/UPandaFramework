@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using AssetBundleBrowser.AssetBundleDataSource;
 using UPandaGF;
+using System;
 
 namespace AssetBundleBrowser
 {
@@ -17,6 +18,7 @@ namespace AssetBundleBrowser
 
         [SerializeField]
         private bool m_AdvancedSettings;
+       
 
         [SerializeField]
         private Vector2 m_ScrollPosition;
@@ -299,7 +301,7 @@ namespace AssetBundleBrowser
             }
 
             // build.
-            EditorGUILayout.Space(10);
+            EditorGUILayout.Space();
             //if (GUILayout.Button("Build Window"))
             //{
             //    //AssetBundleClassificationWindow.ShowWindow();
