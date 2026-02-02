@@ -203,6 +203,8 @@ namespace AssetBundleBrowser
         private void ExecuteBuild()
         {
             AssetBundleBrowserMain.instance.m_BuildTab.ExecuteBuild();
+            // 刷新列表
+            RefreshAssetBundleList();
             GenerateAssetBundleInfo();
         }
 
@@ -314,7 +316,8 @@ namespace AssetBundleBrowser
                     aBSourcesRef.sourcesDic.Add(assetPath, assetInfo);
                 }
             }
-
+            CheckDifferences(aBSourcesRef);
+            sourcesRelated = aBSourcesRef;
             Save(aBSourcesRef);
             AssetDatabase.Refresh();
         }
@@ -333,7 +336,6 @@ namespace AssetBundleBrowser
             {
                 BinaryFormatter bf = new BinaryFormatter();
                 bf.Serialize(ms, obj);
-
                 byte[] bytes = ms.GetBuffer();
                 //ToDo:..在这里可以做一些加密的工作
                 //string AESKEY = "111a222aaabbbccc";
@@ -344,6 +346,38 @@ namespace AssetBundleBrowser
                 ms.Close();
             }
             Debug.Log("资源数据已保存至：" + SAVE_PATH + assetRefName + assetRefextension);
+        }
+
+        /// <summary>
+        /// 检查不同
+        /// </summary>
+        /// <param name="arg"></param>
+        private void CheckDifferences(ABSourcesRelated arg)
+        {
+            if (sourcesRelated == null) return;
+            foreach (AssetBundleLoadInfo item in arg.bundleInfo.Values)
+            {
+                if (sourcesRelated.bundleInfo.ContainsKey(item.bundleName))
+                {
+                    AssetBundleLoadInfo old = sourcesRelated.bundleInfo[item.bundleName];
+                    if (!old.md5.Equals(item.md5))
+                    {
+                        Debug.Log($"{item.bundleName}已更改!\nold:{old.md5}\nnew:{item.md5}");
+                    }
+                }
+                else
+                {
+                    Debug.Log($"新增：{item.bundleName}\nmd5:{item.md5}");
+                }
+            }
+
+            foreach (AssetBundleLoadInfo item in sourcesRelated.bundleInfo.Values)
+            {
+                if (!arg.bundleInfo.ContainsKey(item.bundleName))
+                {
+                    Debug.Log($"{item.bundleName}已被移除！！！");
+                }
+            }
 
         }
 
@@ -870,13 +904,15 @@ namespace AssetBundleBrowser
             }
 
             menu.AddSeparator("");
-
             //复制路径
             menu.AddItem(new GUIContent("复制AssetBundle路径"), false, () =>
             {
                 EditorGUIUtility.systemCopyBuffer = bundleInfo.path;
             });
-
+            menu.AddItem(new GUIContent("复制MD5码"), false, () =>
+            {
+                EditorGUIUtility.systemCopyBuffer = bundleInfo.md5;
+            });
             //复制加载路径枚举
             menu.AddItem(new GUIContent($"复制加载路径:{bundleInfo.loadPath}"), false, () =>
             {
@@ -975,11 +1011,11 @@ namespace AssetBundleBrowser
 
                 Debug.Log($"AssetBundle '{bundleName}' 构建完成!");
                 Debug.Log($"文件大小: {new FileInfo(Path.Combine(outputPath, bundleName)).Length} bytes");
-
-                // 保存资源关联数据
-                GenerateAssetBundleInfo();
+               
                 // 刷新列表
                 RefreshAssetBundleList();
+                // 保存资源关联数据
+                GenerateAssetBundleInfo();
                 AssetDatabase.Refresh();
             }
             catch (Exception e)
@@ -1107,12 +1143,10 @@ namespace AssetBundleBrowser
                 await Task.Run(() => Thread.Sleep(500)); // 显示完成状态
 
                 Debug.Log($"AssetBundle '{bundleName}' 及其依赖构建完成!");
-
-                //保存资源关联数据
-                GenerateAssetBundleInfo();
                 //刷新列表
                 RefreshAssetBundleList();
-
+                //保存资源关联数据
+                GenerateAssetBundleInfo();
                 AssetDatabase.Refresh();
 
             }
