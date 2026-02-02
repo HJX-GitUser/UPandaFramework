@@ -397,7 +397,14 @@ namespace AssetBundleBrowser
 
             if (b != null)
             {
-                sourcesRelated = LoadABSourcesRelated(b);
+                try
+                {
+                    sourcesRelated = LoadABSourcesRelated(b);
+                }
+                catch (Exception)
+                {
+                    sourcesRelated = new ABSourcesRelated();
+                }
             }
             else
             {
