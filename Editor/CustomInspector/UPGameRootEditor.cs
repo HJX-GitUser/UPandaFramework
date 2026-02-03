@@ -3,10 +3,10 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace UPandaGF
+namespace UPandaGF.GFEditor
 {
     [CustomEditor(typeof(UPGameRoot))]
-    public class UPGameRootEditor : Editor
+    public class UPGameRootEditor : UnityEditor.Editor
     {
         AssetBundleBrowserMain assetBundleBrowserMain;
         UPGameRoot component;
