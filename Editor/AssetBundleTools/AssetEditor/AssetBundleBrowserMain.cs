@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Net;
 using System;
-using static AssetBundleBrowser.AssetBundleBuildTab;
+//using static AssetBundleBrowser.AssetBundleBuildTab;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute("Unity.AssetBundleBrowser.Editor.Tests")]
 
@@ -62,7 +62,7 @@ namespace AssetBundleBrowser
         const float k_ToolbarPadding = 15;
         const float k_MenubarPadding = 32;
 
-        public BuildTabData m_BuildTabData;
+        public AssetBundleBuildTab.BuildTabData m_BuildTabData=> m_BuildTab.M_UserData;
 
         [MenuItem("UPandaGF/AB°ü¹¤¾ß/AssetBundle Browser")]
 

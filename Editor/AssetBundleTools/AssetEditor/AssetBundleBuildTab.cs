@@ -114,7 +114,7 @@ namespace AssetBundleBrowser
                 if (data != null)
                 {
                     m_UserData = data;
-                    m_Main.m_BuildTabData = m_UserData;
+                    //m_Main.m_BuildTabData = m_UserData;
                 }
                 file.Close();
             }
