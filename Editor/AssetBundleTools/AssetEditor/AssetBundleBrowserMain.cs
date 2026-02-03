@@ -22,6 +22,7 @@ namespace AssetBundleBrowser
             {
                 if (s_instance == null)
                     s_instance = GetWindow<AssetBundleBrowserMain>();
+                //Debug.LogWarning("AssetBundles Browser");
                 return s_instance;
             }
         }
@@ -62,7 +63,7 @@ namespace AssetBundleBrowser
         const float k_ToolbarPadding = 15;
         const float k_MenubarPadding = 32;
 
-        public AssetBundleBuildTab.BuildTabData m_BuildTabData=> m_BuildTab.M_UserData;
+        public AssetBundleBuildTab.BuildTabData m_BuildTabData => m_BuildTab.M_UserData;
 
         [MenuItem("UPandaGF/AB°ü¹¤¾ß/AssetBundle Browser")]
 
@@ -71,7 +72,6 @@ namespace AssetBundleBrowser
             s_instance = null;
             instance.titleContent = new GUIContent("AssetBundles");
             instance.Show();
-            Debug.Log("AssetBundles Browser");
         }
 
         [SerializeField]
