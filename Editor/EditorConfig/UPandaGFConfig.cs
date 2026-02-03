@@ -41,7 +41,7 @@ namespace UPandaGF.GFEditor
                 {
                     string json = File.ReadAllText(fullPath, Encoding.UTF8);
                     config = JsonUtility.FromJson<T>(json);
-                    Debug.Log($"配置已加载: {configPath}");
+                    Debug.Log($"配置已加载: {fullPath}");
                 }
                 catch (System.Exception e)
                 {

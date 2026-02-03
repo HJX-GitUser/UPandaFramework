@@ -2,20 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UPandaGF;
-using TMPro;
 using UnityEngine.UI;
 
 public class SimpleLoadUI : BasePanel
 {
-    public TMP_Text textMeshPro;
+    public Text textL;
     public Slider progressSlider;
 
     public override void OnOpen()
     {
         PLogger.Log("SimpleLoadUI Open");
         progressSlider = GetControl<Slider>("ProgressSlider");
-        textMeshPro = GetControl<TMP_Text>("message");
-        textMeshPro.text = "";
+        textL = GetControl<Text>("message");
+        textL.text = "";
         progressSlider.value = 0;
     }
     public override void OnClose()
@@ -27,6 +26,6 @@ public class SimpleLoadUI : BasePanel
     public void SetMessage(float value, string message = null)
     {
         progressSlider.value = value;
-        if (message != null) textMeshPro.text = message;
+        if (message != null) textL.text = message;
     }
 }

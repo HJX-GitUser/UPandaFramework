@@ -66,10 +66,10 @@ internal class UpLoadABEditor
         if (!LocalABPath.Equals(abMainE.m_BuildTabData.m_OutputPath))
             LocalABPath = abMainE.m_BuildTabData.m_OutputPath;
         EditorGUILayout.LabelField("本地资源路径", LocalABPath);
-        if (GUILayout.Button("创建AB包对比文件"))
-        {
-            CreateABCompareFile();
-        }
+        //if (GUILayout.Button("创建AB包对比文件"))
+        //{
+        //    CreateABCompareFile();
+        //}
         EditorGUILayout.Space(10);
         config.contactMethod = (ContactMethod)EditorGUILayout.EnumPopup("上传方式", config.contactMethod);
         switch (config.contactMethod)
@@ -94,16 +94,22 @@ internal class UpLoadABEditor
             MoveABToStreamingAssets(savePath);
         }
         EditorGUILayout.Space(30);
-        EditorGUILayout.LabelField("复制路径：", config.targetDirectory);
-        if (GUILayout.Button("选择路径"))
+        EditorGUILayout.LabelField("目标路径：", config.targetDirectory);
+        if (GUILayout.Button("选择目标路径"))
         {
-            config.targetDirectory = EditorUtility.OpenFolderPanel("复制路径选择", config.targetDirectory, string.Empty);
+            config.targetDirectory = EditorUtility.OpenFolderPanel("目标路径选择", config.targetDirectory, string.Empty);
         }
-        if (GUILayout.Button("复制资源到指定目录"))
+        if (GUILayout.Button("复制资源到目标路径"))
         {
             if (!Directory.Exists(LocalABPath))
             {
                 Debug.LogError($"AssetBundle源目录不存在: {LocalABPath}");
+                return;
+            }
+
+            if (!Directory.Exists(config.targetDirectory))
+            {
+                Debug.LogError($"目标路径不存在！: {config.targetDirectory}");
                 return;
             }
 

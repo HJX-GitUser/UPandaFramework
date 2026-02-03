@@ -10,10 +10,19 @@ using System;
 using System.Threading;
 using System.Security.Cryptography;
 using System.Text;
+using UPandaGF.GFEditor;
 using log4net;
 
 namespace AssetBundleBrowser
 {
+
+    [Serializable]
+    public class AssetBundleClassificationWindowConfig
+    {
+        public string AESKEY = "111a222aaabbbccc";
+        public string AESIV = "111b222aaabbbccc";
+        public ABLoadPath mainBundleLoadPath = ABLoadPath.StreamingAssetsPath;
+    }
     /// <summary>
     /// AssetBundle分类窗口
     /// </summary>
@@ -21,19 +30,20 @@ namespace AssetBundleBrowser
     {
         [SerializeField]
         private bool assetSettings;
-
-        private string AESKEY = "111a222aaabbbccc";
-        private string AESIV = "111b222aaabbbccc";
+        private string configName = "AssetBundleClassificationWindowConfig";
+        private AssetBundleClassificationWindowConfig config;
+        /// <summary>
+        /// key是包名
+        /// </summary>
+        public Dictionary<string, ABLoadPath> sourcesDic;
         public void ShowWindow()
         {
             OnEnable();
         }
         private ABSourcesRelated sourcesRelated;
-        /// <summary>
-        /// key是包名
-        /// </summary>
-        public Dictionary<string, ABLoadPath> sourcesDic = new Dictionary<string, ABLoadPath>();
 
+
+        private AssetBundleInfo mainBundleInfo;
         private List<AssetBundleInfo> assetBundleInfos = new List<AssetBundleInfo>();
         private Vector2 scrollPosition;
         private string searchFilter = "";
@@ -82,15 +92,31 @@ namespace AssetBundleBrowser
         }
         private void GetData()
         {
-            AESKEY = EditorPrefs.GetString("AssetBundleClassificationWindow_AESKEY", AESKEY);
-            AESIV = EditorPrefs.GetString("AssetBundleClassificationWindow_AESIV", AESIV);
+            config = UPandaGFConfig.LoadConfig<AssetBundleClassificationWindowConfig>(configName);
+            //获取主包信息
+            string m_OutputPath = AssetBundleBrowserMain.instance.m_BuildTabData.m_OutputPath;
+            string bundleName = AssetBundleBrowserMain.instance.m_BuildTabData.m_BuildTarget.ToString();
+            if (mainBundleInfo == null) mainBundleInfo = new AssetBundleInfo();
+            mainBundleInfo.name = bundleName;
+            string fullPath = Path.Combine(m_OutputPath, bundleName);
+            if (!File.Exists(fullPath))
+            {
+                Debug.Log("资源包未构建：" + fullPath);
+                mainBundleInfo.size = 0;
+            }
+            else
+            {
+                FileInfo fileInfo = new FileInfo(fullPath);
+                mainBundleInfo.size = fileInfo.Length;
+                mainBundleInfo.md5 = GetMD5(fullPath);
+                mainBundleInfo.path = fullPath;
+            }
+            mainBundleInfo.loadPath = config.mainBundleLoadPath;
         }
 
         public void SaveData()
         {
-            EditorPrefs.SetString("AssetBundleClassificationWindow_AESKEY", AESKEY);
-            EditorPrefs.SetString("AssetBundleClassificationWindow_AESIV", AESIV);
-            Debug.Log("配置已保存");
+            UPandaGFConfig.SaveConfig(config, configName);
         }
 
         private void OnEditorUpdate()
@@ -117,14 +143,11 @@ namespace AssetBundleBrowser
                 EditorGUILayout.LabelField("文件后缀", assetRefextension);
                 GUILayout.Space(1);
                 EditorGUILayout.LabelField("ASE加密设置:");
-                AESKEY = EditorGUILayout.TextField("Key", AESKEY);
-                AESIV = EditorGUILayout.TextField("IV", AESIV);
-                if (GUILayout.Button("保存配置"))
-                {
-                    SaveData();
-                }
+                config.AESKEY = EditorGUILayout.TextField("Key", config.AESKEY);
+                config.AESIV = EditorGUILayout.TextField("IV", config.AESIV);
                 GUILayout.Space(5);
             }
+            DrawMainBundlAsset();
             DrawToolbar();
             if (ABargs == null || ABargs.Count() == 0)
             {
@@ -290,10 +313,19 @@ namespace AssetBundleBrowser
             // 获取所有的资源路径
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
             ABSourcesRelated aBSourcesRef = new ABSourcesRelated();
+            //主包的数据：
+            aBSourcesRef.mainBundleInfo = new AssetBundleLoadInfo()
+            {
+                bundleName = mainBundleInfo.name,
+                size = mainBundleInfo.size,
+                md5 = mainBundleInfo.md5,
+                loadPath = mainBundleInfo.loadPath
+            };
             //AssetBundle数据
             List<AssetBundleLoadInfo> abLoadInfo = GetAssetBundleInfo();
             foreach (AssetBundleLoadInfo item in abLoadInfo)
             {
+                Debug.Log(item.bundleName);
                 aBSourcesRef.bundleInfo.Add(item.bundleName, item);
             }
             //资源加载数据
@@ -319,6 +351,7 @@ namespace AssetBundleBrowser
             CheckDifferences(aBSourcesRef);
             sourcesRelated = aBSourcesRef;
             Save(aBSourcesRef);
+            SaveData();
             AssetDatabase.Refresh();
         }
 
@@ -340,7 +373,7 @@ namespace AssetBundleBrowser
                 //ToDo:..在这里可以做一些加密的工作
                 //string AESKEY = "111a222aaabbbccc";
                 //string AESIV = "111b222aaabbbccc";
-                bytes = AESEncryption.AESEncrypt(bytes, AESKEY, AESIV);
+                bytes = AESEncryption.AESEncrypt(bytes, config.AESKEY, config.AESIV);
 
                 File.WriteAllBytes(SAVE_PATH + assetRefName + assetRefextension, bytes);
                 ms.Close();
@@ -410,6 +443,7 @@ namespace AssetBundleBrowser
             {
                 sourcesRelated = new ABSourcesRelated();
             }
+            sourcesDic = new Dictionary<string, ABLoadPath>();
             foreach (var item in sourcesRelated.bundleInfo.Values)
             {
                 if (!sourcesDic.ContainsKey(item.bundleName))
@@ -424,7 +458,7 @@ namespace AssetBundleBrowser
         {
             ABSourcesRelated obj = null;
 
-            bytes = AESEncryption.AESDecrypt(bytes, AESKEY, AESIV);
+            bytes = AESEncryption.AESDecrypt(bytes, config.AESKEY, config.AESIV);
             using (MemoryStream ms = new MemoryStream(bytes))
             {
                 BinaryFormatter bf = new BinaryFormatter();
@@ -491,7 +525,58 @@ namespace AssetBundleBrowser
                 b.name.IndexOf(searchFilter, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
                 b.assets.Any(a => a.IndexOf(searchFilter, System.StringComparison.OrdinalIgnoreCase) >= 0));
         }
+        private void DrawMainBundlAsset()
+        {
+            AssetBundleInfo bundleInfo = mainBundleInfo;
+            // Color originalColor = GUI.backgroundColor;
+            GUILayout.BeginHorizontal(EditorStyles.helpBox);
+            //GUI.backgroundColor = originalColor;
 
+            GUILayout.Label("主包设置：", GetRowStyle(),
+                GUILayout.Width(sizeColumnWidth), GUILayout.MinWidth(sizeColumnWidth));
+
+            // 名称
+            Rect nameRect = GUILayoutUtility.GetRect(
+                new GUIContent(bundleInfo.name),
+                GetRowStyle(),
+                GUILayout.Width(nameColumnWidth),
+                GUILayout.MinWidth(nameColumnWidth)
+            );
+
+            if (GUI.Button(nameRect, bundleInfo.name, GetRowStyle()))
+            {
+                if (Event.current.button == 0) // 左键
+                {
+                    //HandleBundleClick(bundleInfo);
+
+                }
+                else if (Event.current.button == 1)
+                {
+                    //Debug.Log("选中");
+                    //selectedBundle = bundleInfo;
+                    //showDetails = true;
+
+                    // 显示右键菜单
+                    //ShowNameContextMenu(bundleInfo);
+                }
+            }
+            // 大小
+            GUILayout.Label(FormatFileSize(bundleInfo.size), GetRowStyle(),
+                GUILayout.Width(sizeColumnWidth), GUILayout.MinWidth(sizeColumnWidth));
+
+            // 路径
+            //GUILayout.Label(bundleInfo.loadPath.ToString(), GetRowStyle(), GUILayout.MinWidth(200));
+            float lableW = pathColumnWidth - 40;
+            lableW = Mathf.Clamp(lableW, 20, pathColumnWidth - 40);
+            config.mainBundleLoadPath = (ABLoadPath)EditorGUILayout.EnumPopup(config.mainBundleLoadPath, GUILayout.Width(lableW), GUILayout.MinWidth(lableW));
+            bundleInfo.loadPath = config.mainBundleLoadPath;
+            //sourcesDic[bundleInfo.name] = bundleInfo.loadPath;
+            GUILayout.FlexibleSpace();
+
+            GUILayout.EndHorizontal();
+
+            //GUI.backgroundColor = originalColor;
+        }
         private void DrawAssetBundleRow(AssetBundleInfo bundleInfo, int index)
         {
             Color originalColor = GUI.backgroundColor;
@@ -1018,7 +1103,7 @@ namespace AssetBundleBrowser
 
                 Debug.Log($"AssetBundle '{bundleName}' 构建完成!");
                 Debug.Log($"文件大小: {new FileInfo(Path.Combine(outputPath, bundleName)).Length} bytes");
-               
+
                 // 刷新列表
                 RefreshAssetBundleList();
                 // 保存资源关联数据

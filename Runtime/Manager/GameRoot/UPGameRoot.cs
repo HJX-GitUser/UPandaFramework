@@ -41,9 +41,6 @@ namespace UPandaGF
         public bool enableAssetUpdate;//启动资源更新
         //[Header("资源相对路径")]
         public string LoadAssetPath = "AssetBundles/StandaloneWindows/";
-        //[Header("主包名")]
-        public string MainName = "StandaloneWindows";
-        public ABLoadPath MainPackageLoadPath = ABLoadPath.StreamingAssetsPath;//主包加载方式
         /// <summary>
         /// 资源远端更新配置
         /// </summary>
@@ -73,22 +70,22 @@ namespace UPandaGF
             yield return StartCoroutine(debugerInit.Init());
             binaryDataMgr.Init();
 
-            ABLoadMgr abLoadMgr = ABLoadMgr.Instance;
-            abLoadMgr.remoteURL = reomoteURL;
-            if (method == AssetLoaddingMethod.Assetbundles)
-            {
-                abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);
-                if (enableAssetUpdate)
-                {
-                    yield return StartCoroutine(abUpdataMgr.StartUpadateAssets());
-                }
-                Task abLoadMgrInitTask = abLoadMgr.Init(LoadAssetPath, MainName, MainPackageLoadPath);
-                while (!abLoadMgrInitTask.IsCompleted)
-                {
-                    yield return null;
-                }
-            }
-            Task sourcesLoadMgrTask = sourcesLoadMgr.Init(method, abLoadMgr);
+            //ABLoadMgr abLoadMgr = ABLoadMgr.Instance;
+            //abLoadMgr.remoteURL = reomoteURL;
+            //if (method == AssetLoaddingMethod.Assetbundles)
+            //{
+            //    abUpdataMgr.Init(assetUpdataConfig, LoadAssetPath);
+            //    if (enableAssetUpdate)
+            //    {
+            //        yield return StartCoroutine(abUpdataMgr.StartUpadateAssets());
+            //    }
+            //    Task abLoadMgrInitTask = abLoadMgr.Init(LoadAssetPath, MainName, MainPackageLoadPath);
+            //    while (!abLoadMgrInitTask.IsCompleted)
+            //    {
+            //        yield return null;
+            //    }
+            //}
+            Task sourcesLoadMgrTask = sourcesLoadMgr.Init(method, reomoteURL, LoadAssetPath);
             while (!sourcesLoadMgrTask.IsCompleted)
             {
                 yield return null;

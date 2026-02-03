@@ -71,6 +71,7 @@ namespace AssetBundleBrowser
             s_instance = null;
             instance.titleContent = new GUIContent("AssetBundles");
             instance.Show();
+            Debug.Log("AssetBundles Browser");
         }
 
         [SerializeField]

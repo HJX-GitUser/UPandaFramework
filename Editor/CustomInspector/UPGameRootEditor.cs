@@ -1,4 +1,3 @@
-using AssetBundleBrowser;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -8,7 +7,6 @@ namespace UPandaGF.GFEditor
     [CustomEditor(typeof(UPGameRoot))]
     public class UPGameRootEditor : UnityEditor.Editor
     {
-        AssetBundleBrowserMain assetBundleBrowserMain;
         UPGameRoot component;
         private void OnEnable()
         {
@@ -78,26 +76,10 @@ namespace UPandaGF.GFEditor
             EditorGUILayout.Space();
             EditorGUILayout.Space();
             ShowArg("reomoteURL", "远程加载URL");
-            ShowArg("LoadAssetPath", "资源路径");
-            ShowArg("MainName", "主包名");
-            ShowArg("MainPackageLoadPath", "主包加载路径");
+            ShowArg("LoadAssetPath", "相对路径");
             if (GUILayout.Button("重置"))
             {
-                assetBundleBrowserMain = AssetBundleBrowserMain.instance;
-                if (assetBundleBrowserMain != null)
-                {
-                    component.reomoteURL = "http://127.0.0.1:8090/";
-                    string m_OutputPath = assetBundleBrowserMain.m_BuildTabData.m_OutputPath;
-                    string result = "AssetBundles/";
-                    int startIndex = m_OutputPath.IndexOf("AssetBundles/");
-                    if (startIndex != -1)
-                    {
-                        result = m_OutputPath.Substring(startIndex);
-                    }
-                    component.LoadAssetPath = result;
-                    component.MainName = result.Split('/')[1];
-                    component.MainPackageLoadPath = ABLoadPath.StreamingAssetsPath; 
-                }
+                component.LoadAssetPath = "AssetBundles/StandaloneWindows/";
             }
         }
 

@@ -18,6 +18,7 @@ namespace UPandaGF
     [System.Serializable]
     public class ABSourcesRelated
     {
+        public AssetBundleLoadInfo mainBundleInfo;
         /// <summary>
         /// AssetBunde数据 key是包名
         /// </summary>
