@@ -325,7 +325,7 @@ namespace AssetBundleBrowser
             List<AssetBundleLoadInfo> abLoadInfo = GetAssetBundleInfo();
             foreach (AssetBundleLoadInfo item in abLoadInfo)
             {
-                Debug.Log(item.bundleName);
+                //Debug.Log(item.bundleName);
                 aBSourcesRef.bundleInfo.Add(item.bundleName, item);
             }
             //资源加载数据

@@ -1,11 +1,7 @@
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
-using System.Net;
 using System;
-//using static AssetBundleBrowser.AssetBundleBuildTab;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute("Unity.AssetBundleBrowser.Editor.Tests")]
 
