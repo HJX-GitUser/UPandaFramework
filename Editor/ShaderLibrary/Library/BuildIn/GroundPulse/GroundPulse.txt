@@ -1,0 +1,91 @@
+//地面脉冲
+Shader "UpandaGF/Shader/GroundPulse" {
+    Properties {
+        _MainTex ("MainTex", 2D) = "white" { }//主贴图
+        _Color ("BaseColor", Color) = (1, 1, 1, 1)//基础颜色
+        _PulseColor ("PulseColor", Color) = (0.2, 0.6, 1, 1)//脉冲颜色
+        _PulseCenter ("PulseCenter", Vector) = (0.5, 0, 0.5, 0)//脉冲中心
+        _PulseSpeed ("PulseSpeed", Float) = 2.0//脉冲速度
+        _PulseWidth ("PulseWidth", Float) = 0.1//脉冲宽度
+        _PulseIntensity ("PulseIntensity", Float) = 1.0//脉冲强度
+        _PulseFrequency ("PulseFrequency", Float) = 1.0//脉冲频率
+        _TimeOffset ("TimeOffset", Float) = 0.0//时间偏移
+        _Distance ("Distance", Float) = 10//传播距离
+
+    }
+    
+    SubShader {
+        Tags { "RenderType" = "Opaque" }
+        LOD 200
+        
+        CGPROGRAM
+        #pragma surface surf Standard fullforwardshadows
+        #pragma target 3.0
+        
+        sampler2D _MainTex;
+        fixed4 _Color;
+        fixed4 _PulseColor;
+        float4 _PulseCenter;
+        float _PulseSpeed;
+        float _PulseWidth;
+        float _PulseIntensity;
+        float _PulseFrequency;
+        float _TimeOffset;
+        float _Distance;
+        
+        struct Input {
+            float2 uv_MainTex;
+            float3 worldPos;
+        };
+        
+        // 计算脉冲值
+        float GetPulseValue(float3 worldPos, float time) {
+            // 计算到中心的距离
+            float2 centerXZ = float2(_PulseCenter.x, _PulseCenter.z);
+            float2 posXZ = float2(worldPos.x, worldPos.z);
+            float distance = length(posXZ - centerXZ) ;
+            
+            // 使用正弦波创建循环脉冲
+            float pulseTime = sin((time + _TimeOffset) * _PulseFrequency * 6.283185) * 0.5 + 0.5;
+            
+            // 计算脉冲波前位置
+            float waveFront = fmod(time * _PulseSpeed, _Distance); // _DistanceCoefficient最大传播距离
+            
+            // 计算脉冲强度(平滑衰减）
+            float pulseValue = 0;
+            
+            // 环形脉冲
+            float distFromWave = abs(distance - waveFront);
+            pulseValue = 1.0 - saturate(distFromWave / _PulseWidth);
+            
+            //指数衰减（可选）
+            pulseValue *= exp(-distance * 0.2);
+            
+            return pulseValue * _PulseIntensity;
+        }
+        
+        void surf(Input IN, inout SurfaceOutputStandard o) {
+            fixed4 tex = tex2D(_MainTex, IN.uv_MainTex) * _Color;
+            float time = _Time.y;
+            float pulse = GetPulseValue(IN.worldPos, time);//脉冲值
+            
+            // 混合基础颜色和脉冲颜色
+            fixed4 finalColor = tex;
+            if (pulse > 0.01) {
+                // 叠加混合模式
+                fixed4 pulseCol = _PulseColor * pulse;
+                //直接叠加
+                finalColor.rgb += pulseCol.rgb;//finalColor.rgb = 1.0 - (1.0 - finalColor.rgb) * (1.0 - pulseCol.rgb);// 屏幕混合（柔和）
+                // 自发光效果
+                o.Emission = pulseCol.rgb * 0.5;
+            }
+            
+            o.Albedo = finalColor.rgb;
+            o.Alpha = tex.a;
+            o.Metallic = 0.0;
+            o.Smoothness = 0.1;
+        }
+        ENDCG
+    }
+    FallBack "Diffuse"
+}
