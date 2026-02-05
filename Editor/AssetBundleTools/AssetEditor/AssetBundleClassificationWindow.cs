@@ -28,6 +28,7 @@ namespace AssetBundleBrowser
     /// </summary>
     internal class AssetBundleClassificationWindow
     {
+        public AssetBundleBrowserMain _mainBrower;
         [SerializeField]
         private bool assetSettings;
         private string configName = "AssetBundleClassificationWindowConfig";
@@ -36,8 +37,9 @@ namespace AssetBundleBrowser
         /// key是包名
         /// </summary>
         public Dictionary<string, ABLoadPath> sourcesDic;
-        public void ShowWindow()
+        public void ShowWindow(AssetBundleBrowserMain arg)
         {
+            _mainBrower = arg;
             OnEnable();
         }
         private ABSourcesRelated sourcesRelated;
@@ -65,6 +67,9 @@ namespace AssetBundleBrowser
         private string currentBuildingBundle = "";
         private float buildProgress = 0f;
 
+        /// <summary>
+        /// Bundle显示列表
+        /// </summary>
         private IEnumerable<AssetBundleInfo> ABargs;
 
         [Serializable]
@@ -94,8 +99,8 @@ namespace AssetBundleBrowser
         {
             config = UPandaGFConfig.LoadConfig<AssetBundleClassificationWindowConfig>(configName);
             //获取主包信息
-            string m_OutputPath = AssetBundleBrowserMain.instance.m_BuildTabData.m_OutputPath;
-            string bundleName = AssetBundleBrowserMain.instance.m_BuildTabData.m_BuildTarget.ToString();
+            string m_OutputPath = _mainBrower.m_BuildTabData.m_OutputPath;
+            string bundleName = _mainBrower.m_BuildTabData.m_BuildTarget.ToString();
             if (mainBundleInfo == null) mainBundleInfo = new AssetBundleInfo();
             mainBundleInfo.name = bundleName;
             string fullPath = Path.Combine(m_OutputPath, bundleName);
@@ -225,7 +230,7 @@ namespace AssetBundleBrowser
 
         private void ExecuteBuild()
         {
-            AssetBundleBrowserMain.instance.m_BuildTab.ExecuteBuild();
+            _mainBrower.m_BuildTab.ExecuteBuild();
             // 刷新列表
             RefreshAssetBundleList();
             GenerateAssetBundleInfo();
@@ -851,10 +856,9 @@ namespace AssetBundleBrowser
 
         private string GetBuildPathForBundle(string bundleName)
         {
-            AssetBundleBrowserMain assetBundleBrowserMain = AssetBundleBrowserMain.instance;
-            if (assetBundleBrowserMain == null) return "";
+            if (_mainBrower) return "";
 
-            string m_OutputPath = assetBundleBrowserMain.m_BuildTabData.m_OutputPath;
+            string m_OutputPath = _mainBrower.m_BuildTabData.m_OutputPath;
             if (string.IsNullOrEmpty(m_OutputPath)) return "";
 
             string result = "AssetBundles/";
@@ -1041,7 +1045,7 @@ namespace AssetBundleBrowser
 
                 Debug.Log($"开始构建单个AssetBundle: {bundleName}");
                 // 获取构建配置
-                AssetBundleBuildTab buildTab = AssetBundleBrowserMain.instance?.m_BuildTab;
+                AssetBundleBuildTab buildTab = _mainBrower.m_BuildTab;
                 if (buildTab == null)
                 {
                     Debug.LogError("无法获取AssetBundleBrowser的BuildTab");
@@ -1053,7 +1057,7 @@ namespace AssetBundleBrowser
                 BuildAssetBundleOptions buildOptions = buildTab.GetOpt();
 
                 // 创建临时构建目标目录
-                string outputPath = AssetBundleBrowserMain.instance.m_BuildTabData.m_OutputPath;
+                string outputPath = _mainBrower.m_BuildTabData.m_OutputPath;
                 if (string.IsNullOrEmpty(outputPath))
                 {
                     outputPath = "AssetBundles/" + buildTarget;
@@ -1153,7 +1157,7 @@ namespace AssetBundleBrowser
                 Debug.Log($"开始构建AssetBundle及其依赖: {bundleName}");
 
                 //获取构建配置
-                AssetBundleBuildTab buildTab = AssetBundleBrowserMain.instance?.m_BuildTab;
+                AssetBundleBuildTab buildTab = _mainBrower.m_BuildTab;
                 if (buildTab == null)
                 {
                     Debug.LogError("无法获取AssetBundleBrowser的BuildTab");
@@ -1181,7 +1185,7 @@ namespace AssetBundleBrowser
                 BuildAssetBundleOptions buildOptions = buildTab.GetOpt();
 
                 //创建临时构建目标目录
-                string outputPath = AssetBundleBrowserMain.instance.m_BuildTabData.m_OutputPath;
+                string outputPath = _mainBrower.m_BuildTabData.m_OutputPath;
                 if (string.IsNullOrEmpty(outputPath))
                 {
                     outputPath = "AssetBundles/" + buildTarget;

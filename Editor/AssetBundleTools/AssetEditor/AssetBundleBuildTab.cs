@@ -46,7 +46,7 @@ namespace AssetBundleBrowser
         }
 
         private AssetBundleInspectTab m_InspectTab;
-        private static AssetBundleBrowserMain m_Main;
+        private AssetBundleBrowserMain m_Main;
 
         private AssetBundleClassificationWindow assetBundleClassification;
 
@@ -114,7 +114,6 @@ namespace AssetBundleBrowser
                 if (data != null)
                 {
                     m_UserData = data;
-                    //m_Main.m_BuildTabData = m_UserData;
                 }
                 file.Close();
             }
@@ -182,7 +181,7 @@ namespace AssetBundleBrowser
 
         public void RepaintAssetBundleClassification()
         {
-            assetBundleClassification.ShowWindow();
+            assetBundleClassification.ShowWindow(m_Main);
         }
 
         internal void OnGUI()

@@ -18,7 +18,7 @@ namespace AssetBundleBrowser
             {
                 if (s_instance == null)
                     s_instance = GetWindow<AssetBundleBrowserMain>();
-                //Debug.LogWarning("AssetBundles Browser");
+                Debug.LogWarning("AssetBundles Browser");
                 return s_instance;
             }
         }
