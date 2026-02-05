@@ -70,6 +70,7 @@ namespace UPandaGF
             Camera camera = obj.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.Depth;
             camera.cullingMask = 1 << LayerMask.NameToLayer("UI");
+            camera.depth = 10;
             return camera;
         }
 
