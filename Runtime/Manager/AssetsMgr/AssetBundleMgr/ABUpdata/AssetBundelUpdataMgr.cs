@@ -22,7 +22,7 @@ namespace UPandaGF
     /// <summary>
     /// 资源更新组件
     /// </summary>
-    public class ABUpdataMgr : MonoBehaviour
+    public class AssetBundelUpdataMgr : MonoBehaviour
     {
         private bool hasInit = false;
         /// <summary>

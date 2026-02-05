@@ -32,17 +32,24 @@ namespace UPandaGF
         /// 资源关联存储文件后缀
         /// </summary>
         private string assetRefextension = ".assetref";
-        public async Task Init(AssetLoaddingMethod arg0, string reomoteURL, string LoadAssetPath)
+        public async Task Init(AssetLoaddingMethod arg0, string reomoteURL, string LoadAssetPath, ABSourcesRelated sourceRefArg)
         {
             PLogger.Log("AssetsLoader Init");
             method = arg0;
             editorSourcesMgr = EditorSourcesMgr.Instance;
             sceneMgr = SceneMgr.Instance;
-            
-            //资源关联数据
-            string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
-            byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
-            sourceRef = LoadABSourcesRelated(b);
+            if(sourceRefArg != null)
+            {
+                sourceRef = sourceRefArg;
+            }
+            else
+            {
+                //资源关联数据
+                string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
+                byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
+                sourceRef = LoadABSourcesRelated(b);
+            }
+          
 
             if (method == AssetLoaddingMethod.Assetbundles)
             {

@@ -77,9 +77,14 @@ namespace UPandaGF
             }
             if (uiCanvas == null)
             {
-                Canvas _uiCanvas = InitUICanvas(uiCamera);
-                ResetCanvas(_uiCanvas);
+                uiCanvas = InitUICanvas(uiCamera);
             }
+            canvasRectTransform = uiCanvas.transform as RectTransform;
+            //ΥÒµ½Έχ²γ
+            bot = canvasRectTransform.Find("Bot");
+            mid = canvasRectTransform.Find("Mid");
+            top = canvasRectTransform.Find("Top");
+            system = canvasRectTransform.Find("System");
         }
 
         public void SetResourcesLoader(IAssetsLoader arg1, ResourcesLoader arg2)

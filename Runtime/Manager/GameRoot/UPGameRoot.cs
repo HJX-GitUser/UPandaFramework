@@ -29,7 +29,7 @@ namespace UPandaGF
     {
         #region Component
         private DebugerInit debugerInit;//日志系统
-        private ABUpdataMgr abUpdataMgr;//资源更新组件
+        private AssetBundelUpdataMgr abUpdataMgr;//资源更新组件
         private AssetsLoader sourcesLoadMgr;//资源加载组件
         private BinaryDataMgrInit binaryDataMgr;//数据管理
         private UIManager _UIManager;//UI
@@ -54,6 +54,10 @@ namespace UPandaGF
         public bool EnableDebugModel = false;
         #endregion
         public Reporter reporter;
+
+        private ABSourcesRelated sourceRef;
+
+        public ABSourcesRelated SourceRef { get => sourceRef; }
 
         private void Reset()
         {
@@ -85,7 +89,7 @@ namespace UPandaGF
             //        yield return null;
             //    }
             //}
-            Task sourcesLoadMgrTask = sourcesLoadMgr.Init(method, reomoteURL, LoadAssetPath);
+            Task sourcesLoadMgrTask = sourcesLoadMgr.Init(method, reomoteURL, LoadAssetPath, null);
             while (!sourcesLoadMgrTask.IsCompleted)
             {
                 yield return null;
@@ -98,7 +102,7 @@ namespace UPandaGF
         private void SetComponent()
         {
             if (debugerInit == null) debugerInit = InitComponent<DebugerInit>();
-            if (abUpdataMgr == null) abUpdataMgr = InitComponent<ABUpdataMgr>();
+            if (abUpdataMgr == null) abUpdataMgr = InitComponent<AssetBundelUpdataMgr>();
             if (sourcesLoadMgr == null) sourcesLoadMgr = InitComponent<AssetsLoader>();
             if (binaryDataMgr == null) binaryDataMgr = InitComponent<BinaryDataMgrInit>();
             if (_UIManager == null) _UIManager = InitComponent<UIManager>();
