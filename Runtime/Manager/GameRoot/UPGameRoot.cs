@@ -32,7 +32,7 @@ namespace UPandaGF
         private ABUpdataMgr abUpdataMgr;//资源更新组件
         private AssetsLoader sourcesLoadMgr;//资源加载组件
         private BinaryDataMgrInit binaryDataMgr;//数据管理
-        private UIManager UIManager;//UI
+        private UIManager _UIManager;//UI
         #endregion
 
         #region Config
@@ -90,6 +90,7 @@ namespace UPandaGF
             {
                 yield return null;
             }
+            _UIManager.SetResourcesLoader(sourcesLoadMgr, ResourcesLoader.Instance);
             OnInited();
         }
 
@@ -100,8 +101,8 @@ namespace UPandaGF
             if (abUpdataMgr == null) abUpdataMgr = InitComponent<ABUpdataMgr>();
             if (sourcesLoadMgr == null) sourcesLoadMgr = InitComponent<AssetsLoader>();
             if (binaryDataMgr == null) binaryDataMgr = InitComponent<BinaryDataMgrInit>();
-            if(UIManager == null) UIManager = InitComponent<UIManager>();
-            UIManager.Init();
+            if (_UIManager == null) _UIManager = InitComponent<UIManager>();
+            _UIManager.Init();
         }
 
         private T InitComponent<T>() where T : Component

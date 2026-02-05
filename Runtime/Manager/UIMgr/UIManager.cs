@@ -1,4 +1,7 @@
+using Codice.Client.BaseCommands.CheckIn;
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
@@ -39,28 +42,50 @@ namespace UPandaGF
 
         private ResourcesLoader resourcesLoader;
         private IAssetsLoader assetsLoader;
-
-        protected override void OnAwake()
+       
+        /// <summary>
+        /// 重置Canvas
+        /// </summary>
+        /// <param name="arg"></param>
+        public void ResetCanvas(Canvas arg)
         {
-            assetsLoader = UPGameRoot.Instance.GetAssetsLoader();
-            resourcesLoader = ResourcesLoader.Instance;
-        }
-        public void Init()
-        {
-            if (uiCamera == null)
-            {
-                uiCamera = InitCamera();
-            }
-            if (uiCanvas == null)
-            {
-                uiCanvas = InitUICanvas(uiCamera);
-            }
+            if (uiCanvas != null) uiCanvas.gameObject.SetActive(false);
+            uiCanvas = arg;
             canvasRectTransform = uiCanvas.transform as RectTransform;
             //找到各层
             bot = canvasRectTransform.Find("Bot");
             mid = canvasRectTransform.Find("Mid");
             top = canvasRectTransform.Find("Top");
             system = canvasRectTransform.Find("System");
+        }
+
+        /// <summary>
+        /// 重置相机
+        /// </summary>
+        /// <param name="arg"></param>
+        public void ResetCamera(Camera arg)
+        {
+            if (uiCamera != null) uiCamera.gameObject.SetActive(false);
+            uiCamera = arg;
+        }
+
+        public void Init()
+        {
+            if (uiCamera == null)
+            {
+                ResetCamera(InitCamera());
+            }
+            if (uiCanvas == null)
+            {
+                Canvas _uiCanvas = InitUICanvas(uiCamera);
+                ResetCanvas(_uiCanvas);
+            }
+        }
+
+        public void SetResourcesLoader(IAssetsLoader arg1, ResourcesLoader arg2)
+        {
+            assetsLoader = arg1;
+            resourcesLoader = arg2;
         }
 
         private Camera InitCamera()
@@ -141,38 +166,43 @@ namespace UPandaGF
             }
             return null;
         }
+
+
         /// <summary>
         /// 显示面板的方法
-        /// 如果字典里有就直接调用该面板的ShowMe方法，
-        /// 如果没有就从资源文件夹里加载出来再调用，并且存入字典里
         /// </summary>
-        /// <typeparam name="T">面板类</typeparam>
-        /// <param name="loadPath">加载路径</param>
-        /// <param name="loadMethod">加载方式</param>
-        /// <param name="layer">显示在那个层</param>
         /// <param name="callBack">UI面板显示后的回调</param>
-        public async void ShowPanel<T>(string loadPath, AssetLoadMethod loadMethod = AssetLoadMethod.Resources, E_UI_Layer layer = E_UI_Layer.Mid, UnityAction<T> callBack = null) where T : BasePanel
+        public async void ShowPanel<T>(UnityAction<T> callBack = null) where T : BasePanel
         {
-            if (panelDic.ContainsKey(loadPath))
+            UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
+            // 检查当前类是否包含特性
+            if (uiLoadInfo == null)
             {
-                panelDic[loadPath].OnOpen();
+                Debug.LogError($"继承自BasePanel的类:({GetType().Name})必须标记UILoadInfo特性！！！");
+                callBack?.Invoke(null);
+                return;
+            }
+            if (panelDic.ContainsKey(uiLoadInfo.loadPath))
+            {
+                panelDic[uiLoadInfo.loadPath].OnOpen();
                 // 处理面板创建完成后的逻辑
                 if (callBack != null)
                 {
-                    callBack(panelDic[loadPath] as T);
+                    callBack?.Invoke(panelDic[uiLoadInfo.loadPath] as T);
                 }
                 //避免面板重复加载 如果存在该面板 即直接显示 调用回调函数后  直接return 不再处理后面的异步加载逻辑
                 return;
             }
 
-            GameObject uiObj = await loadUIObj(loadPath, loadMethod);
+
+            GameObject uiObj = await loadUIObj(uiLoadInfo.loadPath, uiLoadInfo.loadMethod);
             if (uiObj != null)
             {
                 //把UI面板作为 Canvas的子对象
-                //并且 要设置它的相对位置
+                //设置它的相对位置
                 //找到父对象 底显示在对应的层
                 Transform father = this.bot;
-                switch (layer)
+                switch (uiLoadInfo.ui_Layer)
                 {
                     case E_UI_Layer.Mid:
                         father = this.mid;
@@ -195,27 +225,32 @@ namespace UPandaGF
                 callBack?.Invoke(panel);
 
                 panel.OnOpen();
-                panelDic.Add(loadPath, panel);
+                panelDic.Add(uiLoadInfo.loadPath, panel);
             }
         }
 
-        public async Task<T> ShowPanelAsync<T>(string loadPath, AssetLoadMethod loadMethod = AssetLoadMethod.Resources, E_UI_Layer layer = E_UI_Layer.Mid) where T : BasePanel
+        public async Task<T> ShowPanelAsync<T>() where T : BasePanel
         {
-            if (panelDic.ContainsKey(loadPath))
+            UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
+            // 检查当前类是否包含特性
+            if (uiLoadInfo == null)
             {
-                panelDic[loadPath].OnOpen();
-                //避免面板重复加载 如果存在该面板 即直接显示 调用回调函数后  直接return 不再处理后面的异步加载逻辑
-                return panelDic[loadPath] as T;
+                Debug.LogError($"继承自BasePanel的类:({typeof(T).Name})必须标记UILoadInfo特性！！！");
+                return null;
             }
 
-            GameObject uiObj = await loadUIObj(loadPath, loadMethod);
+            if (panelDic.ContainsKey(uiLoadInfo.loadPath))
+            {
+                panelDic[uiLoadInfo.loadPath].OnOpen();
+                //避免面板重复加载 如果存在该面板 即直接显示 调用回调函数后  直接return 不再处理后面的异步加载逻辑
+                return panelDic[uiLoadInfo.loadPath] as T;
+            }
+
+            GameObject uiObj = await loadUIObj(uiLoadInfo.loadPath, uiLoadInfo.loadMethod);
             if (uiObj != null)
             {
-                //把UI面板作为 Canvas的子对象
-                //并且 要设置它的相对位置
-                //找到父对象 底显示在对应的层
                 Transform father = this.bot;
-                switch (layer)
+                switch (uiLoadInfo.ui_Layer)
                 {
                     case E_UI_Layer.Mid:
                         father = this.mid;
@@ -236,10 +271,9 @@ namespace UPandaGF
                 //得到预设体身上的面板脚本
                 T panel = uiObj.GetComponent<T>();
                 panel.OnOpen();
-                panelDic.Add(loadPath, panel);
+                panelDic.Add(uiLoadInfo.loadPath, panel);
                 return panel;
             }
-
             return null;
         }
 
@@ -261,8 +295,14 @@ namespace UPandaGF
                     }
                     break;
                 case AssetLoadMethod.AssetBundle:
-                    if (assetsLoader != null) uiObj = await assetsLoader.LoadAsync<GameObject>(loadPath);
+                    if (assetsLoader == null) PLogger.LogError("assetsLoader is NULL");
+                    else uiObj = await assetsLoader.LoadAsync<GameObject>(loadPath);
                     break;
+            }
+            if (uiObj == null)
+            {
+                PLogger.LogError($"加载失败：{loadPath} \n【{loadMethod}】");
+                return null;
             }
             return Instantiate(uiObj);
         }
@@ -274,13 +314,20 @@ namespace UPandaGF
         /// 如果不想的话可以用GetPanel得到面板后直接调用该面板的HideMe方法
         /// </summary>
         /// <param name="panelName"></param>
-        public void ClosePanel(string panelName)
+        public void ClosePanel<T>() where T : BasePanel
         {
-            if (panelDic.ContainsKey(panelName))
+            UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
+            // 检查当前类是否包含特性
+            if (uiLoadInfo == null)
             {
-                panelDic[panelName].OnClose();
-                GameObject.Destroy(panelDic[panelName].gameObject);
-                panelDic.Remove(panelName);
+                Debug.LogError($"继承自BasePanel的类:({typeof(T).Name})必须标记UILoadInfo特性！！！");
+                return;
+            }
+            if (panelDic.ContainsKey(uiLoadInfo.loadPath))
+            {
+                panelDic[uiLoadInfo.loadPath].CloseUI();
+                GameObject.Destroy(panelDic[uiLoadInfo.loadPath].gameObject);
+                panelDic.Remove(uiLoadInfo.loadPath);
             }
         }
         /// <summary>

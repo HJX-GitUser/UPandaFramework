@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -62,7 +63,7 @@ namespace UPandaGF
         /// <summary>
         /// 隐藏
         /// </summary>
-        public abstract void OnClose();
+        public abstract void CloseUI();
         /// <summary>
         /// 按钮监听事件，重写时自己根据传入的按钮名字处理对应按钮的逻辑
         /// </summary>

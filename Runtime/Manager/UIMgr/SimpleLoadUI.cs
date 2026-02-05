@@ -5,6 +5,7 @@ using UPandaGF;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(CanvasGroup))]
+[UILoadInfo(E_UI_Layer.Top, AssetLoadMethod.Resources, "UI/SimpleLoadUI")]
 public class SimpleLoadUI : BasePanel
 {
     public Text textL;
@@ -18,6 +19,11 @@ public class SimpleLoadUI : BasePanel
         canvasGroup = GetComponent<CanvasGroup>();
     }
 
+    private void Start()
+    {
+
+    }
+
     public override void OnOpen()
     {
         PLogger.Log("SimpleLoadUI Open");
@@ -27,7 +33,7 @@ public class SimpleLoadUI : BasePanel
         progressSlider.value = 0;
         canvasGroup.alpha = 1f;
     }
-    public override void OnClose()
+    public override void CloseUI()
     {
         PLogger.Log("SimpleLoadUI Close");
         SetSlieder(1, true);

@@ -23,13 +23,10 @@ public class GameLaunchExample : MonoBehaviour
     private UIManager uiManager;
     private SimpleLoadUI simpleLoadUI;
     public UnityAction onAssemblyLoaded;
-    private async void Awake()
+    private void Awake()
     {
         EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnGFLoadedEvent);//框架加载结束事件
         EventCenter.Instance.AddEventListener<SceneMgr_SceneAsynLoadProgress>(SceneAsynLoadProgress);//场景加载进度
-        uiManager = UIManager.Instance;
-        simpleLoadUI = await uiManager.ShowPanelAsync<SimpleLoadUI>("UI/LoadUI");
-        simpleLoadUI.SetMessage(0.4f, "程序加载中...");
     }
 
     private void OnDestroy()
@@ -47,8 +44,11 @@ public class GameLaunchExample : MonoBehaviour
     private async void OnGFLoadedEvent(GFLoadedEvent arg0)
     {
         PLogger.Log_white("框架加载结束，进入游戏逻辑");
-        simpleLoadUI.SetMessage(1f, "AOT程序加载完成");
+        uiManager = UIManager.Instance;
+        simpleLoadUI = await uiManager.ShowPanelAsync<SimpleLoadUI>();
+        simpleLoadUI.SetMessage(0.4f, "程序加载中...");
         await Task.Delay(1000);
+        simpleLoadUI.SetMessage(1f, "AOT程序加载完成");
         UPGameRoot gr = UPGameRoot.Instance;
 
         sourcesLoad = gr.GetAssetsLoader();
@@ -87,7 +87,7 @@ public class GameLaunchExample : MonoBehaviour
             PLogger.Log("<color=blue>进入场景</color>");
             simpleLoadUI.SetMessage(1, "场景加载完成");
             await Task.Delay(1000);
-            uiManager.ClosePanel("UI/LoadUI");
+            uiManager.ClosePanel<SimpleLoadUI>();//SimpleLoadUI.CloseUI;
         });
     }
 
