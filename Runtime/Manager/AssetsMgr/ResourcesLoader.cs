@@ -106,6 +106,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             }
             else
             {
+                //Debug.Log($"{path}资源被引用次数：{info.refCount}");
                 return info.asset;
             }
         }

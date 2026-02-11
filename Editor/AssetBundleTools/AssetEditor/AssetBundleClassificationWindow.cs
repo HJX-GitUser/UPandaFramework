@@ -88,7 +88,7 @@ namespace AssetBundleBrowser
 
         private async void OnEnable()
         {
-            //Debug.Log("AssetBundleClassificationWindow OnEnable");
+            Debug.Log("AssetBundleClassificationWindow OnEnable");
             GetData();
             await GetABSourcesRelated();
             RefreshAssetBundleList();
@@ -454,7 +454,7 @@ namespace AssetBundleBrowser
                 if (!sourcesDic.ContainsKey(item.bundleName))
                 {
                     sourcesDic.Add(item.bundleName, item.loadPath);
-                    //Debug.Log($"{item.packageName}:{item.loodPath}");
+                    //Debug.Log($"{item.bundleName}:{item.loadPath}");
                 }
             }
         }
@@ -856,7 +856,7 @@ namespace AssetBundleBrowser
 
         private string GetBuildPathForBundle(string bundleName)
         {
-            if (_mainBrower) return "";
+            if (_mainBrower == null) return "";
 
             string m_OutputPath = _mainBrower.m_BuildTabData.m_OutputPath;
             if (string.IsNullOrEmpty(m_OutputPath)) return "";

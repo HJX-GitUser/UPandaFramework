@@ -66,7 +66,7 @@ public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBe
         }
     }
 
-    protected virtual void Awake()
+    private void Awake()
     {
         if (_instance == null)
         {
