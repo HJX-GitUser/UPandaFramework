@@ -317,6 +317,7 @@ namespace AssetBundleBrowser
         {
             // 获取所有的资源路径
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
+            Debug.Log($"项目中共有 {allAssetPaths.Length} 个资源路径");
             ABSourcesRelated aBSourcesRef = new ABSourcesRelated();
             //主包的数据：
             aBSourcesRef.mainBundleInfo = new AssetBundleLoadInfo()
@@ -344,7 +345,13 @@ namespace AssetBundleBrowser
 
                     // 如果资源没有被分配到 AssetBundle，则跳过
                     if (string.IsNullOrEmpty(assetBundleName)) continue;
-
+                    string variantName = AssetDatabase.GetImplicitAssetBundleVariantName(assetPath);
+                    bool variantNameisNull = string.IsNullOrEmpty(variantName);
+                    //Debug.Log($"资源包名字:{assetBundleName}\n变体：{variantName},isNull:{variantNameisNull}");
+                    if (!variantNameisNull)
+                    {
+                        assetBundleName += $".{variantName}";
+                    }
                     // 获取资源的名字
                     string assetName = Path.GetFileNameWithoutExtension(assetPath);
                     // 创建一个 AssetInfo 对象，并添加到列表中
@@ -355,6 +362,7 @@ namespace AssetBundleBrowser
             }
             CheckDifferences(aBSourcesRef);
             sourcesRelated = aBSourcesRef;
+
             Save(aBSourcesRef);
             SaveData();
             AssetDatabase.Refresh();
