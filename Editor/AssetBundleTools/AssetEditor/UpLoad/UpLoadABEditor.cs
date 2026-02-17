@@ -308,13 +308,13 @@ internal class UpLoadABEditor
         FileInfo[] fileInfos = directory.GetFiles();
         foreach (var file in fileInfos)
         {
-            if (IsABAssets(file))
-            {
-                int startIndex1 = file.FullName.IndexOf(assetsKeyword);
-                string result1 = file.FullName.Substring(startIndex1); // 从"Assets"开始截取
-                AssetDatabase.CopyAsset(result1, result + $"/{file.Name}");
-                Debug.Log(result1 + " 已拷贝至：" + result + $"/{file.Name}");
-            }
+            //if (IsABAssets(file))
+            //{
+            int startIndex1 = file.FullName.IndexOf(assetsKeyword);
+            string result1 = file.FullName.Substring(startIndex1); // 从"Assets"开始截取
+            AssetDatabase.CopyAsset(result1, result + $"/{file.Name}");
+            Debug.Log(result1 + " 已拷贝至：" + result + $"/{file.Name}");
+            //}
         }
         AssetDatabase.Refresh();
 
@@ -435,7 +435,7 @@ internal class UpLoadABEditor
         string[] files = Directory.GetFiles(sourceDir);
         foreach (string file in files)
         {
-            if(Path.GetExtension(file)== ".meta")
+            if (Path.GetExtension(file) == ".meta")
             {
                 continue;
             }
