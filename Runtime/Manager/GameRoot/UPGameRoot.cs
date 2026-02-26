@@ -29,7 +29,6 @@ namespace UPandaGF
     {
         #region Component
         private DebugerInit debugerInit;//日志系统
-        private AssetBundelUpdataMgr abUpdataMgr;//资源更新组件
         private Downloader downloader;//下载器
         private AssetsLoader sourcesLoadMgr;//资源加载组件
         private BinaryDataMgrInit binaryDataMgr;//数据管理
@@ -103,7 +102,6 @@ namespace UPandaGF
         private void SetComponent()
         {
             if (debugerInit == null) debugerInit = InitComponent<DebugerInit>();
-            if (abUpdataMgr == null) abUpdataMgr = InitComponent<AssetBundelUpdataMgr>();
             if (downloader == null) downloader = InitComponent<Downloader>();
             if (sourcesLoadMgr == null) sourcesLoadMgr = InitComponent<AssetsLoader>();
             if (binaryDataMgr == null) binaryDataMgr = InitComponent<BinaryDataMgrInit>();

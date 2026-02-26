@@ -36,7 +36,7 @@ namespace UPandaGF.GFEditor
 
         private void OnEnable()
         {
-            config = UPandaGFConfig.LoadConfig<CopyConfig>(fileName);
+            config = UPandaGFConfig.LoadJsonConfig<CopyConfig>(fileName);
         }
 
         private void OnGUI()
@@ -119,12 +119,12 @@ namespace UPandaGF.GFEditor
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("±£¥Ê≈‰÷√", GUILayout.Height(30)))
             {
-                UPandaGFConfig.SaveConfig(config, fileName);
+                UPandaGFConfig.SaveJsonConfig(config, fileName);
             }
 
             if (GUILayout.Button("º”‘ÿ≈‰÷√", GUILayout.Height(30)))
             {
-                config = UPandaGFConfig.LoadConfig<CopyConfig>(fileName);
+                config = UPandaGFConfig.LoadJsonConfig<CopyConfig>(fileName);
             }
 
             if (GUILayout.Button("÷¥––∏¥÷∆", GUILayout.Height(40)))
@@ -235,7 +235,7 @@ namespace UPandaGF.GFEditor
             };
 
             config.rules.Add(rule);
-            UPandaGFConfig.SaveConfig(config, fileName);
+            UPandaGFConfig.SaveJsonConfig(config, fileName);
         }
 
 

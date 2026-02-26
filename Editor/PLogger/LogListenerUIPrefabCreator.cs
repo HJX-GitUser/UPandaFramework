@@ -15,7 +15,7 @@ public class LogListenerUIPrefabCreator : EditorWindow
     private Color footerColor = new Color(0.2f, 0.2f, 0.2f, 1f);
     private Color buttonColor = new Color(0.3f, 0.3f, 0.3f, 1f);
 
-    [MenuItem("Tools/Create Log Listener Panel")]
+    [MenuItem("UPandaGF/日志系统/UGUI日志面板创建器")]
     static void Init()
     {
         LogListenerUIPrefabCreator window = GetWindow<LogListenerUIPrefabCreator>("日志监听面板创建器");
@@ -293,11 +293,12 @@ public class LogListenerUIPrefabCreator : EditorWindow
     private GameObject CreateContent(Transform parent)
     {
         GameObject content = CreateUIObject("Content", parent);
-
         LayoutElement layoutElem = content.AddComponent<LayoutElement>();
+        //layoutElem.flexibleWidth = 1;
         layoutElem.flexibleHeight = 1;
 
         RectTransform rt = content.GetComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(1534, 500);
 
         GameObject scrollView = CreateUIObject("ScrollView", content.transform);
         RectTransform scrollRt = scrollView.GetComponent<RectTransform>();
@@ -324,7 +325,7 @@ public class LogListenerUIPrefabCreator : EditorWindow
         viewportRt.offsetMax = new Vector2(-2, -2);
 
         Image viewportImg = viewport.AddComponent<Image>();
-        viewportImg.color = Color.clear;
+        viewportImg.color = new Color(0, 0, 0, 1);
 
         Mask mask = viewport.AddComponent<Mask>();
         mask.showMaskGraphic = false;
@@ -421,13 +422,13 @@ public class LogListenerUIPrefabCreator : EditorWindow
         manager.copyButton = toolbarTransform.Find("CopyButton").GetComponent<Button>();
         manager.exportButton = toolbarTransform.Find("ExportButton").GetComponent<Button>();
         manager.filterInput = toolbarTransform.Find("FilterInput").GetComponent<InputField>();
-        manager.autoScrollToggle = toolbarTransform.Find("AutoScrollToggle/Toggle").GetComponent<Toggle>();
+        manager.autoScrollToggle = toolbarTransform.Find("AutoScrollToggle").GetComponent<Toggle>();
 
         Transform toggleGroup = toolbarTransform.Find("ToggleGroup");
-        manager.infoToggle = toggleGroup.Find("InfoToggle/Toggle").GetComponent<Toggle>();
-        manager.warningToggle = toggleGroup.Find("WarningToggle/Toggle").GetComponent<Toggle>();
-        manager.errorToggle = toggleGroup.Find("ErrorToggle/Toggle").GetComponent<Toggle>();
-        manager.exceptionToggle = toggleGroup.Find("ExceptionToggle/Toggle").GetComponent<Toggle>();
+        manager.infoToggle = toggleGroup.Find("InfoToggle").GetComponent<Toggle>();
+        manager.warningToggle = toggleGroup.Find("WarningToggle").GetComponent<Toggle>();
+        manager.errorToggle = toggleGroup.Find("ErrorToggle").GetComponent<Toggle>();
+        manager.exceptionToggle = toggleGroup.Find("ExceptionToggle").GetComponent<Toggle>();
     }
 
     private void SavePrefab(GameObject panel)

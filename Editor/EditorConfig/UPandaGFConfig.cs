@@ -10,7 +10,7 @@ namespace UPandaGF.GFEditor
         public static string configPath = "Assets/Editor/EditorConfig/";
 
 
-        public static void SaveConfig(object config, string fileName)
+        public static void SaveJsonConfig(object config, string fileName)
         {
             try
             {
@@ -31,7 +31,7 @@ namespace UPandaGF.GFEditor
             }
         }
 
-        public static T LoadConfig<T>(string fileName) where T : class, new()
+        public static T LoadJsonConfig<T>(string fileName) where T : class, new()
         {
             T config = new T();
             string fullPath = Path.Combine(configPath, fileName + ".json");
