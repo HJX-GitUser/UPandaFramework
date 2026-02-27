@@ -40,7 +40,7 @@ internal class UpLoadABEditor
     public void OnEnable(AssetBundleBrowserMain bm)
     {
         abMainE = bm;
-        config = UPandaGFConfig.LoadConfig<UpLoadABEditorConfig>(configName);
+        config = UPandaGFConfig.LoadJsonConfig<UpLoadABEditorConfig>(configName);
         LocalABPath = abMainE.m_BuildTabData.m_OutputPath;
         Debug.Log($"UpLoadABEditor Enable!!{config.targetDirectory}");
 
@@ -210,7 +210,7 @@ internal class UpLoadABEditor
     /// </summary>
     public void SaveData()
     {
-        UPandaGFConfig.SaveConfig(config, configName);
+        UPandaGFConfig.SaveJsonConfig(config, configName);
         if (config.contactMethod == ContactMethod.FTP) upLoadFTP.SaveData();
     }
 

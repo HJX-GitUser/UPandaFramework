@@ -22,6 +22,12 @@ public static class GetComponentExtend
         if (t == null) t = obj.AddComponent<T>();
         return t;
     }
+    public static T GetOrAddComponent<T>(this Transform obj) where T : Component
+    {
+        T t = obj.GetComponent<T>();
+        if (t == null) t = obj.gameObject.AddComponent<T>();
+        return t;
+    }
 
     /// <summary>
     /// 通过反射添加热更组件

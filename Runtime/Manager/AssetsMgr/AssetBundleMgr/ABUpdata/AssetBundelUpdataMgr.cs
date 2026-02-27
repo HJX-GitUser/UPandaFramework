@@ -9,6 +9,7 @@ using UnityEngine.Networking;
 
 namespace UPandaGF
 {
+    [Obsolete("已弃用！")]
     [System.Serializable]
     public class ABUpdataMgrArg
     {
@@ -22,6 +23,7 @@ namespace UPandaGF
     /// <summary>
     /// 资源更新组件
     /// </summary>
+    [Obsolete("已弃用！")]
     public class AssetBundelUpdataMgr : MonoBehaviour
     {
         private bool hasInit = false;

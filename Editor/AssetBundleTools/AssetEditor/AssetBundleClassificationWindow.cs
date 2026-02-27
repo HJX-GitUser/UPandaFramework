@@ -97,7 +97,7 @@ namespace AssetBundleBrowser
         }
         private void GetData()
         {
-            config = UPandaGFConfig.LoadConfig<AssetBundleClassificationWindowConfig>(configName);
+            config = UPandaGFConfig.LoadJsonConfig<AssetBundleClassificationWindowConfig>(configName);
             //获取主包信息
             string m_OutputPath = _mainBrower.m_BuildTabData.m_OutputPath;
             string bundleName = _mainBrower.m_BuildTabData.m_BuildTarget.ToString();
@@ -121,7 +121,7 @@ namespace AssetBundleBrowser
 
         public void SaveData()
         {
-            UPandaGFConfig.SaveConfig(config, configName);
+            UPandaGFConfig.SaveJsonConfig(config, configName);
         }
 
         private void OnEditorUpdate()
