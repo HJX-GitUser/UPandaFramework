@@ -40,7 +40,7 @@ namespace UPandaGF
 
         private ResourcesLoader resourcesLoader;
         private IAssetsLoader assetsLoader;
-       
+
         /// <summary>
         /// 重置Canvas
         /// </summary>
@@ -131,6 +131,7 @@ namespace UPandaGF
             if (eventSystem == null)
             {
                 GameObject eventObj = new GameObject("EventSystem");
+                eventObj.transform.SetParent(transform.parent);
                 eventSystem = eventObj.AddComponent<EventSystem>();
                 eventObj.AddComponent<StandaloneInputModule>();
             }
@@ -272,7 +273,7 @@ namespace UPandaGF
                 (uiObj.transform as RectTransform).offsetMax = Vector2.zero;
                 (uiObj.transform as RectTransform).offsetMin = Vector2.zero;
                 //得到预设体身上的面板脚本
-                T panel = uiObj.GetComponent<T>();
+                T panel = uiObj.GetOrAddComponent<T>();
                 panel.OnOpen();
                 panelDic.Add(uiLoadInfo.loadPath, panel);
                 return panel;

@@ -88,7 +88,7 @@ namespace AssetBundleBrowser
 
         private async void OnEnable()
         {
-            Debug.Log("AssetBundleClassificationWindow OnEnable");
+            //Debug.Log("AssetBundleClassificationWindow OnEnable");
             GetData();
             await GetABSourcesRelated();
             RefreshAssetBundleList();

@@ -23,7 +23,7 @@ namespace UPandaGF.GFEditor
                 string fullPath = Path.Combine(configPath, fileName + ".json");
                 File.WriteAllText(fullPath, json, Encoding.UTF8);
                 AssetDatabase.Refresh();
-                Debug.Log($"配置已保存: {fullPath}");
+                //Debug.Log($"配置已保存: {fullPath}");
             }
             catch (System.Exception e)
             {
@@ -41,7 +41,7 @@ namespace UPandaGF.GFEditor
                 {
                     string json = File.ReadAllText(fullPath, Encoding.UTF8);
                     config = JsonUtility.FromJson<T>(json);
-                    Debug.Log($"配置已加载: {fullPath}");
+                    //Debug.Log($"配置已加载: {fullPath}");
                 }
                 catch (System.Exception e)
                 {

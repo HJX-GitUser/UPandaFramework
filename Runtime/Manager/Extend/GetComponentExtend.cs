@@ -6,9 +6,9 @@ using System.Reflection;
 using UnityEngine;
 
 /// <summary>
-/// 脚本扩展
+/// 组件获取方式扩展
 /// </summary>
-public static class ExtendScripts
+public static class GetComponentExtend
 {
     /// <summary>
     /// 获取组件的扩展方法

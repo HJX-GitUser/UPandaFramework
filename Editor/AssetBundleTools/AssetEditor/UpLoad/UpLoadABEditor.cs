@@ -84,8 +84,8 @@ internal class UpLoadABEditor
         EditorGUILayout.Space(30);
         if (GUILayout.Button("复制资源到StreamingAssets"))
         {
-            //string savePath = EditorUtility.OpenFolderPanel("复制路径选择", Application.streamingAssetsPath, string.Empty);
-            string savePath = LocalABPath.Substring(LocalABPath.IndexOf("Assets") + "Assets".Length);
+            //string savePath = LocalABPath.Substring(LocalABPath.IndexOf("Assets") + "Assets".Length);//AssetBundle放到Assets路径下用这个
+            string savePath = $"/{LocalABPath}";
             savePath = Application.streamingAssetsPath + savePath;
             if (!Directory.Exists(savePath))
             {
@@ -293,32 +293,8 @@ internal class UpLoadABEditor
 
     private void MoveABToStreamingAssets(string savePath)
     {
-        string assetsKeyword = "Assets";
-        int startIndex = savePath.IndexOf(assetsKeyword); // 定位"Assets"的起始位置
-        string result = savePath.Substring(startIndex); // 从"Assets"开始截取
-
-
-        if (startIndex == -1)
-        {
-            Debug.LogError("路径不在Assets路径内");
-            return;
-        }
-
-        DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
-        FileInfo[] fileInfos = directory.GetFiles();
-        foreach (var file in fileInfos)
-        {
-            //if (IsABAssets(file))
-            //{
-            int startIndex1 = file.FullName.IndexOf(assetsKeyword);
-            string result1 = file.FullName.Substring(startIndex1); // 从"Assets"开始截取
-            AssetDatabase.CopyAsset(result1, result + $"/{file.Name}");
-            Debug.Log(result1 + " 已拷贝至：" + result + $"/{file.Name}");
-            //}
-        }
+        CopyDirectory(LocalABPath, savePath);
         AssetDatabase.Refresh();
-
-
     }
 
 
