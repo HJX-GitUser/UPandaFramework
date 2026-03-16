@@ -21,6 +21,8 @@ namespace UPandaGF
         private List<AudioSource> soundList = new List<AudioSource>();
         //音效大小
         private float soundValue = 1;
+
+        private IAssetsLoader assetsLoader;
         public AudioMgr()
         {
             PublicMono.Instance.AddUpdateListener(Update);
@@ -98,18 +100,19 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// 播放唯一音效
+        /// 播放唯一音效（播放前关闭上一个音频）
         /// </summary>
         /// <param name="AcPath"></param>
-        public void PlayUniqueSound(string AcPath)
+        public void PlayUniqueSound(string AcPath, AssetLoadMethod method = AssetLoadMethod.Resources)
         {
             if (soundObj == null)
             {
                 soundObj = new GameObject("Sound");
             }
             if (uniqueSound == null) uniqueSound = soundObj.AddComponent<AudioSource>();
-            ResourcesLoader.Instance.LoadAsync<AudioClip>(AcPath, (clip) =>
+            LoadSound(AcPath, method, (clip) =>
             {
+                uniqueSound.Stop();
                 uniqueSound.clip = clip;
                 bkMusic.loop = false;
                 bkMusic.volume = soundValue;
@@ -117,7 +120,7 @@ namespace UPandaGF
             });
         }
         /// <summary>
-        /// 播放唯一音效
+        /// 播放唯一音效（播放前关闭上一个音频）
         /// </summary>
         /// <param name="AcPath"></param>
         public void PlayUniqueSound(AudioClip clip)
@@ -127,6 +130,7 @@ namespace UPandaGF
                 soundObj = new GameObject("Sound");
             }
             if (uniqueSound == null) uniqueSound = soundObj.AddComponent<AudioSource>();
+            uniqueSound.Stop();
             uniqueSound.clip = clip;
             bkMusic.loop = false;
             bkMusic.volume = soundValue;
@@ -155,30 +159,43 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// 播放音效
+        /// 加载并播放音效
         /// </summary>
-        /// <param name="AcPath">路径</param>
+        /// <param name="AcPath">资源路径；使用AssetBundle时，路径用编辑器下的路径(带后缀)</param>
         /// <param name="isLoop">是否循环</param>
+        /// <param name="method">资源加载方式</param>
         /// <param name="callBack">加载结束的回调，参数是音效组件</param>
-        public void PlaySound(string AcPath, bool isLoop, UnityAction<AudioSource> callBack = null)
+        public void LoadSoundAndPlay(string AcPath, bool isLoop = false, AssetLoadMethod method = AssetLoadMethod.Resources, UnityAction<AudioSource> callBack = null)
         {
             if (soundObj == null)
             {
                 soundObj = new GameObject("Sound");
             }
-            //当音效资源异步加载结束后 再添加一个音效
-            ResourcesLoader.Instance.LoadAsync<AudioClip>(AcPath, (clip) =>
+            LoadSound(AcPath, method, (clip) =>
             {
                 AudioSource source = soundObj.AddComponent<AudioSource>();
                 source.clip = clip;
                 source.loop = isLoop;
                 source.volume = soundValue;
                 source.Play();
-
                 soundList.Add(source);
                 callBack?.Invoke(source);
             });
         }
+
+        private void LoadSound(string path, AssetLoadMethod method, UnityAction<AudioClip> callback)
+        {
+            switch (method)
+            {
+                case AssetLoadMethod.Resources:
+                    ResourcesLoader.Instance.LoadAsync(path, callback);
+                    break;
+                case AssetLoadMethod.AssetBundle:
+                    assetsLoader.LoadAsync(path, callback);
+                    break;
+            }
+        }
+
         /// <summary>
         /// 改变音效声音大小
         /// </summary>

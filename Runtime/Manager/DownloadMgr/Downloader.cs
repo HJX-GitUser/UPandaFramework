@@ -39,7 +39,6 @@ namespace UPandaGF
         异步支持：提供async/await接口
         事件驱动：完整的事件通知系统
         错误处理：完善的错误处理和状态管理
-        单例模式：全局唯一下载管理器
         内存优化：分块下载，避免大文件内存占用
     注意事项：
         需要在Unity中启用网络权限
@@ -49,7 +48,7 @@ namespace UPandaGF
 
     后续待优化：添加重试机制、速度限制、优先级管理。
      */
-    public class Downloader : LazyMonoSingletonBase<Downloader>
+    public class Downloader : MonoBehaviour
     {
         // 下载队列
         private Queue<DownloadItem> downloadQueue = new Queue<DownloadItem>();
@@ -68,7 +67,7 @@ namespace UPandaGF
         public event Action<DownloadItem> OnDownloadPause;
         public event Action OnAllDownloadsComplete;
 
-        protected override void OnAwake()
+        protected  void Awake()
         {
             Debug.Log("Downloader Init!!!");
         }
@@ -337,9 +336,8 @@ namespace UPandaGF
             return await tcs.Task;
         }
 
-        protected override void OnDestroy()
+        protected  void OnDestroy()
         {
-            base.OnDestroy();
             CancelAllDownloads();
         }
     }

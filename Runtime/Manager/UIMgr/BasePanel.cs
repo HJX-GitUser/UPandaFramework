@@ -11,6 +11,7 @@ namespace UPandaGF
     /// 面板基类
     /// 通过代码快速的找到所有的子控件，节约找控件的工作量
     /// 在子类中处理逻辑 
+    /// 必须加上[UILoadInfo]特性
     /// </summary>
     public abstract class BasePanel : MonoBehaviour
     {

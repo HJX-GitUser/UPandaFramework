@@ -176,7 +176,7 @@ namespace UPandaGF
         /// 显示面板的方法
         /// </summary>
         /// <param name="callBack">UI面板显示后的回调</param>
-        public async void ShowPanel<T>(UnityAction<T> callBack = null) where T : BasePanel
+        public void ShowPanel<T>(UnityAction<T> callBack = null) where T : BasePanel
         {
             UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
             // 检查当前类是否包含特性
@@ -197,39 +197,44 @@ namespace UPandaGF
                 //避免面板重复加载 如果存在该面板 即直接显示 调用回调函数后  直接return 不再处理后面的异步加载逻辑
                 return;
             }
-
-
-            GameObject uiObj = await loadUIObj(uiLoadInfo.loadPath, uiLoadInfo.loadMethod);
-            if (uiObj != null)
+            else
             {
-                //把UI面板作为 Canvas的子对象
-                //设置它的相对位置
-                //找到父对象 底显示在对应的层
-                Transform father = this.bot;
-                switch (uiLoadInfo.ui_Layer)
+                loadUIObj(uiLoadInfo.loadPath, (perfab) =>
                 {
-                    case E_UI_Layer.Mid:
-                        father = this.mid;
-                        break;
-                    case E_UI_Layer.Top:
-                        father = this.top;
-                        break;
-                    case E_UI_Layer.System:
-                        father = this.system;
-                        break;
-                }
-                //设置父对象  设置相对位置和大小
-                uiObj.transform.SetParent(father);
-                uiObj.transform.localPosition = Vector3.zero;
-                uiObj.transform.localScale = Vector3.one;
-                (uiObj.transform as RectTransform).offsetMax = Vector2.zero;
-                (uiObj.transform as RectTransform).offsetMin = Vector2.zero;
-                //得到预设体身上的面板脚本
-                T panel = uiObj.GetComponent<T>();
-                callBack?.Invoke(panel);
 
-                panel.OnOpen();
-                panelDic.Add(uiLoadInfo.loadPath, panel);
+                    if (perfab != null)
+                    {
+                        GameObject uiObj = Instantiate(perfab);
+                        //把UI面板作为 Canvas的子对象
+                        //设置它的相对位置
+                        //找到父对象 底显示在对应的层
+                        Transform father = this.bot;
+                        switch (uiLoadInfo.ui_Layer)
+                        {
+                            case E_UI_Layer.Mid:
+                                father = this.mid;
+                                break;
+                            case E_UI_Layer.Top:
+                                father = this.top;
+                                break;
+                            case E_UI_Layer.System:
+                                father = this.system;
+                                break;
+                        }
+                        //设置父对象  设置相对位置和大小
+                        uiObj.transform.SetParent(father);
+                        uiObj.transform.localPosition = Vector3.zero;
+                        uiObj.transform.localRotation = Quaternion.identity;
+                        uiObj.transform.localScale = Vector3.one;
+                        (uiObj.transform as RectTransform).offsetMax = Vector2.zero;
+                        (uiObj.transform as RectTransform).offsetMin = Vector2.zero;
+                        //得到预设体身上的面板脚本
+                        T panel = uiObj.GetComponent<T>();
+                        callBack?.Invoke(panel);
+                        panel.OnOpen();
+                        panelDic.Add(uiLoadInfo.loadPath, panel);
+                    }
+                }, uiLoadInfo.loadMethod);
             }
         }
 
@@ -249,36 +254,39 @@ namespace UPandaGF
                 //避免面板重复加载 如果存在该面板 即直接显示 调用回调函数后  直接return 不再处理后面的异步加载逻辑
                 return panelDic[uiLoadInfo.loadPath] as T;
             }
-
-            GameObject uiObj = await loadUIObj(uiLoadInfo.loadPath, uiLoadInfo.loadMethod);
-            if (uiObj != null)
+            else
             {
-                Transform father = this.bot;
-                switch (uiLoadInfo.ui_Layer)
+                GameObject uiObj = await loadUIObj(uiLoadInfo.loadPath, uiLoadInfo.loadMethod);
+                if (uiObj != null)
                 {
-                    case E_UI_Layer.Mid:
-                        father = this.mid;
-                        break;
-                    case E_UI_Layer.Top:
-                        father = this.top;
-                        break;
-                    case E_UI_Layer.System:
-                        father = this.system;
-                        break;
+                    Transform father = this.bot;
+                    switch (uiLoadInfo.ui_Layer)
+                    {
+                        case E_UI_Layer.Mid:
+                            father = this.mid;
+                            break;
+                        case E_UI_Layer.Top:
+                            father = this.top;
+                            break;
+                        case E_UI_Layer.System:
+                            father = this.system;
+                            break;
+                    }
+                    //设置父对象  设置相对位置和大小
+                    uiObj.transform.SetParent(father);
+                    uiObj.transform.localPosition = Vector3.zero;
+                    uiObj.transform.localRotation = Quaternion.identity;
+                    uiObj.transform.localScale = Vector3.one;
+                    (uiObj.transform as RectTransform).offsetMax = Vector2.zero;
+                    (uiObj.transform as RectTransform).offsetMin = Vector2.zero;
+                    //得到预设体身上的面板脚本
+                    T panel = uiObj.GetOrAddComponent<T>();
+                    panel.OnOpen();
+                    panelDic.Add(uiLoadInfo.loadPath, panel);
+                    return panel;
                 }
-                //设置父对象  设置相对位置和大小
-                uiObj.transform.SetParent(father);
-                uiObj.transform.localPosition = Vector3.zero;
-                uiObj.transform.localScale = Vector3.one;
-                (uiObj.transform as RectTransform).offsetMax = Vector2.zero;
-                (uiObj.transform as RectTransform).offsetMin = Vector2.zero;
-                //得到预设体身上的面板脚本
-                T panel = uiObj.GetOrAddComponent<T>();
-                panel.OnOpen();
-                panelDic.Add(uiLoadInfo.loadPath, panel);
-                return panel;
+                return null;
             }
-            return null;
         }
 
         private async Task<GameObject> loadUIObj(string loadPath, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
@@ -309,6 +317,20 @@ namespace UPandaGF
                 return null;
             }
             return Instantiate(uiObj);
+        }
+
+        private void loadUIObj(string loadPath, UnityAction<GameObject> callback, AssetLoadMethod loadMethod)
+        {
+            switch (loadMethod)
+            {
+                case AssetLoadMethod.Resources:
+                    ResourcesLoader.Instance.LoadAsync(loadPath, callback);
+                    break;
+                case AssetLoadMethod.AssetBundle:
+                    if (assetsLoader == null) PLogger.LogError("assetsLoader is NULL");
+                    else assetsLoader.LoadAsync(loadPath, callback);
+                    break;
+            }
         }
 
 

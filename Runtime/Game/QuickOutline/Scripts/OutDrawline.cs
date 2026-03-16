@@ -73,8 +73,9 @@ public class OutDrawline : MonoBehaviour
 
     [Header("Optional")]
 
-    [SerializeField, Tooltip("Precompute enabled: Per-vertex calculations are performed in the editor and serialized with the object. "
-    + "Precompute disabled: Per-vertex calculations are performed at runtime in Awake(). This may cause a pause for large meshes.")]
+    //[SerializeField, Tooltip("Precompute enabled: Per-vertex calculations are performed in the editor and serialized with the object."
+    //+ "Precompute disabled: Per-vertex calculations are performed at runtime in Awake(). This may cause a pause for large meshes.")] 
+    [SerializeField, Tooltip("预计算启用：在编辑器中执行逐顶点计算，并与对象序列化。预计算禁用：在运行时在Awake()中执行逐顶点计算。对于大型网格，这可能会导致暂停。")]
     private bool precomputeOutline;
 
     [SerializeField, HideInInspector]
@@ -102,10 +103,10 @@ public class OutDrawline : MonoBehaviour
         outlineMaskMaterial.name = "OutlineMask (Instance)";
         outlineFillMaterial.name = "OutlineFill (Instance)";
 
-        // Retrieve or generate smooth normals
+        // Retrieve or generate smooth normals 检索或生成平滑法线
         LoadSmoothNormals();
         outlineWidth = 4f;
-        // Apply material properties immediately
+        // Apply material properties immediately 立即应用材质属性
         needsUpdate = true;
     }
 

@@ -31,7 +31,7 @@ namespace AssetBundleBrowser
         public AssetBundleBrowserMain _mainBrower;
         [SerializeField]
         private bool assetSettings;
-        private string configName = "AssetBundleClassificationWindowConfig";
+        private string configName = "AssetBundleBuildConfig";
         private AssetBundleClassificationWindowConfig config;
         /// <summary>
         /// keyÊÇ°üÃû

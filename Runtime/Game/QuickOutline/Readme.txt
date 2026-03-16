@@ -1,3 +1,23 @@
+快速轮廓
+由 Chris Nolet 开发 (c) 2018
+使用说明
+要为对象添加轮廓，请将 Outline.cs 脚本拖放到该对象上。轮廓材质将在运行时加载。
+也可以通过编程方式添加轮廓：
+```C#
+var outline = gameObject.AddComponent<Outline>();
+
+outline.OutlineMode = Outline.Mode.OutlineAll;
+outline.OutlineColor = Color.yellow;
+outline.OutlineWidth = 5f;
+
+```
+轮廓脚本在 Awake() 中执行少量工作。为获得最佳效果，请使用 outline.enabled 来切换轮廓显示。尽量避免移除并重新添加该组件。
+对于大型网格，您可能还希望在编辑器中启用"预计算轮廓"选项。这将减少在 Awake() 中执行的工作量。
+故障排除
+如果轮廓显示偏离中心，请尝试以下操作：
+在每个模型的导入设置中启用"读/写启用"。
+在播放器设置中禁用"优化网格数据"。
+
 Quick Outline
 =============
 

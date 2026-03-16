@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -27,6 +24,15 @@ public static class GetComponentExtend
         T t = obj.GetComponent<T>();
         if (t == null) t = obj.gameObject.AddComponent<T>();
         return t;
+    }
+
+    public static void DestoryChildren(this Transform obj)
+    {
+        if (obj.childCount == 0) return;
+        for (int i = obj.childCount - 1; i >= 0; i--)
+        {
+            GameObject.Destroy(obj.GetChild(i).gameObject);
+        }
     }
 
     /// <summary>
