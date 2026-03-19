@@ -24,7 +24,7 @@ public class SimpleLoadUI : BasePanel
 
     }
 
-    public override void OnOpen()
+    public override void OnOpen(object panelArg)
     {
         PLogger.Log("SimpleLoadUI Open");
         progressSlider = GetControl<Slider>("ProgressSlider");
@@ -33,7 +33,7 @@ public class SimpleLoadUI : BasePanel
         progressSlider.value = 0;
         canvasGroup.alpha = 1f;
     }
-    public override void CloseUI()
+    public override void OnClose()
     {
         PLogger.Log("SimpleLoadUI Close");
         SetSlieder(1, true);

@@ -176,7 +176,7 @@ namespace UPandaGF
         /// 显示面板的方法
         /// </summary>
         /// <param name="callBack">UI面板显示后的回调</param>
-        public void ShowPanel<T>(UnityAction<T> callBack = null) where T : BasePanel
+        public void ShowPanel<T>(object panelArg = null, UnityAction<T> callBack = null) where T : BasePanel
         {
             UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
             // 检查当前类是否包含特性
@@ -188,7 +188,7 @@ namespace UPandaGF
             }
             if (panelDic.ContainsKey(uiLoadInfo.loadPath))
             {
-                panelDic[uiLoadInfo.loadPath].OnOpen();
+                panelDic[uiLoadInfo.loadPath].OnOpen(panelArg);
                 // 处理面板创建完成后的逻辑
                 if (callBack != null)
                 {
@@ -231,14 +231,14 @@ namespace UPandaGF
                         //得到预设体身上的面板脚本
                         T panel = uiObj.GetComponent<T>();
                         callBack?.Invoke(panel);
-                        panel.OnOpen();
+                        panel.OnOpen(panelArg);
                         panelDic.Add(uiLoadInfo.loadPath, panel);
                     }
                 }, uiLoadInfo.loadMethod);
             }
         }
 
-        public async Task<T> ShowPanelAsync<T>() where T : BasePanel
+        public async Task<T> ShowPanelAsync<T>(object panelArg = null) where T : BasePanel
         {
             UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
             // 检查当前类是否包含特性
@@ -250,7 +250,7 @@ namespace UPandaGF
 
             if (panelDic.ContainsKey(uiLoadInfo.loadPath))
             {
-                panelDic[uiLoadInfo.loadPath].OnOpen();
+                panelDic[uiLoadInfo.loadPath].OnOpen(panelArg);
                 //避免面板重复加载 如果存在该面板 即直接显示 调用回调函数后  直接return 不再处理后面的异步加载逻辑
                 return panelDic[uiLoadInfo.loadPath] as T;
             }
@@ -281,7 +281,7 @@ namespace UPandaGF
                     (uiObj.transform as RectTransform).offsetMin = Vector2.zero;
                     //得到预设体身上的面板脚本
                     T panel = uiObj.GetOrAddComponent<T>();
-                    panel.OnOpen();
+                    panel.OnOpen(panelArg);
                     panelDic.Add(uiLoadInfo.loadPath, panel);
                     return panel;
                 }
@@ -351,7 +351,7 @@ namespace UPandaGF
             }
             if (panelDic.ContainsKey(uiLoadInfo.loadPath))
             {
-                panelDic[uiLoadInfo.loadPath].CloseUI();
+                panelDic[uiLoadInfo.loadPath].OnClose();
                 GameObject.Destroy(panelDic[uiLoadInfo.loadPath].gameObject);
                 panelDic.Remove(uiLoadInfo.loadPath);
             }
@@ -379,15 +379,10 @@ namespace UPandaGF
         /// <param name="callBack">事件的响应函数</param>
         public static void AddCustomEventListener(UIBehaviour control, EventTriggerType type, UnityAction<BaseEventData> callBack)
         {
-            EventTrigger trigger = control.GetComponent<EventTrigger>();
-            if (trigger != null)
-            {
-                trigger = control.gameObject.AddComponent<EventTrigger>();
-            }
+            EventTrigger trigger = control.gameObject.GetOrAddComponent<EventTrigger>();
             EventTrigger.Entry entry = new EventTrigger.Entry();
             entry.eventID = type;
             entry.callback.AddListener(callBack);
-
             trigger.triggers.Add(entry);
         }
     }
