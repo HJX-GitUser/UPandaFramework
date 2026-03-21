@@ -259,6 +259,7 @@ GameObject:
   - component: {fileID: 8628245482326491157}
   - component: {fileID: 8628245482326491156}
   - component: {fileID: 2763076448598258102}
+  - component: {fileID: 1949037967545399295}
   m_Layer: 5
   m_Name: SimpleLoadUI
   m_TagString: Untagged
@@ -338,6 +339,21 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &1949037967545399295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8628245482326491154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0afb72b95f976ea40adc70061627d842, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  desiredUIComparison: 8
+  uiGraphicsToApplyTo: []
+  uiTextsToApplyTo: []
 --- !u!1 &8628245482796741331
 GameObject:
   m_ObjectHideFlags: 0

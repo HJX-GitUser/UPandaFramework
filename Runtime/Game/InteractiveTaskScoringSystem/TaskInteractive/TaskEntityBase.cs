@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
@@ -128,6 +129,14 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public abstract void Skip();
 
         #endregion
+
+        public bool IsPointerOverUI()
+        {
+            // EventSystem.current.IsPointerOverGameObject() 是 Unity 内置方法
+            // 注意：这个方法在触摸屏上可能有一些特殊情况
+            return EventSystem.current != null &&
+                   EventSystem.current.IsPointerOverGameObject();
+        }
     }
 }
 

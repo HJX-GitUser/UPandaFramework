@@ -55,7 +55,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             operationGroup = GetComponentInChildren<OperationGroupBase>();
             if (operationGroup == null)
             {
-                Debug.LogError($"{taskStepData.stepID} ");
+                Debug.LogWarning($"{taskStepData.stepID} ");
                 return;
             }
             operationGroup.Init(Submit);

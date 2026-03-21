@@ -32,6 +32,8 @@ public class SimpleLoadUI : BasePanel
         textL.text = "";
         progressSlider.value = 0;
         canvasGroup.alpha = 1f;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
     }
     public override void OnClose()
     {
@@ -70,6 +72,8 @@ public class SimpleLoadUI : BasePanel
         if (closeTag)
         {
             canvasGroup.alpha = 0f;
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
         }
 
     }
