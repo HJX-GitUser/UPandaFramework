@@ -32,15 +32,19 @@ namespace UPandaGF
         /// 资源关联存储文件后缀
         /// </summary>
         private string assetRefextension = ".assetref";
-        public async Task Init(AssetLoaddingMethod arg0, string reomoteURL, string LoadAssetPath, ABSourcesRelated sourceRefArg)
+
+        [HideInInspector]
+        public AssetBundleClassificationWindowConfig AssetAESConfig;
+
+        public async Task Init(AssetLoaddingMethod arg0, string reomoteURL, string LoadAssetPath, ABSourcesRelated sourceRefArgBytes)
         {
             PLogger.Log("AssetsLoader Init");
             method = arg0;
             editorSourcesMgr = EditorSourcesMgr.Instance;
             sceneMgr = SceneMgr.Instance;
-            if(sourceRefArg != null)
+            if (sourceRefArgBytes != null)
             {
-                sourceRef = sourceRefArg;
+                sourceRef = sourceRefArgBytes;
             }
             else
             {
@@ -49,7 +53,7 @@ namespace UPandaGF
                 byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
                 sourceRef = LoadABSourcesRelated(b);
             }
-          
+
 
             if (method == AssetLoaddingMethod.Assetbundles)
             {
@@ -238,12 +242,15 @@ namespace UPandaGF
             }
         }
 
-        private ABSourcesRelated LoadABSourcesRelated(byte[] bytes)
+        public ABSourcesRelated LoadABSourcesRelated(byte[] bytes)
         {
             ABSourcesRelated obj = null;
-            string AESKEY = "111a222aaabbbccc";
-            string AESIV = "111b222aaabbbccc";
-            bytes = AESEncryption.AESDecrypt(bytes, AESKEY, AESIV);
+            if(AssetAESConfig.enable)
+            {
+                string AESKEY = AssetAESConfig.AESKEY;//"111a222aaabbbccc";
+                string AESIV = AssetAESConfig.AESIV;//"111b222aaabbbccc";
+                bytes = AESEncryption.AESDecrypt(bytes, AESKEY, AESIV);
+            }
             using (MemoryStream ms = new MemoryStream(bytes))
             {
                 BinaryFormatter bf = new BinaryFormatter();

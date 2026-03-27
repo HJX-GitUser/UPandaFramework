@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace UPandaGF.GFEditor
         private void OnEnable()
         {
             component = (UPGameRoot)target;
+            component.AssetAESConfig = UPandaGFConfig.LoadJsonConfig<AssetBundleClassificationWindowConfig>("AssetBundleBuildConfig");
         }
         public override void OnInspectorGUI()
         {
@@ -70,9 +72,11 @@ namespace UPandaGF.GFEditor
 
         private void AssetbundlesEditorGUI()
         {
+            if (component.AssetAESConfig.enable)
+            {
+                EditorGUILayout.HelpBox($"AES加密配置：\nkey:{component.AssetAESConfig.AESKEY}\niv:{component.AssetAESConfig.AESIV}", MessageType.Info);
+            }
             ShowArg("enableAssetUpdate", "启动资源更新");
-            if (component.enableAssetUpdate)
-                ShowArg("assetUpdataConfig", "资源更新配置");
             EditorGUILayout.Space();
             EditorGUILayout.Space();
             ShowArg("reomoteURL", "远程加载URL");

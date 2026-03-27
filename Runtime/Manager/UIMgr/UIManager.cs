@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -190,10 +191,7 @@ namespace UPandaGF
             {
                 panelDic[uiLoadInfo.loadPath].OnOpen(panelArg);
                 // 处理面板创建完成后的逻辑
-                if (callBack != null)
-                {
-                    callBack?.Invoke(panelDic[uiLoadInfo.loadPath] as T);
-                }
+                callBack?.Invoke(panelDic[uiLoadInfo.loadPath] as T);
                 //避免面板重复加载 如果存在该面板 即直接显示 调用回调函数后  直接return 不再处理后面的异步加载逻辑
                 return;
             }
@@ -230,9 +228,9 @@ namespace UPandaGF
                         (uiObj.transform as RectTransform).offsetMin = Vector2.zero;
                         //得到预设体身上的面板脚本
                         T panel = uiObj.GetComponent<T>();
-                        callBack?.Invoke(panel);
                         panel.OnOpen(panelArg);
                         panelDic.Add(uiLoadInfo.loadPath, panel);
+                        callBack?.Invoke(panel);
                     }
                 }, uiLoadInfo.loadMethod);
             }
@@ -337,7 +335,7 @@ namespace UPandaGF
         /// <summary>
         /// 隐藏面板
         /// 会直接把UI对象给杀掉
-        /// 如果不想的话可以用GetPanel得到面板后直接调用该面板的HideMe方法
+        /// 如果不想的话可以用GetPanel得到面板后直接调用该面板的OnClose方法
         /// </summary>
         /// <param name="panelName"></param>
         public void ClosePanel<T>() where T : BasePanel
@@ -346,8 +344,7 @@ namespace UPandaGF
             // 检查当前类是否包含特性
             if (uiLoadInfo == null)
             {
-                Debug.LogError($"继承自BasePanel的类:({typeof(T).Name})必须标记UILoadInfo特性！！！");
-                return;
+                throw new ArgumentException($"继承自BasePanel的类:({typeof(T).Name})必须标记UILoadInfo特性！！！");
             }
             if (panelDic.ContainsKey(uiLoadInfo.loadPath))
             {

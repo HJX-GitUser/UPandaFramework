@@ -15,14 +15,6 @@ using log4net;
 
 namespace AssetBundleBrowser
 {
-
-    [Serializable]
-    public class AssetBundleClassificationWindowConfig
-    {
-        public string AESKEY = "111a222aaabbbccc";
-        public string AESIV = "111b222aaabbbccc";
-        public ABLoadPath mainBundleLoadPath = ABLoadPath.StreamingAssetsPath;
-    }
     /// <summary>
     /// AssetBundle分类窗口
     /// </summary>
@@ -140,16 +132,18 @@ namespace AssetBundleBrowser
             {
                 DrawBuildProgress();
             }
-            assetSettings = EditorGUILayout.Foldout(assetSettings, "资源设置");
+            assetSettings = EditorGUILayout.Foldout(assetSettings, "加密设置");
             if (assetSettings)
             {
                 EditorGUILayout.LabelField("存储位置", assetRefSavePath);
                 EditorGUILayout.LabelField("文件名", assetRefName);
                 EditorGUILayout.LabelField("文件后缀", assetRefextension);
                 GUILayout.Space(1);
-                EditorGUILayout.LabelField("ASE加密设置:");
+                EditorGUILayout.LabelField("AES配置:");
+                config.enable = EditorGUILayout.BeginToggleGroup("使用加密", config.enable);
                 config.AESKEY = EditorGUILayout.TextField("Key", config.AESKEY);
                 config.AESIV = EditorGUILayout.TextField("IV", config.AESIV);
+                EditorGUILayout.EndToggleGroup();
                 GUILayout.Space(5);
             }
             DrawMainBundlAsset();
@@ -317,7 +311,7 @@ namespace AssetBundleBrowser
         {
             // 获取所有的资源路径
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
-            Debug.Log($"项目中共有 {allAssetPaths.Length} 个资源路径");
+            Debug.Log($"项目中共有 {allAssetPaths.Length} 个资源");
             ABSourcesRelated aBSourcesRef = new ABSourcesRelated();
             //主包的数据：
             aBSourcesRef.mainBundleInfo = new AssetBundleLoadInfo()
@@ -386,7 +380,8 @@ namespace AssetBundleBrowser
                 //ToDo:..在这里可以做一些加密的工作
                 //string AESKEY = "111a222aaabbbccc";
                 //string AESIV = "111b222aaabbbccc";
-                bytes = AESEncryption.AESEncrypt(bytes, config.AESKEY, config.AESIV);
+                if (config.enable)
+                    bytes = AESEncryption.AESEncrypt(bytes, config.AESKEY, config.AESIV);
 
                 File.WriteAllBytes(SAVE_PATH + assetRefName + assetRefextension, bytes);
                 ms.Close();
@@ -470,8 +465,8 @@ namespace AssetBundleBrowser
         private ABSourcesRelated LoadABSourcesRelated(byte[] bytes)
         {
             ABSourcesRelated obj = null;
-
-            bytes = AESEncryption.AESDecrypt(bytes, config.AESKEY, config.AESIV);
+            if (config.enable)
+                bytes = AESEncryption.AESDecrypt(bytes, config.AESKEY, config.AESIV);
             using (MemoryStream ms = new MemoryStream(bytes))
             {
                 BinaryFormatter bf = new BinaryFormatter();

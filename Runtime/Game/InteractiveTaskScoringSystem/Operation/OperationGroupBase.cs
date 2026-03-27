@@ -92,7 +92,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             foreach (var item in ChildStep)
             {
-                item.OperationSkip();
+                if (item.GetOperationPhase != OperationPhase.Complete)
+                    item.OperationSkip();
             }
         }
     }

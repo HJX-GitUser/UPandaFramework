@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -66,5 +67,22 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
     {
         lateUpdateEvent -= fun;
     }
-   
+
+    /// <summary>
+    /// 启动协程，并返回一个可等待的 Task
+    /// </summary>
+    /// <param name="coroutine"></param>
+    /// <returns></returns>
+    public Task RunCoroutine(IEnumerator coroutine)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        StartCoroutine(RunCoroutineInternal(coroutine, tcs));
+        return tcs.Task;
+    }
+    private IEnumerator RunCoroutineInternal(IEnumerator coroutine, TaskCompletionSource<bool> tcs)
+    {
+        yield return coroutine;
+        tcs.SetResult(true);
+    }
+
 }
