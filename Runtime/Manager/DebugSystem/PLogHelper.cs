@@ -41,10 +41,6 @@ namespace UPandaGF
                 Directory.CreateDirectory(savePath);
             }
             string logFilePath = Path.Combine(savePath, logfineName);
-#if UNITY_EDITOR
-            Debug.Log("编辑器模式下日志输出路径位于项目路径下");
-#endif
-            Debug.Log("日志输出路径:" + logFilePath);
             mStreamWriter = new StreamWriter(logFilePath);
             Application.logMessageReceivedThreaded += OnLogMessageReceivedThreaded;
             mThreadRuning = true;

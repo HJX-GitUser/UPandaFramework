@@ -20,13 +20,15 @@ namespace UPandaGF
         public bool openTime = true;
         [Header("显示线程id")]
         public bool showThreadID = true;
-        [Header("日志文件储存开关")]
+        [Header("日志储存到本地")]
         public bool logSave = false;
+        [Header("日志储存覆盖")]
+        public bool saveOverwrite = false;
         [Header("文件储存路径")]
         public string logFileSavePath = "Output Log/";
-       
+
         public string LogFileSavePath { get { return Application.persistentDataPath + "/" + logFileSavePath; } }
-        public string LogFileName { get { return Application.productName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm") + ".log"; } }
+        public string LogFileName { get { return saveOverwrite ? Application.productName + ".log" : Application.productName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm") + ".log"; } }
 
         public LogConfig() { }
         public LogConfig(LogConfig arg)
@@ -37,6 +39,7 @@ namespace UPandaGF
             openTime = arg.openTime;
             showThreadID = arg.showThreadID;
             logSave = arg.logSave;
+            saveOverwrite = arg.saveOverwrite;
             logFileSavePath = arg.logFileSavePath;
         }
 
@@ -44,9 +47,9 @@ namespace UPandaGF
         {
             if (!(other is LogConfig config)) return false;
 
-            return (openLog, addHeadFix, logHeadFix, openTime, showThreadID, logSave, logFileSavePath)
+            return (openLog, addHeadFix, logHeadFix, openTime, showThreadID, logSave, saveOverwrite, logFileSavePath)
                 .Equals((other.openLog, other.addHeadFix, other.logHeadFix, other.openTime,
-                        other.showThreadID, other.logSave, other.logFileSavePath));
+                        other.showThreadID, other.logSave, other.saveOverwrite, other.logFileSavePath));
         }
 
 

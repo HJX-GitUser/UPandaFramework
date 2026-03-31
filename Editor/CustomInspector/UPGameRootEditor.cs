@@ -55,6 +55,16 @@ namespace UPandaGF.GFEditor
                     }
                 }
             }
+#else
+            if (component.EnableDebugModel)
+            {
+                if (component.reporter != null)
+                {
+                    DestroyImmediate(component.reporter.gameObject);
+                    component.reporter = null;
+                    Debug.Log("reporterÌÞ³ý");
+                }
+            }
 #endif
             serializedObject.ApplyModifiedProperties();
         }

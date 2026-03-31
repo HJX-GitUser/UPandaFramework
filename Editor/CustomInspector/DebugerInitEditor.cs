@@ -75,7 +75,7 @@ public class DebugerInitEditor : Editor
             Directory.CreateDirectory(savePath);
         }
         File.WriteAllText(component.GetConfigDateFullPath, data);
-        Debug.Log("日志配置已保存：" + savePath);
+        Debug.Log($"日志配置已保存：{savePath}\n{data}");
         AssetDatabase.Refresh();
     }
 
