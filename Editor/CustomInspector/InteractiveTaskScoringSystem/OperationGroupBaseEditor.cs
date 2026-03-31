@@ -27,8 +27,6 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                     int _count = component.transform.childCount;
                     GameObject obj = CreatNode($"OperationCheck({_count})");
                     OperationCheckBase oc = obj.AddComponent<OperationCheckBase>();
-                    oc.stepData = new OperatingStepData();
-                    oc.stepData.id = _count;
                 }
                 if (GUILayout.Button("Add 操作检查组（串联）"))
                 {

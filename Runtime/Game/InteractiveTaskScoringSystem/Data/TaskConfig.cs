@@ -20,6 +20,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     }
 
     [CreateAssetMenu(fileName = "TaskConfig", menuName = "UPandaGF/InteractiveTaskScoringSystem/»ŒŒÒ≈‰÷√")]
+    [System.Serializable]
     public class TaskConfig : ScriptableObject
     {
         public TaskStepData[] stepsConfig;

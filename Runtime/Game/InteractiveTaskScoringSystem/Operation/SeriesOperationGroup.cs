@@ -13,6 +13,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// </summary>
         private int currentIndex;
 
+
         public override void OperationCheck(TaskEntityBase arg, TaskStepBase taskStep)
         {
             if (OperationCount == 0)

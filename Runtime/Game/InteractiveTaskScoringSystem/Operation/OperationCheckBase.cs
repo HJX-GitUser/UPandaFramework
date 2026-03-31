@@ -53,15 +53,18 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     /// <summary>
     /// 操作步骤，判断操作是否正确
     /// </summary>
-    public class OperationCheckBase : MonoBehaviour, OperationStepCheck
+    public class OperationCheckBase : MonoBehaviour, OperationStepCheck,GetUniTaskID
     {
+        public string OperatingStepID;
         public OperationPhase operationPhase = OperationPhase.Prepare;
         private TaskEntityManager entityManager;
-        public OperatingStepData stepData;
+        // public OperatingStepData stepData;
 
         public TaskEntityBase TargetEntity;
         EntityOperationCheck OpCheck;
         public OperationPhase GetOperationPhase => operationPhase;
+
+        public string GetID => OperatingStepID;
 
         public bool AutoExecute = false;
 
@@ -71,11 +74,19 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             entityManager = TaskEntityManager.Instance;
         }
 
+        private void Reset()
+        {
+            GetUniTaskID Tid = transform.parent.GetComponent<GetUniTaskID>();
+            if (Tid != null)
+                OperatingStepID = Tid.GetID + "-" + transform.GetSiblingIndex();
+            else OperatingStepID = null;
+        }
+
         public void Start()
         {
             if (TargetEntity == null)
             {
-                TargetEntity = entityManager.FindEntity(stepData.correctTargetId);
+                TargetEntity = entityManager.FindEntity(OperatingStepID);
                 if (TargetEntity == null)
                 {
                     Debug.LogError($"{transform.parent.parent.name} : {transform.name} : 实体ID获取失败！");
@@ -93,7 +104,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public virtual void OperationEnable()
         {
             operationPhase = OperationPhase.TargetCheck;
-            if (stepData.correctTargetId == 0 || AutoExecute)  // 目标检查阶段自动通过 直接完成
+            if (string.IsNullOrEmpty(OperatingStepID) || AutoExecute)  // 目标检查阶段自动通过 直接完成
             {
                 TargetEntity.OnSelect();
             }

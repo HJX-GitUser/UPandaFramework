@@ -4,27 +4,46 @@ using UnityEditor;
 using UnityEngine;
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
-    [CustomEditor(typeof(OperationCheckBase))]
+    [CustomEditor(typeof(OperationCheckBase), true)]
     public class OperationCheckBaseEditor : Editor
     {
-        OperationCheckBase component;
+        private OperationCheckBase component;
         private void OnEnable()
         {
-            if (component == null) component = target as OperationCheckBase;
+            component = (OperationCheckBase)target;
         }
-
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            if (component.stepData.correctTargetId != 0 && component.TargetEntity == null)
+            if (!string.IsNullOrEmpty(component.OperatingStepID) && component.TargetEntity == null)
             {
-                if (GUILayout.Button("查找"))
+                if (GUILayout.Button("查找对应实体"))
                 {
-                    component.TargetEntity = OperationCheckEntityTool.GetEntity(component.stepData.correctTargetId);
+                    TaskEntityBase[] args = FindObjectsByType<TaskEntityBase>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                    bool findSuccess = false;
+                    foreach (TaskEntityBase arg in args)
+                    {
+                        if (arg.StepIDGroup != null && arg.StepIDGroup.Length > 0)
+                        {
+                            foreach (var item in arg.StepIDGroup)
+                            {
+                                if (item == component.GetID)
+                                {
+                                    findSuccess = true;
+                                    component.TargetEntity = arg;
+                                    //Selection.activeGameObject = arg.gameObject;
+                                    //EditorGUIUtility.PingObject(arg.gameObject);
+                                    break;
+                                }
+                            }
+                            if (findSuccess) break;
+                        }
+                    }
+                    if (!findSuccess) Debug.LogWarning($"{component.GetID} 查找失败");
                 }
             }
         }
     }
-}
 
+}
 

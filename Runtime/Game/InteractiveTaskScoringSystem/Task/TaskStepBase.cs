@@ -26,11 +26,16 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         TaskStepData GetData { get; }
     }
 
+    public interface GetUniTaskID
+    {
+        string GetID { get; }
+    }
+
 
     /// <summary>
     /// 任务步骤
     /// </summary>
-    public class TaskStepBase : MonoBehaviour, ITask
+    public class TaskStepBase : MonoBehaviour, ITask, GetUniTaskID
     {
         private TaskDataManager taskDataManager;
         public TaskStepData taskStepData;
@@ -42,11 +47,13 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// <summary>
         /// 要激活的实体
         /// </summary>
-        public int[] EnableEntity;
+        public string[] EnableEntity;
         private List<TaskEntityBase> entitys;
         public OperationGroupBase operationGroup;
 
         public TaskStepData GetData => taskStepData;
+
+        public string GetID => taskStepData.stepID;
 
         public virtual void Init(TaskDataManager arg)
         {
@@ -60,7 +67,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             }
             operationGroup.Init(Submit);
             entitys = new List<TaskEntityBase>();
-            foreach (int item in EnableEntity)
+            foreach (string item in EnableEntity)
             {
                 TaskEntityBase taskEntity = TaskEntityManager.Instance.FindEntity(item);
                 if (taskEntity != null) entitys.Add(taskEntity);
@@ -152,6 +159,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             taskStepData.isSkip = true;
             Submit();
         }
+
+
     }
 }
 

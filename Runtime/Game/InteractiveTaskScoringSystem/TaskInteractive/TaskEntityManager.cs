@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DG.DemiEditor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,23 +14,28 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     /// </summary>
     public class TaskEntityManager : LazySingletonBase<TaskEntityManager>
     {
-        private Dictionary<int, TaskEntityBase> entityDic = new Dictionary<int, TaskEntityBase>();
+        private Dictionary<string, TaskEntityBase> entityDic = new Dictionary<string, TaskEntityBase>();
         public void Register(TaskEntityBase arg)
         {
-            if (!entityDic.ContainsKey(arg.Id))
+            if (arg.StepIDGroup.Length == 0) return;
+            foreach (var item in arg.StepIDGroup)
             {
-                entityDic.Add(arg.Id, arg);
+                if (!entityDic.ContainsKey(item))
+                {
+                    entityDic.Add(item, arg);
+                }
+                else
+                {
+                    PLogger.LogError($"{arg.StepIDGroup}重复注册！注册对象：{arg.transform.parent.name}/{arg.transform.name}\n已注册对象：{entityDic[item].transform.parent.name}/{entityDic[item].transform.name}");
+                }
             }
-            else
-            {
-                PLogger.LogError($"{arg.Id}重复注册！注册对象：{arg.transform.parent.name}/{arg.transform.name}\n已注册对象：{entityDic[arg.Id].transform.parent.name}/{entityDic[arg.Id].transform.name}");
-            }
+            
         }
 
-        public TaskEntityBase FindEntity(int id)
+        public TaskEntityBase FindEntity(string id)
         {
             TaskEntityBase arg = entityDic.ContainsKey(id) ? entityDic[id] : null;
-            if (arg == null && id != 0) Debug.LogError($"id{id} 查找失败！");
+            if (arg == null) Debug.LogError($"id{id} 查找失败！");
             return arg;
         }
 

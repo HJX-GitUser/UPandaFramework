@@ -9,8 +9,9 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     /// <summary>
     /// 操作监听组
     /// </summary>
-    public abstract class OperationGroupBase : MonoBehaviour, OperationStepCheck
+    public abstract class OperationGroupBase : MonoBehaviour, OperationStepCheck, GetUniTaskID
     {
+        public string OperatingStepID;
         /// <summary>
         /// 任务状态
         /// </summary>
@@ -26,11 +27,20 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         public OperationPhase GetOperationPhase => operationPhase;
 
+        public string GetID => OperatingStepID;
+
         /// <summary>
         /// 操作完成事件
         /// </summary>
         public UnityAction OperationComplete;
 
+        private void Reset()
+        {
+            GetUniTaskID Tid = transform.parent.GetComponent<GetUniTaskID>();
+            if (Tid != null)
+                OperatingStepID = Tid.GetID + "-" + transform.GetSiblingIndex();
+            else OperatingStepID = null;
+        }
 
         /// <summary>
         /// 操作组初始化

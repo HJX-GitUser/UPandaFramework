@@ -1,3 +1,4 @@
+using DG.Tweening.Plugins.Core.PathCore;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -64,6 +65,36 @@ namespace UPandaGF
             }
             GameObject obj2 = new GameObject("OnLoadCompleteExample");
             obj2.AddComponent<GameLaunchExample>();
+        }
+
+
+        [MenuItem("UPandaGF/Tools/Clean Missing Scripts in Prefab")]
+        static void CleanMissingScripts()
+        {
+            Transform select = Selection.activeTransform;
+            if(select == null)
+            {
+                Debug.Log("需要选中一个预制体");
+                return;
+            }
+            try
+            {
+                ProcessPrefab(select);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"处理失败 错误信息: {e.Message}");
+            }
+            AssetDatabase.SaveAssets();
+            Debug.Log("清理完成！");
+        }
+
+        private static void ProcessPrefab(Transform parent)
+        {
+            foreach (Transform child in parent.GetComponentsInChildren<Transform>())
+            {
+                GameObjectUtility.RemoveMonoBehavioursWithMissingScript(child.gameObject);
+            }
         }
     }
 }
