@@ -77,6 +77,16 @@ public class SceneMgr : LazySingletonBase<SceneMgr>
     {
         return SceneManager.GetActiveScene().name;
     }
+
+    public AsyncOperation UnloadSceneAsync(string sceneName)
+    {
+        return SceneManager.UnloadSceneAsync(sceneName);
+    }
+
+    public AsyncOperation UnloadSceneAsync(int sceneIndex)
+    {
+        return SceneManager.UnloadSceneAsync(sceneIndex);
+    }
 }
 
 /// <summary>

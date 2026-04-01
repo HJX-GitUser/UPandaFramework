@@ -47,7 +47,6 @@ public class GameLaunchExample : MonoBehaviour
         uiManager = UIManager.Instance;
         simpleLoadUI = await uiManager.ShowPanelAsync<SimpleLoadUI>();
         simpleLoadUI.SetMessage(0.4f, "程序加载中...");
-        await Task.Delay(1000);
         simpleLoadUI.SetMessage(1f, "AOT程序加载完成");
         UPGameRoot gr = UPGameRoot.Instance;
 
@@ -69,10 +68,8 @@ public class GameLaunchExample : MonoBehaviour
                 simpleLoadUI.SetMessage(1, "程序热更完成");
             else
                 simpleLoadUI.SetMessage(1, "程序热更失败！！！");
-            await Task.Delay(1000);
             simpleLoadUI.SetMessage(0.5f, "泛型注册...");
             onAssemblyLoaded?.Invoke();
-            await Task.Delay(1000);
             simpleLoadUI.SetMessage(1, "泛型注册完成");
         }
         simpleLoadUI.SetMessage(0f, "开始获取场景资源");
@@ -82,11 +79,10 @@ public class GameLaunchExample : MonoBehaviour
         {
             EventCenter.Instance.RemoveEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
         },
-        async () =>
+        () =>
         {
             PLogger.Log("<color=blue>进入场景</color>");
             simpleLoadUI.SetMessage(1, "场景加载完成");
-            await Task.Delay(1000);
             uiManager.ClosePanel<SimpleLoadUI>();//SimpleLoadUI.CloseUI;
         });
     }
