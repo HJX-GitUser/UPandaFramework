@@ -51,7 +51,7 @@ public abstract class LazyMonoSingletonBase<T> : MonoBehaviour where T : MonoBeh
         }
     }
 
-    protected virtual void Awake()
+    private void Awake()
     {
         if (_instance == null)
         {

@@ -1,2 +1,2 @@
-# 忽略所有.meta的文件
-*.meta
+# 忽略Unity项目中的所有.meta文件
+**/*.meta

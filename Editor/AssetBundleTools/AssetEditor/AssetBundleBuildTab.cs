@@ -3,9 +3,9 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-
 using AssetBundleBrowser.AssetBundleDataSource;
 using UPandaGF;
+using System;
 
 namespace AssetBundleBrowser
 {
@@ -13,11 +13,12 @@ namespace AssetBundleBrowser
     public class AssetBundleBuildTab
     {
         const string k_BuildPrefPrefix = "ABBBuild:";
-
+        private string outPutPath = "AssetBundles/";
         private string m_streamingPath = "Assets/StreamingAssets";
 
         [SerializeField]
         private bool m_AdvancedSettings;
+       
 
         [SerializeField]
         private Vector2 m_ScrollPosition;
@@ -45,10 +46,13 @@ namespace AssetBundleBrowser
         }
 
         private AssetBundleInspectTab m_InspectTab;
-        private static AssetBundleBrowserMain m_Main;
+        private AssetBundleBrowserMain m_Main;
+
+        private AssetBundleClassificationWindow assetBundleClassification;
 
         [SerializeField]
         private BuildTabData m_UserData;
+        public BuildTabData M_UserData => m_UserData;
 
         List<ToggleData> m_ToggleData;
         ToggleData m_ForceRebuild;
@@ -110,7 +114,6 @@ namespace AssetBundleBrowser
                 if (data != null)
                 {
                     m_UserData = data;
-                    m_Main.m_BuildTabData = m_UserData;
                 }
                 file.Close();
             }
@@ -118,60 +121,67 @@ namespace AssetBundleBrowser
             m_ToggleData = new List<ToggleData>();
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Exclude Type Information",
-                "Do not include type information within the asset bundle (don't write type tree).",
+                "排除类型信息[Exclude Type Information]",
+                "不要在资源包中包含类型信息（不要编写类型树）[Do not include type information within the asset bundle (don't write type tree).]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.DisableWriteTypeTree));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Force Rebuild",
-                "Force rebuild the asset bundles",
+                "强制重建[Force Rebuild]",
+                "强制重新构建资源包[Force rebuild the asset bundles]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.ForceRebuildAssetBundle));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Ignore Type Tree Changes",
-                "Ignore the type tree changes when doing the incremental build check.",
+                "忽略类型树更改[Ignore Type Tree Changes]",
+                "在进行增量构建检查时，忽略类型树的变化[Ignore the type tree changes when doing the incremental build check.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.IgnoreTypeTreeChanges));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Append Hash",
-                "Append the hash to the assetBundle name.",
+                "追加哈希[Append Hash]",
+                "将哈希值附加到assetBundle名称上[Append the hash to the assetBundle name.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.AppendHashToAssetBundleName));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Strict Mode",
-                "Do not allow the build to succeed if any errors are reporting during it.",
+                "严格模式[Strict Mode]",
+                "如果在构建过程中报告了任何错误，则不允许构建成功。[Do not allow the build to succeed if any errors are reporting during it.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.StrictMode));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Dry Run Build",
-                "Do a dry run build.",
+                "试运行构建[Dry Run Build]",
+                "进行一次模拟构建[Do a dry run build.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.DryRunBuild));
 
 
             m_ForceRebuild = new ToggleData(
                 false,
-                "Clear Folders",
-                "Will wipe out all contents of build directory as well as StreamingAssets/AssetBundles if you are choosing to copy build there.",
+                "清理文件夹[Clear Folders]",
+                "如果您选择将构建内容复制到StreamingAssets/AssetBundles，则此操作将清除构建目录以及该目录中所有内容。[Will wipe out all contents of build directory as well as StreamingAssets/AssetBundles if you are choosing to copy build there.]",
                 m_UserData.m_OnToggles);
             m_CopyToStreaming = new ToggleData(
                 false,
-                "Copy to StreamingAssets",
-                "After build completes, will copy all build content to " + m_streamingPath + " for use in stand-alone player.",
+                "[Copy to StreamingAssets]",
+                "[After build completes, will copy all build content to " + m_streamingPath + " for use in stand-alone player.]",
                 m_UserData.m_OnToggles);
 
             m_TargetContent = new GUIContent("Build Target", "Choose target platform to build for.");
-            m_CompressionContent = new GUIContent("Compression", "Choose no compress, standard (LZMA), or chunk based (LZ4)");
+            m_CompressionContent = new GUIContent("压缩[Compression]", "Choose no compress, standard (LZMA), or chunk based (LZ4)");
 
             if (m_UserData.m_UseDefaultPath)
             {
                 ResetPathToDefault();
             }
+            if (assetBundleClassification == null) assetBundleClassification = new AssetBundleClassificationWindow();
+            RepaintAssetBundleClassification();
+        }
+
+        public void RepaintAssetBundleClassification()
+        {
+            assetBundleClassification.ShowWindow(m_Main);
         }
 
         internal void OnGUI()
@@ -194,7 +204,7 @@ namespace AssetBundleBrowser
                     m_UserData.m_BuildTarget = tgt;
                     if (m_UserData.m_UseDefaultPath)
                     {
-                        m_UserData.m_OutputPath = "Assets/AssetBundles/";
+                        m_UserData.m_OutputPath = outPutPath;
                         m_UserData.m_OutputPath += m_UserData.m_BuildTarget.ToString();
                         //EditorUserBuildSettings.SetPlatformSettings(EditorUserBuildSettings.activeBuildTarget.ToString(), "AssetBundleOutputPath", m_OutputPath);
                     }
@@ -254,7 +264,7 @@ namespace AssetBundleBrowser
             using (new EditorGUI.DisabledScope(!AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions))
             {
                 EditorGUILayout.Space();
-                m_AdvancedSettings = EditorGUILayout.Foldout(m_AdvancedSettings, "Advanced Settings");
+                m_AdvancedSettings = EditorGUILayout.Foldout(m_AdvancedSettings, "高级设置[Advanced Settings]");
                 if (m_AdvancedSettings)
                 {
                     var indent = EditorGUI.indentLevel;
@@ -291,16 +301,22 @@ namespace AssetBundleBrowser
 
             // build.
             EditorGUILayout.Space();
-            if (GUILayout.Button("Build Window"))
-            {
-                AssetBundleClassificationWindow.ShowWindow();
-                //EditorApplication.delayCall += ExecuteBuild;
-            }
+            //if (GUILayout.Button("Build Window"))
+            //{
+            //    //AssetBundleClassificationWindow.ShowWindow();
+            //    //EditorApplication.delayCall += ExecuteBuild;
+            //}
+           
+            assetBundleClassification.OnGUI();
+
             GUILayout.EndVertical();
             EditorGUILayout.EndScrollView();
         }
         public void ExecuteBuild()
         {
+            // 1. 记录开始时间（Ticks为100纳秒单位）
+            long startTicks = System.DateTime.UtcNow.Ticks;
+
             if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory)
             {
                 if (string.IsNullOrEmpty(m_UserData.m_OutputPath))
@@ -308,7 +324,7 @@ namespace AssetBundleBrowser
 
                 if (string.IsNullOrEmpty(m_UserData.m_OutputPath)) //in case they hit "cancel" on the open browser
                 {
-                    Debug.LogError("AssetBundle Build: No valid output path for build.");
+                    UnityEngine.Debug.LogError("AssetBundle Build: No valid output path for build.");
                     return;
                 }
 
@@ -331,7 +347,7 @@ namespace AssetBundleBrowser
                         }
                         catch (System.Exception e)
                         {
-                            Debug.LogException(e);
+                            UnityEngine.Debug.LogException(e);
                         }
                     }
                 }
@@ -339,20 +355,7 @@ namespace AssetBundleBrowser
                     Directory.CreateDirectory(m_UserData.m_OutputPath);
             }
 
-            BuildAssetBundleOptions opt = BuildAssetBundleOptions.None;
-
-            if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions)
-            {
-                if (m_UserData.m_Compression == CompressOptions.Uncompressed)
-                    opt |= BuildAssetBundleOptions.UncompressedAssetBundle;
-                else if (m_UserData.m_Compression == CompressOptions.ChunkBasedCompression)
-                    opt |= BuildAssetBundleOptions.ChunkBasedCompression;
-                foreach (var tog in m_ToggleData)
-                {
-                    if (tog.state)
-                        opt |= tog.option;
-                }
-            }
+            BuildAssetBundleOptions opt = GetOpt();
 
             ABBuildInfo buildInfo = new ABBuildInfo();
 
@@ -374,8 +377,30 @@ namespace AssetBundleBrowser
             if (m_CopyToStreaming.state)
                 DirectoryCopy(m_UserData.m_OutputPath, m_streamingPath);
 
+            // 2. 计算耗时并输出（转换为毫秒）
+            long endTicks = System.DateTime.UtcNow.Ticks;
+            double durationMs = (endTicks - startTicks) / 10000.0; // 1 Tick = 100纳秒 → 1毫秒 = 10000 Ticks 1毫秒等于1,000,000纳秒
+            UnityEngine.Debug.Log($"打包执行耗时：{(durationMs/1000):F2} 秒");
         }
 
+        public BuildAssetBundleOptions GetOpt()
+        {
+            BuildAssetBundleOptions opt = BuildAssetBundleOptions.None;
+            if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions)
+            {
+                if (m_UserData.m_Compression == CompressOptions.Uncompressed)
+                    opt |= BuildAssetBundleOptions.UncompressedAssetBundle;
+                else if (m_UserData.m_Compression == CompressOptions.ChunkBasedCompression)
+                    opt |= BuildAssetBundleOptions.ChunkBasedCompression;
+                foreach (ToggleData tog in m_ToggleData)
+                {
+                    if (tog.state)
+                        opt |= tog.option;
+                }
+            }
+            UnityEngine.Debug.Log($"BuildAssetBundleOptions:{opt.ToString()}");
+            return opt;
+        }
 
 
         private static void DirectoryCopy(string sourceDirName, string destDirName)
@@ -419,7 +444,7 @@ namespace AssetBundleBrowser
         private void ResetPathToDefault()
         {
             m_UserData.m_UseDefaultPath = true;
-            m_UserData.m_OutputPath = "Assets/AssetBundles/";
+            m_UserData.m_OutputPath = outPutPath;
             m_UserData.m_OutputPath += m_UserData.m_BuildTarget.ToString();
             //EditorUserBuildSettings.SetPlatformSettings(EditorUserBuildSettings.activeBuildTarget.ToString(), "AssetBundleOutputPath", m_OutputPath);
         }

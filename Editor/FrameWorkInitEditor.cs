@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -9,39 +6,39 @@ namespace UPandaGF
 {
     public class FrameWorkInitEditor
     {
-        private static string PATH_3rd = Application.dataPath + "/3rd";
-        private static string PATH_ArtAssets = Application.dataPath + "/ArtAssets";
-        private static string PATH_Resources = Application.dataPath + "/Resources";
-        private static string PATH_Scenes = Application.dataPath + "/Scenes";
-        private static string PATH_StreamingAssets = Application.dataPath + "/StreamingAssets";
-        private static string PATH_Scripts = Application.dataPath + "/Scripts";
-        private static string PATH_AssetBundle = Application.dataPath + "/AssetBundles";
+        private static string[] fileName = new string[]
+        {
+             "3rd",
+             "ArtAssets",
+             "AssetBundles",
+             "Plugins",
+             "Resources",
+             "Scenes",
+             "Scripts",
+             "StreamingAssets"
+        };
 
 
-
-        [MenuItem("UPandaGF/Tools/创建目录文件夹")]
+        [MenuItem("UPandaGF/Tools/创建常用目录文件夹")]
         private static void CreatForder()
         {
-            CreatForderPacking(PATH_3rd);
-            CreatForderPacking(PATH_ArtAssets);
-            CreatForderPacking(PATH_Resources);
-            CreatForderPacking(PATH_Scenes);
-            CreatForderPacking(PATH_StreamingAssets);
-            CreatForderPacking(PATH_Scripts);
-            CreatForderPacking(PATH_AssetBundle);
+            foreach (string item in fileName)
+            {
+                CreatForderPacking(item);
+            }
             AssetDatabase.Refresh();
         }
-        private static void CreatForderPacking(string path)
+        private static void CreatForderPacking(string fileName)
         {
-            string name = path.Substring(path.LastIndexOf('/') + 1);
-            if (!Directory.Exists(path))
+            string fullPath = Application.dataPath + $"/{fileName}";
+            if (!Directory.Exists(fullPath))
             {
-                Directory.CreateDirectory(path);
-                Debug.Log($"{name}目录创建完成");
+                Directory.CreateDirectory(fullPath);
+                Debug.Log($"{fileName}目录创建完成");
             }
             else
             {
-                Debug.Log($"{name}目录已存在");
+                Debug.Log($"{fileName}目录已存在");
             }
 
         }
@@ -64,6 +61,36 @@ namespace UPandaGF
             }
             GameObject obj2 = new GameObject("OnLoadCompleteExample");
             obj2.AddComponent<GameLaunchExample>();
+        }
+
+
+        [MenuItem("UPandaGF/Tools/Clean Missing Scripts in Prefab")]
+        static void CleanMissingScripts()
+        {
+            Transform select = Selection.activeTransform;
+            if(select == null)
+            {
+                Debug.Log("需要选中一个预制体");
+                return;
+            }
+            try
+            {
+                ProcessPrefab(select);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"处理失败 错误信息: {e.Message}");
+            }
+            AssetDatabase.SaveAssets();
+            Debug.Log("清理完成！");
+        }
+
+        private static void ProcessPrefab(Transform parent)
+        {
+            foreach (Transform child in parent.GetComponentsInChildren<Transform>())
+            {
+                GameObjectUtility.RemoveMonoBehavioursWithMissingScript(child.gameObject);
+            }
         }
     }
 }

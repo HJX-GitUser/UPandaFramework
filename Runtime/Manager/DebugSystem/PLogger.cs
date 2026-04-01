@@ -17,6 +17,11 @@ namespace UPandaGF
             Log("日志系统初始化...");
             if (cfg.logSave)
             {
+                if (cfg.saveOverwrite) Log($"<color=yellow>日志覆盖:</color>{cfg.logFileSavePath}{cfg.LogFileName}");
+                else Log($"<color=yellow>日志输出路径:</color>{cfg.logFileSavePath}{cfg.LogFileName}");
+#if UNITY_EDITOR
+                Log($"编辑器模式下日志输出路径位于项目路径下");
+#endif
                 GameObject logObj = new GameObject("LogHelper");
                 GameObject.DontDestroyOnLoad(logObj);
                 PLogHelper unityLogHelper = logObj.AddComponent<PLogHelper>();

@@ -3,6 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UPandaGF;
+
+[Serializable]
+public class AssetBundleClassificationWindowConfig
+{
+    public bool enable = true;
+    public string AESKEY = "111a222aaabbbccc";
+    public string AESIV = "111b222aaabbbccc";
+    public ABLoadPath mainBundleLoadPath = ABLoadPath.StreamingAssetsPath;
+}
 
 /// <summary>
 /// 资源信息基类
@@ -106,6 +116,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             }
             else
             {
+                //Debug.Log($"{path}资源被引用次数：{info.refCount}");
                 return info.asset;
             }
         }

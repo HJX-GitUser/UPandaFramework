@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -10,9 +12,11 @@ namespace UPandaGF
     /// 面板基类
     /// 通过代码快速的找到所有的子控件，节约找控件的工作量
     /// 在子类中处理逻辑 
+    /// 必须加上[UILoadInfo]特性
     /// </summary>
     public abstract class BasePanel : MonoBehaviour
     {
+        protected UIManager uiManager => UIManager.Instance;
         /// <summary>
         /// UI组件容器
         /// UIBehaviour是所有UI组件的基类，UI组件都是直接或者间接继承UIBehaviour这个抽象类的，
@@ -58,7 +62,7 @@ namespace UPandaGF
         /// <summary>
         /// 在子类重写显示逻辑
         /// </summary>
-        public abstract void OnOpen();
+        public abstract void OnOpen(object panelArg = null);
         /// <summary>
         /// 隐藏
         /// </summary>
@@ -175,6 +179,13 @@ namespace UPandaGF
             return null;
         }
 
-
+        protected void AddCustomEventListener(UIBehaviour control, EventTriggerType type, UnityAction<BaseEventData> callBack)
+        {
+            EventTrigger trigger = control.gameObject.GetOrAddComponent<EventTrigger>();
+            EventTrigger.Entry entry = new EventTrigger.Entry();
+            entry.eventID = type;
+            entry.callback.AddListener(callBack);
+            trigger.triggers.Add(entry);
+        }
     }
 }

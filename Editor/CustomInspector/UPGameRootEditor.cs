@@ -1,18 +1,18 @@
-using AssetBundleBrowser;
+using System.ComponentModel;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace UPandaGF
+namespace UPandaGF.GFEditor
 {
     [CustomEditor(typeof(UPGameRoot))]
-    public class UPGameRootEditor : Editor
+    public class UPGameRootEditor : UnityEditor.Editor
     {
-        AssetBundleBrowserMain assetBundleBrowserMain;
         UPGameRoot component;
         private void OnEnable()
         {
             component = (UPGameRoot)target;
+            component.AssetAESConfig = UPandaGFConfig.LoadJsonConfig<AssetBundleClassificationWindowConfig>("AssetBundleBuildConfig");
         }
         public override void OnInspectorGUI()
         {
@@ -44,6 +44,7 @@ namespace UPandaGF
                         CreateReporter(arg);
                         component.reporter = component.GetComponentInChildren<Reporter>();
                     }
+                    EditorGUILayout.HelpBox("启动该选项，在运行时可以点击左上角按钮启动日志面板，用于打包项目时调试，正式包取消勾选", MessageType.Info);
                 }
                 else
                 {
@@ -52,6 +53,16 @@ namespace UPandaGF
                         DestroyImmediate(component.reporter.gameObject);
                         component.reporter = null;
                     }
+                }
+            }
+#else
+            if (component.EnableDebugModel)
+            {
+                if (component.reporter != null)
+                {
+                    DestroyImmediate(component.reporter.gameObject);
+                    component.reporter = null;
+                    Debug.Log("reporter剔除");
                 }
             }
 #endif
@@ -71,32 +82,18 @@ namespace UPandaGF
 
         private void AssetbundlesEditorGUI()
         {
+            if (component.AssetAESConfig.enable)
+            {
+                EditorGUILayout.HelpBox($"AES加密配置：\nkey:{component.AssetAESConfig.AESKEY}\niv:{component.AssetAESConfig.AESIV}", MessageType.Info);
+            }
             ShowArg("enableAssetUpdate", "启动资源更新");
-            if (component.enableAssetUpdate)
-                ShowArg("assetUpdataConfig", "资源更新配置");
             EditorGUILayout.Space();
             EditorGUILayout.Space();
             ShowArg("reomoteURL", "远程加载URL");
-            ShowArg("LoadAssetPath", "资源路径");
-            ShowArg("MainName", "主包名");
-            ShowArg("MainPackageLoadPath", "主包加载路径");
-            if (GUILayout.Button("reset"))
+            ShowArg("LoadAssetPath", "相对路径");
+            if (GUILayout.Button("重置"))
             {
-                assetBundleBrowserMain = AssetBundleBrowserMain.instance;
-                if (assetBundleBrowserMain != null)
-                {
-                    component.reomoteURL = "http://127.0.0.1:8090/";
-                    string m_OutputPath = assetBundleBrowserMain.m_BuildTabData.m_OutputPath;
-                    string result = "AssetBundles/";
-                    int startIndex = m_OutputPath.IndexOf("AssetBundles/");
-                    if (startIndex != -1)
-                    {
-                        result = m_OutputPath.Substring(startIndex);
-                    }
-                    component.LoadAssetPath = result;
-                    component.MainName = result.Split('/')[1];
-                    component.MainPackageLoadPath = ABLoadPath.StreamingAssetsPath; 
-                }
+                component.LoadAssetPath = "AssetBundles/StandaloneWindows/";
             }
         }
 

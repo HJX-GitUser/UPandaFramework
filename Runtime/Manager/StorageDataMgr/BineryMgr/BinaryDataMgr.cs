@@ -212,7 +212,7 @@ namespace UPandaGF
         }
     }
 
-    public class AESEncryption
+    public static class AESEncryption
     {
         // º”√‹
         public static byte[] AESEncrypt(byte[] dataToEncrypt, string key, string iv)
