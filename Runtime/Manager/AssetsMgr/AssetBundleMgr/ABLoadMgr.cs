@@ -181,6 +181,12 @@ namespace UPandaGF
             catch (System.Exception e)
             {
                 Debug.LogError($"AssetBundle加载失败 特殊异常 '{abName}'\n{e.Message}");
+#if UNITY_ANDROID
+                if (e.Message.Contains("Insecure connection not allowed"))
+                {
+                    Debug.LogError("Android 网络安全策略阻止了 HTTP 连接。请检查网络配置。");
+                }
+#endif
                 return null;
             }
         }
