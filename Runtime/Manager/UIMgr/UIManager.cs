@@ -128,6 +128,7 @@ namespace UPandaGF
             SetRect(Mid, canvasRect);
             SetRect(Top, canvasRect);
             SetRect(System, canvasRect);
+            //EventSystem eventSystem = FindAnyObjectByType<EventSystem>();
             EventSystem eventSystem = FindObjectOfType<EventSystem>();
             if (eventSystem == null)
             {
@@ -359,11 +360,19 @@ namespace UPandaGF
         /// <typeparam name="T"></typeparam>
         /// <param name="panelName"></param>
         /// <returns></returns>
-        public T GetPanel<T>(string panelName) where T : BasePanel
+        public T GetPanel<T>() where T : BasePanel
         {
-            if (panelDic.ContainsKey(panelName))
+            UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
+            // 检查当前类是否包含特性
+            if (uiLoadInfo == null)
             {
-                return panelDic[panelName] as T;
+                Debug.LogError($"继承自BasePanel的类:({typeof(T).Name})必须标记UILoadInfo特性！！！");
+                return null;
+            }
+
+            if (panelDic.ContainsKey(uiLoadInfo.loadPath))
+            {
+                return panelDic[uiLoadInfo.loadPath] as T;
             }
             return null;
         }
