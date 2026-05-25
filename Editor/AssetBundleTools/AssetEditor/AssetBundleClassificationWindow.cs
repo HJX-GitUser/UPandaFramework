@@ -311,7 +311,7 @@ namespace AssetBundleBrowser
         {
             // 获取所有的资源路径
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
-            Debug.Log($"项目中共有 {allAssetPaths.Length} 个资源");
+            
             ABSourcesRelated aBSourcesRef = new ABSourcesRelated();
             //主包的数据：
             aBSourcesRef.mainBundleInfo = new AssetBundleLoadInfo()
@@ -359,6 +359,7 @@ namespace AssetBundleBrowser
 
             Save(aBSourcesRef);
             SaveData();
+            Debug.Log($"项目共有 {sourcesRelated.sourcesDic.Count} 个资源");
             AssetDatabase.Refresh();
         }
 

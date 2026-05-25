@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -9,43 +9,44 @@ using UnityEngine.Networking;
 namespace UPandaGF
 {
     /// <summary>
-    /// AB°ü¼ÓÔØ¹ÜÀíÆ÷
+    /// ABåŒ…åŠ è½½ç®¡ç†å™¨
     /// </summary>
     public class ABLoadMgr : LazyMonoSingletonBase<ABLoadMgr>
     {
         private bool isInit = false;
         /// <summary>
-        /// ÊÇ·ñ´ÓStreamingAssetsÂ·¾¶ÏÂ¼ÓÔØ
+        /// æ˜¯å¦ä»StreamingAssetsè·¯å¾„ä¸‹åŠ è½½
         /// </summary>
         // [HideInInspector]
         // public bool IsLoadedOnStreammingAssets = true;
-        //Ö÷°ü
+        //ä¸»åŒ…
         private AssetBundle mainAB = null;
-        //Ö÷°üÒÀÀµ»ñÈ¡ÅäÖÃÎÄ¼ş
+        //ä¸»åŒ…ä¾èµ–è·å–é…ç½®æ–‡ä»¶
         private AssetBundleManifest manifest = null;
 
-        //´æ´¢ AB°ü¶ÔÏó(AB°ü²»ÄÜ¹»ÖØ¸´¼ÓÔØ ·ñÔò»á±¨´í)
-        private Dictionary<string, AssetBundle> abDic = new Dictionary<string, AssetBundle>();
+        //å­˜å‚¨ ABåŒ…å¯¹è±¡(ABåŒ…ä¸èƒ½å¤Ÿé‡å¤åŠ è½½ å¦åˆ™ä¼šæŠ¥é”™)
+        private Dictionary<string, AssetBundle> _loadedBundles = new Dictionary<string, AssetBundle>();
+        private HashSet<string> _loadingBundles = new HashSet<string>();
 
         /// <summary>
-        /// »ñÈ¡AB°ü¼ÓÔØÂ·¾¶£¨Ïà¶ÔÂ·¾¶£©
+        /// è·å–ABåŒ…åŠ è½½è·¯å¾„ï¼ˆç›¸å¯¹è·¯å¾„ï¼‰
         /// </summary>
         [HideInInspector]
         public string PathUrl;
 
         /// <summary>
-        /// Ö÷°üÃû ¸ù¾İÆ½Ì¨²»Í¬ °üÃû²»Í¬
+        /// ä¸»åŒ…å æ ¹æ®å¹³å°ä¸åŒ åŒ…åä¸åŒ
         /// </summary>
         [HideInInspector]
         public string MainName;
 
         /// <summary>
-        /// Ö÷°ü¼ÓÔØÂ·¾¶
+        /// ä¸»åŒ…åŠ è½½è·¯å¾„
         /// </summary>
         public ABLoadPath MainPackageLoadPath = ABLoadPath.StreamingAssetsPath;
 
         /// <summary>
-        /// Ô¶³Ì¼ÓÔØµØÖ·
+        /// è¿œç¨‹åŠ è½½åœ°å€
         /// </summary>
         public string remoteURL = "http://127.0.0.1:8090/";
 
@@ -53,13 +54,13 @@ namespace UPandaGF
 
         private ABSourcesRelated sourceRef;
 
-        #region ³õÊ¼»¯
+        #region åˆå§‹åŒ–
         /// <summary>
-        /// ³õÊ¼»¯
+        /// åˆå§‹åŒ–
         /// </summary>
-        /// <param name="pathUrl">Ïà¶ÔÂ·¾¶</param>
-        /// <param name="mainName">Ö÷°üÃû</param>
-        /// <param name="mainLoadPath">Ö÷°ü¼ÓÔØÂ·¾¶</param>
+        /// <param name="pathUrl">ç›¸å¯¹è·¯å¾„</param>
+        /// <param name="mainName">ä¸»åŒ…å</param>
+        /// <param name="mainLoadPath">ä¸»åŒ…åŠ è½½è·¯å¾„</param>
         /// <returns></returns>
         public async Task Init(string pathUrl, string mainName, ABLoadPath mainLoadPath)
         {
@@ -69,15 +70,15 @@ namespace UPandaGF
             MainPackageLoadPath = mainLoadPath;
             try
             {
-                // ¼ÓÔØÖ÷°ü ºÍ ÅäÖÃÎÄ¼ş
-                // ¼ÓÔØËùÓĞ°üÊÇ Í¨¹ıËü²ÅÄÜµÃµ½ÒÀÀµĞÅÏ¢
+                // åŠ è½½ä¸»åŒ… å’Œ é…ç½®æ–‡ä»¶
+                // åŠ è½½æ‰€æœ‰åŒ…æ˜¯ é€šè¿‡å®ƒæ‰èƒ½å¾—åˆ°ä¾èµ–ä¿¡æ¯
                 mainAB = await LoadAssetBundle(MainName, MainPackageLoadPath);
                 manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
-                Debug.Log($"AB°ü¼ÓÔØÂ·¾¶£º{PathUrl}\n×ÊÔ´°üÖ÷°ü£º{MainName}");
+                Debug.Log($"ABåŒ…åŠ è½½è·¯å¾„ï¼š{PathUrl}\nèµ„æºåŒ…ä¸»åŒ…ï¼š{MainName}");
             }
-            catch(System.Exception e)
+            catch (System.Exception e)
             {
-                PLogger.LogError($"AssetBundleManifest Ö÷°ü({MainName}:{mainLoadPath})¼ÓÔØÊ§°Ü:\n{e}");
+                PLogger.LogError($"AssetBundleManifest ä¸»åŒ…({MainName}:{mainLoadPath})åŠ è½½å¤±è´¥:\n{e}");
             }
         }
 
@@ -87,7 +88,7 @@ namespace UPandaGF
         }
         #endregion
 
-        #region ¼ÓÔØAssetBundle
+        #region åŠ è½½AssetBundle
         private string GetFullPath(ABLoadPath loodPath)
         {
             string fullPath = "";
@@ -108,90 +109,104 @@ namespace UPandaGF
             return fullPath;
         }
         /// <summary>
-        /// ¼ÓÔØAssetBundle
+        /// åŠ è½½AssetBundle
         /// </summary>
-        /// <param name="abName">°üÃû</param>
-        /// <param name="loodPath">¼ÓÔØ·½Ê½</param>
-        /// <param name="progressEvent">¼ÓÔØ½ø¶È</param>
+        /// <param name="abName">åŒ…å</param>
+        /// <param name="loodPath">åŠ è½½æ–¹å¼</param>
+        /// <param name="progressEvent">åŠ è½½è¿›åº¦</param>
         /// <returns></returns>
-        private async Task<AssetBundle> LoadAssetBundle(string abName, ABLoadPath loodPath)
+
+        private async Task<AssetBundle> LoadAssetBundle(string abName, ABLoadPath loadPath)
         {
-            //string fullPath = Path.Combine(PathUrl, abName);
-            string fullPath = Path.Combine(GetFullPath(loodPath), abName);
+            string fullPath = Path.Combine(GetFullPath(loadPath), abName);
+
+            // âœ… å·²åŠ è½½
+            if (_loadedBundles.TryGetValue(abName, out var loadedAb))
+                return loadedAb;
+
+            // âœ… é˜²å¹¶å‘
+            while (_loadingBundles.Contains(abName))
+                await Task.Yield();
+
+            if (_loadedBundles.TryGetValue(abName, out loadedAb))
+                return loadedAb;
+
+            _loadingBundles.Add(abName);
+
             AssetBundle ab = null;
-            ABLoadProgressEvent aBLoadProgessEvent = new ABLoadProgressEvent(abName, loodPath, 0, false);
+            ABLoadProgressEvent progressEvent = new ABLoadProgressEvent(abName, loadPath, 0, false);
             try
             {
-                switch (loodPath)
+                switch (loadPath)
                 {
                     case ABLoadPath.RemotePath:
                     case ABLoadPath.StreamingAssetsPath:
-                        // ¶ÔÓÚStreamingAssetsÂ·¾¶£¨ÌØ±ğÊÇWebGLºÍAndroid£©£¬Ê¹ÓÃUnityWebRequest
-                        using (UnityWebRequest webRequest = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
+                        using (var request = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
                         {
-                            webRequest.SendWebRequest();
+                            request.SendWebRequest();
 
-                            while (!webRequest.isDone)
+                            while (!request.isDone)
                             {
-                                aBLoadProgessEvent.progress = webRequest.downloadProgress;
-                                //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}:ÏÂÔØ½ø¶È£º{aBLoadProgessEvent.progress}");
-                                eventCenter.EventTrigger(aBLoadProgessEvent);
-                                await System.Threading.Tasks.Task.Yield();
+                                progressEvent.progress = request.downloadProgress;
+                                eventCenter?.EventTrigger(progressEvent);
+                                await Task.Yield();
                             }
-                            //¼ì²éÇëÇó½á¹û
+
 #if UNITY_2020_1_OR_NEWER
-                            if (webRequest.result != UnityWebRequest.Result.Success)
+                    if (request.result != UnityWebRequest.Result.Success)
 #else
-                            if (webRequest.isNetworkError || webRequest.isHttpError)
+                            if (request.isNetworkError || request.isHttpError)
 #endif
                             {
-                                Debug.LogError($"AssetBundle¼ÓÔØÊ§°Ü\n{fullPath}\n{webRequest.error}");
+                                Debug.LogError($"AssetBundleåŠ è½½å¤±è´¥\n{fullPath}\n{request.error}");
                                 return null;
                             }
-                            ab = DownloadHandlerAssetBundle.GetContent(webRequest);
-                            if (ab == null)
-                            {
-                                Debug.LogError($"AssetBundle¼ÓÔØÊ§°Ü\n{fullPath}");
-                            }
+
+                            ab = DownloadHandlerAssetBundle.GetContent(request);
                         }
                         break;
+
                     case ABLoadPath.PersistentDataPath:
-                        // ¶ÔÓÚ±¾µØÎÄ¼şÂ·¾¶£¬Ê¹ÓÃLoadFromFileAsync
-                        AssetBundleCreateRequest createRequest = AssetBundle.LoadFromFileAsync(fullPath);
+                        var createRequest = AssetBundle.LoadFromFileAsync(fullPath);
                         if (createRequest == null)
                         {
-                            Debug.LogError($"AssetBundle¼ÓÔØÊ§°Ü\n{fullPath}");
+                            Debug.LogError($"AssetBundleåŠ è½½å¤±è´¥\n{fullPath}");
                             return null;
                         }
+
                         while (!createRequest.isDone)
                         {
-                            aBLoadProgessEvent.progress = createRequest.progress;
-                            //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}:¼ÓÔØ½ø¶È£º{aBLoadProgessEvent.progress}");
-                            eventCenter.EventTrigger(aBLoadProgessEvent);
-                            await System.Threading.Tasks.Task.Yield();
+                            progressEvent.progress = createRequest.progress;
+                            eventCenter?.EventTrigger(progressEvent);
+                            await Task.Yield();
                         }
+
                         ab = createRequest.assetBundle;
-                        if (ab == null)
-                        {
-                            Debug.LogError($"AssetBundle¼ÓÔØÊ§°Ü\n{fullPath}");
-                        }
                         break;
                 }
-                aBLoadProgessEvent.progress = 1;
-                aBLoadProgessEvent.isDown = true;
-                eventCenter.EventTrigger(aBLoadProgessEvent);
+
+                if (ab == null)
+                {
+                    Debug.LogError($"AssetBundleåŠ è½½å¤±è´¥\n{fullPath}");
+                    return null;
+                }
+
+                _loadedBundles[abName] = ab;
+
+                progressEvent.progress = 1;
+                progressEvent.isDown = true;
+                eventCenter?.EventTrigger(progressEvent);
+
                 return ab;
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"AssetBundle¼ÓÔØÊ§°Ü ÌØÊâÒì³£ '{abName}'\n{e.Message}");
-#if UNITY_ANDROID
-                if (e.Message.Contains("Insecure connection not allowed"))
-                {
-                    Debug.LogError("Android ÍøÂç°²È«²ßÂÔ×èÖ¹ÁË HTTP Á¬½Ó¡£Çë¼ì²éÍøÂçÅäÖÃ¡£");
-                }
-#endif
+                Debug.LogError($"AssetBundleåŠ è½½å¤±è´¥ ç‰¹æ®Šå¼‚å¸¸ '{abName}'\n{e}");
                 return null;
+            }
+            finally
+            {
+                _loadingBundles.Remove(abName);
             }
         }
 
@@ -205,57 +220,57 @@ namespace UPandaGF
             {
                 case ABLoadPath.RemotePath:
                 case ABLoadPath.StreamingAssetsPath:
-                    // ¶ÔÓÚStreamingAssetsÂ·¾¶£¨ÌØ±ğÊÇWebGLºÍAndroid£©£¬Ê¹ÓÃUnityWebRequest
+                    // å¯¹äºStreamingAssetsè·¯å¾„ï¼ˆç‰¹åˆ«æ˜¯WebGLå’ŒAndroidï¼‰ï¼Œä½¿ç”¨UnityWebRequest
                     using (UnityWebRequest webRequest = UnityWebRequestAssetBundle.GetAssetBundle(fullPath))
                     {
                         webRequest.SendWebRequest();
                         while (!webRequest.isDone)
                         {
                             aBLoadProgessEvent.progress = webRequest.downloadProgress;
-                            // PLogger.Log_yellow($"{aBLoadProgessEvent.abName}:ÏÂÔØ½ø¶È£º{aBLoadProgessEvent.progress}");
+                            // PLogger.Log_yellow($"{aBLoadProgessEvent.abName}:ä¸‹è½½è¿›åº¦ï¼š{aBLoadProgessEvent.progress}");
                             eventCenter.EventTrigger(aBLoadProgessEvent);
                             yield return null;
                         }
-                        //¼ì²éÇëÇó½á¹û
+                        //æ£€æŸ¥è¯·æ±‚ç»“æœ
 #if UNITY_2020_1_OR_NEWER
                         if (webRequest.result != UnityWebRequest.Result.Success)
 #else
                         if (webRequest.isNetworkError || webRequest.isHttpError)
 #endif
                         {
-                            Debug.LogError($"AssetBundle¼ÓÔØÊ§°Ü\n{fullPath}\n{webRequest.error}");
+                            Debug.LogError($"AssetBundleåŠ è½½å¤±è´¥\n{fullPath}\n{webRequest.error}");
                             callback.Invoke(null);
                             yield break;
                         }
                         ab = DownloadHandlerAssetBundle.GetContent(webRequest);
                         if (ab == null)
                         {
-                            Debug.LogError($"AssetBundle¼ÓÔØÊ§°Ü\n{fullPath}");
+                            Debug.LogError($"AssetBundleåŠ è½½å¤±è´¥\n{fullPath}");
                             callback.Invoke(null);
                             yield break;
                         }
                     }
                     break;
                 case ABLoadPath.PersistentDataPath:
-                    // ¶ÔÓÚ±¾µØÎÄ¼şÂ·¾¶£¬Ê¹ÓÃLoadFromFileAsync
+                    // å¯¹äºæœ¬åœ°æ–‡ä»¶è·¯å¾„ï¼Œä½¿ç”¨LoadFromFileAsync
                     AssetBundleCreateRequest createRequest = AssetBundle.LoadFromFileAsync(fullPath);
                     if (createRequest == null)
                     {
-                        Debug.LogError($"AssetBundle¼ÓÔØÊ§°Ü\n{fullPath}");
+                        Debug.LogError($"AssetBundleåŠ è½½å¤±è´¥\n{fullPath}");
                         callback.Invoke(null);
                         yield break;
                     }
                     while (!createRequest.isDone)
                     {
                         aBLoadProgessEvent.progress = createRequest.progress;
-                        //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}:¼ÓÔØ½ø¶È£º{aBLoadProgessEvent.progress}");
+                        //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}:åŠ è½½è¿›åº¦ï¼š{aBLoadProgessEvent.progress}");
                         eventCenter.EventTrigger(aBLoadProgessEvent);
                         yield return null;
                     }
                     ab = createRequest.assetBundle;
                     if (ab == null)
                     {
-                        Debug.LogError($"AssetBundle¼ÓÔØÊ§°Ü\n{fullPath}");
+                        Debug.LogError($"AssetBundleåŠ è½½å¤±è´¥\n{fullPath}");
                         callback.Invoke(null);
                         yield break;
                     }
@@ -263,15 +278,15 @@ namespace UPandaGF
             }
             aBLoadProgessEvent.progress = 1;
             aBLoadProgessEvent.isDown = true;
-            //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}£º{aBLoadProgessEvent.progress}");
+            //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}ï¼š{aBLoadProgessEvent.progress}");
             eventCenter.EventTrigger(aBLoadProgessEvent);
             callback(ab);
         }
         #endregion
 
-        #region Í¨¹ıAssetBundle »ñÈ¡×ÊÔ´
+        #region é€šè¿‡AssetBundle è·å–èµ„æº
         /// <summary>
-        /// Í¨¹ıAssetBundle »ñÈ¡×ÊÔ´
+        /// é€šè¿‡AssetBundle è·å–èµ„æº
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="bundle"></param>
@@ -312,78 +327,79 @@ namespace UPandaGF
         }
         #endregion
 
-        #region ¼ÓÔØÖ¸¶¨°üÒÔ¼°ÒÀÀµ°ü
+        #region åŠ è½½æŒ‡å®šåŒ…ä»¥åŠä¾èµ–åŒ…
         /// <summary>
-        /// ¼ÓÔØÖ¸¶¨°üÒÔ¼°ÒÀÀµ°ü
+        /// åŠ è½½æŒ‡å®šåŒ…ä»¥åŠä¾èµ–åŒ…
         /// </summary>
         /// <param name="abName"></param>
         private async Task<AssetBundle> LoadDependenciesAndAimBundle(string abName, ABLoadPath loodPath)
         {
             if (mainAB == null || manifest == null)
             {
-                Debug.LogError("Ö÷°üÎ´¼ÓÔØ");
+                Debug.LogError("ä¸»åŒ…æœªåŠ è½½");
                 return null;
             };
-            //»ñÈ¡ÒÀÀµ°ü
+            //è·å–ä¾èµ–åŒ…
             string[] strs = manifest.GetAllDependencies(abName);
             for (int i = 0; i < strs.Length; i++)
             {
-                if (!abDic.ContainsKey(strs[i]))
+                if (!_loadedBundles.ContainsKey(strs[i]))
                 {
                     AssetBundle ab = await LoadAssetBundle(strs[i], loodPath);
-                    abDic.Add(strs[i], ab);
+                    if (!_loadedBundles.ContainsKey(strs[i])) _loadedBundles.Add(strs[i], ab);
+
                 }
             }
-            //¼ÓÔØÄ¿±ê°ü
-            if (!abDic.ContainsKey(abName))
+            //åŠ è½½ç›®æ ‡åŒ…
+            if (!_loadedBundles.ContainsKey(abName))
             {
                 AssetBundle ab = await LoadAssetBundle(abName, loodPath);
-                abDic.Add(abName, ab);
+                if (!_loadedBundles.ContainsKey(abName)) _loadedBundles.Add(abName, ab);
             }
 
-            if (abDic[abName] == null)
+            if (_loadedBundles[abName] == null)
             {
-                abDic.Remove(abName);
+                _loadedBundles.Remove(abName);
                 return null;
             }
-            return abDic[abName];
+            return _loadedBundles[abName];
         }
         private IEnumerator LoadDependenciesAndAimBundle(string abName, ABLoadPath loodPath, UnityAction<AssetBundle> callback)
         {
             if (mainAB == null || manifest == null)
             {
-                Debug.LogError("Ö÷°üÎ´¼ÓÔØ");
+                Debug.LogError("ä¸»åŒ…æœªåŠ è½½");
                 callback(null);
                 yield break;
             };
-            //»ñÈ¡ÒÀÀµ°ü
+            //è·å–ä¾èµ–åŒ…
             string[] strs = manifest.GetAllDependencies(abName);
             for (int i = 0; i < strs.Length; i++)
             {
-                if (!abDic.ContainsKey(strs[i]))
+                if (!_loadedBundles.ContainsKey(strs[i]))
                 {
                     yield return StartCoroutine(LoadAssetBundle(strs[i], loodPath, (arg) =>
                      {
-                         abDic.Add(strs[i], arg);
+                         _loadedBundles.Add(strs[i], arg);
                      }));
                 }
             }
-            //¼ÓÔØÄ¿±ê°ü
-            if (!abDic.ContainsKey(abName))
+            //åŠ è½½ç›®æ ‡åŒ…
+            if (!_loadedBundles.ContainsKey(abName))
             {
                 yield return StartCoroutine(LoadAssetBundle(abName, loodPath, (arg) =>
                  {
-                     abDic.Add(abName, arg);
+                     _loadedBundles.Add(abName, arg);
                  }));
             }
 
-            if (abDic[abName] == null)
+            if (_loadedBundles[abName] == null)
             {
-                abDic.Remove(abName);
+                _loadedBundles.Remove(abName);
                 callback(null);
                 yield break;
             }
-            callback(abDic[abName]);
+            callback(_loadedBundles[abName]);
         }
 
         public async Task<AssetBundle> GetAssetBundle(string abName, ABLoadPath loodPath)
@@ -393,7 +409,7 @@ namespace UPandaGF
 
         public void GetAssetBundle(string abName, ABLoadPath loodPath, UnityAction<AssetBundle> callback)
         {
-            Debug.Log($"¼ÓÔØ×ÊÔ´{abName}£º{loodPath}");
+            Debug.Log($"åŠ è½½èµ„æº{abName}ï¼š{loodPath}");
             StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) =>
              {
                  callback(arg);
@@ -401,23 +417,23 @@ namespace UPandaGF
         }
         #endregion
 
-        #region Òì²½¼ÓÔØAssets×ÊÔ´
+        #region å¼‚æ­¥åŠ è½½Assetsèµ„æº
         /// <summary>
-        /// Òì²½¼ÓÔØ×ÊÔ´
+        /// å¼‚æ­¥åŠ è½½èµ„æº
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="abName">AB°üÃû</param>
-        /// <param name="resName">×ÊÔ´Ãû</param>
+        /// <param name="abName">ABåŒ…å</param>
+        /// <param name="resName">èµ„æºå</param>
         public async Task<T> LoadResAsync<T>(string abName, string resName, ABLoadPath loodPath) where T : UnityEngine.Object
         {
             await LoadDependenciesAndAimBundle(abName, loodPath);
-            return await LoadAsset<T>(abDic[abName], resName);
+            return await LoadAsset<T>(_loadedBundles[abName], resName);
         }
 
         public async Task<Object> LoadResAsync(string abName, string resName, System.Type type, ABLoadPath loodPath)
         {
             await LoadDependenciesAndAimBundle(abName, loodPath);
-            return await LoadAsset(abDic[abName], resName, type);
+            return await LoadAsset(_loadedBundles[abName], resName, type);
         }
 
         public void LoadResAsync<T>(string abName, string resName, ABLoadPath loodPath, UnityAction<T> callBack) where T : Object
@@ -428,14 +444,14 @@ namespace UPandaGF
         {
             yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) =>
              {
-                 //Ä¿±ê°üºÍÒÀÀµ°ü¼ÓÔØ½áÊø£¬argÊÇÄ¿±ê°ü£¬ abDic[abName]Ò²ÄÜµÃµ½Ä¿±ê°ü
+                 //ç›®æ ‡åŒ…å’Œä¾èµ–åŒ…åŠ è½½ç»“æŸï¼Œargæ˜¯ç›®æ ‡åŒ…ï¼Œ abDic[abName]ä¹Ÿèƒ½å¾—åˆ°ç›®æ ‡åŒ…
              }));
-            if (abDic[abName] == null)
+            if (_loadedBundles[abName] == null)
             {
                 callBack(null);
                 yield break;
             }
-            StartCoroutine(LoadAsset(abDic[abName], resName, callBack));
+            StartCoroutine(LoadAsset(_loadedBundles[abName], resName, callBack));
         }
 
         public void LoadResAsync(string abName, string resName, System.Type type, ABLoadPath loodPath, UnityAction<Object> callBack)
@@ -450,51 +466,51 @@ namespace UPandaGF
         {
             yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) =>
              {
-                 //Ä¿±ê°üºÍÒÀÀµ°ü¼ÓÔØ½áÊø£¬argÊÇÄ¿±ê°ü£¬ abDic[abName]Ò²ÄÜµÃµ½Ä¿±ê°ü
+                 //ç›®æ ‡åŒ…å’Œä¾èµ–åŒ…åŠ è½½ç»“æŸï¼Œargæ˜¯ç›®æ ‡åŒ…ï¼Œ abDic[abName]ä¹Ÿèƒ½å¾—åˆ°ç›®æ ‡åŒ…
              }));
-            if (abDic[abName] == null)
+            if (_loadedBundles[abName] == null)
             {
                 callBack(null);
                 yield break;
             }
-            StartCoroutine(LoadAsset(abDic[abName], resName, type, callBack));
+            StartCoroutine(LoadAsset(_loadedBundles[abName], resName, type, callBack));
         }
         #endregion
 
-        #region Ğ¶ÔØAB°üµÄ·½·¨
+        #region å¸è½½ABåŒ…çš„æ–¹æ³•
         /// <summary>
-        /// Ğ¶ÔØAB°ü
+        /// å¸è½½ABåŒ…
         /// </summary>
         /// <param name="name"></param>
         public bool UnLoadAB(string name)
         {
-            if (abDic.ContainsKey(name))
+            if (_loadedBundles.ContainsKey(name))
             {
-                if (abDic[name] == null)
+                if (_loadedBundles[name] == null)
                 {
-                    Debug.Log("¸Ã×ÊÔ´Õı´¦ÓÚÒì²½¼ÓÔØÖĞ£¬ÎŞ·¨Ğ¶ÔØ£¡");
+                    Debug.Log("è¯¥èµ„æºæ­£å¤„äºå¼‚æ­¥åŠ è½½ä¸­ï¼Œæ— æ³•å¸è½½ï¼");
                     return false;
                 }
-                abDic[name].Unload(false);
-                abDic.Remove(name);
+                _loadedBundles[name].Unload(false);
+                _loadedBundles.Remove(name);
             }
             return true;
         }
         /// <summary>
-        /// Çå¿ÕAB°üµÄ·½·¨
+        /// æ¸…ç©ºABåŒ…çš„æ–¹æ³•
         /// </summary>
         public void ClearAB()
         {
             StopAllCoroutines();
             AssetBundle.UnloadAllAssetBundles(false);
-            abDic.Clear();
-            //Ğ¶ÔØÖ÷°ü
+            _loadedBundles.Clear();
+            //å¸è½½ä¸»åŒ…
             mainAB = null;
         }
         #endregion
 
         /// <summary>
-        /// ¸ù¾İ×Ö½ÚÊıµÃµ½´óĞ¡
+        /// æ ¹æ®å­—èŠ‚æ•°å¾—åˆ°å¤§å°
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
@@ -513,7 +529,7 @@ namespace UPandaGF
 
     }
     /// <summary>
-    /// AB°ü¼ÓÔØ½ø¶ÈÊÂ¼ş
+    /// ABåŒ…åŠ è½½è¿›åº¦äº‹ä»¶
     /// </summary>
     public class ABLoadProgressEvent : EventArgBase
     {
