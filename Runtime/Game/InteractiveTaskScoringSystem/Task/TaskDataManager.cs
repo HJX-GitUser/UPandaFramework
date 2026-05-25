@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -223,6 +225,35 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             TaskEntityManager.Instance.Clear();
         }
+
+#if UNITY_EDITOR
+
+        [ContextMenu("SaveConfigToJson")]
+        private void SaveConfigToJson()
+        {
+            string json = JsonUtility.ToJson(taskSteps, true);
+            Debug.Log(json);
+            string path = Application.streamingAssetsPath + "/taskSteps.json";
+            File.WriteAllText(path, json);
+            AssetDatabase.Refresh();
+        }
+
+        [ContextMenu("SetConfigFormJson")]
+        private void JsonSetConfig()
+        {
+            string path = Application.streamingAssetsPath + "/taskSteps.json";
+            if (!File.Exists(path))
+            {
+                Debug.Log($"path is null:{path}");
+                return;
+            }
+            string json = File.ReadAllText(path);
+            Debug.Log(json);
+            TaskConfigJsonData arg = JsonUtility.FromJson<TaskConfigJsonData>(json);
+            Debug.Log(arg.stepsConfig.Length);
+            taskSteps.stepsConfig = arg.stepsConfig;
+        }
+#endif
     }
 
 

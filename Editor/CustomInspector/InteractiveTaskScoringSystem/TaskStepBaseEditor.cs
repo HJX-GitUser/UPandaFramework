@@ -44,11 +44,13 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                     {
                         GameObject obj = CreatNode("SeriesOperationGroup");
                         component.operationGroup = obj.AddComponent<SeriesOperationGroup>();
+                        Undo.RecordObject(obj, "SeriesOperationGroup");
                     }
                     if (GUILayout.Button("Add 操作检查组（并联）"))
                     {
                         GameObject obj = CreatNode("ParallelOperationGroup");
                         component.operationGroup = obj.AddComponent<ParallelOperationGroup>();
+                        Undo.RecordObject(obj, "ParallelOperationGroup");
                     }
                 }
             }

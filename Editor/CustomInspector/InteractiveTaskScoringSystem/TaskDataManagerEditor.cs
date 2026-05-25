@@ -43,9 +43,10 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                         foreach (var item in arg.stepsConfig)
                         {
                             CreatNode(item, node);
+
                         }
                     }
-
+                    EditorUtility.SetDirty(node);
                 }
             }
             if (EditorApplication.isPlaying)

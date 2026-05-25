@@ -33,6 +33,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                                     component.TargetEntity = arg;
                                     //Selection.activeGameObject = arg.gameObject;
                                     //EditorGUIUtility.PingObject(arg.gameObject);
+                                    EditorUtility.SetDirty(component);
                                     break;
                                 }
                             }

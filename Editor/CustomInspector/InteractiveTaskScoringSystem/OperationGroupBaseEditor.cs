@@ -27,16 +27,19 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                     int _count = component.transform.childCount;
                     GameObject obj = CreatNode($"OperationCheck({_count})");
                     OperationCheckBase oc = obj.AddComponent<OperationCheckBase>();
+                    Undo.RecordObject(obj, "Add 基础任务检查");
                 }
                 if (GUILayout.Button("Add 操作检查组（串联）"))
                 {
                     GameObject obj = CreatNode("SeriesOperationGroup");
                     obj.AddComponent<SeriesOperationGroup>();
+                    Undo.RecordObject(obj, "Add 操作检查组（串联）");
                 }
                 if (GUILayout.Button("Add 操作检查组（并联）"))
                 {
                     GameObject obj = CreatNode("ParallelOperationGroup");
                     obj.AddComponent<ParallelOperationGroup>();
+                    Undo.RecordObject(obj, "Add 操作检查组（并联）");
                 }
 
                 if (isSeriesOperationGroup)
