@@ -19,7 +19,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             {
                 if (GUILayout.Button("查找对应实体"))
                 {
-                    TaskEntityBase[] args = FindObjectsByType<TaskEntityBase>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                    TaskEntityBase[] args = FindObjectsOfType<TaskEntityBase>();
                     bool findSuccess = false;
                     foreach (TaskEntityBase arg in args)
                     {

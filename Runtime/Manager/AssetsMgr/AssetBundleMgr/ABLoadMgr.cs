@@ -139,7 +139,11 @@ namespace UPandaGF
                                 await System.Threading.Tasks.Task.Yield();
                             }
                             //检查请求结果
+#if UNITY_2020_1_OR_NEWER
                             if (webRequest.result != UnityWebRequest.Result.Success)
+#else
+                            if (webRequest.isNetworkError || webRequest.isHttpError)
+#endif
                             {
                                 Debug.LogError($"AssetBundle加载失败\n{fullPath}\n{webRequest.error}");
                                 return null;
@@ -207,7 +211,11 @@ namespace UPandaGF
                             yield return null;
                         }
                         //检查请求结果
+#if UNITY_2020_1_OR_NEWER
                         if (webRequest.result != UnityWebRequest.Result.Success)
+#else
+                        if (webRequest.isNetworkError || webRequest.isHttpError)
+#endif
                         {
                             Debug.LogError($"AssetBundle加载失败\n{fullPath}\n{webRequest.error}");
                             callback.Invoke(null);

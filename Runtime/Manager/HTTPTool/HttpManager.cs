@@ -46,7 +46,7 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
             Url = url,
             Type = HttpRequestType.Post,
             Parameters = jsonData,
-            OnSuccess = (data, code) => onSuccess?.Invoke(data),
+            OnSuccess = (_data, code) => onSuccess?.Invoke(_data),
             OnFailure = onFailure
         };
         pack.CreateWebRequest();

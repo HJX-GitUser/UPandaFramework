@@ -252,7 +252,11 @@ public class NginxUploader : EditorWindow
                     await System.Threading.Tasks.Task.Yield();
                 }
 
+#if UNITY_2020_1_OR_NEWER
                 if (request.result != UnityWebRequest.Result.Success)
+#else
+                if (request.isNetworkError || request.isHttpError)
+#endif
                 {
                     AddLog($"上传失败 {fileName}: {request.error}");
                     return false;

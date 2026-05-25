@@ -128,7 +128,7 @@ namespace UPandaGF
             SetRect(Mid, canvasRect);
             SetRect(Top, canvasRect);
             SetRect(System, canvasRect);
-            EventSystem eventSystem = FindAnyObjectByType<EventSystem>();
+            EventSystem eventSystem = FindObjectOfType<EventSystem>();
             if (eventSystem == null)
             {
                 GameObject eventObj = new GameObject("EventSystem");

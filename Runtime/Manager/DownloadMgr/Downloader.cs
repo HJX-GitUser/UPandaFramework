@@ -180,8 +180,12 @@ namespace UPandaGF
                     activeDownloadCount--;
                     yield break;
                 }
+#if UNITY_2020_1_OR_NEWER
                 if (request.result == UnityWebRequest.Result.ProtocolError ||
                     request.result == UnityWebRequest.Result.ConnectionError)
+#else
+                if (request.isHttpError || request.isNetworkError)
+#endif
                 {
                     break;
                 }
@@ -197,8 +201,12 @@ namespace UPandaGF
             }
 
             // 处理结果
-            if (request.result == UnityWebRequest.Result.ProtocolError ||
-                request.result == UnityWebRequest.Result.ConnectionError)
+#if UNITY_2020_1_OR_NEWER
+                if (request.result == UnityWebRequest.Result.ProtocolError ||
+                    request.result == UnityWebRequest.Result.ConnectionError)
+#else
+            if (request.isHttpError || request.isNetworkError)
+#endif
             {
                 item.state = DownloadState.Failed;
                 item.error = request.error;
