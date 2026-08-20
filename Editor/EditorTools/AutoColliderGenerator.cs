@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
 namespace UPandaGF.GFEditor
 {
     public enum ColliderType
@@ -31,10 +33,10 @@ namespace UPandaGF.GFEditor
         private float offsetY = 0f;     // Y轴偏移
 
         // 高级设置
+        [SerializeField]
         private bool showAdvanced = false;
         private bool removeExisting = true;  // 移除现有碰撞体
         private bool applyToChildren = false; // 应用到子物体
-        private int meshColliderAccuracy = 255; // 网格碰撞体精度
 
         // 手动设置
         private Vector3 manualSize = Vector3.one;
@@ -44,7 +46,7 @@ namespace UPandaGF.GFEditor
         public static void ShowWindow()
         {
             var window = GetWindow<AutoColliderGenerator>("碰撞体生成器");
-            window.minSize = new Vector2(350, 400);
+            window.minSize = new Vector2(350, 420);
         }
 
         private void OnGUI()
@@ -97,13 +99,6 @@ namespace UPandaGF.GFEditor
                 EditorGUILayout.BeginVertical("box");
                 removeExisting = EditorGUILayout.Toggle("移除现有碰撞体", removeExisting);
                 applyToChildren = EditorGUILayout.Toggle("应用到子物体", applyToChildren);
-
-                if (colliderType == ColliderType.MeshCollider)
-                {
-                    meshColliderAccuracy = EditorGUILayout.IntSlider(
-                        "网格精度", meshColliderAccuracy, 0, 255);
-                }
-
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.Space(10);
             }
@@ -148,46 +143,51 @@ namespace UPandaGF.GFEditor
                 return;
             }
 
-            int successCount = 0;
-
-            Undo.SetCurrentGroupName("生成自动碰撞体");
-            int group = Undo.GetCurrentGroup();
+            // 使用 HashSet 避免重复处理同一物体（如父子重叠）
+            HashSet<GameObject> objectsToProcess = new HashSet<GameObject>();
 
             foreach (GameObject go in selectedObjects)
             {
-                if (GenerateColliderForObject(go))
-                {
-                    successCount++;
-                }
+                objectsToProcess.Add(go);
 
-                if (applyToChildren)
+                if (applyToChildren && colliderType != ColliderType.CompoundCollider)
                 {
-                    foreach (Transform child in go.GetComponentsInChildren<Transform>(true))
+                    // 获取所有子物体（包括自身，但排除自身已在上面添加）
+                    Transform[] allChildren = go.GetComponentsInChildren<Transform>(true);
+                    foreach (Transform child in allChildren)
                     {
                         if (child.gameObject != go)
                         {
-                            if (GenerateColliderForObject(child.gameObject))
-                            {
-                                successCount++;
-                            }
+                            objectsToProcess.Add(child.gameObject);
                         }
                     }
                 }
             }
 
+            int successCount = 0;
+
+            Undo.SetCurrentGroupName("生成自动碰撞体");
+            int group = Undo.GetCurrentGroup();
+
+            foreach (GameObject go in objectsToProcess)
+            {
+                if (GenerateColliderForObject(go))
+                {
+                    successCount++;
+                }
+            }
+
             Undo.CollapseUndoOperations(group);
 
-            //EditorUtility.DisplayDialog("完成",
-            //    $"成功为 {successCount} 个物体生成了碰撞体！", "确定");
+            EditorUtility.DisplayDialog("完成",
+                $"成功为 {successCount} 个物体生成了碰撞体！", "确定");
         }
 
         private bool GenerateColliderForObject(GameObject go)
         {
-            // 检查是否有渲染器或网格
-            Renderer renderer = go.GetComponent<Renderer>();
-            MeshFilter meshFilter = go.GetComponent<MeshFilter>();
-
-            if (fitMode != FitMode.ManualSize && renderer == null && meshFilter == null && fitMode != FitMode.ChildrenBounds && fitMode != FitMode.RendererBounds)
+            // 计算边界（ManualSize 模式不需要 Renderer/MeshFilter）
+            Bounds bounds = CalculateBounds(go);
+            if (bounds.size == Vector3.zero && fitMode != FitMode.ManualSize)
             {
                 return false;
             }
@@ -196,13 +196,6 @@ namespace UPandaGF.GFEditor
             if (removeExisting)
             {
                 RemoveExistingColliders(go);
-            }
-
-            // 计算边界
-            Bounds bounds = CalculateBounds(go);
-            if (bounds.size == Vector3.zero && fitMode != FitMode.ManualSize)
-            {
-                return false;
             }
 
             // 根据类型创建碰撞体
@@ -222,7 +215,7 @@ namespace UPandaGF.GFEditor
                     break;
                 case ColliderType.CompoundCollider:
                     CreateCompoundColliders(go);
-                    return true; // 复合碰撞体特殊处理
+                    return true; // 复合碰撞体已处理所有子物体
             }
 
             return true;
@@ -232,6 +225,7 @@ namespace UPandaGF.GFEditor
         {
             if (fitMode == FitMode.ManualSize)
             {
+                // 手动模式：直接使用本地坐标，无需转换
                 return new Bounds(manualCenter, manualSize);
             }
 
@@ -244,7 +238,6 @@ namespace UPandaGF.GFEditor
                     Renderer[] renderers = go.GetComponentsInChildren<Renderer>(false);
                     foreach (Renderer r in renderers)
                     {
-                        // if (r.gameObject == go) continue; // 跳过自身
                         if (!hasBounds)
                         {
                             bounds = r.bounds;
@@ -263,19 +256,22 @@ namespace UPandaGF.GFEditor
                     {
                         if (mf.sharedMesh != null)
                         {
+                            // 使用 mf.transform 正确转换到世界坐标
+                            Transform t = mf.transform;
                             Bounds meshBounds = mf.sharedMesh.bounds;
-                            meshBounds.center = go.transform.position +
-                                go.transform.rotation * Vector3.Scale(meshBounds.center, go.transform.localScale);
-                            meshBounds.size = Vector3.Scale(meshBounds.size, go.transform.localScale);
+                            Vector3 worldCenter = t.TransformPoint(meshBounds.center);
+                            Vector3 worldSize = Vector3.Scale(meshBounds.size, t.lossyScale);
+
+                            Bounds worldBounds = new Bounds(worldCenter, worldSize);
 
                             if (!hasBounds)
                             {
-                                bounds = meshBounds;
+                                bounds = worldBounds;
                                 hasBounds = true;
                             }
                             else
                             {
-                                bounds.Encapsulate(meshBounds);
+                                bounds.Encapsulate(worldBounds);
                             }
                         }
                     }
@@ -336,10 +332,8 @@ namespace UPandaGF.GFEditor
 
             // 将世界坐标转换为本地坐标
             Vector3 localCenter = go.transform.InverseTransformPoint(worldBounds.center);
-            Vector3 localSize = Vector3.Scale(
-                go.transform.InverseTransformVector(worldBounds.size),
-                go.transform.localScale
-            );
+            Vector3 localSize = go.transform.InverseTransformVector(worldBounds.size);
+            // 注意：InverseTransformVector 已经考虑了旋转和缩放，无需再乘以 localScale
 
             box.center = localCenter;
             box.size = localSize;
@@ -358,13 +352,14 @@ namespace UPandaGF.GFEditor
         {
             SphereCollider sphere = Undo.AddComponent<SphereCollider>(go);
 
+            // 世界中心转本地
             Vector3 localCenter = go.transform.InverseTransformPoint(worldBounds.center);
-            sphere.center = localCenter + new Vector3(0, offsetY, 0);
+            sphere.center = localCenter; // offsetY 已在 CalculateBounds 中应用
 
-            // 使用边界框的最大维度作为直径
-            float radius = Mathf.Max(worldBounds.size.x, worldBounds.size.y, worldBounds.size.z) / 2f;
-            sphere.radius = radius / Mathf.Max(go.transform.lossyScale.x,
-                Mathf.Max(go.transform.lossyScale.y, go.transform.lossyScale.z));
+            // 将世界尺寸转为本地尺寸，取最大维度的一半作为半径
+            Vector3 localSize = go.transform.InverseTransformVector(worldBounds.size);
+            float radius = Mathf.Max(Mathf.Abs(localSize.x), Mathf.Abs(localSize.y), Mathf.Abs(localSize.z)) / 2f;
+            sphere.radius = Mathf.Max(radius, 0.001f);
 
             sphere.isTrigger = isTrigger;
             sphere.material = physicMaterial;
@@ -375,30 +370,35 @@ namespace UPandaGF.GFEditor
             CapsuleCollider capsule = Undo.AddComponent<CapsuleCollider>(go);
 
             Vector3 localCenter = go.transform.InverseTransformPoint(worldBounds.center);
-            capsule.center = localCenter + new Vector3(0, offsetY, 0);
+            capsule.center = localCenter; // offsetY 已在 CalculateBounds 中应用
 
-            Vector3 size = worldBounds.size;
-            float maxDim = Mathf.Max(size.x, size.z);
-            float height = size.y;
+            // 将世界尺寸转为本地尺寸
+            Vector3 localSize = go.transform.InverseTransformVector(worldBounds.size);
+            float absX = Mathf.Abs(localSize.x);
+            float absY = Mathf.Abs(localSize.y);
+            float absZ = Mathf.Abs(localSize.z);
 
-            // 自动选择方向（基于最长的轴）
-            if (size.y > maxDim)
+            // 自动选择方向：基于最长的轴
+            if (absY >= absX && absY >= absZ)
             {
-                capsule.direction = 1; // Y轴
-                capsule.height = height / go.transform.lossyScale.y;
-                capsule.radius = (maxDim / 2f) / Mathf.Max(go.transform.lossyScale.x, go.transform.lossyScale.z);
+                // Y轴为主方向
+                capsule.direction = 1;
+                capsule.height = Mathf.Max(absY, 0.002f);
+                capsule.radius = Mathf.Max(Mathf.Max(absX, absZ) / 2f, 0.001f);
             }
-            else if (size.x > size.z)
+            else if (absX >= absZ)
             {
-                capsule.direction = 0; // X轴
-                capsule.height = size.x / go.transform.lossyScale.x;
-                capsule.radius = (Mathf.Max(size.y, size.z) / 2f) / Mathf.Max(go.transform.lossyScale.y, go.transform.lossyScale.z);
+                // X轴为主方向
+                capsule.direction = 0;
+                capsule.height = Mathf.Max(absX, 0.002f);
+                capsule.radius = Mathf.Max(Mathf.Max(absY, absZ) / 2f, 0.001f);
             }
             else
             {
-                capsule.direction = 2; // Z轴
-                capsule.height = size.z / go.transform.lossyScale.z;
-                capsule.radius = (Mathf.Max(size.x, size.y) / 2f) / Mathf.Max(go.transform.lossyScale.x, go.transform.lossyScale.y);
+                // Z轴为主方向
+                capsule.direction = 2;
+                capsule.height = Mathf.Max(absZ, 0.002f);
+                capsule.radius = Mathf.Max(Mathf.Max(absX, absY) / 2f, 0.001f);
             }
 
             capsule.isTrigger = isTrigger;
@@ -407,31 +407,27 @@ namespace UPandaGF.GFEditor
 
         private void CreateMeshCollider(GameObject go)
         {
-            MeshCollider meshCol = Undo.AddComponent<MeshCollider>(go);
             MeshFilter mf = go.GetComponent<MeshFilter>();
-
-            if (mf != null && mf.sharedMesh != null)
+            if (mf == null || mf.sharedMesh == null)
             {
-                meshCol.sharedMesh = mf.sharedMesh;
-                meshCol.convex = true;
-                meshCol.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation;
-            }
-            else
-            {
-                // 如果没有网格，创建一个简单的盒型碰撞体作为后备
+                // 没有网格时，创建盒型碰撞体作为后备
                 Debug.LogWarning($"物体 {go.name} 没有网格，使用盒型碰撞体代替");
-                DestroyImmediate(meshCol);
-                CreateBoxCollider(go, CalculateBounds(go));
+                Bounds fallbackBounds = CalculateBounds(go);
+                CreateBoxCollider(go, fallbackBounds);
                 return;
             }
 
+            MeshCollider meshCol = Undo.AddComponent<MeshCollider>(go);
+            meshCol.sharedMesh = mf.sharedMesh;
+            meshCol.convex = true;
+            meshCol.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation;
             meshCol.isTrigger = isTrigger;
             meshCol.material = physicMaterial;
         }
 
         private void CreateCompoundColliders(GameObject go)
         {
-            // 为每个子网格创建单独的碰撞体
+            // 为每个子网格创建单独的盒型碰撞体
             MeshFilter[] meshFilters = go.GetComponentsInChildren<MeshFilter>(true);
 
             foreach (MeshFilter mf in meshFilters)
@@ -444,15 +440,14 @@ namespace UPandaGF.GFEditor
                     RemoveExistingColliders(child);
                 }
 
-                // 为子物体创建盒型碰撞体
-                Bounds bounds = mf.sharedMesh != null ? mf.sharedMesh.bounds : new Bounds(Vector3.zero, Vector3.one * 0.1f);
+                // 计算子物体的世界边界
+                Bounds meshBounds = mf.sharedMesh != null ? mf.sharedMesh.bounds : new Bounds(Vector3.zero, Vector3.one * 0.1f);
+                Transform t = mf.transform;
+                Vector3 worldCenter = t.TransformPoint(meshBounds.center);
+                Vector3 worldSize = Vector3.Scale(meshBounds.size, t.lossyScale);
+                Bounds worldBounds = new Bounds(worldCenter, worldSize);
 
-                // 转换到世界坐标
-                Bounds worldBounds = new Bounds(
-                    child.transform.TransformPoint(bounds.center),
-                    Vector3.Scale(bounds.size, child.transform.lossyScale)
-                );
-
+                // 为子物体添加盒型碰撞体
                 CreateBoxCollider(child, worldBounds);
             }
         }
@@ -522,7 +517,6 @@ namespace UPandaGF.GFEditor
 
         private static void QuickGenerate(GameObject go, ColliderType type, FitMode mode)
         {
-            // 简化的快速生成逻辑
             Renderer r = go.GetComponent<Renderer>();
             if (r == null) return;
 
@@ -536,7 +530,7 @@ namespace UPandaGF.GFEditor
             Bounds bounds = r.bounds;
             BoxCollider box = Undo.AddComponent<BoxCollider>(go);
             box.center = go.transform.InverseTransformPoint(bounds.center);
-            box.size = Vector3.Scale(go.transform.InverseTransformVector(bounds.size), go.transform.localScale);
+            box.size = go.transform.InverseTransformVector(bounds.size);
         }
     }
 }

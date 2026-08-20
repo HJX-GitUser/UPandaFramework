@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace UPandaGF.ResourcePathCopyTool
 {
@@ -531,6 +532,17 @@ namespace UPandaGF.ResourcePathCopyTool
                 EditorGUIUtility.systemCopyBuffer = result;
                 Debug.Log($"已复制GUID:\n{result}");
             }
+        }
+
+        [MenuItem("UPandaGF/Tools/生成一个Guid输出到Console")]
+        static void Touming()
+        {
+            string uID = Guid.NewGuid().ToString();
+            EditorGUIUtility.systemCopyBuffer = uID;
+            Debug.Log(uID);
+            EditorUtility.DisplayDialog("Guid",
+                "Guid已复制到剪切板",
+                "确定");
         }
     }
 }

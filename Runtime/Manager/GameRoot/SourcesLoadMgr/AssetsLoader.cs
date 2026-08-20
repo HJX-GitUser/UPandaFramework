@@ -51,7 +51,7 @@ namespace UPandaGF
                 //资源关联数据
                 string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
                 byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
-                sourceRef = LoadABSourcesRelated(b);
+                if (b != null) sourceRef = LoadABSourcesRelated(b);
             }
 
 
@@ -245,7 +245,7 @@ namespace UPandaGF
         public ABSourcesRelated LoadABSourcesRelated(byte[] bytes)
         {
             ABSourcesRelated obj = null;
-            if(AssetAESConfig.enable)
+            if (AssetAESConfig.enable)
             {
                 string AESKEY = AssetAESConfig.AESKEY;//"111a222aaabbbccc";
                 string AESIV = AssetAESConfig.AESIV;//"111b222aaabbbccc";

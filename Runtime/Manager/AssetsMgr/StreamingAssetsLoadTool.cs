@@ -242,6 +242,11 @@ public static class StreamingAssetsLoader
     /// </summary>
     public static async Task<byte[]> LoadBinaryDataAsync(string relativePath)
     {
+        if (!CheckFile(relativePath))
+        {
+            Debug.LogError($"º”‘ÿ ß∞‹:{relativePath} ");
+            return null;
+        }
         string fullPath = CombineRelativePath(relativePath);
         if (Application.platform == RuntimePlatform.Android ||
             Application.platform == RuntimePlatform.WebGLPlayer)
@@ -258,7 +263,7 @@ public static class StreamingAssetsLoader
 
                 if (!IsRequestSuccess(www))
                 {
-                    throw new Exception($"{fullPath} º”‘ÿ ß∞‹: \n{www.error}");
+                    Debug.LogError($"{fullPath} º”‘ÿ ß∞‹: \n{www.error}");
                 }
 
                 return www.downloadHandler.data;
@@ -272,7 +277,8 @@ public static class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                throw new Exception($"{fullPath} º”‘ÿ ß∞‹: \n {e.Message}");
+                Debug.LogError($"{fullPath} º”‘ÿ ß∞‹: \n {e.Message}");
+                return null;
             }
         }
 
