@@ -29,7 +29,7 @@ namespace UPandaGF
         }
         private void Update()
         {
-            for (int i = soundList.Count - 1; i >= 0; i++)
+            for (int i = soundList.Count - 1; i >= 0; i--)
             {
                 if (!soundList[i].isPlaying)
                 {
@@ -114,9 +114,9 @@ namespace UPandaGF
             {
                 uniqueSound.Stop();
                 uniqueSound.clip = clip;
-                bkMusic.loop = false;
-                bkMusic.volume = soundValue;
-                bkMusic.Play();
+                uniqueSound.loop = false;
+                uniqueSound.volume = soundValue;
+                uniqueSound.Play();
             });
         }
         /// <summary>
@@ -132,9 +132,9 @@ namespace UPandaGF
             if (uniqueSound == null) uniqueSound = soundObj.AddComponent<AudioSource>();
             uniqueSound.Stop();
             uniqueSound.clip = clip;
-            bkMusic.loop = false;
-            bkMusic.volume = soundValue;
-            bkMusic.Play();
+            uniqueSound.loop = false;
+            uniqueSound.volume = soundValue;
+            uniqueSound.Play();
         }
 
         /// <summary>
