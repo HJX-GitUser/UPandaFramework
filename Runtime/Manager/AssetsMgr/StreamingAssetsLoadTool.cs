@@ -244,7 +244,7 @@ public static class StreamingAssetsLoader
     {
         if (!CheckFile(relativePath))
         {
-            Debug.LogError($"º”‘ÿ ß∞‹:{relativePath} ");
+            Debug.LogWarning($"º”‘ÿ ß∞‹:{relativePath} ");
             return null;
         }
         string fullPath = CombineRelativePath(relativePath);

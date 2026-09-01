@@ -1,12 +1,8 @@
 using System;
-using System.Collections;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using UnityEngine;
-using UnityEngine.Events;
-using System.Threading.Tasks;
-using System.Text;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace UPandaGF
 {
@@ -18,9 +14,6 @@ namespace UPandaGF
         Editor,//编辑器环境下加载资源
         Assetbundles,//使用AssetBundle加载资源
     }
-
-
-
     public class GFLoadedEvent : EventArgBase
     {
 
@@ -45,8 +38,6 @@ namespace UPandaGF
         public bool enableAssetUpdate;//启动资源更新
         //[Header("资源相对路径")]
         public string LoadAssetPath = "AssetBundles/StandaloneWindows/";
-        //资源远端更新配置
-        //public ABUpdataMgrArg assetUpdataConfig;
 
         /// <summary>
         /// 远程加载地址
@@ -63,18 +54,29 @@ namespace UPandaGF
         public AssetBundleClassificationWindowConfig AssetAESConfig;
 
         private ABSourcesRelated sourceRef = null;
-
         public ABSourcesRelated SourceRef { get => sourceRef; }
 
         private void Reset()
         {
-            SetComponent();
+             SetComponent();
         }
-        protected override async void OnAwake()
+
+        protected override void OnAwake()
         {
             SetComponent();
-            //StartCoroutine();
-            await Init();
+            InitAsync();
+        }
+
+        private async void InitAsync()
+        {
+            try
+            {
+                await Init();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"UPGameRoot 初始化失败：{e}");
+            }
         }
 
         private async Task Init()
@@ -82,124 +84,206 @@ namespace UPandaGF
             await PublicMono.Instance.RunCoroutine(debugerInit.Init());
             binaryDataMgr.Init();
             sourcesLoadMgr.AssetAESConfig = AssetAESConfig;
+
             if (enableAssetUpdate)
             {
-                PLogger.Log("资源更新已启动");
-                string removeDownPath = Path.Combine(reomoteURL, "AssetBundles/", assetData);//远端资源数据
-                string tempFileSavePath = Path.Combine(Application.persistentDataPath, "AssetBundles/", tempAssetData);//临时资源数据
-                if (File.Exists(tempFileSavePath)) File.Delete(tempFileSavePath);//如果缓存对比文件存在就直接删掉
-                string localFilePath = Path.Combine(Application.persistentDataPath, "AssetBundles/", assetData);//本地资源数据
-                PLogger.Log($"资源配置下载路径：{removeDownPath}\n保存路径：{tempFileSavePath}");
-                bool isDown = await downloader.DownloadAsync(removeDownPath, tempFileSavePath);
-                if (isDown)
-                {
-                    PLogger.Log_green("校验数据下载成功");
-                    byte[] tempSourceRefByte = File.ReadAllBytes(tempFileSavePath);
-                    ABSourcesRelated tempSourceRef = sourcesLoadMgr.LoadABSourcesRelated(tempSourceRefByte);
-                    if (File.Exists(localFilePath))
-                    {
-                        ABSourcesRelated localSourceRef = sourcesLoadMgr.LoadABSourcesRelated(File.ReadAllBytes(localFilePath));
-                        //校验对比资源并更新
-                        List<DownloadItem> downloadList = new List<DownloadItem>();
-                        if (tempSourceRef.mainBundleInfo.loadPath == ABLoadPath.PersistentDataPath && !tempSourceRef.mainBundleInfo.md5.Equals(localSourceRef.mainBundleInfo.md5))
-                        {
-                            downloadList.Add(GetDownInfo(tempSourceRef.mainBundleInfo.bundleName, tempSourceRef.mainBundleInfo.size));
-                        }
-                        foreach (var item in tempSourceRef.bundleInfo)
-                        {
-                            if (item.Value.loadPath != ABLoadPath.PersistentDataPath) continue;
-                            if (localSourceRef.bundleInfo.ContainsKey(item.Key))
-                            {
-                                if (!item.Value.md5.Equals(localSourceRef.bundleInfo[item.Key].md5))
-                                {
-                                    downloadList.Add(GetDownInfo(item.Key, item.Value.size));
-                                }
-                            }
-                            else
-                            {
-                                downloadList.Add(GetDownInfo(item.Key, item.Value.size));
-                            }
-                        }
-                        //检查需要删除的目录（远程目录没有，但是本地存在的就删掉）
-                        foreach (var item in localSourceRef.bundleInfo)
-                        {
-                            if (!tempSourceRef.bundleInfo.ContainsKey(item.Key))
-                            {
-                                string delPath = Path.Combine(Application.persistentDataPath, LoadAssetPath, item.Key);
-                                Debug.Log($"{delPath} 已删除");
-                                File.Delete(delPath);
-                            }
-                        }
-                        Debug.Log($"共有{downloadList.Count}个资源需要更新");
-                        bool isDownComplete = false;
-                        downloader.OnAllDownloadsComplete += () =>
-                        {
-                            Debug.Log("所有资源下载结束");
-                            isDownComplete = true;
-                        };
-                        downloader.AddBatchDownloads(downloadList);
-                        while (!isDownComplete)
-                        {
-                            await Task.Yield();
-                        }
-                    }
-                    else // 文件不存在说明是第一次下载
-                    {
-                        List<DownloadItem> downloadList = new List<DownloadItem>();
-                        downloadList.Add(GetDownInfo(tempSourceRef.mainBundleInfo.bundleName, tempSourceRef.mainBundleInfo.size));
-                        foreach (var item in tempSourceRef.bundleInfo.Values)
-                        {
-                            if (item.loadPath == ABLoadPath.PersistentDataPath)
-                                downloadList.Add(GetDownInfo(item.bundleName, item.size));
-                        }
-                        Debug.Log($"共有{downloadList.Count}个资源需要下载");
-                        bool isDownComplete = false;
-                        downloader.AddBatchDownloads(downloadList);
-                        downloader.OnAllDownloadsComplete += () =>
-                        {
-                            Debug.Log("所有资源下载结束");
-                            isDownComplete = true;
-                        };
-                        while (!isDownComplete)
-                        {
-                            await Task.Yield();
-                        }
-                    }
-                    if (File.Exists(tempFileSavePath))
-                        FileUtility.SaveAsAndDeleteOriginal(tempFileSavePath, localFilePath, true);
-                }
-                else
-                {
-                    PLogger.Log_red("资源校验目录下载失败");
-                }
-                if (File.Exists(localFilePath))
-                {
-                    byte[] Temparg = File.ReadAllBytes(localFilePath);
-                    sourceRef = sourcesLoadMgr.LoadABSourcesRelated(Temparg);
-                }
+                sourceRef = await UpdateAssets();
             }
+
             await sourcesLoadMgr.Init(method, reomoteURL, LoadAssetPath, sourceRef);
             _UIManager.SetResourcesLoader(sourcesLoadMgr, ResourcesLoader.Instance);
             OnInited();
         }
 
+        /// <summary>
+        /// 执行资源热更，返回更新后的资源清单（失败时降级到本地清单）
+        /// </summary>
+        private async Task<ABSourcesRelated> UpdateAssets()
+        {
+            PLogger.Log("资源更新已启动");
+            string remoteListPath = CombineUrl(reomoteURL, "AssetBundles/", assetData);
+            string tempFileSavePath = Path.Combine(Application.persistentDataPath, "AssetBundles/", tempAssetData);
+            string localFilePath = Path.Combine(Application.persistentDataPath, "AssetBundles/", assetData);
+
+            if (File.Exists(tempFileSavePath))
+                File.Delete(tempFileSavePath);
+
+            PLogger.Log($"资源配置下载路径：{remoteListPath}\n保存路径：{tempFileSavePath}");
+            bool isDown = await downloader.DownloadAsync(remoteListPath, tempFileSavePath);
+            if (!isDown)
+            {
+                PLogger.Log_red("资源校验目录下载失败，使用本地资源清单");
+                return LoadLocalSourceRef(localFilePath);
+            }
+
+            PLogger.Log_green("校验数据下载成功");
+            byte[] tempSourceRefByte = File.ReadAllBytes(tempFileSavePath);
+            ABSourcesRelated tempSourceRef = sourcesLoadMgr.LoadABSourcesRelated(tempSourceRefByte);
+            if (tempSourceRef == null || tempSourceRef.mainBundleInfo == null)
+            {
+                PLogger.LogError("远端资源清单解析失败，使用本地资源清单");
+                return LoadLocalSourceRef(localFilePath);
+            }
+
+            if (File.Exists(localFilePath))
+            {
+                ABSourcesRelated localSourceRef = LoadLocalSourceRef(localFilePath);
+                if (localSourceRef == null || localSourceRef.mainBundleInfo == null)
+                {
+                    PLogger.LogError("本地资源清单异常，按首次下载处理");
+                    await DownloadFirstTime(tempSourceRef);
+                }
+                else
+                {
+                    await DownloadIncrement(tempSourceRef, localSourceRef);
+                }
+            }
+            else
+            {
+                await DownloadFirstTime(tempSourceRef);
+            }
+
+            if (File.Exists(tempFileSavePath))
+                FileUtility.SaveAsAndDeleteOriginal(tempFileSavePath, localFilePath, true);
+
+            return LoadLocalSourceRef(localFilePath);
+        }
+
+        private ABSourcesRelated LoadLocalSourceRef(string localFilePath)
+        {
+            if (!File.Exists(localFilePath))
+                return null;
+            return sourcesLoadMgr.LoadABSourcesRelated(File.ReadAllBytes(localFilePath));
+        }
+
+        /// <summary>
+        /// 首次下载：主包 + 所有持久化资源
+        /// </summary>
+        private async Task DownloadFirstTime(ABSourcesRelated tempSourceRef)
+        {
+            List<DownloadItem> downloadList = new List<DownloadItem>();
+            downloadList.Add(GetDownInfo(tempSourceRef.mainBundleInfo.bundleName, tempSourceRef.mainBundleInfo.size));
+            foreach (var item in tempSourceRef.bundleInfo.Values)
+            {
+                if (item.loadPath == ABLoadPath.PersistentDataPath)
+                    downloadList.Add(GetDownInfo(item.bundleName, item.size));
+            }
+            PLogger.Log($"共有{downloadList.Count}个资源需要下载");
+            await DownloadBatchAndWait(downloadList);
+        }
+
+        /// <summary>
+        /// 增量更新：按 MD5 对比下载变更资源，并清理远端已删除的本地资源
+        /// </summary>
+        private async Task DownloadIncrement(ABSourcesRelated tempSourceRef, ABSourcesRelated localSourceRef)
+        {
+            List<DownloadItem> downloadList = new List<DownloadItem>();
+            if (tempSourceRef.mainBundleInfo.loadPath == ABLoadPath.PersistentDataPath
+                && !string.Equals(tempSourceRef.mainBundleInfo.md5, localSourceRef.mainBundleInfo.md5))
+            {
+                downloadList.Add(GetDownInfo(tempSourceRef.mainBundleInfo.bundleName, tempSourceRef.mainBundleInfo.size));
+            }
+
+            foreach (var item in tempSourceRef.bundleInfo)
+            {
+                if (item.Value.loadPath != ABLoadPath.PersistentDataPath)
+                    continue;
+                if (localSourceRef.bundleInfo.TryGetValue(item.Key, out var localInfo))
+                {
+                    if (!string.Equals(item.Value.md5, localInfo.md5))
+                        downloadList.Add(GetDownInfo(item.Key, item.Value.size));
+                }
+                else
+                {
+                    downloadList.Add(GetDownInfo(item.Key, item.Value.size));
+                }
+            }
+
+            // 远端已删除、本地仍存在的资源做清理
+            foreach (var item in localSourceRef.bundleInfo)
+            {
+                if (!tempSourceRef.bundleInfo.ContainsKey(item.Key))
+                    DeleteLocalAsset(item.Key);
+            }
+
+            PLogger.Log($"共有{downloadList.Count}个资源需要更新");
+            await DownloadBatchAndWait(downloadList);
+        }
+
+        private void DeleteLocalAsset(string fileName)
+        {
+            string delPath = Path.Combine(Application.persistentDataPath, LoadAssetPath, fileName);
+            try
+            {
+                if (File.Exists(delPath))
+                {
+                    File.Delete(delPath);
+                    PLogger.Log($"{delPath} 已删除");
+                }
+            }
+            catch (Exception e)
+            {
+                PLogger.LogWarning($"删除资源失败：{delPath}，{e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 批量下载并等待完成；空列表直接返回，避免死循环
+        /// </summary>
+        private async Task DownloadBatchAndWait(List<DownloadItem> downloadList)
+        {
+            if (downloadList == null || downloadList.Count == 0)
+            {
+                PLogger.Log("没有需要下载的资源");
+                return;
+            }
+
+            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            Action onComplete = () => tcs.TrySetResult(true);
+            downloader.OnAllDownloadsComplete += onComplete;
+            downloader.AddBatchDownloads(downloadList);
+            try
+            {
+                await tcs.Task;
+            }
+            finally
+            {
+                downloader.OnAllDownloadsComplete -= onComplete;
+            }
+        }
 
         private DownloadItem GetDownInfo(string fileName, long size)
         {
-            string assetRemotePath = Path.Combine(reomoteURL, LoadAssetPath);
             string assetsavePath = Path.Combine(Application.persistentDataPath, LoadAssetPath);
             return new DownloadItem()
             {
-                url = Path.Combine(assetRemotePath, fileName),
+                url = CombineUrl(reomoteURL, LoadAssetPath, fileName),
                 savePath = Path.Combine(assetsavePath, fileName),
                 fileName = fileName,
                 fileSize = size
             };
         }
 
+        /// <summary>
+        /// 拼接远程 URL，避免 Path.Combine 在跨平台下产生错误的路径分隔符
+        /// </summary>
+        private static string CombineUrl(params string[] segments)
+        {
+            string url = string.Empty;
+            foreach (string segment in segments)
+            {
+                if (string.IsNullOrEmpty(segment))
+                    continue;
+                url = url.Length == 0
+                    ? segment
+                    : url.TrimEnd('/') + "/" + segment.TrimStart('/');
+            }
+            return url;
+        }
 
         private void SetComponent()
         {
+            if (AssetAESConfig == null) AssetAESConfig = new AssetBundleClassificationWindowConfig();
             if (debugerInit == null) debugerInit = InitComponent<DebugerInit>();
             if (downloader == null) downloader = InitComponent<Downloader>();
             if (sourcesLoadMgr == null) sourcesLoadMgr = InitComponent<AssetsLoader>();
@@ -248,7 +332,3 @@ namespace UPandaGF
         }
     }
 }
-
-
-
-
