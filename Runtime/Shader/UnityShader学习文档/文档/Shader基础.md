@@ -32,7 +32,7 @@ Unity Shader对Shader进行封装，提供了一种叫做ShaderLab的语言，�
 
 你选Universal 3D 就是URP渲染管线，URP也叫 “通用渲染管线”。（图中红色框的都是标准渲染管线；蓝色框的是URP，3D Sample Scene (URP)这个模板带一个示例场景）；
 
-![image-20260615162954538](assets\image-20260615162954538.png)
+![image-20260615162954538](assets/image-20260615162954538.png)
 
 进入Unity中，你在资源目录这里右键->Create->Shader。然后你就可以看到有好多可以创建的：
 
