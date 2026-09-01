@@ -16,6 +16,7 @@ Unity 的前端（客户端）框架，提供统一的启动入口、单例、�
 - 可编译期剔除的日志系统，支持本地输出与真机日志面板
 - 分层 UI 管理与 Canvas 自动生成
 - 玩法系统：任务系统、交互式任务评分、回放、分层状态机
+- 内置 Shader 学习文档与效果案例库（流光、描边、卡通、消融、水波等）
 - 编辑器工具链：AB 打包、Excel 数据表、UI 自动生成、Json 编辑器、HybridCLR 热更
 
 ## 快速开始
@@ -88,12 +89,12 @@ upanda-framework/
 │   │   ├── InteractiveTaskScoringSystem/  交互式任务评分系统
 │   │   ├── PlaybackSystem/      回放系统
 │   │   ├── StateMachine/        分层状态机
-│   │   ├── QuickOutline/        高亮描边
+│   │   ├── QuickOutline/        高亮描边（含 Sample 示例）
 │   │   ├── SimpleCameraControl/ 相机控制
 │   │   ├── Vignette/            隧道暗角效果
 │   │   └── Study/               学习示例
-│   ├── Resources/               框架内置资源（材质 / Shader / UI）
-│   └── Shader/                  ShaderLibrary
+│   ├── Resources/               框架内置资源（描边 Shader / 材质 / UI 预制体）
+│   └── Shader/                  Shader 学习文档（含效果案例）与 ShaderLibrary
 ├── README.md
 └── LICENSE
 ```
@@ -231,9 +232,17 @@ EventCenter.Instance.EventTrigger(new EventTest1("触发测试"));
 | `InteractiveTaskScoringSystem` | 交互式任务评分系统：步骤管理、操作判定、串行 / 并行操作组、操作记录与评分，面向教学实训场景 |
 | `PlaybackSystem` | 回放系统：录制对象 Transform 数据，序列化 + 压缩存储到本地 |
 | `StateMachine` | 分层状态机：状态注册、状态栈、路径切换（如 `Movement/Run`） |
-| `QuickOutline` | 物体高亮描边 |
+| `QuickOutline` | 物体高亮描边（配套 `OutlineMask/OutlineFill` Shader 与材质） |
 | `SimpleCameraControl` | 简单相机控制 |
-| `Vignette` | 隧道暗角后处理效果 |
+| `Vignette` | 隧道暗角后处理效果（`TunnelingVignette`） |
+
+### Shader 学习资料（Runtime/Shader）
+
+框架内置一套 Shader 学习文档与效果案例库，适合学习内置（Built-in）渲染管线的 Shader 编写：
+
+- **UnityShader学习文档**：`Shader基础.md` 从零讲解 ShaderLab 结构、数据类型与语义、坐标空间、光照模型、纹理、混合、深度 / 模板测试等完整知识树，附图文与可运行代码。
+- **效果案例库**：流光、纹理动画、模型描边、卡通风格、噪声、水波、消融、物体切割、素描风格、翻页、遮挡半透明等 11 个可运行案例。
+- **ShaderLibrary**：内置渲染管线常用 Shader 库（`Library/BuildIn`）。
 
 ### 编辑器工具链（Editor）
 
