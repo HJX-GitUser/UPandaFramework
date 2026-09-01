@@ -36,7 +36,7 @@ Unity Shader对Shader进行封装，提供了一种叫做ShaderLab的语言，�
 
 进入Unity中，你在资源目录这里右键->Create->Shader。然后你就可以看到有好多可以创建的：
 
-![image-20260615164341662](assets\image-20260615164341662.png)
+![image-20260615164341662](assets/image-20260615164341662.png)
 
 
 
@@ -76,7 +76,7 @@ Unity Shader对Shader进行封装，提供了一种叫做ShaderLab的语言，�
 
 Ok，现在你选择**Unlit Shader**创建了一个Shader，命名你可以自己取，但是不要用中文。双击进入，开始认识Shader。
 
-![image-20260615165155834](assets\image-20260615165155834.png)
+![image-20260615165155834](assets/image-20260615165155834.png)
 
 打开后你看到的代码是这样的：
 
@@ -169,17 +169,17 @@ Shader "LiDan/Study/FirstShader"
 
 你先在Unity中创建好专门放材质的文件夹 Material，然后创建一个材质。
 
-![image-20260615171250022](assets\image-20260615171250022.png)
+![image-20260615171250022](assets/image-20260615171250022.png)
 
 
 
 点击材质看“Inspector”面板，“Shader”后面有个下拉选项
 
-![image-20260615174636872](assets\image-20260615174636872.png)
+![image-20260615174636872](assets/image-20260615174636872.png)
 
 在这里你依次点击LiDan->Study->FirstShader，这个材质就成功的使用上你创建的Shader了。
 
-![image-20260615180331210](assets\image-20260615180331210.png)
+![image-20260615180331210](assets/image-20260615180331210.png)
 
 我之前教过你一个更简单的方法，你在Shader文件上右键->Create->Material。创建的材质直接就和这个Shader关联。
 
@@ -187,7 +187,7 @@ Shader "LiDan/Study/FirstShader"
 
 把这个材质给模型用上，你就可以在场景中观察这个Shader的渲染效果了。
 
-![image-20260615181130921](assets\image-20260615181130921.png)
+![image-20260615181130921](assets/image-20260615181130921.png)
 
 
 
@@ -433,7 +433,7 @@ Shader "LiDan/Study/FirstShader" {
 }
 ```
 代码改成上面那样后，你可以看到Unity里还是模型还是完全白色的效果，然后他的属性面板是这样的：
-![lz1](assets\lz.png)
+![lz1](assets/lz.png)
 
 
 我开始介绍每个模块的语法规则。
@@ -454,7 +454,7 @@ Properties
 }
 ```
 你把这3行代码写完返回Untiy,看属性面板就变成这样了：
-![2.1-p1.png](assets\2.1-p1.png)
+![2.1-p1.png](assets/2.1-p1.png)
 
 #### 语法
 我用第一个属性为例子为你介绍一下语法：
@@ -516,11 +516,11 @@ _Color ("MainColor", Color) = (1,1,1,1)
 
 这样的话你的Inspector面板会显示成乱码：
 
-![属性面板中文1](assets\属性面板中文1.png)
+![属性面板中文1](assets/属性面板中文1.png)
 
 只需要将你的Shader代码文件保存为**UTF-8编码**，重新导入Unity即可正常显示。（不会操作就上班的时候过来问我）
 
-![属性面板中文2](assets\属性面板中文2.png)
+![属性面板中文2](assets/属性面板中文2.png)
 
 虽然支持中文，但项目中还是建议使用英文作为显示名称，保证跨平台/不同版本Unity的兼容性哦。
 
