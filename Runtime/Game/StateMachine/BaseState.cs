@@ -69,6 +69,11 @@ namespace UPandaGF.StateMechine
         protected IState activeChild = null;
 
         /// <summary>
+        /// 当前活跃的子状态（只读，供状态管理器访问，用于多级切换的回滚）
+        /// </summary>
+        public IState ActiveChild => activeChild;
+
+        /// <summary>
         /// 默认子状态ID
         /// </summary>
         protected string defaultChildID = string.Empty;
@@ -134,6 +139,18 @@ namespace UPandaGF.StateMechine
             activeChild.OnEnter();
 
             return true;
+        }
+
+        /// <summary>
+        /// 清空当前活跃子状态（退出当前子状态但不进入新的，供回滚使用）
+        /// </summary>
+        public void ClearActiveChild()
+        {
+            if (activeChild != null)
+            {
+                activeChild.OnExit();
+                activeChild = null;
+            }
         }
 
         /// <summary>

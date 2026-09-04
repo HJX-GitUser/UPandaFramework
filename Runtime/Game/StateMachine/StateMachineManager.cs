@@ -21,7 +21,7 @@ namespace UPandaGF.StateMechine
         private Dictionary<string, IState> stateRegistry = new Dictionary<string, IState>();
 
         /// <summary>
-        /// 状态栈（用于处理状态嵌套）
+        /// 状态栈（用于返回上一级状态）
         /// </summary>
         private Stack<IState> stateStack = new Stack<IState>();
 
@@ -35,12 +35,31 @@ namespace UPandaGF.StateMechine
         /// </summary>
         public event Action<string, string> OnStateChanged;
 
+        /// <summary>
+        /// 路径是否已失效（状态切换后置为 true，需重新计算，避免每帧递归拼接字符串）
+        /// </summary>
+        private bool pathDirty = true;
+
+        /// <summary>
+        /// 多级切换记录：记录已切换的父状态及其原活跃子状态（用于失败回滚）
+        /// </summary>
+        private struct SwitchRecord
+        {
+            public BaseState parent;
+            public IState oldChild;
+        }
+
         void Update()
         {
             if (rootState != null)
             {
                 rootState.OnUpdate(Time.deltaTime);
-                UpdateActivePath();
+                // 仅当路径失效时才重新计算
+                if (pathDirty)
+                {
+                    UpdateActivePath();
+                    pathDirty = false;
+                }
             }
         }
 
@@ -75,9 +94,17 @@ namespace UPandaGF.StateMechine
                     {
                         baseParent.RegisterChild(state);
                     }
+                    else
+                    {
+                        // 父状态不是 BaseState，无法挂载子状态，回滚注册
+                        stateRegistry.Remove(state.StateID);
+                        Debug.LogError($"父状态 {parentStateID} 不是 BaseState，无法注册子状态 {state.StateID}");
+                    }
                 }
                 else
                 {
+                    // 父状态未找到，回滚注册
+                    stateRegistry.Remove(state.StateID);
                     Debug.LogError($"父状态 {parentStateID} 未找到，无法注册子状态 {state.StateID}");
                 }
             }
@@ -88,9 +115,12 @@ namespace UPandaGF.StateMechine
                 {
                     rootState = state;
                     rootState.OnEnter();
+                    pathDirty = true;
                 }
                 else
                 {
+                    // 根状态已存在，回滚注册
+                    stateRegistry.Remove(state.StateID);
                     Debug.LogError($"已存在根状态 {rootState.StateID}，无法设置新根状态 {state.StateID}");
                 }
             }
@@ -104,7 +134,6 @@ namespace UPandaGF.StateMechine
         {
             if (string.IsNullOrEmpty(statePath)) return false;
 
-            // 支持相对路径和绝对路径
             string[] pathSegments = statePath.Split('/');
 
             if (pathSegments.Length == 1)
@@ -112,28 +141,47 @@ namespace UPandaGF.StateMechine
                 // 单级路径：直接切换根状态或当前上下文的子状态
                 return SwitchToState(statePath);
             }
-            else
-            {
-                // 多级路径：逐级切换
-                IState currentState = GetCurrentContext();
-                for (int i = 0; i < pathSegments.Length; i++)
-                {
-                    if (currentState is BaseState baseState)
-                    {
-                        if (!baseState.SwitchToChild(pathSegments[i]))
-                            return false;
 
-                        currentState = baseState.children[pathSegments[i]];
-                    }
-                    else
-                    {
-                        return false;
-                    }
+            // 多级路径：逐级切换，失败时回滚
+            IState currentState = GetCurrentContext();
+            if (currentState == null)
+            {
+                Debug.LogWarning("没有可用的状态上下文，无法切换");
+                return false;
+            }
+
+            string oldPath = ActiveStatePath;
+
+            // 把切换前的上下文压栈，便于 GoBack 返回
+            stateStack.Push(currentState);
+
+            // 记录已切换的父状态与其原活跃子状态（用于失败回滚）
+            var switchRecord = new Stack<SwitchRecord>();
+
+            for (int i = 0; i < pathSegments.Length; i++)
+            {
+                var baseState = currentState as BaseState;
+                if (baseState == null)
+                {
+                    Rollback(switchRecord);
+                    return false;
                 }
 
-                UpdateActivePath();
-                return true;
+                IState oldChild = baseState.ActiveChild;
+                if (!baseState.SwitchToChild(pathSegments[i]))
+                {
+                    Rollback(switchRecord);
+                    return false;
+                }
+
+                switchRecord.Push(new SwitchRecord { parent = baseState, oldChild = oldChild });
+                currentState = baseState.ActiveChild;
             }
+
+            // 更新路径并触发事件
+            RefreshActivePath();
+            OnStateChanged?.Invoke(oldPath, ActiveStatePath);
+            return true;
         }
 
         /// <summary>
@@ -141,9 +189,7 @@ namespace UPandaGF.StateMechine
         /// </summary>
         private bool SwitchToState(string stateID)
         {
-            if (!stateRegistry.ContainsKey(stateID)) return false;
-
-            var targetState = stateRegistry[stateID];
+            if (!stateRegistry.TryGetValue(stateID, out var targetState)) return false;
 
             // 检查是否可以切换
             if (!CanTransitionTo(targetState)) return false;
@@ -161,7 +207,8 @@ namespace UPandaGF.StateMechine
             // 切换状态
             if (targetState.Parent == null)
             {
-                // 切换根状态
+                // 切换根状态：清空旧状态栈（已失效），退出旧根并进入新根
+                stateStack.Clear();
                 rootState?.OnExit();
                 rootState = targetState;
                 rootState.OnEnter();
@@ -171,12 +218,16 @@ namespace UPandaGF.StateMechine
                 // 通过父状态切换
                 if (targetState.Parent is BaseState parentBase)
                 {
-                    parentBase.SwitchToChild(stateID);
+                    if (!parentBase.SwitchToChild(stateID)) return false;
+                }
+                else
+                {
+                    return false;
                 }
             }
 
             // 更新路径并触发事件
-            UpdateActivePath();
+            RefreshActivePath();
             OnStateChanged?.Invoke(oldPath, ActiveStatePath);
 
             return true;
@@ -209,16 +260,14 @@ namespace UPandaGF.StateMechine
             var currentState = GetCurrentContext();
             if (currentState == null) return true;
 
-            // 检查当前状态是否允许退出
-            // 检查目标状态是否允许进入
-
-            // 遍历层级链检查转换条件
+            // 沿层级链向上，逐级检查当前状态是否允许切换到目标状态
             var temp = currentState;
             while (temp != null)
             {
                 if (!temp.CanTransitionTo(targetState.StateID))
                     return false;
 
+                // 到达目标状态的父层级后停止（更高层级无需检查）
                 if (temp.Parent == null || temp.Parent == targetState.Parent)
                     break;
 
@@ -241,6 +290,38 @@ namespace UPandaGF.StateMechine
             {
                 ActiveStatePath = rootState?.StateID ?? "None";
             }
+        }
+
+        /// <summary>
+        /// 更新活跃路径并标记为已刷新
+        /// </summary>
+        private void RefreshActivePath()
+        {
+            UpdateActivePath();
+            pathDirty = false;
+        }
+
+        /// <summary>
+        /// 回滚多级切换：逐级恢复原活跃子状态，并弹出切换前压入的状态栈
+        /// </summary>
+        private void Rollback(Stack<SwitchRecord> record)
+        {
+            // 逆序恢复各级原活跃子状态
+            while (record.Count > 0)
+            {
+                var r = record.Pop();
+                if (r.oldChild != null)
+                {
+                    r.parent.SwitchToChild(r.oldChild.StateID);
+                }
+                else
+                {
+                    r.parent.ClearActiveChild();
+                }
+            }
+
+            // 弹出多级切换前压入的状态栈
+            if (stateStack.Count > 0) stateStack.Pop();
         }
 
         /// <summary>
@@ -285,5 +366,3 @@ namespace UPandaGF.StateMechine
         }
     }
 }
-
-
