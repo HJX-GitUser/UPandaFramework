@@ -87,7 +87,7 @@ upanda-framework/
 │   ├── Game/                    玩法系统层
 │   │   ├── TaskSystem/          任务系统
 │   │   ├── InteractiveTaskScoringSystem/  交互式任务评分系统
-│   │   ├── PlaybackSystem/      回放系统
+│   │   ├── ReplaySystem/        回放系统
 │   │   ├── StateMachine/        分层状态机
 │   │   ├── QuickOutline/        高亮描边（含 Sample 示例）
 │   │   ├── SimpleCameraControl/ 相机控制
