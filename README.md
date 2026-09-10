@@ -256,7 +256,8 @@ EventCenter.Instance.EventTrigger(new EventTest1("触发测试"));
 
 ### 网络请求（Manager/HTTPTool）
 
-- **HttpManager**：基于 `UnityWebRequest` 的 GET / POST 封装，支持全局请求头、泛型 JSON 反序列化、失败回调。
+- **HttpManager**：基于 `UnityWebRequest` 的 HTTP 封装：`GET / POST / PUT / DELETE`、全局请求头、泛型 JSON 反序列化（`JsonUtility`）、带状态码回调、失败重试（含重试间隔）、下载进度回调、请求取消与并发控制；按需懒加载单例（不在 `UPGameRoot` 的初始化列表中）。
+- 模块内暂无调用点；已修复原实现的"重试空引用导致请求队列死锁""全局请求头未接入"等问题，API 说明、用法示例与修复记录见 `Runtime/Manager/HTTPTool/README.md`。
 
 ### 对象池（Manager/ObjPool）
 
