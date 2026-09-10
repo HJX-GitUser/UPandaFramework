@@ -91,7 +91,7 @@ upanda-framework/
 │   │   ├── AudioMgr/            音频管理
 │   │   ├── SceneMgr/            场景管理
 │   │   ├── HTTPTool/            网络请求
-│   │   ├── ObjPool/             对象池
+│   │   ├── ObjPool/             对象池（含 Example 示例与本目录 README.md）
 │   │   ├── StorageDataMgr/      数据存储
 │   │   ├── PublicMono/          公共 Mono（协程 / Update 托管）
 │   │   └── Extend/              扩展方法
@@ -261,7 +261,8 @@ EventCenter.Instance.EventTrigger(new EventTest1("触发测试"));
 
 ### 对象池（Manager/ObjPool）
 
-- **GameObjectPoolMgr**：GameObject 对象池，支持按层级收纳布局，配合资源加载器使用。
+- **GameObjectPoolMgr**：GameObject 对象池，按资源路径分容器缓存（LIFO），池空时自动加载并实例化；支持 Resources / AssetBundle 两种加载方式、Task 与回调两种异步形式、层级收纳、单容器容量上限、预热（`Prewarm`）与 `IPoolable` 出池 / 回池回调；同步接口仅支持 Resources（已标记过时）。
+- 用法、配置项与注意事项见 `Runtime/Manager/ObjPool/README.md`。
 
 ### 数据存储（Manager/StorageDataMgr）
 
