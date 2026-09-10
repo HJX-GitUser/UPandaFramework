@@ -131,16 +131,25 @@ namespace UPandaGF
                 if (localSourceRef == null || localSourceRef.mainBundleInfo == null)
                 {
                     PLogger.LogError("本地资源清单异常，按首次下载处理");
-                    await DownloadFirstTime(tempSourceRef);
+                    if (!await DownloadFirstTime(tempSourceRef))
+                    {
+                        PLogger.Log_red("首次资源下载未全部完成，部分资源可能缺失");
+                    }
                 }
                 else
                 {
-                    await DownloadIncrement(tempSourceRef, localSourceRef);
+                    if (!await DownloadIncrement(tempSourceRef, localSourceRef))
+                    {
+                        PLogger.Log_red("增量资源下载未全部完成，将使用已下载成功的部分");
+                    }
                 }
             }
             else
             {
-                await DownloadFirstTime(tempSourceRef);
+                if (!await DownloadFirstTime(tempSourceRef))
+                {
+                    PLogger.Log_red("首次资源下载未全部完成，部分资源可能缺失");
+                }
             }
 
             if (File.Exists(tempFileSavePath))
@@ -159,7 +168,7 @@ namespace UPandaGF
         /// <summary>
         /// 首次下载：主包 + 所有持久化资源
         /// </summary>
-        private async Task DownloadFirstTime(ABSourcesRelated tempSourceRef)
+        private async Task<bool> DownloadFirstTime(ABSourcesRelated tempSourceRef)
         {
             List<DownloadItem> downloadList = new List<DownloadItem>();
             downloadList.Add(GetDownInfo(tempSourceRef.mainBundleInfo.bundleName, tempSourceRef.mainBundleInfo.size));
@@ -169,13 +178,13 @@ namespace UPandaGF
                     downloadList.Add(GetDownInfo(item.bundleName, item.size));
             }
             PLogger.Log($"共有{downloadList.Count}个资源需要下载");
-            await DownloadBatchAndWait(downloadList);
+            return await DownloadBatchAndWait(downloadList);
         }
 
         /// <summary>
         /// 增量更新：按 MD5 对比下载变更资源，并清理远端已删除的本地资源
         /// </summary>
-        private async Task DownloadIncrement(ABSourcesRelated tempSourceRef, ABSourcesRelated localSourceRef)
+        private async Task<bool> DownloadIncrement(ABSourcesRelated tempSourceRef, ABSourcesRelated localSourceRef)
         {
             List<DownloadItem> downloadList = new List<DownloadItem>();
             if (tempSourceRef.mainBundleInfo.loadPath == ABLoadPath.PersistentDataPath
@@ -207,7 +216,7 @@ namespace UPandaGF
             }
 
             PLogger.Log($"共有{downloadList.Count}个资源需要更新");
-            await DownloadBatchAndWait(downloadList);
+            return await DownloadBatchAndWait(downloadList);
         }
 
         private void DeleteLocalAsset(string fileName)
@@ -230,25 +239,57 @@ namespace UPandaGF
         /// <summary>
         /// 批量下载并等待完成；空列表直接返回，避免死循环
         /// </summary>
-        private async Task DownloadBatchAndWait(List<DownloadItem> downloadList)
+        /// <summary>
+        /// 批量下载并等待完成，返回是否全部成功；空列表直接返回成功，避免死循环
+        /// </summary>
+        private async Task<bool> DownloadBatchAndWait(List<DownloadItem> downloadList)
         {
             if (downloadList == null || downloadList.Count == 0)
             {
                 PLogger.Log("没有需要下载的资源");
-                return;
+                return true;
             }
 
-            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
-            Action onComplete = () => tcs.TrySetResult(true);
-            downloader.OnAllDownloadsComplete += onComplete;
+            // RunContinuationsAsynchronously：避免后续流程在下载器的"完成事件分发"中途同步续跑
+            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // 用带结果的事件：只要有一个任务重试耗尽，allSuccess 就是 false
+            Action<bool> onFinished = (allSuccess) => tcs.TrySetResult(allSuccess);
+            downloader.OnAllDownloadsFinished += onFinished;
             downloader.AddBatchDownloads(downloadList);
             try
             {
-                await tcs.Task;
+                bool allSuccess = await tcs.Task;
+                if (!allSuccess)
+                    LogDownloadFailures(downloadList);
+
+                return allSuccess;
             }
             finally
             {
-                downloader.OnAllDownloadsComplete -= onComplete;
+                downloader.OnAllDownloadsFinished -= onFinished;
+            }
+        }
+
+        /// <summary>
+        /// 打印本批次下载失败的资源（最多列出 10 个），便于定位是哪个资源导致的失败
+        /// </summary>
+        private void LogDownloadFailures(List<DownloadItem> downloadList)
+        {
+            IReadOnlyList<DownloadItem> failed = downloader.FailedItems;
+            PLogger.Log_red($"资源下载未全部成功：共 {downloadList.Count} 个任务，失败 {failed.Count} 个");
+
+            int shown = 0;
+            foreach (DownloadItem item in failed)
+            {
+                if (item == null)
+                    continue;
+
+                PLogger.LogError($"下载失败：{item.fileName}（{item.url}）：{item.error}");
+
+                shown++;
+                if (shown >= 10)
+                    break;
             }
         }
 

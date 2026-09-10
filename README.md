@@ -86,7 +86,7 @@ upanda-framework/
 │   │   ├── DebugSystem/         日志系统
 │   │   ├── EventCenterModule/   事件系统
 │   │   ├── AssetsMgr/           资源管理（Resources / AB / StreamingAssets）
-│   │   ├── DownloadMgr/         下载器
+│   │   ├── DownloadMgr/         下载器（含本目录 README.md）
 │   │   ├── UIMgr/               UI 管理
 │   │   ├── AudioMgr/            音频管理
 │   │   ├── SceneMgr/            场景管理
@@ -235,8 +235,10 @@ EventCenter.Instance.EventTrigger(new EventTest1("触发测试"));
 
 ### 下载器（Manager/DownloadMgr）
 
-- **Downloader**：支持断点续传、多任务并发、下载队列与实时进度回调，提供 `async/await` 接口与事件通知。
-- **DownloadHandlerFile**：继承 `DownloadHandlerScript` 的落盘下载句柄，以追加写 + 文件流实现断点续传。
+- **Downloader**：下载队列 + 并发（`maxConcurrentDownloads`）+ 超时重试 + 事件通知，提供 `async/await` 接口与暂停 / 继续 / 取消；批次结束用 `OnAllDownloadsFinished(bool)` 判断是否全部成功，失败明细见 `FailedItems`。
+- **DownloadHandlerFile**：继承 `DownloadHandlerScript` 的落盘下载句柄，延迟打开文件（兼容分块传输）、捕获写入异常、支持主动 `Close()`。
+- **断点续传默认关闭**（`enableResume = false`）：增量清单按 MD5 对比生成，本地文件可能是"完整但过期"的旧版本，追加写入会损坏文件。
+- 实现原理、API 参考与修复记录见 `Runtime/Manager/DownloadMgr/README.md`。
 
 ### UI 系统（Manager/UIMgr）
 
