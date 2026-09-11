@@ -113,7 +113,9 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         private static void ValidateManager(TaskDataManager mgr, Dictionary<string, List<TaskEntityBase>> declared, HashSet<string> usedIDs, List<TaskIssue> issues)
         {
             TaskConfig config = mgr.taskSteps;
-            TaskStepBase[] steps = mgr.GetComponentsInChildren<TaskStepBase>(true);
+            // P2：步骤执行顺序由 TaskStepData.order 决定（order 相同再看节点层级顺序，
+            // 与 TaskDataManager.SortStepsByOrder 口径一致），所以「按顺序应为」这类检查必须用同样的排序，否则会误报。
+            TaskStepBase[] steps = SortByOrder(mgr.GetComponentsInChildren<TaskStepBase>(true));
 
             if (config == null)
             {
@@ -320,8 +322,28 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             }
         }
 
-        // ============================ 修复 ============================
+        /// <summary>
+        /// P2：按 TaskStepData.order 稳定排序（与 TaskDataManager.SortStepsByOrder 口径完全一致）。
+        /// 校验器用它保证「按顺序应为」的判断顺序与运行时实际执行顺序一致。
+        /// </summary>
+        private static TaskStepBase[] SortByOrder(TaskStepBase[] steps)
+        {
+            if (steps == null || steps.Length < 2) return steps;
+            TaskStepBase[] copy = (TaskStepBase[])steps.Clone();
+            int[] indexs = new int[copy.Length];
+            for (int i = 0; i < indexs.Length; i++) indexs[i] = i;
+            System.Array.Sort(indexs, (a, b) =>
+            {
+                int oa = copy[a] != null && copy[a].taskStepData != null ? copy[a].taskStepData.order : 0;
+                int ob = copy[b] != null && copy[b].taskStepData != null ? copy[b].taskStepData.order : 0;
+                return oa != ob ? oa.CompareTo(ob) : a.CompareTo(b);
+            });
+            TaskStepBase[] sorted = new TaskStepBase[copy.Length];
+            for (int i = 0; i < sorted.Length; i++) sorted[i] = copy[indexs[i]];
+            return sorted;
+        }
 
+        // ============================ 修复 ============================
         /// <summary>
         /// 按层级规则重算指定任务下所有操作组/操作的 ID：
         ///   操作组 = 步骤ID-同级序号；叶子操作 = 组ID-同级序号（与 OperationCheckBase.Reset 规则一致，支持嵌套组）

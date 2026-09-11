@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -69,6 +70,63 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             Check(() => p.currentIndex == 0 && !p.isFinished && !p.MoveNext() && p.isFinished, "Progress：单步任务能正常完成", fails, ref total);
             p.Init(0);
             Check(() => p.isFinished && p.stepCount == 0, "Progress：0 步任务视为已完成（不会越界）", fails, ref total);
+
+            // ---------- 4. 难度分级 / 超时扣分（P2） ----------
+            DifficultyScorePolicy easy = DifficultyScorePolicy.Create(TaskDifficulty.Easy);
+            Check(() => easy.CalcScore(10f, 0) == 10f, "难度 Easy：0 错满分", fails, ref total);
+            Check(() => easy.CalcScore(10f, 1) == 9f, "难度 Easy：1 错扣 10%", fails, ref total);
+            Check(() => easy.CalcScore(10f, 9) == 7f, "难度 Easy：超出系数表后取最后一项（保底 70%）", fails, ref total);
+
+            DifficultyScorePolicy normal = DifficultyScorePolicy.Create(TaskDifficulty.Normal);
+            Check(() => normal.CalcScore(10f, 0) == 10f && normal.CalcScore(10f, 1) == 5f && normal.CalcScore(10f, 2) == 0f,
+                "难度 Normal：与默认策略三档一致", fails, ref total);
+
+            DifficultyScorePolicy hard = DifficultyScorePolicy.Create(TaskDifficulty.Hard);
+            Check(() => hard.CalcScore(10f, 0) == 10f && hard.CalcScore(10f, 1) == 0f, "难度 Hard：错一次即 0 分", fails, ref total);
+            Check(() => DifficultyScorePolicy.GetRateTable(TaskDifficulty.Easy).Length == 4
+                && DifficultyScorePolicy.GetRateTable(TaskDifficulty.Normal).Length == 3
+                && DifficultyScorePolicy.GetRateTable(TaskDifficulty.Hard)[0] == 1f,
+                "难度：系数表按难度返回（且为副本）", fails, ref total);
+
+            DifficultyScorePolicy timed = DifficultyScorePolicy.Create(TaskDifficulty.Normal, 10f, 2f);
+            ScoreContext inTime = new ScoreContext { baseScore = 10f, errors = 0, duration = 8f };
+            ScoreContext overTime = new ScoreContext { baseScore = 10f, errors = 0, duration = 13f };
+            ScoreContext wayOver = new ScoreContext { baseScore = 10f, errors = 1, duration = 100f };
+            Check(() => timed.CalcScore(inTime) == 10f, "超时扣分：未超时不扣", fails, ref total);
+            Check(() => timed.CalcScore(overTime) == 4f, "超时扣分：超过 3 秒每秒扣 2 分", fails, ref total);
+            Check(() => timed.CalcScore(wayOver) == 0f, "超时扣分：扣成负数时钳制为 0", fails, ref total);
+            Check(() => !string.IsNullOrEmpty(timed.Description) && timed.Description.Contains("Normal"),
+                "难度：Description 可读（供 UI 展示）", fails, ref total);
+
+            IScorePolicy asBase = timed;   // 向后兼容：增强策略仍能当普通策略用
+            Check(() => asBase.CalcScore(10f, 1) == 5f, "难度策略：旧签名（无耗时）等价 duration = 0", fails, ref total);
+
+            // ---------- 5. 回放日志（P2） ----------
+            ReplayLog rl = new ReplayLog("DemoTask", 5f);
+            Check(() => rl.Count == 0 && rl.taskName == "DemoTask" && !string.IsNullOrEmpty(rl.createTime),
+                "回放：新建日志为空且带任务名/创建时间", fails, ref total);
+            rl.Add(5.5f, "Step1", "Step_Enter", true, "进入步骤", 10f, 0);
+            rl.Add(6.0f, "Step1", "Step_Error", false, "第 1 次错误", 10f, 1);
+            rl.Add(8.5f, "Step1", "Step_Complete", true, "完成步骤", 5f, 1);
+            Check(() => rl.Count == 3, "回放：Add 追加记录", fails, ref total);
+            Check(() => Mathf.Abs(rl.entries[2].offset - 3.5f) < 0.0001f, "回放：offset = 动作时间 - 任务开始时间", fails, ref total);
+            Check(() => Mathf.Abs(rl.Duration - 3.5f) < 0.0001f, "回放：Duration = 最后一条 - 开始时间", fails, ref total);
+            Check(() => rl.ErrorCount == 1, "回放：ErrorCount 统计 Step_Error", fails, ref total);
+            Check(() => rl.FilterByStep("Step1").Count == 3 && rl.FilterByStep("StepX").Count == 0, "回放：按步骤筛选", fails, ref total);
+            Check(() => rl.BuildTimeline().Length == 3, "回放：时间轴行数 = 记录数", fails, ref total);
+            Check(() => rl.ToCsv().Split('\n').Length >= 4, "回放：CSV 含表头 + 3 行数据", fails, ref total);
+
+            string rlJson = JsonUtility.ToJson(rl, true);
+            ReplayLog rlBack = JsonUtility.FromJson<ReplayLog>(rlJson);
+            Check(() => rlBack != null && rlBack.Count == 3 && rlBack.entries[1].action == "Step_Error" && !rlBack.entries[1].isCorrect,
+                "回放：JsonUtility 往返保持记录与字段", fails, ref total);
+
+            string rlPath = Path.Combine(Path.GetTempPath(), "itsa_selfcheck_replay.json");
+            File.WriteAllText(rlPath, rlJson);
+            ReplayLog rlLoaded = TaskDataManager.LoadReplayLog(rlPath);
+            Check(() => rlLoaded != null && rlLoaded.Count == 3 && rlLoaded.taskName == "DemoTask",
+                "回放：LoadReplayLog 能从文件读回（落盘/复盘链路可用）", fails, ref total);
+            if (File.Exists(rlPath)) File.Delete(rlPath);
 
             // ---------- 结果 ----------
             StringBuilder sb = new StringBuilder();

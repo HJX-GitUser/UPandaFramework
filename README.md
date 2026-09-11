@@ -16,6 +16,7 @@ Unity 的前端（客户端）框架，提供统一的启动入口、单例、�
 - 可编译期剔除的日志系统，支持本地输出与真机日志面板
 - 分层 UI 管理与 Canvas 自动生成
 - 玩法系统：任务系统、交互式任务评分、回放、分层状态机、机械臂 CCD 逆运动学、载具控制
+- 交互式任务评分系统配套工具链：任务流程校验器（一键修正绑定 / ID）、运行逻辑自检 、回放复盘查看器、演示场景一键生成
 - 内置 Shader 学习文档与效果案例库（流光、描边、卡通、消融、水波等）
 - 编辑器工具链：AB 打包、Excel 数据表、UI 自动生成、HybridCLR 热更、常用路径快捷打开
 
@@ -62,6 +63,7 @@ public class GameLaunchExample : MonoBehaviour
 | 载具控制 | `Runtime/Game/VehicleSystem/Sample/VerticalScene.unity` | Rigidbody + WheelCollider 车辆，`W/S/A/D` 驾驶、`空格` 手刹漂移、`C` 切视角 |
 | 高亮描边 | `Runtime/Game/QuickOutline/Samples/Scenes/QuickOutline.unity` | 描边效果演示（`OutlineMask` / `OutlineFill`） |
 | 回放系统 | `Runtime/Game/ReplaySystem/Sample/HFScene.unity` | 录制 / 回放演示场景 |
+| 交互式任务评分 | 菜单 `UPandaGF -> 交互任务评分系统 -> 创建演示场景` 一键生成 | 生成配置资产 + 实体预制体 + 场景（默认落在 `Runtime/Game/InteractiveTaskScoringSystem/Example/Demo/`），含 2 个步骤：串联操作组（A→B）与并联操作组（C+D） |
 
 ## 目录结构
 
@@ -74,7 +76,9 @@ upanda-framework/
 │   ├── PLogger/                 日志开关与 Reporter 编辑器
 │   ├── Excel/                   Excel 数据表生成（ExcelTool，依赖 Libraries/Excel.dll）
 │   ├── HyBridCLREditor/         HybridCLR 热更程序集拷贝配置
-│   ├── CustomInspector/         自定义 Inspector（UPGameRoot、评分系统等）
+│   ├── CustomInspector/         自定义 Inspector
+│   │   ├── UPGameRootEditor.cs            启动根节点面板
+│   │   └── InteractiveTaskScoringSystem/   评分系统工具：校验器 / 逻辑自检 / 回放复盘 / 演示生成 / 组件 Inspector
 │   ├── EditorTools/             编辑器小工具（资源路径复制、自动碰撞体、常用路径快捷打开）
 │   ├── EditorConfig/            编辑器配置
 │   ├── EditorStu/               编辑器学习示例
@@ -97,7 +101,13 @@ upanda-framework/
 │   │   └── Extend/              扩展方法
 │   ├── Game/                    玩法系统层
 │   │   ├── TaskSystem/          任务系统
-│   │   ├── InteractiveTaskScoringSystem/  交互式任务评分系统
+│   │   ├── InteractiveTaskScoringSystem/  交互式任务评分系统（含 ReadMe.md）
+│   │   │   ├── Core/            纯逻辑层：运行状态 / 进度 / 评分策略 / 难度分级 / 回放日志 / 宿主接口
+│   │   │   ├── Data/            任务与步骤配置（ScriptableObject）
+│   │   │   ├── Task/            步骤调度（TaskDataManager）与步骤基类（TaskStepBase）
+│   │   │   ├── Operation/       操作组与叶子操作（串联 / 并联）
+│   │   │   ├── TaskInteractive/ 交互实体与实体注册表
+│   │   │   └── Example/         示例实体与 HUD（DemoInteractiveEntity / DemoTaskHud）
 │   │   ├── ReplaySystem/        回放系统（含 Sample 示例场景）
 │   │   ├── StateMachine/        分层状态机
 │   │   ├── QuickOutline/        高亮描边（含 Samples 示例场景）
@@ -280,7 +290,7 @@ EventCenter.Instance.EventTrigger(new EventTest1("触发测试"));
 | 模块 | 说明 |
 |---|---|
 | `TaskSystem` | 通用任务 / 条件 / 奖励 / 分组框架 |
-| `InteractiveTaskScoringSystem` | 交互式任务评分系统：步骤管理、操作判定、串行 / 并行操作组、操作记录与评分，面向教学实训场景 |
+| `InteractiveTaskScoringSystem` | 交互式任务评分系统：步骤管理、操作判定、串行 / 并行操作组、操作记录与评分，面向教学实训场景；含纯逻辑层（可单测）、可插拔评分策略（难度分级 / 超时扣分）、动作级回放日志与配套编辑器工具，详见下方小节 |
 | `ReplaySystem` | 回放系统：按帧录制对象 Transform 数据，序列化 + 压缩存储到本地；`IRecordableComponent` 可扩展录制其他数据（如 `RigidbodyVelocityRecorder`），`ReplayUI` 提供回放界面 |
 | `StateMachine` | 分层状态机：状态注册、状态栈、路径切换（如 `Movement/Run`） |
 | `RobotCCDIK` | 串联机械臂 CCD 逆运动学：位置 / 姿态双目标、关节限位、姿态录制回放；原理与用法见该目录 `README.md` |
@@ -289,6 +299,46 @@ EventCenter.Instance.EventTrigger(new EventTest1("触发测试"));
 | `SimpleCameraControl` | 简单相机控制 |
 | `Vignette` | 隧道暗角后处理效果（`TunnelingVignette`） |
 | `Study` | 学习示例（`SortStu` 等） |
+
+#### 交互式任务评分系统（InteractiveTaskScoringSystem）
+
+把“考核流程”拆成若干**步骤**，每步由一个或多个**操作**（串联 / 并联）组成；学员只能点击当前步骤激活的交互物，点错计一次错误，完成后按错误次数 / 耗时结算分数。
+
+**架构与调用链**
+
+- `TaskDataManager`（总调度：初始化、点击路由、步骤推进、总分、动作日志）→ `TaskStepBase`（单步骤：激活实体、持有操作组、结算分数）→ `OperationGroupBase`（`SeriesOperationGroup` 串联 / `ParallelOperationGroup` 并联）→ `OperationCheckBase`（叶子操作：四阶段状态机 + 目标实体校验）。
+- 交互物继承 `TaskEntityBase`，`Awake` 时按 `stepID` 注册到 `TaskEntityManager`；鼠标事件由 `TaskTriggerExample` 转成 `InteractiveTrigger` 回调。
+- 评分规则、运行状态、回放日志都在 `Core/` 里（**不依赖 `UnityEngine`**，可单独跑逻辑自检）：`TaskStepRuntime` / `TaskProgress` / `ScorePolicy` / `DifficultyScorePolicy` / `ReplayLog` / `ITaskHost`。
+- **配置与状态分离**：错误次数、得分、完成 / 跳过标记存在 `TaskStepRuntime` 上，`TaskConfig`（ScriptableObject）始终只读 → 重玩、多实例、存档互不污染；`TaskStepData.order` 可显式指定步骤顺序（全为 0 时按节点层级）。
+
+**难度分级 / 自定义评分**
+
+```csharp
+// 困难：错一次即 0 分；15 秒内完成满分，超时每秒扣 2 分
+TaskDataManager.Instance.scorePolicy = DifficultyScorePolicy.Create(TaskDifficulty.Hard, 15f, 2f);
+```
+
+自定义规则只需实现 `IScorePolicy`（只看基础分 + 错误次数）或 `IScorePolicyEx`（额外能拿到本步耗时）；两种写法都能直接用，未实现增强接口时自动回退。
+
+**回放复盘**
+
+- 运行时按 **S** 保存（或调 `TaskDataManager.Instance.SaveReplayLog()`），日志写成 JSON 落到 `StreamingAssets/replay_*.json`；
+- 菜单 `UPandaGF -> 交互任务评分系统 -> 回放复盘查看器` 载入后按时间轴复盘（`Task_Start / Step_Enter / Step_Error / Step_Skip / Step_Complete / Task_Complete / Task_Restart`），可定位到场景节点、按步骤筛选、导出 CSV。
+
+**编辑器工具**（均在菜单 `UPandaGF -> 交互任务评分系统` 下）
+
+| 菜单 | 作用 |
+|---|---|
+| 创建演示场景 | 一键生成配置资产 + 实体预制体 + 可运行场景 |
+| 任务流程校验器 | 开工前体检：步骤数量、`stepID` 空 / 重复、实体绑定、操作 ID 与层级是否一致、`EnableEntity` 是否缺失……支持「一键修复（ID → 属性）」与报告复制 |
+| 运行逻辑自检 | 43 项纯逻辑断言（评分策略 / 难度与超时扣分 / 运行状态 / 进度推进 / 回放与 JSON 往返） |
+| 回放复盘查看器 | 载入回放日志，时间轴复盘与场景定位 |
+
+> 本项目未安装 `com.unity.test-framework`，逻辑验证用「运行逻辑自检」代替 NUnit；装了 Test Runner 后断言可原样搬运。
+
+**演示快捷键**：`G` 步骤引导、`K` 跳过当前步骤、`S` 保存回放日志。
+
+**完整原理、API、扩展方式、已知限制与 FAQ**：见 `Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md`。
 
 #### 机械臂逆运动学（RobotCCDIK）
 
@@ -324,13 +374,36 @@ ccdik.ResetAngle();                                        // 复位
 - **ExcelTool**（`Editor/Excel/`）：根据 Excel 配置生成数据类与数据容器类，依赖 `Libraries/Excel.dll`。
 - **UIAutoGenerator**：UI 自动生成。
 - **HyBridCLREditor**：HybridCLR 热更程序集拷贝配置（`DLLCopyConfigWindow`）。
-- **CustomInspector**：`UPGameRoot`、评分系统等自定义 Inspector。
+- **CustomInspector**：
+  - `UPGameRootEditor`：启动根节点面板（资源加载方式、热更开关、远程地址、AES 配置等）。
+  - `InteractiveTaskScoringSystem/`：评分系统工具集 —— 任务流程校验器（菜单 `UPandaGF/交互任务评分系统/任务流程校验器`，一键按层级重算操作 ID、同步步骤绑定、补全 `EnableEntity`，报告可复制）、运行逻辑自检、回放复盘查看器、演示场景生成器，以及 `TaskDataManager` / `TaskStepBase` / 操作组的自定义 Inspector（含「重新开始任务」按钮）。
 - **EditorTools**：编辑器小工具
   - `ResourcePathCopy`：复制资源路径。
   - `AutoColliderGenerator`：自动生成碰撞体。
   - `FolderQuickOpen`：菜单 `UPandaGF/Tools/打开常用路径/`，一键打开项目根目录、`Assets`、`StreamingAssets`、`persistentDataPath`、`temporaryCachePath`、AB 打包输出目录等常用路径（Windows 下用资源管理器打开，其他平台回退 `RevealInFinder`），同时把路径复制到剪贴板。
 - **EditorStu / EditorConfig**：编辑器学习示例与框架配置（`UPandaGFConfig`）。
 
+## 模块文档索引
+
+各模块的详细文档（原理、API、示例、常见问题）与本文档并行维护：
+
+| 文档 | 内容 |
+|---|---|
+| `Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md` | 交互式任务评分系统：架构与调用链、评分规则与难度分级、回放、编辑器工具链、扩展指南、已知限制、FAQ |
+| `Runtime/Game/RobotCCDIK/README.md` | 机械臂 CCD 逆运动学：原理、参数调优、姿态录制回放 |
+| `Runtime/Game/ReplaySystem/README.md` | 回放系统：录制、存储与播放 |
+| `Runtime/Game/StateMachine/README.md` | 分层状态机 |
+| `Runtime/Game/Study/README.md` | 排序算法学习手册（`SortStu`） |
+| `Runtime/Manager/ObjPool/README.md` | GameObject 对象池 |
+| `Runtime/Manager/DownloadMgr/README.md` | 下载器：队列 / 并发 / 断点续传 / 超时重试 |
+| `Runtime/Manager/HTTPTool/README.md` | 基于 UnityWebRequest 的 HTTP 请求模块 |
+
+## 源码约定
+
+- **程序集划分**：`Runtime/` 属于 `UPandaGF.Runtime`，`Editor/` 属于 `UPandaGF.Editor`。Runtime 程序集**在 Player 构建时不引用 `UnityEditor`**，因此 Runtime 代码里任何 `using UnityEditor;` 或 `UnityEditor.*` 调用都必须用 `#if UNITY_EDITOR ... #endif` 包住，否则会出现 `CS0246` 打包阻断。
+- **文本编码**：部分较早的模块源码是 **GBK（无 BOM）**（如 `InteractiveTaskScoringSystem` 的既有 `.cs`），用 UTF-8 工具直接改写会把中文注释写坏（出现 U+FFFD）；批量替换请按原编码读取再写回。新增文件统一使用 **UTF-8（带 BOM）**。
+- **命名沿袭**：为兼容既有配置与场景，部分历史命名未做改动（如 `OpearationExecute`、`AddErroTimes`、`erroTimes`、部分接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间）。
+- **改动后自检**：涉及交互式任务评分系统时，改完先跑「任务流程校验器」再跑「运行逻辑自检」，可覆盖绝大多数配置错误与逻辑回归。
 
 ## 贡献
 
