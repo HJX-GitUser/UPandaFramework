@@ -40,8 +40,18 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         private TaskDataManager taskDataManager;
         public TaskStepData taskStepData;
         public TaskState taskState;
-        public float currentScore = 0;
-        public int erroTimes = 0;
+
+        /// <summary>本步骤的运行时状态（纯 C#，替代原先写在 TaskStepData 上的字段）</summary>
+        public TaskStepRuntime Runtime { get; private set; }
+
+        /// <summary>评分策略（由 TaskDataManager 注入；默认 0错满分/1错半分/2错0分）</summary>
+        public IScorePolicy ScorePolicy { get; set; } = new DefaultScorePolicy();
+
+        // 兼容旧读取方式的只读属性（原为 public 字段，现已并入 Runtime）
+        public float currentScore { get { return Runtime != null ? Runtime.score : 0f; } }
+        public int erroTimes { get { return Runtime != null ? Runtime.errors : 0; } }
+
+        private static readonly IScorePolicy DefaultPolicy = new DefaultScorePolicy();
 
 
         /// <summary>
@@ -76,6 +86,12 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         }
 
+        /// <summary>步骤ID（配置缺失时退化为节点名，保证 Runtime 里总有可读标识）</summary>
+        public string GetStepID()
+        {
+            return taskStepData != null ? taskStepData.stepID : name;
+        }
+
         /// <summary>
         /// 复位本步骤与所有子操作的运行时状态。
         /// 修复原因：运行时状态寄生在 TaskStepData（ScriptableObject）上，
@@ -84,15 +100,11 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// </summary>
         private void ResetStepState()
         {
-            if (taskStepData != null)
-            {
-                taskStepData.currentErrors = 0;
-                taskStepData.currentScore = taskStepData.baseScore;
-                taskStepData.isCompleted = false;
-                taskStepData.isSkip = false;
-            }
-            currentScore = 0f;
-            erroTimes = 0;
+            float baseScore = taskStepData != null ? taskStepData.baseScore : 0f;
+            string id = GetStepID();
+            if (Runtime == null) Runtime = new TaskStepRuntime(id, baseScore);
+            else Runtime.Reset(id, baseScore);
+            Runtime.beginTime = Time.time;
             if (operationGroup != null) operationGroup.ResetOperation();
         }
 
@@ -136,15 +148,18 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             if (taskState == TaskState.TaskComplete) return;   // 修复：防止重复提交（跳过与执行回调叠加）导致步骤重复推进、重复计分
             taskState = TaskState.TaskComplete;
             //完成
-            taskStepData.currentScore = HandleScore();
-            currentScore = taskStepData.currentScore;
-            taskDataManager.CompleteStep(taskStepData);
+            if (Runtime == null) Runtime = new TaskStepRuntime(GetStepID(), taskStepData != null ? taskStepData.baseScore : 0f);
+            Runtime.score = HandleScore();
+            Runtime.isCompleted = true;
+            Runtime.endTime = Time.time;
+            if (taskDataManager != null) taskDataManager.CompleteStep(this);
+            else Debug.LogError($"{GetStepID()} 缺少 TaskDataManager，无法推进流程");
         }
 
         public void AddErroTimes()
         {
-            taskStepData.currentErrors++;
-            erroTimes = taskStepData.currentErrors;
+            if (Runtime == null) Runtime = new TaskStepRuntime(GetStepID(), taskStepData != null ? taskStepData.baseScore : 0f);
+            Runtime.errors++;
         }
 
         public virtual float HandleScore()
@@ -152,7 +167,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             // 说明：Submit 会先把状态置为 TaskComplete 再调用本方法（保留判断以兼容外部直接调用）
             if (taskState == TaskState.TaskComplete)
                 // 评分规则：0 次错误=满分；1 次错误=半分；2 次及以上=0 分（isSkip 的步骤不计入总分）
-            return taskStepData.currentErrors == 0 ? taskStepData.baseScore : (taskStepData.currentErrors == 1 ? taskStepData.baseScore / 2 : 0);
+            return (ScorePolicy != null ? ScorePolicy : DefaultPolicy).CalcScore(taskStepData != null ? taskStepData.baseScore : 0f, Runtime != null ? Runtime.errors : 0);
             else return 0;
         }
 
@@ -182,7 +197,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             }
             else
                 if (operationGroup != null) operationGroup.OperationSkip();   // 修复：空引用保护
-            taskStepData.isSkip = true;
+            if (Runtime != null) Runtime.isSkip = true;
             Submit();
         }
 

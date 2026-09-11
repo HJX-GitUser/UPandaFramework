@@ -14,10 +14,9 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public float baseScore = 10f;           // 基础分数
         public string tip;
 
-        [NonSerialized] public int currentErrors = 0;       // 错误次数
-        [NonSerialized] public float currentScore = 0;      // 得分
-        [NonSerialized] public bool isCompleted = false;    // 已完成
-        [NonSerialized] public bool isSkip = false;         // 是否跳过
+
+        // 运行时状态（错误次数/得分/完成/跳过）已移到 TaskStepRuntime，不再写在配置资产上：
+        // 这样重玩、多实例并行、存档都不会污染 ScriptableObject（见 Core/TaskStepRuntime.cs）
 
         public TaskStepData[] childrenStep;
     }

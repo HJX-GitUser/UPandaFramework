@@ -29,6 +29,11 @@
 ```
 InteractiveTaskScoringSystem/
 ├── ReadMe.md                       ← 本文档
+├── Core/                           ★ 纯逻辑层（不依赖 UnityEngine，可单测/可复用）
+│   ├── TaskStepRuntime.cs          每步运行状态（错误/得分/完成/跳过/耗时）—— 原寄生在配置资产上
+│   ├── TaskProgress.cs             任务进度（下标/总分/推进/完成判定）
+│   ├── ScorePolicy.cs              IScorePolicy + 默认策略 + 线性扣分策略（难度分级入口）
+│   └── ITaskHost.cs                任务宿主接口（交互实体只依赖它，便于测试/多实例）
 ├── Data/
 │   ├── TaskConfig.cs               TaskStepData（步骤数据）+ TaskConfig（ScriptableObject）+ TaskConfigJsonData
 │   ├── PartsConfig.cs              PartConfig / PartsConfig（零件配置，预留，当前无引用）
@@ -57,7 +62,8 @@ Editor/CustomInspector/InteractiveTaskScoringSystem/
 ├── OperationCheckBaseEditor.cs     一键"查找对应实体"（按 ID 在场景中搜索）
 ├── InteractiveTaskDemoBuilder.cs   ★ 一键生成演示场景（配置资产 + 实体预制体 + 场景）
 ├── InteractiveTaskValidator.cs     ★ 流程校验 + 自动修复（纯逻辑，可被 CI/脚本调用）
-└── InteractiveTaskValidatorWindow.cs  ★ 校验器窗口（菜单：UPandaGF/交互任务评分系统/任务流程校验器）
+├── InteractiveTaskValidatorWindow.cs  ★ 校验器窗口（菜单：UPandaGF/交互任务评分系统/任务流程校验器）
+└── InteractiveTaskSelfCheck.cs     ★ 纯逻辑自检（菜单：…/运行逻辑自检；项目未装 Test Runner，用它代替）
 ```
 
 ---
@@ -308,6 +314,17 @@ Runtime 程序集在 Player 构建时**不引用 UnityEditor.dll**（已实测�
 | **真重置 / 重新开始** | `InitializeTask()` 现在会复位总分、步骤下标、每步的错误次数/得分/完成/跳过标记（原先只重置 `currentScore`：重玩时错误会累加导致分数偏低，`isSkip` 残留会让本步分数永远不计入总分）；新增 `RestartTask()` + 编辑器按钮；新增 `OperationResettable` 接口、`TaskStepBase.ResetStepState()`、`OperationCheckBase/OperationGroupBase.ResetOperation()`，把操作状态机一并复位（否则重玩时停留在 `Complete` 阶段会让点击被忽略、任务卡住） |
 | 顺带修复 | `ParallelOperationGroup` 不再改写配置字段 `completeCount`（原写法会在运行时把设计值 0 变成 `OperationCount`，并可能被序列化回场景），改用运行时字段 `runtimeCompleteCount` |
 
+### P1 优化（2026-09 追加）：纯逻辑分层 + 配置/状态分离
+
+| 项 | 内容 |
+| --- | --- |
+| **配置/状态分离** | 错误次数/得分/完成/跳过 原先写在 `TaskStepData`（ScriptableObject）上，已移到 **`TaskStepRuntime`**（纯 C#，每个步骤每次 `Init` 重建一份）：配置资产回归“只读”，重玩/多实例/存档都不会互相污染；`TaskStepBase.Runtime` / `TaskDataManager.GetRuntime(index)` 可取用，`TaskStepRuntime` 支持 `JsonUtility` 往返（存档） |
+| **纯逻辑分层** | 新增 `Core/`：`TaskProgress`（下标/总分/推进/完成判定，替代原先直接维护 `currentStepIndex`/`totalScore`）、`ScorePolicy`（`IScorePolicy` + 默认三档 + 线性扣分，评分可插拔）、`TaskStepRuntime`、`ITaskHost`。这四个类不依赖 `UnityEngine`，可直接被单测覆盖 |
+| **接口化** | `TaskEntityBase` 不再直接调单例，而是通过 **`ITaskHost`**（由 `TaskDataManager` 实现）提交点击 → 便于注入假宿主做测试、也为将来“一个进程跑多份任务”留口子；评分策略由 `TaskDataManager.scorePolicy` 注入到各步骤（`TaskStepBase.ScorePolicy`） |
+| **逻辑自检** | 项目未安装 `com.unity.test-framework`，因此提供菜单 **`UPandaGF/交互任务评分系统/运行逻辑自检`**：一键胉 20 项断言（评分三档/线性扣分、Runtime 复位与 Duration、JsonUtility 往返、TaskProgress 边界与幂等），弹窗 + 日志输出结果；装了 Test Runner 后可原样搬成 NUnit |
+
+> 相容性：`TaskStepBase.currentScore` / `erroTimes` 改为**只读属性**（值来自 `Runtime`）；`TaskDataManager` 的 `currentStepIndex` / `totalScore` 改为**只读属性**（值来自 `TaskProgress`）；`CompleteStep` 参数由 `TaskStepData` 改为 `TaskStepBase`。除这些外对外 API 未变。
+
 ---
 
 ## 9. 已知限制与注意事项
@@ -321,7 +338,9 @@ Runtime 程序集在 Player 构建时**不引用 UnityEditor.dll**（已实测�
 7. `PartsConfig` / `ToolsConfig` 为预留配置类，当前模块内无任何引用；
 8. 命名沿袭原实现：`OpearationExecute`（少 r）、`AddErroTimes`、`erroTimes`、接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间——为兼容既有配置**本次未改名**；
 9. 模块源码为 GBK 编码，用 UTF-8 工具直接改写会损坏中文注释，请按项目既有 GBK 流程处理；
-10. `RestartTask()` 只复位**数据状态**，不会重置实体的视觉/启用状态（由实体的 `EnableInteractive/DisableInteractive` 实现决定），需要完全还原请重载场景。
+10. `RestartTask()` 只复位**数据状态**，不会重置实体的视觉/启用状态（由实体的 `EnableInteractive/DisableInteractive` 实现决定），需要完全还原请重载场景；
+11. 运行状态已从 `TaskStepData` 移到 `TaskStepRuntime`：若你有外部代码读写 `taskStepData.currentScore / currentErrors / isCompleted / isSkip`，请改用 `step.Runtime.*`（或 `TaskDataManager.GetRuntime(index)`）；
+12. 项目未安装 `com.unity.test-framework`，逻辑验证靠菜单 **`UPandaGF/交互任务评分系统/运行逻辑自检`**；安装该包后可将自检断言原样搬进 NUnit/Test Runner。
 
 ---
 
@@ -350,3 +369,6 @@ A：运行时调用 `TaskDataManager.Instance.RestartTask()`（Play 模式下也
 
 **Q8：搭完任务怎么自检？**
 A：菜单 `UPandaGF → 交互任务评分系统 → 任务流程校验器`，点「校验当前场景」。红色（错误）必须修、黄色（警告）建议修，可用「一键修复（ID→属性）」批量处理可自动修复的部分。
+
+**Q9：怎么验证核心逻辑（评分/进度推进）没被改坏？**
+A：菜单 `UPandaGF → 交互任务评分系统 → 运行逻辑自检`，一键胉 20 项断言（评分策略 / 步骤运行状态 / 任务进度 / JsonUtility 存档往返），弹窗会直接给出通过数。

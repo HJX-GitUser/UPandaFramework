@@ -69,12 +69,13 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public virtual void OnSelect()
         {
             //Debug.Log($"{id} OnSelect");
-            if (TaskDataManager.Instance == null)   // 修复：场景缺少 TaskDataManager 时不再空引用
+            ITaskHost host = TaskDataManager.Instance;   // 通过接口访问任务宿主（便于替换/测试/多实例）
+            if (host == null)
             {
                 Debug.LogError("场景中缺少 TaskDataManager，无法进行任务检查");
                 return;
             }
-            TaskDataManager.Instance.OperationCheck(this);
+            host.OperationCheck(this);
         }
 
         public abstract void OnSelectExit();

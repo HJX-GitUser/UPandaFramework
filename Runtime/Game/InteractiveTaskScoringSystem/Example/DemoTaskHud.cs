@@ -57,8 +57,12 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         private void HandleStepCompleted(TaskStepData step)
         {
-            if (step == null) return;
-            lastEventLog = $"步骤完成：{step.stepID}，本步得分 {step.currentScore}，错误 {step.currentErrors} 次";
+            if (step == null || TaskDataManager.Instance == null) return;
+            // 运行状态已从配置资产移到 TaskStepRuntime（OnStepCompleted 触发时下标仍指向刚完成的步骤）
+            TaskStepRuntime rt = TaskDataManager.Instance.GetRuntime(TaskDataManager.Instance.currentStepIndex);
+            lastEventLog = rt != null
+                ? $"步骤完成：{rt.stepID}，本步得分 {rt.score}，错误 {rt.errors} 次"
+                : $"步骤完成：{step.stepID}";
         }
 
         private void HandleTaskCompleted()
@@ -96,10 +100,13 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             {
                 sb.AppendLine($"总分：{mgr.totalScore:F1}");
                 TaskStepData cur = mgr.currentTaskStep;
+                TaskStepRuntime rt = mgr.GetRuntime(mgr.currentStepIndex);
                 if (cur != null)
                 {
                     sb.AppendLine($"当前步骤：{cur.stepID}  {cur.description}");
-                    sb.AppendLine($"本步得分：{cur.currentScore:F1} / {cur.baseScore}   错误次数：{cur.currentErrors}");
+                    sb.AppendLine(rt != null
+                        ? $"本步得分：{rt.score:F1} / {cur.baseScore}   错误次数：{rt.errors}"
+                        : $"本步基础分：{cur.baseScore}");
                     sb.AppendLine($"已完成：{CountCompleted(mgr)} / {CountTotal(mgr)}");
                 }
                 else
@@ -130,7 +137,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             int n = 0;
             foreach (var s in steps)
             {
-                if (s != null && s.taskStepData != null && s.taskStepData.isCompleted) n++;
+                if (s != null && s.Runtime != null && s.Runtime.isCompleted) n++;
             }
             return n;
         }

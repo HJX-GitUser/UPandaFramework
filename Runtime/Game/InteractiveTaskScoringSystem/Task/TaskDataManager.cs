@@ -36,26 +36,46 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public int stepsCompleted;
     }
 
-    public class TaskDataManager : MonoBehaviour
+    public class TaskDataManager : MonoBehaviour, ITaskHost
     {
         private static TaskDataManager instance;
         public static TaskDataManager Instance => instance;
 
         //[Header("任务设置")]
         public TaskConfig taskSteps;
-        public int currentStepIndex = 0;
-        public ITask[] taskStates;
+        public TaskStepBase[] taskStates;   // 用具体类型：ITask 不含 Runtime/ScorePolicy，且 Unity 无法序列化接口数组
+
+        /// <summary>评分策略（可在代码里替换实现，例如难度分级；默认 0错满分/1错半分/2错0分）</summary>
+        public IScorePolicy scorePolicy = new DefaultScorePolicy();
+
+        /// <summary>取指定步骤的运行状态（HUD / 存档用）；下标非法时返回 null</summary>
+        public TaskStepRuntime GetRuntime(int index)
+        {
+            if (taskStates == null || !progress.HasStep(index)) return null;
+            return taskStates[index] != null ? taskStates[index].Runtime : null;
+        }
+
+        /// <summary>任务进度（纯 C#：下标/总分/推进），替代原先直接维护的 currentStepIndex / totalScore 字段</summary>
+        private readonly TaskProgress progress = new TaskProgress();
+
+        /// <summary>当前步骤下标（等于步骤总数表示全部完成）</summary>
+        public int currentStepIndex { get { return progress.currentIndex; } }
+
+        /// <summary>累计总分</summary>
+        public float totalScore { get { return progress.totalScore; } }
+
+        /// <summary>是否全部完成</summary>
+        public bool isTaskFinished { get { return progress.isFinished; } }
         public TaskStepData currentTaskStep
         {
             get
             {
-                if (taskStates == null) taskStates = GetComponentsInChildren<TaskStepBase>();
+                if (taskStates == null || taskStates.Length == 0) taskStates = GetComponentsInChildren<TaskStepBase>();
                 return taskStates.Length == 0 ? null : taskStates[Mathf.Clamp(currentStepIndex, 0, taskStates.Length - 1)].GetData;   // 修复：无步骤时返回 null（原写法空数组会越界）
             }
         }
 
         //[Header("评分系统")]
-        public float totalScore = 0f;
         private Dictionary<string, List<OperationRecord>> operationRecords;
 
         public UnityAction<TaskStepData> OnStepStarted;
@@ -86,20 +106,20 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 return;
             }
             operationRecords = new Dictionary<string, List<OperationRecord>>();
-            // 修复：每次初始化都视为“重新开始”，复位总分与步骤下标（各步骤状态在 TaskStepBase.Init 内复位）
-            totalScore = 0f;
-            currentStepIndex = 0;
-            if (taskStates == null) taskStates = GetComponentsInChildren<TaskStepBase>();
+            // 修复：每次初始化都视为“重新开始”，进度复位见下方 progress.Init（各步骤状态在 TaskStepBase.Init 内复位）
+            if (taskStates == null || taskStates.Length == 0) taskStates = GetComponentsInChildren<TaskStepBase>();
             if (taskSteps.stepsConfig.Length != taskStates.Length)
             {
                 Debug.LogError("任务配置异常！配置数量不等");
                 return;
             }
+            progress.Init(taskStates.Length);   // 进度复位（原 totalScore / currentStepIndex 已并入 TaskProgress）
             for (int i = 0; i < taskStates.Length; i++)
             {
                 //操作记录（分数/错误次数等运行时状态由 TaskStepBase.Init 复位）
                 operationRecords[taskSteps.stepsConfig[i].stepID] = new List<OperationRecord>();
                 //任务初始化
+                taskStates[i].ScorePolicy = scorePolicy;   // 注入评分策略
                 taskStates[i].Init(this);
             }
 
@@ -176,18 +196,16 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// 完成任务步骤
         /// </summary>
         /// <param name="step"></param>
-        public void CompleteStep(TaskStepData step)
+        public void CompleteStep(TaskStepBase step)
         {
-            step.isCompleted = true;
-            if (!step.isSkip)
-                totalScore += step.currentScore;
-            //uiManager.ShowFeedback("步骤完成！", Color.green);
-            //uiManager.UpdateTotalScore(totalScore);
-            RecordOperation("Step_Complete", true, $"完成步骤 {step.stepID}, 得分: {step.currentScore}");
+            if (step == null || step.Runtime == null) return;
+            TaskStepRuntime rt = step.Runtime;
+            if (!rt.isSkip) progress.AddScore(rt.score);   // 跳过的步骤不计入总分
+            RecordOperation("Step_Complete", true, $"完成步骤 {rt.stepID}, 得分: {rt.score}");
             //关闭上一个任务
-            if (currentStepIndex >= 0 && currentStepIndex < taskStates.Length)   // 修复：索引越界保护
-                taskStates[currentStepIndex].OnExit();
-            OnStepCompleted?.Invoke(step);
+            if (progress.HasStep(progress.currentIndex))   // 修复：索引越界保护
+                taskStates[progress.currentIndex].OnExit();
+            OnStepCompleted?.Invoke(step.taskStepData);
             MoveToNextStep();
         }
 
@@ -196,19 +214,18 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// </summary>
         public void MoveToNextStep()
         {
-            Debug.Log($"{currentStepIndex}下一个任务");
-            if (taskSteps != null && currentStepIndex < taskSteps.stepsConfig.Length - 1)   // 修复：配置缺失保护
+            if (taskStates == null || taskStates.Length == 0) return;
+            if (progress.MoveNext())
             {
-                currentStepIndex++;
-                taskStates[currentStepIndex].OnEnter();
+                Debug.Log($"{progress.currentIndex}下一个任务");
+                taskStates[progress.currentIndex].OnEnter();
                 OnStepStarted?.Invoke(currentTaskStep);
             }
             else
             {
-                // 任务完成
+                // 任务完成（progress.currentIndex == stepCount 作为“全部完成”哨兵）
                 Debug.Log("任务全部完成");
                 EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("任务已全部完成"));
-                currentStepIndex = taskStates.Length;
                 OnTaskCompleted?.Invoke();
             }
 
@@ -216,20 +233,23 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         void RecordOperation(string action, bool isCorrect, string details)
         {
-            TaskStepData currentStep = taskSteps.stepsConfig[currentStepIndex];
+            if (taskStates == null || !progress.HasStep(progress.currentIndex)) return;
+            TaskStepBase step = taskStates[progress.currentIndex];
+            TaskStepRuntime rt = step.Runtime;
+            string runtimeStepID = rt != null ? rt.stepID : (step.taskStepData != null ? step.taskStepData.stepID : step.name);
             OperationRecord record = new OperationRecord
             {
                 timestamp = DateTime.Now,
-                stepID = currentStep.stepID,
+                stepID = runtimeStepID,
                 action = action,
                 isCorrect = isCorrect,
                 details = details,
-                score = currentStep.currentScore,
-                errorCount = currentStep.currentErrors
+                score = rt != null ? rt.score : 0f,
+                errorCount = rt != null ? rt.errors : 0
             };
             if (operationRecords == null) operationRecords = new Dictionary<string, List<OperationRecord>>();   // 修复：容错
-            if (!operationRecords.ContainsKey(currentStep.stepID)) operationRecords[currentStep.stepID] = new List<OperationRecord>();
-            operationRecords[currentStep.stepID].Add(record);
+            if (!operationRecords.ContainsKey(runtimeStepID)) operationRecords[runtimeStepID] = new List<OperationRecord>();
+            operationRecords[runtimeStepID].Add(record);
         }
 
         public List<OperationRecord> GetReplayData()
