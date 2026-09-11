@@ -6,7 +6,7 @@
 > - 命名空间：`UPandaGF.RunTime.InteractiveTaskScoringSystem`
 > - 编码约定：模块既有源码为 **GBK（无 BOM）+ CRLF**（改动请走 GBK 流程，否则中文注释会被破坏）；本次新增的 `Example/`、编辑器脚本为 UTF-8
 > - 依赖：`UPandaGF.Runtime` 程序集内的 `EventCenter`、`PLogger`、`LazySingletonBase`
-> - 当前状态：**已提供一键生成的演示场景**（见第 5 节），可直接 Play 验证
+> - 当前状态：**已提供一键生成的演示场景**（见第 4 节）与**配置体检工具**（见第 4.4 节），可直接 Play 验证
 
 ---
 
@@ -55,7 +55,9 @@ Editor/CustomInspector/InteractiveTaskScoringSystem/
 ├── TaskStepBaseEditor.cs           添加操作检查组（串联/并联），并校验"一个步骤只能有一个组"
 ├── OperationGroupBaseEditor.cs     添加基础操作检查 / 子操作组
 ├── OperationCheckBaseEditor.cs     一键"查找对应实体"（按 ID 在场景中搜索）
-└── InteractiveTaskDemoBuilder.cs   ★ 一键生成演示场景（配置资产 + 实体预制体 + 场景）
+├── InteractiveTaskDemoBuilder.cs   ★ 一键生成演示场景（配置资产 + 实体预制体 + 场景）
+├── InteractiveTaskValidator.cs     ★ 流程校验 + 自动修复（纯逻辑，可被 CI/脚本调用）
+└── InteractiveTaskValidatorWindow.cs  ★ 校验器窗口（菜单：UPandaGF/交互任务评分系统/任务流程校验器）
 ```
 
 ---
@@ -137,6 +139,43 @@ graph LR
 - 左上角 HUD 显示：总分、当前步骤、本步得分/错误次数、已完成数量、最近提示；
 - 快捷键：**G** = 触发当前步骤引导（方块闪烁），**K** = 跳过当前步骤；
 - 乱点其它方块 → 弹出"操作错误!!!"提示并记一次错误（会影响该步得分）。
+
+### 4.4 配置体检：任务流程校验器（强烈建议）
+
+模块的配置分散在「配置资产 + 场景层级 + 实体 StepIDGroup」三处，且操作/组的 ID 由层级推导，配错时往往只在运行时打一行日志、甚至静默跳过步骤。搭完任务后请先体检一次：
+
+**菜单：`UPandaGF → 交互任务评分系统 → 任务流程校验器`**
+
+| 校验项 | 级别 |
+| --- | --- |
+| 场景是否有 `TaskDataManager`（且只有一个）、`taskSteps` 是否配置 | 错误 / 警告 |
+| 配置资产的步骤数量 vs 场景 `TaskStepBase` 节点数量 | 错误 |
+| 配置里的 `stepID` 是否为空 / 重复 | 错误 |
+| 每步是否绑定正确的 `TaskStepData`、是否只有一个操作组、是否存在空组 | 警告 / 错误 |
+| 操作/组的 ID 是否为空、是否与层级推导值不一致（移动过节点） | 警告 |
+| 操作 ID 是否被某实体的 `StepIDGroup` 声明（否则运行时必然报"实体ID获取失败"） | 错误 |
+| 操作 ID 是否被多个实体重复声明 | 错误 |
+| 实体是否声明了不会被任何操作引用的"孤儿 ID" | 警告 |
+| 步骤的 `EnableEntity` 是否为空或引用了不存在的实体 | 警告 |
+| `TargetEntity` 未预设（运行时按 ID 自动查找，可忽略） | 提示 |
+
+操作方式：
+
+- **「校验当前场景」**：体检并列出全部问题（点击条目可定位/选中出问题的对象）；
+- 单条问题右侧 **「修复」**：只修这一条；
+- **「一键修复（ID→属性）」**：先按层级重算所有操作 ID，再重新校验并应用其余可自动修复项（同步步骤顺序、补全 `EnableEntity`、填充 `TargetEntity`）；
+- **「复制报告」**：把体检报告复制到剪贴板，便于贴到 issue / 交接文档。
+
+> 校验逻辑是纯静态方法 `InteractiveTaskValidator.ValidateScene()`，可在 CI 或自己的编辑器脚本里直接调用。
+
+### 4.5 重新开始任务（重玩）
+
+- 运行时调用 `TaskDataManager.Instance.RestartTask()`（等价于再次 `InitializeTask()`）；
+- Play 模式下也可用 `TaskDataManager` 检视面板上的 **「重新开始任务」** 按钮。
+
+`RestartTask()` 会复位：总分、当前步骤下标、每步的**错误次数 / 得分 / 完成 / 跳过**标记，以及**所有操作与操作组的状态机**（回到 `Prepare`）。
+
+> 注意：这里复位的是**数据状态**。实体自身的视觉/启用状态由你的 `TaskEntityBase` 实现决定（如 `EnableInteractive`/`DisableInteractive`），需要完全还原请自行在扩展点处理，或重载场景。
 
 ---
 
@@ -261,19 +300,28 @@ Runtime 程序集在 Player 构建时**不引用 UnityEditor.dll**（已实测�
 
 > 校验方式：`get_errors` 编译零错误；逐文件字节级校验（CRLF 完整、无 BOM、花括号配平）；内联注入的 46 处修复行缩进全部复核。
 
+### P0 优化（2026-09 追加）
+
+| 项 | 内容 |
+| --- | --- |
+| **配置体检工具** | 新增 `InteractiveTaskValidator`（校验/修复逻辑）+ `InteractiveTaskValidatorWindow`（窗口）。把"配错只在运行时报一行日志、甚至静默跳过步骤"变成开工前的显式报告；支持一键按层级重算 ID、同步步骤顺序、补全 `EnableEntity`、填充 `TargetEntity` |
+| **真重置 / 重新开始** | `InitializeTask()` 现在会复位总分、步骤下标、每步的错误次数/得分/完成/跳过标记（原先只重置 `currentScore`：重玩时错误会累加导致分数偏低，`isSkip` 残留会让本步分数永远不计入总分）；新增 `RestartTask()` + 编辑器按钮；新增 `OperationResettable` 接口、`TaskStepBase.ResetStepState()`、`OperationCheckBase/OperationGroupBase.ResetOperation()`，把操作状态机一并复位（否则重玩时停留在 `Complete` 阶段会让点击被忽略、任务卡住） |
+| 顺带修复 | `ParallelOperationGroup` 不再改写配置字段 `completeCount`（原写法会在运行时把设计值 0 变成 `OperationCount`，并可能被序列化回场景），改用运行时字段 `runtimeCompleteCount` |
+
 ---
 
 ## 9. 已知限制与注意事项
 
 1. **配置数量必须与场景节点数量一致**：`TaskDataManager.InitializeTask()` 会校验 `stepsConfig.Length == taskStates.Length`，不一致时直接报错中止，且不会有任何步骤运行；
-2. **未配置操作组的步骤会被"自动完成"**（`OnEnter` 里直接 `Submit`），现在会输出明确警告，但仍会加分——请务必检查配置；
+2. **未配置操作组的步骤会被"自动完成"**（`OnEnter` 里直接 `Submit`），现在会输出明确警告，但仍会加分——请用第 4.4 节的校验器检查配置；
 3. 步骤顺序**取决于子节点层级顺序**（`GetComponentsInChildren` 的返回顺序）；
 4. `Reset()` 自动生成的 ID 与层级序号绑定，**调整节点顺序后必须重新生成 ID**（或手动填写）；
 5. `EntityOperationCheck.ConditionMet` 为 null 时，叶子操作退化为"点击对象必须是 TargetEntity"的引用比对；
 6. 音效、难度权重、回放播放器未实现（见第 7 节）；
 7. `PartsConfig` / `ToolsConfig` 为预留配置类，当前模块内无任何引用；
 8. 命名沿袭原实现：`OpearationExecute`（少 r）、`AddErroTimes`、`erroTimes`、接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间——为兼容既有配置**本次未改名**；
-9. 模块源码为 GBK 编码，用 UTF-8 工具直接改写会损坏中文注释，请按项目既有 GBK 流程处理。
+9. 模块源码为 GBK 编码，用 UTF-8 工具直接改写会损坏中文注释，请按项目既有 GBK 流程处理；
+10. `RestartTask()` 只复位**数据状态**，不会重置实体的视觉/启用状态（由实体的 `EnableInteractive/DisableInteractive` 实现决定），需要完全还原请重载场景。
 
 ---
 
@@ -296,3 +344,9 @@ A：模块现在只在"还有待检查子步骤"时才把点击判为错误；�
 
 **Q6：怎么加音效/难度分级？**
 A：音效建议在自定义实体的 `OnSelect/Execute/Skip` 里播放（或监听 `TaskTipsInfoEvent`）；难度分级可重写 `TaskStepBase.HandleScore()`。
+
+**Q7：怎么重玩同一个任务？**
+A：运行时调用 `TaskDataManager.Instance.RestartTask()`（Play 模式下也可用检视面板的「重新开始任务」按钮）。它会复位总分、步骤下标、错误次数/得分/完成/跳过标记与操作状态机；实体视觉状态需自行还原或重载场景。
+
+**Q8：搭完任务怎么自检？**
+A：菜单 `UPandaGF → 交互任务评分系统 → 任务流程校验器`，点「校验当前场景」。红色（错误）必须修、黄色（警告）建议修，可用「一键修复（ID→属性）」批量处理可自动修复的部分。

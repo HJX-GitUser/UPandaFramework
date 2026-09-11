@@ -10,9 +10,10 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     public class ParallelOperationGroup : OperationGroupBase
     {
         [Header("需要执行的操作数量")]
-        public int completeCount = 0;
+        public int completeCount = 0;   // 需要完成的子操作数量（<=0 表示“全部完成”；运行时不会改写本字段）
 
-        private int executeCount; // 已执行完成的数量
+        private int executeCount;           // 已执行完成的数量
+        private int runtimeCompleteCount;   // 运行时生效的完成数量（修复：不再改写配置字段 completeCount）
         public override void CheckEnable()
         {
             OperationEnable();
@@ -52,11 +53,9 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             if (OperationCount == 0) return;
             operationPhase = OperationPhase.TargetCheck;
             executeCount = 0;
-            if (completeCount <= 0)   // 修复：去掉冗余的 OperationCount != 0 判断
-            {
-                completeCount = OperationCount;
-            }
-            // 修复：此处 completeCount 必 >= 1，原 if (completeCount == 0) 分支为不可达代码，已删除
+            // 修复：改用运行时字段，不再改写配置字段（原写法会把设计值 0 在运行时变成 OperationCount，并可能被序列化回场景）
+            runtimeCompleteCount = completeCount <= 0 ? OperationCount : completeCount;
+            // 修复：原 if (completeCount == 0) 分支为不可达代码，已删除（现改用运行时字段 runtimeCompleteCount）
             foreach (var item in ChildStep)
             {
                 if (item != null) item.OperationEnable();   // 修复：null 元素保护
@@ -80,7 +79,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public override void OpearationExecute(UnityAction callback)
         {
             executeCount++;
-            if (executeCount >= completeCount)
+            if (executeCount >= runtimeCompleteCount)
             {
                 operationPhase = OperationPhase.Complete;
                 OperationComplete?.Invoke();

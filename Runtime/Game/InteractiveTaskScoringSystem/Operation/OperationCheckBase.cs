@@ -42,6 +42,15 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         bool ConditionMet(TaskEntityBase arg);
     }
 
+    /// <summary>
+    /// 可重置的操作（修复：重新开始任务时把操作状态机复位，
+    /// 否则上一轮残留的 Execute/Complete 状态会让本轮点击被忽略、任务卡住）
+    /// </summary>
+    public interface OperationResettable
+    {
+        void ResetOperation();
+    }
+
     public enum OperationPhase
     {
         Prepare,        // 准备
@@ -53,7 +62,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     /// <summary>
     /// 操作步骤，判断操作是否正确
     /// </summary>
-    public class OperationCheckBase : MonoBehaviour, OperationStepCheck,GetUniTaskID
+    public class OperationCheckBase : MonoBehaviour, OperationStepCheck,GetUniTaskID, OperationResettable
     {
         public string OperatingStepID;
         public OperationPhase operationPhase = OperationPhase.Prepare;
@@ -188,6 +197,14 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             if (TargetEntity == null) { Debug.LogWarning($"{name} 未找到目标实体，跳过无效"); return; }   // 修复：空引用保护
             TargetEntity.Skip();
+        }
+
+        /// <summary>
+        /// 复位操作状态机（重新开始任务时调用）
+        /// </summary>
+        public virtual void ResetOperation()
+        {
+            operationPhase = OperationPhase.Prepare;
         }
     }
 }

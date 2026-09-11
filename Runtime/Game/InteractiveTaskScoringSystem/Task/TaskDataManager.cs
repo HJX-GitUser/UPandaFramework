@@ -86,6 +86,9 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 return;
             }
             operationRecords = new Dictionary<string, List<OperationRecord>>();
+            // 修复：每次初始化都视为“重新开始”，复位总分与步骤下标（各步骤状态在 TaskStepBase.Init 内复位）
+            totalScore = 0f;
+            currentStepIndex = 0;
             if (taskStates == null) taskStates = GetComponentsInChildren<TaskStepBase>();
             if (taskSteps.stepsConfig.Length != taskStates.Length)
             {
@@ -94,20 +97,28 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             }
             for (int i = 0; i < taskStates.Length; i++)
             {
-                //分数初始化
-                taskSteps.stepsConfig[i].currentScore = taskSteps.stepsConfig[i].baseScore;
-                //操作记录
+                //操作记录（分数/错误次数等运行时状态由 TaskStepBase.Init 复位）
                 operationRecords[taskSteps.stepsConfig[i].stepID] = new List<OperationRecord>();
                 //任务初始化
                 taskStates[i].Init(this);
             }
 
-            if (currentStepIndex == 0)
+            // 修复：重置后总是从第 0 步开始（原条件 currentStepIndex == 0 会让“重玩”时任务不启动）
+            if (taskStates.Length > 0)
             {
                 taskStates[currentStepIndex].OnEnter();
                 OnStepStarted?.Invoke(currentTaskStep);
                 Debug.Log("任务开始");
             }
+        }
+
+        /// <summary>
+        /// 重新开始任务：复位总分、步骤下标以及所有步骤/操作的运行时状态，并从第 0 步重新开始。
+        /// （等价于再次调用 InitializeTask，只是语义更明确，便于按钮或流程逻辑调用）
+        /// </summary>
+        public void RestartTask()
+        {
+            InitializeTask();
         }
 
         /// <summary>

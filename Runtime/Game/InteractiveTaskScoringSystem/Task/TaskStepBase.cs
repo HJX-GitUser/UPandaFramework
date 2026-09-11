@@ -66,6 +66,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 // 修复：原此处直接 return 会让下面的待激活实体解析不到，改为仅告警
             }
             if (operationGroup != null) operationGroup.Init(Submit);   // 修复：未配置检查组时跳过初始化，待激活实体仍会解析
+            ResetStepState();   // 修复：重玩同一任务时复位本步骤与所有子操作的运行时状态
             entitys = new List<TaskEntityBase>();
             if (EnableEntity != null) foreach (string item in EnableEntity)   // 修复：未配置待激活实体时不空引用
             {
@@ -73,6 +74,26 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 if (taskEntity != null) entitys.Add(taskEntity);
             }
 
+        }
+
+        /// <summary>
+        /// 复位本步骤与所有子操作的运行时状态。
+        /// 修复原因：运行时状态寄生在 TaskStepData（ScriptableObject）上，
+        /// 重玩同一任务时若不清理，会出现错误次数累加导致分数偏低、
+        /// isSkip 残留让本步分数永远不计入总分、操作停留在 Complete 阶段使点击被忽略。
+        /// </summary>
+        private void ResetStepState()
+        {
+            if (taskStepData != null)
+            {
+                taskStepData.currentErrors = 0;
+                taskStepData.currentScore = taskStepData.baseScore;
+                taskStepData.isCompleted = false;
+                taskStepData.isSkip = false;
+            }
+            currentScore = 0f;
+            erroTimes = 0;
+            if (operationGroup != null) operationGroup.ResetOperation();
         }
 
         public virtual void OnEnter()

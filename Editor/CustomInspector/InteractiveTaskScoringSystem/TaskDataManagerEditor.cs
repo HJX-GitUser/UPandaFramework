@@ -60,6 +60,11 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 {
                     component.SkipTask();
                 }
+
+                if (GUILayout.Button("重新开始任务"))
+                {
+                    component.RestartTask();
+                }
             }
         }
 

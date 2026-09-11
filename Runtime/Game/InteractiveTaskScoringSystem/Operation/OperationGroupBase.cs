@@ -9,7 +9,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     /// <summary>
     /// 操作监听组
     /// </summary>
-    public abstract class OperationGroupBase : MonoBehaviour, OperationStepCheck, GetUniTaskID
+    public abstract class OperationGroupBase : MonoBehaviour, OperationStepCheck, GetUniTaskID, OperationResettable
     {
         public string OperatingStepID;
         /// <summary>
@@ -105,6 +105,20 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 if (ChildStep[i] != null && ChildStep[i].GetOperationPhase == OperationPhase.TargetCheck) return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// 复位本操作组与所有子操作的状态（重新开始任务时调用）
+        /// </summary>
+        public virtual void ResetOperation()
+        {
+            operationPhase = OperationPhase.Prepare;
+            if (ChildStep == null) return;
+            for (int i = 0; i < ChildStep.Length; i++)
+            {
+                OperationResettable resettable = ChildStep[i] as OperationResettable;
+                if (resettable != null) resettable.ResetOperation();
+            }
         }
 
         public abstract bool CheckOperation(TaskEntityBase arg);
