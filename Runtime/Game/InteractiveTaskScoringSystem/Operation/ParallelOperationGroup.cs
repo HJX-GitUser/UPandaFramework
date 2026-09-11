@@ -15,7 +15,6 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         private int executeCount; // 已执行完成的数量
         public override void CheckEnable()
         {
-            Debug.Log("ParallelOperationGroup 检查启动");
             OperationEnable();
         }
 
@@ -39,7 +38,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             }
             else
             {
-                Debug.Log("操作错误！！！");
+                // 修复：若已无处于目标检查阶段的子步骤（都在播放动画），本次点击不判为操作错误
+                if (!HasTargetCheckStep()) return;
                 EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("<color=red>操作错误!!!</color>"));
                 taskStep.AddErroTimes();
             }
@@ -52,17 +52,14 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             if (OperationCount == 0) return;
             operationPhase = OperationPhase.TargetCheck;
             executeCount = 0;
-            if (OperationCount != 0 && completeCount <= 0)
+            if (completeCount <= 0)   // 修复：去掉冗余的 OperationCount != 0 判断
             {
                 completeCount = OperationCount;
             }
-            if (completeCount == 0)
-            {
-                OperationComplete?.Invoke();
-            }
+            // 修复：此处 completeCount 必 >= 1，原 if (completeCount == 0) 分支为不可达代码，已删除
             foreach (var item in ChildStep)
             {
-                item.OperationEnable();
+                if (item != null) item.OperationEnable();   // 修复：null 元素保护
             }
         }
         public override bool CheckOperation(TaskEntityBase arg)
@@ -70,7 +67,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             bool checkRight = false;
             foreach (var item in ChildStep)
             {
-                if (item.CheckOperation(arg) && item.GetOperationPhase == OperationPhase.TargetCheck)
+                if (item != null && item.CheckOperation(arg) && item.GetOperationPhase == OperationPhase.TargetCheck)   // 修复：null 元素保护
                 {
                     checkRight = true;
                     item.OpearationExecute(null);
@@ -94,7 +91,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             foreach (var item in ChildStep)
             {
-                item.OperationInstructions();
+                if (item != null) item.OperationInstructions();   // 修复：null 元素保护
             }
         }
 

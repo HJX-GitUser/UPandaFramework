@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -48,7 +50,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             get
             {
                 if (taskStates == null) taskStates = GetComponentsInChildren<TaskStepBase>();
-                return taskStates[Mathf.Clamp(currentStepIndex, 0, taskStates.Length - 1)].GetData;
+                return taskStates.Length == 0 ? null : taskStates[Mathf.Clamp(currentStepIndex, 0, taskStates.Length - 1)].GetData;   // 修复：无步骤时返回 null（原写法空数组会越界）
             }
         }
 
@@ -115,6 +117,11 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public void OperationCheck(TaskEntityBase arg)
         {
             //Debug.Log($"TaskDataManager_OperationCheck {currentStepIndex}:{taskStates.Length}");
+            if (taskStates == null || taskStates.Length == 0)   // 修复：任务未成功初始化时忽略本次操作检查
+            {
+                Debug.LogWarning("任务未初始化或没有步骤，已忽略本次操作检查");
+                return;
+            }
             if (currentStepIndex >= taskStates.Length)
             {
                 Debug.Log("所有任务都已完成");
@@ -129,7 +136,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// </summary>
         public void OperationInstructions()
         {
-            if (currentStepIndex < taskStates.Length)
+            if (taskStates != null && currentStepIndex < taskStates.Length)   // 修复：空引用保护
                 taskStates[currentStepIndex].OperationInstructions();
             else
             {
@@ -143,7 +150,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// </summary>
         public void SkipTask()
         {
-            if (currentStepIndex < taskStates.Length)
+            if (taskStates != null && currentStepIndex < taskStates.Length)   // 修复：空引用保护
             {
                 taskStates[currentStepIndex].SkipTask();
             }
@@ -167,7 +174,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             //uiManager.UpdateTotalScore(totalScore);
             RecordOperation("Step_Complete", true, $"完成步骤 {step.stepID}, 得分: {step.currentScore}");
             //关闭上一个任务
-            taskStates[currentStepIndex].OnExit();
+            if (currentStepIndex >= 0 && currentStepIndex < taskStates.Length)   // 修复：索引越界保护
+                taskStates[currentStepIndex].OnExit();
             OnStepCompleted?.Invoke(step);
             MoveToNextStep();
         }
@@ -178,7 +186,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public void MoveToNextStep()
         {
             Debug.Log($"{currentStepIndex}下一个任务");
-            if (currentStepIndex < taskSteps.stepsConfig.Length - 1)
+            if (taskSteps != null && currentStepIndex < taskSteps.stepsConfig.Length - 1)   // 修复：配置缺失保护
             {
                 currentStepIndex++;
                 taskStates[currentStepIndex].OnEnter();
@@ -208,6 +216,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 score = currentStep.currentScore,
                 errorCount = currentStep.currentErrors
             };
+            if (operationRecords == null) operationRecords = new Dictionary<string, List<OperationRecord>>();   // 修复：容错
+            if (!operationRecords.ContainsKey(currentStep.stepID)) operationRecords[currentStep.stepID] = new List<OperationRecord>();
             operationRecords[currentStep.stepID].Add(record);
         }
 
@@ -223,7 +233,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         private void OnDestroy()
         {
-            TaskEntityManager.Instance.Clear();
+            // 修复：仅在确实注册过实体时才清空，避免销毁阶段无谓创建单例
+            if (TaskEntityManager.HasRegistered) TaskEntityManager.Instance.Clear();
         }
 
 #if UNITY_EDITOR

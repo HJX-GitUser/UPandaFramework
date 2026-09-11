@@ -1,26 +1,32 @@
-ï»¿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
     /// <summary>
-    /// ä»»åŠ¡äº¤äº’å¯¹è±¡ç®¡ç†å™¨
+    /// ÈÎÎñ½»»¥¶ÔÏó¹ÜÀíÆ÷
     /// </summary>
     public class TaskEntityManager : LazySingletonBase<TaskEntityManager>
     {
         private Dictionary<string, TaskEntityBase> entityDic = new Dictionary<string, TaskEntityBase>();
+        private static int registeredCount = 0;   // ĞŞ¸´£ºÅĞ¶ÏÊÇ·ñÕæµÄ×¢²á¹ıÊµÌå£¨±ÜÃâÏú»Ù½×¶ÎÎŞÎ½´´½¨µ¥Àı£©
+
+        /// <summary>ÊÇ·ñ×¢²á¹ıÊµÌå£¨¾²Ì¬ÅĞ¶Ï£¬²»»á´¥·¢µ¥Àı´´½¨£©</summary>
+        public static bool HasRegistered => registeredCount > 0;
         public void Register(TaskEntityBase arg)
         {
-            if (arg.StepIDGroup.Length == 0) return;
+            if (arg == null || arg.StepIDGroup == null || arg.StepIDGroup.Length == 0) return;   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
             foreach (var item in arg.StepIDGroup)
             {
-                if (!entityDic.ContainsKey(item))
+                if (string.IsNullOrEmpty(item)) continue;   // ĞŞ¸´£ººöÂÔÎ´ÌîĞ´µÄ¿Õ ID
+                    if (!entityDic.ContainsKey(item))
                 {
                     entityDic.Add(item, arg);
+                    registeredCount++;
                 }
                 else
                 {
-                    PLogger.LogError($"{arg.StepIDGroup}é‡å¤æ³¨å†Œï¼æ³¨å†Œå¯¹è±¡ï¼š{arg.transform.parent.name}/{arg.transform.name}\nå·²æ³¨å†Œå¯¹è±¡ï¼š{entityDic[item].transform.parent.name}/{entityDic[item].transform.name}");
+                    PLogger.LogError($"²½ÖèID¡¸{item}¡¹ÖØ¸´×¢²á£¡\nĞÂ¶ÔÏó£º{arg.name}\nÒÑ×¢²á£º{entityDic[item].name}");   // ĞŞ¸´£ºÔ­ĞÅÏ¢´òÓ¡µÄÊÇÊı×éÃû£¬ÇÒ¸¸ÎïÌåÎª¿ÕÊ±»¹»á¿ÕÒıÓÃ
                 }
             }
             
@@ -29,14 +35,14 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public TaskEntityBase FindEntity(string id)
         {
             TaskEntityBase arg = entityDic.ContainsKey(id) ? entityDic[id] : null;
-            if (arg == null) Debug.LogError($"id{id} æŸ¥æ‰¾å¤±è´¥ï¼");
+            if (arg == null) Debug.LogError($"id{id} ²éÕÒÊ§°Ü£¡");
             return arg;
         }
 
         public void Clear()
         {
             entityDic.Clear();
-            Debug.Log("ä»»åŠ¡å®ä½“å·²æ¸…ç©º");
+            registeredCount = 0;   // ĞŞ¸´£ºÍ¬²½ÖØÖÃ¼ÆÊı
         }
     }
 }

@@ -33,8 +33,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         protected virtual void Awake()
         {
             TaskEntityManager.Instance.Register(this);
-            //交互测试
-            gameObject.AddComponent<TaskTriggerExample>();
+            // 修复：不再自动挂载示例触发器，请显式挂载 TaskTriggerExample（或自行实现 InteractiveTrigger 触发器）
         }
 
 
@@ -70,6 +69,11 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public virtual void OnSelect()
         {
             //Debug.Log($"{id} OnSelect");
+            if (TaskDataManager.Instance == null)   // 修复：场景缺少 TaskDataManager 时不再空引用
+            {
+                Debug.LogError("场景中缺少 TaskDataManager，无法进行任务检查");
+                return;
+            }
             TaskDataManager.Instance.OperationCheck(this);
         }
 

@@ -88,10 +88,23 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             {
                 operationPhase = OperationPhase.Complete;
                 OperationComplete?.Invoke();
-                TaskStepData parentData = transform.GetComponentInParent<TaskStepBase>().taskStepData;
-                Debug.LogWarning($"操作组任务检查步骤未配置,该操作直接完成,操作组位于：{parentData.stepID}下");
+                TaskStepData parentData = GetComponentInParent<TaskStepBase>()?.taskStepData;
+                Debug.LogWarning($"操作组任务检查步骤未配置,该操作直接完成,操作组位于：{parentData?.stepID}下");
                 return;
             }
+        }
+
+        /// <summary>
+        /// 是否还有处于目标检查阶段的子步骤（修复：避免动画执行中再次点击被误判为操作错误）
+        /// </summary>
+        protected bool HasTargetCheckStep()
+        {
+            if (ChildStep == null) return false;
+            for (int i = 0; i < ChildStep.Length; i++)
+            {
+                if (ChildStep[i] != null && ChildStep[i].GetOperationPhase == OperationPhase.TargetCheck) return true;
+            }
+            return false;
         }
 
         public abstract bool CheckOperation(TaskEntityBase arg);
@@ -100,9 +113,10 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         public virtual void OperationSkip()
         {
+            if (ChildStep == null) return;   // 修复：子步骤为空时不再空引用
             foreach (var item in ChildStep)
             {
-                if (item.GetOperationPhase != OperationPhase.Complete)
+                if (item != null && item.GetOperationPhase != OperationPhase.Complete)   // 修复：null 元素保护
                     item.OperationSkip();
             }
         }

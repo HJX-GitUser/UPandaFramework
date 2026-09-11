@@ -62,12 +62,12 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             operationGroup = GetComponentInChildren<OperationGroupBase>();
             if (operationGroup == null)
             {
-                Debug.LogWarning($"{taskStepData.stepID} ");
-                return;
+                Debug.LogWarning($"{taskStepData.stepID} 未配置操作检查组，该步骤进入后将直接完成");
+                // 修复：原此处直接 return 会让下面的待激活实体解析不到，改为仅告警
             }
-            operationGroup.Init(Submit);
+            if (operationGroup != null) operationGroup.Init(Submit);   // 修复：未配置检查组时跳过初始化，待激活实体仍会解析
             entitys = new List<TaskEntityBase>();
-            foreach (string item in EnableEntity)
+            if (EnableEntity != null) foreach (string item in EnableEntity)   // 修复：未配置待激活实体时不空引用
             {
                 TaskEntityBase taskEntity = TaskEntityManager.Instance.FindEntity(item);
                 if (taskEntity != null) entitys.Add(taskEntity);
@@ -111,6 +111,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// </summary>
         public virtual void Submit()
         {
+            // 说明：Submit 会先把状态置为 TaskComplete 再调用本方法（保留判断以兼容外部直接调用）
+            if (taskState == TaskState.TaskComplete) return;   // 修复：防止重复提交（跳过与执行回调叠加）导致步骤重复推进、重复计分
             taskState = TaskState.TaskComplete;
             //完成
             taskStepData.currentScore = HandleScore();
@@ -126,8 +128,10 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         public virtual float HandleScore()
         {
+            // 说明：Submit 会先把状态置为 TaskComplete 再调用本方法（保留判断以兼容外部直接调用）
             if (taskState == TaskState.TaskComplete)
-                return taskStepData.currentErrors == 0 ? taskStepData.baseScore : (taskStepData.currentErrors == 1 ? taskStepData.baseScore / 2 : 0);
+                // 评分规则：0 次错误=满分；1 次错误=半分；2 次及以上=0 分（isSkip 的步骤不计入总分）
+            return taskStepData.currentErrors == 0 ? taskStepData.baseScore : (taskStepData.currentErrors == 1 ? taskStepData.baseScore / 2 : 0);
             else return 0;
         }
 
@@ -143,19 +147,20 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         public void OperationInstructions()
         {
+            if (operationGroup == null) { Debug.LogWarning($"{taskStepData.stepID} 未配置操作检查组，无法执行引导"); return; }   // 修复：空引用保护
             operationGroup.OperationInstructions();
         }
 
         public void SkipTask()
         {
-            if (operationGroup.operationPhase == OperationPhase.Execute)
+            if (operationGroup != null && operationGroup.operationPhase == OperationPhase.Execute)   // 修复：空引用保护
             {
                 Debug.Log("步骤执行中，禁止跳过");
                 EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("步骤执行中，禁止跳过!!!"));
                 return;
             }
             else
-                operationGroup.OperationSkip();
+                if (operationGroup != null) operationGroup.OperationSkip();   // 修复：空引用保护
             taskStepData.isSkip = true;
             Submit();
         }

@@ -89,10 +89,11 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 TargetEntity = entityManager.FindEntity(OperatingStepID);
                 if (TargetEntity == null)
                 {
-                    Debug.LogError($"{transform.parent.parent.name} : {transform.name} : 实体ID获取失败！");
+                    Debug.LogError($"{transform.name} : 实体ID获取失败！ID：{OperatingStepID}");
+                    return;   // 修复：查找失败必须返回，否则下一行会对 null 取组件而崩溃
                 }
-                OpCheck = TargetEntity.GetComponent<EntityOperationCheck>();
             }
+            OpCheck = TargetEntity.GetComponent<EntityOperationCheck>();   // 修复：手工指定 TargetEntity 时同样要获取接口实现
 
         }
 
@@ -106,6 +107,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             operationPhase = OperationPhase.TargetCheck;
             if (string.IsNullOrEmpty(OperatingStepID) || AutoExecute)  // 目标检查阶段自动通过 直接完成
             {
+                if (TargetEntity == null) { Debug.LogWarning($"{name} 未配置目标实体，无法自动完成"); return; }   // 修复：空引用保护
                 TargetEntity.OnSelect();
             }
             else
@@ -158,6 +160,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                     }
                     break;
                 case OperationPhase.Execute:
+                    // 说明：此处返回 true 以兼容只做引用比对的旧配置；重复点击不会重复执行（OpearationExecute 内有阶段拦截）
                     if (OpCheck != null)
                     {
                         return OpCheck.ConditionMet(arg);
@@ -183,6 +186,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         public void OperationSkip()
         {
+            if (TargetEntity == null) { Debug.LogWarning($"{name} 未找到目标实体，跳过无效"); return; }   // 修复：空引用保护
             TargetEntity.Skip();
         }
     }

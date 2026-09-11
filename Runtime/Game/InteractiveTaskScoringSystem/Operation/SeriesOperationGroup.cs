@@ -23,6 +23,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             }
             if (currentIndex < OperationCount)
             {
+                if (ChildStep[currentIndex] == null || ChildStep[currentIndex].GetOperationPhase != OperationPhase.TargetCheck) return;   // 修复：子步骤已在执行或已完成时，本次点击不判为操作错误
                 if (CheckOperation(arg))
                 {
                     OpearationExecute(() =>
@@ -33,8 +34,6 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 }
                 else
                 {
-                    Debug.Log("操作错误！！！");
-                    Debug.Log(arg.gameObject.name);
                     EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("操作错误!!!"));
                     taskStep.AddErroTimes();
                 }
@@ -43,12 +42,12 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         public override void CheckEnable()
         {
-            Debug.Log("SeriesOperationGroup 检查启动" + transform.name);
             OperationEnable();
         }
 
         public override void OperationInstructions()
         {
+            if (ChildStep == null || currentIndex < 0 || currentIndex >= OperationCount) return;   // 修复：越界保护
             ChildStep[currentIndex].OperationInstructions();
         }
 
@@ -57,13 +56,13 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             base.OperationEnable();
             if (OperationCount == 0) return;
             currentIndex = 0;
-            ChildStep[currentIndex].OperationEnable();
+            if (ChildStep[currentIndex] != null) ChildStep[currentIndex].OperationEnable();   // 修复：空子步骤保护
             operationPhase = OperationPhase.TargetCheck;
         }
 
         public override bool CheckOperation(TaskEntityBase arg)
         {
-            return ChildStep[currentIndex].CheckOperation(arg);
+            return ChildStep[currentIndex] != null && ChildStep[currentIndex].CheckOperation(arg);   // 修复：空子步骤保护
         }
 
         public override void OpearationExecute(UnityAction callback)
@@ -75,7 +74,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 if (currentIndex < OperationCount)
                 {
                     operationPhase = OperationPhase.TargetCheck;
-                    ChildStep[currentIndex].OperationEnable();
+                    if (ChildStep[currentIndex] != null) ChildStep[currentIndex].OperationEnable();   // 修复：空子步骤保护
                 }
                 else
                 {
