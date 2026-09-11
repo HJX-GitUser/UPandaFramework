@@ -11,14 +11,13 @@ Unity 的前端（客户端）框架，提供统一的启动入口、单例、�
 
 - 统一启动入口 `UPGameRoot`，自动挂载并初始化各子系统
 - 四种单例基类（急加载 / 懒加载 × MonoBehaviour / 纯 C#）
-- 两套事件系统：委托式 `EventCenter`、接口式 `EventBus`
+- 两套事件系统：委托式 `EventCenter`、接口式 `EventBus`（选型与原理见事件模块文档）
 - 双模式资源管理（编辑器直读 / AssetBundle），支持本地、远程加载与热更下载
 - 可编译期剔除的日志系统，支持本地输出与真机日志面板
 - 分层 UI 管理与 Canvas 自动生成
-- 玩法系统：任务系统、交互式任务评分、回放、分层状态机、机械臂 CCD 逆运动学、载具控制
-- 交互式任务评分系统配套工具链：任务流程校验器（一键修正绑定 / ID）、运行逻辑自检 、回放复盘查看器、演示场景一键生成
+- 玩法系统：任务系统、交互式任务评分（含校验器 / 逻辑自检 / 回放复盘工具）、回放、分层状态机、机械臂 CCD 逆运动学、载具控制
 - 内置 Shader 学习文档与效果案例库（流光、描边、卡通、消融、水波等）
-- 编辑器工具链：AB 打包、Excel 数据表、UI 自动生成、HybridCLR 热更、常用路径快捷打开
+- 编辑器工具链：AB 打包、Excel 数据表、UI 自动生成、HybridCLR 热更、事件调试窗口、常用路径快捷打开
 
 ## 快速开始
 
@@ -63,7 +62,7 @@ public class GameLaunchExample : MonoBehaviour
 | 载具控制 | `Runtime/Game/VehicleSystem/Sample/VerticalScene.unity` | Rigidbody + WheelCollider 车辆，`W/S/A/D` 驾驶、`空格` 手刹漂移、`C` 切视角 |
 | 高亮描边 | `Runtime/Game/QuickOutline/Samples/Scenes/QuickOutline.unity` | 描边效果演示（`OutlineMask` / `OutlineFill`） |
 | 回放系统 | `Runtime/Game/ReplaySystem/Sample/HFScene.unity` | 录制 / 回放演示场景 |
-| 交互式任务评分 | 菜单 `UPandaGF -> 交互任务评分系统 -> 创建演示场景` 一键生成 | 生成配置资产 + 实体预制体 + 场景（默认落在 `Runtime/Game/InteractiveTaskScoringSystem/Example/Demo/`），含 2 个步骤：串联操作组（A→B）与并联操作组（C+D） |
+| 交互式任务评分 | 菜单 `UPandaGF -> 交互任务评分系统 -> 创建演示场景` 一键生成 | 生成配置资产 + 实体预制体 + 可运行场景（落 `Example/Demo/`）；演示内容见模块文档 |
 
 ## 目录结构
 
@@ -78,6 +77,7 @@ upanda-framework/
 │   ├── HyBridCLREditor/         HybridCLR 热更程序集拷贝配置
 │   ├── CustomInspector/         自定义 Inspector
 │   │   ├── UPGameRootEditor.cs            启动根节点面板
+│   │   ├── EventCenterModule/              事件系统工具：事件调试窗口 / 事件模块自检
 │   │   └── InteractiveTaskScoringSystem/   评分系统工具：校验器 / 逻辑自检 / 回放复盘 / 演示生成 / 组件 Inspector
 │   ├── EditorTools/             编辑器小工具（资源路径复制、自动碰撞体、常用路径快捷打开）
 │   ├── EditorConfig/            编辑器配置
@@ -88,7 +88,7 @@ upanda-framework/
 │   │   ├── GameRoot/            UPGameRoot 启动入口 + SourcesLoadMgr 资源抽象
 │   │   ├── Singleton/           单例基类
 │   │   ├── DebugSystem/         日志系统
-│   │   ├── EventCenterModule/   事件系统
+│   │   ├── EventCenterModule/   事件系统（含本目录 README.md）
 │   │   ├── AssetsMgr/           资源管理（Resources / AB / StreamingAssets）
 │   │   ├── DownloadMgr/         下载器（含本目录 README.md）
 │   │   ├── UIMgr/               UI 管理
@@ -158,44 +158,16 @@ upanda-framework/
 
 ### 事件系统（Manager/EventCenterModule）
 
-提供两套实现，按需选择：
+两套实现，按需选择：
 
-**① EventCenter —— 委托式全局事件中心**
+| 实现 | 形态 | 适用场景 |
+|---|---|---|
+| `EventCenter` | 委托式**单例**，参数为 `EventArgBase` 子类 | 跨模块 / 全局通知；支持带 owner 注册（owner 销毁自动注销）、优先级、一次性监听 |
+| `EventBus` | 接口式，可 `new` 多实例，消息为 `struct` | 帧内高频（零 GC）、需要多套互不干扰的上下文；监听者用弱引用防泄漏 |
 
-```csharp
-using UnityEngine;
-using UPandaGF;
+两者均已做到：监听者抛异常不中断其余监听者、派发中增删订阅不重复不漏派发、用户回调在锁外执行。配套工具：菜单 `UPandaGF -> 事件系统 -> 事件调试窗口 / 事件模块自检`。
 
-// 声明事件对象
-public class EventTest1 : EventArgBase
-{
-    public string arg0 { get; private set; }
-    public EventTest1(string arg) { arg0 = arg; }
-}
-
-// 注册 / 注销
-public class Listener : MonoBehaviour
-{
-    private void OnEnable()
-        => EventCenter.Instance.AddEventListener<EventTest1>(OnEvent);
-
-    private void OnDestroy()
-        => EventCenter.Instance.RemoveEventListener<EventTest1>(OnEvent);
-
-    private void OnEvent(EventArgBase arg)
-    {
-        EventTest1 e = arg as EventTest1;
-        PLogger.Log($"收到事件，参数：{e.arg0}");
-    }
-}
-
-// 触发
-EventCenter.Instance.EventTrigger(new EventTest1("触发测试"));
-```
-
-**② EventBus —— 接口式事件总线**
-
-订阅者实现 `IEventListener<T>`，消息类型为 `struct`，内部使用 `WeakReference` 防内存泄漏，可创建多个实例做上下文 / 场景隔离。
+> 用法示例、内部结构、执行语义、FAQ 与已知限制：见 `Runtime/Manager/EventCenterModule/README.md`。
 
 ### 资源管理（Manager/AssetsMgr + SourcesLoadMgr）
 
@@ -245,9 +217,8 @@ EventCenter.Instance.EventTrigger(new EventTest1("触发测试"));
 
 ### 下载器（Manager/DownloadMgr）
 
-- **Downloader**：下载队列 + 并发（`maxConcurrentDownloads`）+ 超时重试 + 事件通知，提供 `async/await` 接口与暂停 / 继续 / 取消；批次结束用 `OnAllDownloadsFinished(bool)` 判断是否全部成功，失败明细见 `FailedItems`。
-- **DownloadHandlerFile**：继承 `DownloadHandlerScript` 的落盘下载句柄，延迟打开文件（兼容分块传输）、捕获写入异常、支持主动 `Close()`。
-- **断点续传默认关闭**（`enableResume = false`）：增量清单按 MD5 对比生成，本地文件可能是"完整但过期"的旧版本，追加写入会损坏文件。
+- **Downloader**：下载队列 + 并发 + 超时重试，提供 `async/await` 接口与暂停 / 继续 / 取消；**DownloadHandlerFile** 为落盘下载句柄（延迟打开文件、兼容分块传输）。
+- 断点续传默认关闭：增量清单按 MD5 对比生成，本地文件可能是“完整但过期”的旧版本，追加写入会损坏文件。
 - 实现原理、API 参考与修复记录见 `Runtime/Manager/DownloadMgr/README.md`。
 
 ### UI 系统（Manager/UIMgr）
@@ -290,74 +261,31 @@ EventCenter.Instance.EventTrigger(new EventTest1("触发测试"));
 | 模块 | 说明 |
 |---|---|
 | `TaskSystem` | 通用任务 / 条件 / 奖励 / 分组框架 |
-| `InteractiveTaskScoringSystem` | 交互式任务评分系统：步骤管理、操作判定、串行 / 并行操作组、操作记录与评分，面向教学实训场景；含纯逻辑层（可单测）、可插拔评分策略（难度分级 / 超时扣分）、动作级回放日志与配套编辑器工具，详见下方小节 |
-| `ReplaySystem` | 回放系统：按帧录制对象 Transform 数据，序列化 + 压缩存储到本地；`IRecordableComponent` 可扩展录制其他数据（如 `RigidbodyVelocityRecorder`），`ReplayUI` 提供回放界面 |
-| `StateMachine` | 分层状态机：状态注册、状态栈、路径切换（如 `Movement/Run`） |
+| `InteractiveTaskScoringSystem` | 交互式任务评分系统：步骤 / 操作组 / 评分 / 回放，面向教学实训场景；详见该目录 `ReadMe.md` |
+| `ReplaySystem` | 回放系统：按帧录制 Transform（可扩展），序列化 + 压缩存储到本地；`ReplayUI` 提供回放界面；详见该目录 `README.md` |
+| `StateMachine` | 分层状态机：状态注册、状态栈、路径切换（如 `Movement/Run`）；详见该目录 `README.md` |
 | `RobotCCDIK` | 串联机械臂 CCD 逆运动学：位置 / 姿态双目标、关节限位、姿态录制回放；原理与用法见该目录 `README.md` |
 | `VehicleSystem` | 载具控制：`VehicleController`（Rigidbody + WheelCollider，前轮转向 / 后轮驱动 / 手刹漂移）、`VehicleInput`（键盘输入）、`CameraModeManager`（第三人称 / 第一人称 / 环绕三视角） |
 | `QuickOutline` | 物体高亮描边（配套 `OutlineMask` / `OutlineFill` Shader 与材质，示例场景 `QuickOutline/Samples/Scenes/QuickOutline.unity`） |
 | `SimpleCameraControl` | 简单相机控制 |
 | `Vignette` | 隧道暗角后处理效果（`TunnelingVignette`） |
-| `Study` | 学习示例（`SortStu` 等） |
+| `Study` | 学习示例（`SortStu` 等）；详见该目录 `README.md` |
 
 #### 交互式任务评分系统（InteractiveTaskScoringSystem）
 
-把“考核流程”拆成若干**步骤**，每步由一个或多个**操作**（串联 / 并联）组成；学员只能点击当前步骤激活的交互物，点错计一次错误，完成后按错误次数 / 耗时结算分数。
+把“考核流程”拆成若干**步骤**，每步由一个或多个**操作**（串联 / 并联）组成；只允许点击当前步骤激活的交互物，点错计一次错误，完成后按错误次数 / 耗时结算分数。
 
-**架构与调用链**
+- **核心能力**：纯逻辑层 `Core/`（不依赖 `UnityEngine`，可单测）、配置与运行状态分离（可重玩 / 多实例 / 存档）、可插拔评分策略（难度分级 + 超时扣分）、动作级回放日志。
+- **编辑器工具**（菜单 `UPandaGF -> 交互任务评分系统`）：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 一键生成演示场景。
+- **演示快捷键**：`G` 引导、`K` 跳过当前步骤、`S` 保存回放日志。
 
-- `TaskDataManager`（总调度：初始化、点击路由、步骤推进、总分、动作日志）→ `TaskStepBase`（单步骤：激活实体、持有操作组、结算分数）→ `OperationGroupBase`（`SeriesOperationGroup` 串联 / `ParallelOperationGroup` 并联）→ `OperationCheckBase`（叶子操作：四阶段状态机 + 目标实体校验）。
-- 交互物继承 `TaskEntityBase`，`Awake` 时按 `stepID` 注册到 `TaskEntityManager`；鼠标事件由 `TaskTriggerExample` 转成 `InteractiveTrigger` 回调。
-- 评分规则、运行状态、回放日志都在 `Core/` 里（**不依赖 `UnityEngine`**，可单独跑逻辑自检）：`TaskStepRuntime` / `TaskProgress` / `ScorePolicy` / `DifficultyScorePolicy` / `ReplayLog` / `ITaskHost`。
-- **配置与状态分离**：错误次数、得分、完成 / 跳过标记存在 `TaskStepRuntime` 上，`TaskConfig`（ScriptableObject）始终只读 → 重玩、多实例、存档互不污染；`TaskStepData.order` 可显式指定步骤顺序（全为 0 时按节点层级）。
-
-**难度分级 / 自定义评分**
-
-```csharp
-// 困难：错一次即 0 分；15 秒内完成满分，超时每秒扣 2 分
-TaskDataManager.Instance.scorePolicy = DifficultyScorePolicy.Create(TaskDifficulty.Hard, 15f, 2f);
-```
-
-自定义规则只需实现 `IScorePolicy`（只看基础分 + 错误次数）或 `IScorePolicyEx`（额外能拿到本步耗时）；两种写法都能直接用，未实现增强接口时自动回退。
-
-**回放复盘**
-
-- 运行时按 **S** 保存（或调 `TaskDataManager.Instance.SaveReplayLog()`），日志写成 JSON 落到 `StreamingAssets/replay_*.json`；
-- 菜单 `UPandaGF -> 交互任务评分系统 -> 回放复盘查看器` 载入后按时间轴复盘（`Task_Start / Step_Enter / Step_Error / Step_Skip / Step_Complete / Task_Complete / Task_Restart`），可定位到场景节点、按步骤筛选、导出 CSV。
-
-**编辑器工具**（均在菜单 `UPandaGF -> 交互任务评分系统` 下）
-
-| 菜单 | 作用 |
-|---|---|
-| 创建演示场景 | 一键生成配置资产 + 实体预制体 + 可运行场景 |
-| 任务流程校验器 | 开工前体检：步骤数量、`stepID` 空 / 重复、实体绑定、操作 ID 与层级是否一致、`EnableEntity` 是否缺失……支持「一键修复（ID → 属性）」与报告复制 |
-| 运行逻辑自检 | 43 项纯逻辑断言（评分策略 / 难度与超时扣分 / 运行状态 / 进度推进 / 回放与 JSON 往返） |
-| 回放复盘查看器 | 载入回放日志，时间轴复盘与场景定位 |
-
-> 本项目未安装 `com.unity.test-framework`，逻辑验证用「运行逻辑自检」代替 NUnit；装了 Test Runner 后断言可原样搬运。
-
-**演示快捷键**：`G` 步骤引导、`K` 跳过当前步骤、`S` 保存回放日志。
-
-**完整原理、API、扩展方式、已知限制与 FAQ**：见 `Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md`。
+> 架构与调用链、评分规则、回放与工具细节、扩展指南、已知限制与 FAQ：见 `Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md`。
 
 #### 机械臂逆运动学（RobotCCDIK）
 
-`Runtime/Game/RobotCCDIK` 是一套**串联机械臂 IK** 方案，附带示例场景与独立文档：
+`CCDIKController` 提供串联机械臂 IK（位置 + 姿态双目标、关节单轴行程限位、平滑插值、复位与调试绘制）；`RobotAngleRecoder` 可在编辑器内拖动 Target 实时驱动 IK 并录制 / 回放关节姿态。示例场景 `Runtime/Game/RobotCCDIK/Sample/Sample.unity`。
 
-- **`CCDIKController`**：CCD（循环坐标下降）迭代求解，位置 + 姿态双目标；每个关节只绕**单一局部轴**旋转并可设行程限位；内置平滑插值（协程自实现，不依赖任何第三方补间插件）、复位与调试绘制。
-- **`RobotAngleRecoder`**：编辑器辅助组件，Play 模式下拖动 Target 实时驱动 IK，并录制 / 回放关节姿态（`AnglePos` 列表，面板上一键"获取轴数据 / 添加到 AnglePos"）。
-- **角度约定**：所有关节角都是"相对复位姿态（`Awake` 时记录）、绕 `rotationAxis` 的增量角"；关节被外部改动后，下一次求解会自动对齐。
-- **示例**：`Runtime/Game/RobotCCDIK/Sample/Sample.unity`（6 轴机械臂）。
-- **完整原理、API、参数调优与常见问题**：见 `Runtime/Game/RobotCCDIK/README.md`。
-
-最小用法：
-
-```csharp
-ccdik.SolveIK(target.position, target.rotation);           // 实时求解
-ccdik.MoveTo(target.position, target.rotation, 1f);        // 平滑移动到目标
-ccdik.AngleLerp(new float[] { 0, 30, -20, 0, 45, 0 }, 1f); // 平滑改变关节角（增量角）
-ccdik.ResetAngle();                                        // 复位
-```
+> 原理、角度约定、参数调优与常见问题：见 `Runtime/Game/RobotCCDIK/README.md`。
 
 ### Shader 学习资料（Runtime/Shader）
 
@@ -376,7 +304,8 @@ ccdik.ResetAngle();                                        // 复位
 - **HyBridCLREditor**：HybridCLR 热更程序集拷贝配置（`DLLCopyConfigWindow`）。
 - **CustomInspector**：
   - `UPGameRootEditor`：启动根节点面板（资源加载方式、热更开关、远程地址、AES 配置等）。
-  - `InteractiveTaskScoringSystem/`：评分系统工具集 —— 任务流程校验器（菜单 `UPandaGF/交互任务评分系统/任务流程校验器`，一键按层级重算操作 ID、同步步骤绑定、补全 `EnableEntity`，报告可复制）、运行逻辑自检、回放复盘查看器、演示场景生成器，以及 `TaskDataManager` / `TaskStepBase` / 操作组的自定义 Inspector（含「重新开始任务」按钮）。
+  - `EventCenterModule/`：事件调试窗口 + 事件模块自检（菜单 `UPandaGF/事件系统/…`），用法见事件模块文档。
+  - `InteractiveTaskScoringSystem/`：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 演示场景生成器 + 各组件自定义 Inspector（菜单 `UPandaGF/交互任务评分系统/…`），用法见评分系统文档。
 - **EditorTools**：编辑器小工具
   - `ResourcePathCopy`：复制资源路径。
   - `AutoColliderGenerator`：自动生成碰撞体。
@@ -389,6 +318,7 @@ ccdik.ResetAngle();                                        // 复位
 
 | 文档 | 内容 |
 |---|---|
+| `Runtime/Manager/EventCenterModule/README.md` | 事件系统：两套实现的内部结构、执行语义、选型建议、编辑器工具、FAQ、已知限制与变更记录 |
 | `Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md` | 交互式任务评分系统：架构与调用链、评分规则与难度分级、回放、编辑器工具链、扩展指南、已知限制、FAQ |
 | `Runtime/Game/RobotCCDIK/README.md` | 机械臂 CCD 逆运动学：原理、参数调优、姿态录制回放 |
 | `Runtime/Game/ReplaySystem/README.md` | 回放系统：录制、存储与播放 |
