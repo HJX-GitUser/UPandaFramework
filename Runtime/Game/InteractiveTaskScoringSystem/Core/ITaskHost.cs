@@ -17,5 +17,15 @@
 
         /// <summary>跳过当前步骤</summary>
         void SkipTask();
+
+        /// <summary>
+        /// 记录一条动作级日志（P2 新增，用于回放复盘）。
+        /// 由步骤/实体在关键节点调用：Step_Enter / Step_Error / Step_Skip / Step_Complete 等。
+        /// </summary>
+        /// <param name="stepID">所属步骤ID（与步骤无关的任务级事件可传 null）</param>
+        /// <param name="action">动作名，建议使用 Step_ 前缀的动作常量</param>
+        /// <param name="isCorrect">该动作是否算正向（错误动作为 false）</param>
+        /// <param name="details">可读描述</param>
+        void RecordStepAction(string stepID, string action, bool isCorrect, string details);
     }
 }

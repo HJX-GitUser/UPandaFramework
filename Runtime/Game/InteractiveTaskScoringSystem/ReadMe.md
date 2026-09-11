@@ -32,7 +32,9 @@ InteractiveTaskScoringSystem/
 ├── Core/                           ★ 纯逻辑层（不依赖 UnityEngine，可单测/可复用）
 │   ├── TaskStepRuntime.cs          每步运行状态（错误/得分/完成/跳过/耗时）—— 原寄生在配置资产上
 │   ├── TaskProgress.cs             任务进度（下标/总分/推进/完成判定）
-│   ├── ScorePolicy.cs              IScorePolicy + 默认策略 + 线性扣分策略（难度分级入口）
+│   ├── ScorePolicy.cs              IScorePolicy + ScoreContext + IScorePolicyEx + 默认策略 + 线性扣分策略
+│   ├── DifficultyScorePolicy.cs    难度分级：简单/普通/困难 + 超时扣分（P2）
+│   ├── ReplayLog.cs                动作级回放日志（ReplayEntry / ReplayLog，可 JSON 落盘）（P2）
 │   └── ITaskHost.cs                任务宿主接口（交互实体只依赖它，便于测试/多实例）
 ├── Data/
 │   ├── TaskConfig.cs               TaskStepData（步骤数据）+ TaskConfig（ScriptableObject）+ TaskConfigJsonData
@@ -63,6 +65,7 @@ Editor/CustomInspector/InteractiveTaskScoringSystem/
 ├── InteractiveTaskDemoBuilder.cs   ★ 一键生成演示场景（配置资产 + 实体预制体 + 场景）
 ├── InteractiveTaskValidator.cs     ★ 流程校验 + 自动修复（纯逻辑，可被 CI/脚本调用）
 ├── InteractiveTaskValidatorWindow.cs  ★ 校验器窗口（菜单：UPandaGF/交互任务评分系统/任务流程校验器）
+├── InteractiveTaskReplayWindow.cs  ★ 回放复盘查看器（菜单：…/回放复盘查看器；P2）
 └── InteractiveTaskSelfCheck.cs     ★ 纯逻辑自检（菜单：…/运行逻辑自检；项目未装 Test Runner，用它代替）
 ```
 
@@ -253,8 +256,8 @@ EventCenter.Instance.AddEventListener<TaskTipsInfoEvent>(e => Debug.Log(e.info))
 | 数据记录（进度与得分） | ✅ | `OperationRecord` 记录每步完成情况；`GetReplayData()` 取原始记录 |
 | 教程系统（引导提示） | ✅ | 引导链路完整（`OperationInstructions` → `EnableGuide`），具体表现由实体实现 |
 | 音效反馈 | ❌ | 未实现，可在自定义实体的 `OnSelect/Execute/Skip` 中播放 |
-| 难度分级（动态扣分权重） | ❌ | 未实现，当前为固定三档（满分/半分/0 分） |
-| 回放功能 | ⚠️ | 仅提供操作记录数据（`GetReplayData`），没有回放播放器 |
+| 难度分级（动态扣分权重） | ✅ | `DifficultyScorePolicy`（简单/普通/困难 + 超时扣分），由 `TaskDataManager.scorePolicy` 注入各步骤 |
+| 回放功能 | ✅ | 动作级日志 `ReplayLog`（可落盘 JSON）+ 可视化复盘查看器（时间轴/定位/导出 CSV）；不做真实重演（见限制 13） |
 
 ---
 
@@ -321,9 +324,22 @@ Runtime 程序集在 Player 构建时**不引用 UnityEditor.dll**（已实测�
 | **配置/状态分离** | 错误次数/得分/完成/跳过 原先写在 `TaskStepData`（ScriptableObject）上，已移到 **`TaskStepRuntime`**（纯 C#，每个步骤每次 `Init` 重建一份）：配置资产回归“只读”，重玩/多实例/存档都不会互相污染；`TaskStepBase.Runtime` / `TaskDataManager.GetRuntime(index)` 可取用，`TaskStepRuntime` 支持 `JsonUtility` 往返（存档） |
 | **纯逻辑分层** | 新增 `Core/`：`TaskProgress`（下标/总分/推进/完成判定，替代原先直接维护 `currentStepIndex`/`totalScore`）、`ScorePolicy`（`IScorePolicy` + 默认三档 + 线性扣分，评分可插拔）、`TaskStepRuntime`、`ITaskHost`。这四个类不依赖 `UnityEngine`，可直接被单测覆盖 |
 | **接口化** | `TaskEntityBase` 不再直接调单例，而是通过 **`ITaskHost`**（由 `TaskDataManager` 实现）提交点击 → 便于注入假宿主做测试、也为将来“一个进程跑多份任务”留口子；评分策略由 `TaskDataManager.scorePolicy` 注入到各步骤（`TaskStepBase.ScorePolicy`） |
-| **逻辑自检** | 项目未安装 `com.unity.test-framework`，因此提供菜单 **`UPandaGF/交互任务评分系统/运行逻辑自检`**：一键胉 20 项断言（评分三档/线性扣分、Runtime 复位与 Duration、JsonUtility 往返、TaskProgress 边界与幂等），弹窗 + 日志输出结果；装了 Test Runner 后可原样搬成 NUnit |
+| **逻辑自检** | 项目未安装 `com.unity.test-framework`，因此提供菜单 **`UPandaGF/交互任务评分系统/运行逻辑自检`**：一键跑 22 项断言（评分三档/线性扣分、Runtime 复位与 Duration、JsonUtility 往返、TaskProgress 边界与幂等），弹窗 + 日志输出结果；装了 Test Runner 后可原样搬成 NUnit |
 
 > 相容性：`TaskStepBase.currentScore` / `erroTimes` 改为**只读属性**（值来自 `Runtime`）；`TaskDataManager` 的 `currentStepIndex` / `totalScore` 改为**只读属性**（值来自 `TaskProgress`）；`CompleteStep` 参数由 `TaskStepData` 改为 `TaskStepBase`。除这些外对外 API 未变。
+
+### P2 优化（2026-09 追加）：难度分级 + 回放复盘 + 顺序/组显式配置
+
+| 项 | 内容 |
+| --- | --- |
+| **难度分级（评分可插拔）** | 新增 `ScoreContext`（基础分 / 错误次数 / **本步耗时** / 是否跳过）与增强接口 **`IScorePolicyEx`**：实现它就能拿到耗时做超时扣分，只实现旧 `IScorePolicy` 的写法不受影响（`TaskStepBase` 自动回退）。新增 **`DifficultyScorePolicy`**：简单（每次错误扣 10%，保底 70%）/ 普通（≡ 默认三档）/ 困难（错一次即 0 分），并支持 `parTime` + `overtimePenaltyPerSecond` 超时扣分。用法：`TaskDataManager.Instance.scorePolicy = DifficultyScorePolicy.Create(TaskDifficulty.Hard, 15f, 2f);` |
+| **动作级日志** | 新增 `Core/ReplayLog.cs`（纯 C#，JsonUtility 可直接序列化）：记录 `Task_Start / Step_Enter / Step_Error / Step_Skip / Step_Complete / Task_Complete / Task_Restart`，每条带 `offset`（相对任务开始的秒数）以及当时的得分/错误次数。统一由 `ITaskHost.RecordStepAction(...)` 写入，`enableReplayLog = false` 可关闭 |
+| **落盘与复盘** | `TaskDataManager.SaveReplayLog()` 把日志写成 JSON 落到 StreamingAssets（示例 HUD 里按 **S** 即可），`LoadReplayLog(path)` 读回。新增窗口 **`UPandaGF → 交互任务评分系统 → 回放复盘查看器`**：载入当前会话日志或 JSON → 时间轴逐条列出（错误标红）→ 「定位」在场景里选中对应 `TaskStepBase`；支持播放/拖时间轴自动跟随、按步骤筛选、导出 CSV、复制时间轴 |
+| **步骤顺序显式化** | `TaskStepData.order`（默认 0）：`TaskDataManager.SortStepsByOrder()` 按 order 做**稳定排序**（order 相同或全为 0 → 保持节点层级顺序，**旧数据行为不变**）。`InitializeTask` 里操作记录的键也改为取步骤自身绑定的 `stepID`，不再依赖配置数组下标 |
+| **操作组显式引用** | `TaskStepBase.operationGroupRef`：留空则沿用 `GetComponentInChildren<OperationGroupBase>()`（旧行为），填了就用指定组 → 操作组不必是直接子节点，也能在多个组之间精确挑选 |
+| **自检与校验** | 自检从 22 项扩到 **43 项**（新增难度/超时/回放断言）；校验器的「按顺序应为」判断改用与运行时一致的 `order` 排序口径，避免误报 |
+
+> 相容性：`IScorePolicy` / `TaskStepBase.HandleScore()` / `TaskStepData` 既有字段全部保留，新增的都是**可选字段 + 默认回退**，旧场景与旧代码不需要任何改动。
 
 ---
 
@@ -331,16 +347,19 @@ Runtime 程序集在 Player 构建时**不引用 UnityEditor.dll**（已实测�
 
 1. **配置数量必须与场景节点数量一致**：`TaskDataManager.InitializeTask()` 会校验 `stepsConfig.Length == taskStates.Length`，不一致时直接报错中止，且不会有任何步骤运行；
 2. **未配置操作组的步骤会被"自动完成"**（`OnEnter` 里直接 `Submit`），现在会输出明确警告，但仍会加分——请用第 4.4 节的校验器检查配置；
-3. 步骤顺序**取决于子节点层级顺序**（`GetComponentsInChildren` 的返回顺序）；
+3. 步骤顺序默认**取决于子节点层级顺序**（`GetComponentsInChildren` 的返回顺序），P2 起可用 `TaskStepData.order` 显式指定（order 全为 0 时保持层级顺序，与旧数据一致）；
 4. `Reset()` 自动生成的 ID 与层级序号绑定，**调整节点顺序后必须重新生成 ID**（或手动填写）；
 5. `EntityOperationCheck.ConditionMet` 为 null 时，叶子操作退化为"点击对象必须是 TargetEntity"的引用比对；
-6. 音效、难度权重、回放播放器未实现（见第 7 节）；
+6. 音效未实现（可在自定义实体 `OnSelect/Execute` 里播放，见第 7 节）；
 7. `PartsConfig` / `ToolsConfig` 为预留配置类，当前模块内无任何引用；
 8. 命名沿袭原实现：`OpearationExecute`（少 r）、`AddErroTimes`、`erroTimes`、接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间——为兼容既有配置**本次未改名**；
 9. 模块源码为 GBK 编码，用 UTF-8 工具直接改写会损坏中文注释，请按项目既有 GBK 流程处理；
 10. `RestartTask()` 只复位**数据状态**，不会重置实体的视觉/启用状态（由实体的 `EnableInteractive/DisableInteractive` 实现决定），需要完全还原请重载场景；
 11. 运行状态已从 `TaskStepData` 移到 `TaskStepRuntime`：若你有外部代码读写 `taskStepData.currentScore / currentErrors / isCompleted / isSkip`，请改用 `step.Runtime.*`（或 `TaskDataManager.GetRuntime(index)`）；
-12. 项目未安装 `com.unity.test-framework`，逻辑验证靠菜单 **`UPandaGF/交互任务评分系统/运行逻辑自检`**；安装该包后可将自检断言原样搬进 NUnit/Test Runner。
+12. 项目未安装 `com.unity.test-framework`，逻辑验证靠菜单 **`UPandaGF/交互任务评分系统/运行逻辑自检`**；安装该包后可将自检断言原样搬进 NUnit/Test Runner；
+13. 「回放」是**可视化复盘**（时间轴 + 定位 + 导出），不是把交互重新演一遍——真实重演需要重新注入输入与动画播放，可靠性远低于复盘，本模块未提供；
+14. 回放日志默认只存在内存里（`TaskDataManager.Replay`），**要留存必须主动调 `SaveReplayLog()`**（示例 HUD 按 S）；把 `enableReplayLog` 关掉后新的动作不再记录；
+15. `TaskStepData.order` 只影响**执行顺序**，不参与 `stepsConfig.Length == taskStates.Length` 的数量校验，也不会自动改写配置资产数组顺序。
 
 ---
 
@@ -362,7 +381,7 @@ A：多半是自定义实体的 `Execute(callback)` 没有调用 `callback`，�
 A：模块现在只在"还有待检查子步骤"时才把点击判为错误；其余情况（动画执行中、已完成）会自动忽略。若需更复杂的判定，可重写组的 `OperationCheck`。
 
 **Q6：怎么加音效/难度分级？**
-A：音效建议在自定义实体的 `OnSelect/Execute/Skip` 里播放（或监听 `TaskTipsInfoEvent`）；难度分级可重写 `TaskStepBase.HandleScore()`。
+A：音效建议在自定义实体的 `OnSelect/Execute/Skip` 里播放（或监听 `TaskTipsInfoEvent`）。难度分级直接换评分策略即可：`TaskDataManager.Instance.scorePolicy = DifficultyScorePolicy.Create(TaskDifficulty.Hard, 15f, 2f);`（15 秒内满分，超时每秒扣 2 分）；要完全自定义规则就实现 `IScorePolicy`（只看错误次数）或 `IScorePolicyEx`（还能拿到本步耗时）。
 
 **Q7：怎么重玩同一个任务？**
 A：运行时调用 `TaskDataManager.Instance.RestartTask()`（Play 模式下也可用检视面板的「重新开始任务」按钮）。它会复位总分、步骤下标、错误次数/得分/完成/跳过标记与操作状态机；实体视觉状态需自行还原或重载场景。
@@ -370,5 +389,8 @@ A：运行时调用 `TaskDataManager.Instance.RestartTask()`（Play 模式下也
 **Q8：搭完任务怎么自检？**
 A：菜单 `UPandaGF → 交互任务评分系统 → 任务流程校验器`，点「校验当前场景」。红色（错误）必须修、黄色（警告）建议修，可用「一键修复（ID→属性）」批量处理可自动修复的部分。
 
-**Q9：怎么验证核心逻辑（评分/进度推进）没被改坏？**
-A：菜单 `UPandaGF → 交互任务评分系统 → 运行逻辑自检`，一键胉 20 项断言（评分策略 / 步骤运行状态 / 任务进度 / JsonUtility 存档往返），弹窗会直接给出通过数。
+**Q9：怎么验证核心逻辑（评分/进度推进/难度/回放）没被改坏？**
+A：菜单 `UPandaGF → 交互任务评分系统 → 运行逻辑自检`，一键跑 43 项断言（评分策略 / 难度与超时扣分 / 步骤运行状态 / 任务进度 / 回放日志与 JSON 往返），弹窗会直接给出通过数。
+
+**Q10：回放日志怎么用？**
+A：① 跑任务时按 **S** 保存（或代码调 `TaskDataManager.Instance.SaveReplayLog()`），文件落在 `StreamingAssets/replay_*.json`；② 打开菜单 `UPandaGF → 交互任务评分系统 → 回放复盘查看器`；③ 点「载入当前会话日志」看刚跑完的，或从下拉框选 JSON 文件；④ 时间轴上点「定位」就能在场景里选中对应步骤节点，也能拖时间轴/点播放做顺序复盘，写报告时用「导出 CSV」。

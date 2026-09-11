@@ -12,6 +12,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public string stepID;                   // 步骤id
         public string description;              // 描述
         public float baseScore = 10f;           // 基础分数
+        public int order = 0;                   // P2：步骤执行顺序，越小越先执行；全为 0 时按场景节点层级顺序（兼容旧数据）
         public string tip;
 
 

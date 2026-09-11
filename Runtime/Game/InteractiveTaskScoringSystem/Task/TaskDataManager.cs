@@ -48,6 +48,12 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// <summary>评分策略（可在代码里替换实现，例如难度分级；默认 0错满分/1错半分/2错0分）</summary>
         public IScorePolicy scorePolicy = new DefaultScorePolicy();
 
+        /// <summary>P2：是否记录动作级回放日志（默认开启；关闭后不再追加，已有日志仍在）</summary>
+        public bool enableReplayLog = true;
+
+        /// <summary>P2：动作级回放日志（菜单「回放复盘查看器」可查看/导出，SaveReplayLog() 落盘）</summary>
+        public ReplayLog Replay { get; private set; }
+
         /// <summary>取指定步骤的运行状态（HUD / 存档用）；下标非法时返回 null</summary>
         public TaskStepRuntime GetRuntime(int index)
         {
@@ -113,11 +119,16 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 Debug.LogError("任务配置异常！配置数量不等");
                 return;
             }
+            SortStepsByOrder();   // P2：按 TaskStepData.order 稳定排序（order 全为 0 时保持节点层级顺序，兼容旧数据）
             progress.Init(taskStates.Length);   // 进度复位（原 totalScore / currentStepIndex 已并入 TaskProgress）
+            Replay = new ReplayLog(taskSteps.name, Time.time);   // P2：本次任务的回放日志
+            if (enableReplayLog) Replay.Add(Time.time, null, "Task_Start", true, "任务开始，共 " + taskStates.Length + " 步");
             for (int i = 0; i < taskStates.Length; i++)
             {
-                //操作记录（分数/错误次数等运行时状态由 TaskStepBase.Init 复位）
-                operationRecords[taskSteps.stepsConfig[i].stepID] = new List<OperationRecord>();
+                if (taskStates[i] == null) continue;
+                //操作记录：键取步骤自身绑定的 stepID（步骤顺序改由 order 决定，不再依赖配置数组下标）
+                string initStepID = taskStates[i].taskStepData != null ? taskStates[i].taskStepData.stepID : null;
+                if (!string.IsNullOrEmpty(initStepID)) operationRecords[initStepID] = new List<OperationRecord>();
                 //任务初始化
                 taskStates[i].ScorePolicy = scorePolicy;   // 注入评分策略
                 taskStates[i].Init(this);
@@ -139,6 +150,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public void RestartTask()
         {
             InitializeTask();
+            if (Replay != null) Replay.Add(Time.time, null, "Task_Restart", true, "重新开始任务");   // P2：动作级日志
         }
 
         /// <summary>
@@ -226,6 +238,12 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 // 任务完成（progress.currentIndex == stepCount 作为“全部完成”哨兵）
                 Debug.Log("任务全部完成");
                 EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("任务已全部完成"));
+                if (Replay != null)
+                {
+                    Replay.totalScore = progress.totalScore;
+                    Replay.stepCount = progress.stepCount;
+                    Replay.Add(Time.time, null, "Task_Complete", true, "全部步骤完成，总分 " + progress.totalScore);
+                }
                 OnTaskCompleted?.Invoke();
             }
 
@@ -250,6 +268,91 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             if (operationRecords == null) operationRecords = new Dictionary<string, List<OperationRecord>>();   // 修复：容错
             if (!operationRecords.ContainsKey(runtimeStepID)) operationRecords[runtimeStepID] = new List<OperationRecord>();
             operationRecords[runtimeStepID].Add(record);
+            if (enableReplayLog && Replay != null)   // P2：同一条记录也写入动作级日志
+                Replay.Add(Time.time, runtimeStepID, action, isCorrect, details, record.score, record.errorCount);
+        }
+
+        /// <summary>
+        /// P2：记录一条动作级日志（由 TaskStepBase 调用）。
+        /// enableReplayLog = false 时直接忽略；日志会顺带带上该步骤当前的得分与错误次数。
+        /// </summary>
+        public void RecordStepAction(string stepID, string action, bool isCorrect, string details)
+        {
+            if (!enableReplayLog) return;
+            if (Replay == null) Replay = new ReplayLog(taskSteps != null ? taskSteps.name : name, Time.time);
+            TaskStepRuntime rt = FindRuntime(stepID);
+            Replay.Add(Time.time, stepID, action, isCorrect, details, rt != null ? rt.score : 0f, rt != null ? rt.errors : 0);
+        }
+
+        /// <summary>按 stepID 找步骤运行状态（写日志用；找不到返回 null）</summary>
+        private TaskStepRuntime FindRuntime(string stepID)
+        {
+            if (string.IsNullOrEmpty(stepID) || taskStates == null) return null;
+            for (int i = 0; i < taskStates.Length; i++)
+            {
+                if (taskStates[i] == null) continue;
+                TaskStepRuntime rt = taskStates[i].Runtime;
+                if (rt != null && rt.stepID == stepID) return rt;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// P2：把回放日志写成 JSON（默认落到 StreamingAssets，文件名可指定）。
+        /// 返回写入的完整路径；没有日志或写失败返回 null。
+        /// </summary>
+        public string SaveReplayLog(string fileName = null)
+        {
+            if (Replay == null) return null;
+            Replay.totalScore = progress.totalScore;
+            Replay.stepCount = progress.stepCount;
+            if (string.IsNullOrEmpty(fileName))
+                fileName = "replay_" + (taskSteps != null ? taskSteps.name : name) + "_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".json";
+            string path = Path.Combine(Application.streamingAssetsPath, fileName);
+            try
+            {
+                File.WriteAllText(path, JsonUtility.ToJson(Replay, true));
+                Debug.Log("[交互任务] 回放日志已保存：" + path);
+                return path;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[交互任务] 回放日志保存失败：" + e.Message);
+                return null;
+            }
+        }
+
+        /// <summary>P2：从 JSON 文件读取回放日志（查看器/复盘用）</summary>
+        public static ReplayLog LoadReplayLog(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return null;
+            try { return JsonUtility.FromJson<ReplayLog>(File.ReadAllText(path)); }
+            catch (Exception e) { Debug.LogError("[交互任务] 回放日志读取失败：" + e.Message); return null; }
+        }
+
+        /// <summary>
+        /// P2：按 TaskStepData.order 做「稳定排序」——order 小者先执行；order 相同（含全部为 0 的旧数据）
+        /// 保持场景节点层级顺序。这样步骤执行顺序不再被子节点排列顺序绑架。
+        /// </summary>
+        private void SortStepsByOrder()
+        {
+            if (taskStates == null || taskStates.Length < 2) return;
+            int[] indexs = new int[taskStates.Length];
+            for (int i = 0; i < indexs.Length; i++) indexs[i] = i;
+            Array.Sort(indexs, (a, b) =>
+            {
+                int oa = StepOrderOf(taskStates[a]);
+                int ob = StepOrderOf(taskStates[b]);
+                return oa != ob ? oa.CompareTo(ob) : a.CompareTo(b);   // order 相同则用原下标兜底 → 稳定排序
+            });
+            TaskStepBase[] sorted = new TaskStepBase[taskStates.Length];
+            for (int i = 0; i < sorted.Length; i++) sorted[i] = taskStates[indexs[i]];
+            taskStates = sorted;
+        }
+
+        private static int StepOrderOf(TaskStepBase step)
+        {
+            return step != null && step.taskStepData != null ? step.taskStepData.order : 0;
         }
 
         public List<OperationRecord> GetReplayData()

@@ -59,6 +59,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// </summary>
         public string[] EnableEntity;
         private List<TaskEntityBase> entitys;
+        /// <summary>P2：显式指定的操作检查组（留空时自动取子节点里的第一个，保持旧行为）</summary>
+        public OperationGroupBase operationGroupRef;
         public OperationGroupBase operationGroup;
 
         public TaskStepData GetData => taskStepData;
@@ -69,7 +71,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             taskDataManager = arg;
             taskState = TaskState.Ready;
-            operationGroup = GetComponentInChildren<OperationGroupBase>();
+            operationGroup = operationGroupRef != null ? operationGroupRef : GetComponentInChildren<OperationGroupBase>();   // P2：优先用显式引用
             if (operationGroup == null)
             {
                 Debug.LogWarning($"{taskStepData.stepID} 未配置操作检查组，该步骤进入后将直接完成");
@@ -104,13 +106,15 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             string id = GetStepID();
             if (Runtime == null) Runtime = new TaskStepRuntime(id, baseScore);
             else Runtime.Reset(id, baseScore);
-            Runtime.beginTime = Time.time;
+            Runtime.beginTime = 0f;   // P2：真正的“进入步骤时间”在 OnEnter 里落，否则会把任务开始时间当成步骤耗时起点
             if (operationGroup != null) operationGroup.ResetOperation();
         }
 
         public virtual void OnEnter()
         {
             taskState = TaskState.InProgress;
+            if (taskDataManager != null) taskDataManager.RecordStepAction(GetStepID(), "Step_Enter", true, "进入步骤");   // P2：动作级日志
+            if (Runtime != null) Runtime.beginTime = Time.time;   // P2：步骤耗时从这个点开始算（超时扣分依赖它）
             //Debug.Log("激活实体组");
             if (entitys != null)
             {
@@ -149,25 +153,46 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             taskState = TaskState.TaskComplete;
             //完成
             if (Runtime == null) Runtime = new TaskStepRuntime(GetStepID(), taskStepData != null ? taskStepData.baseScore : 0f);
+            Runtime.endTime = Time.time;   // P2：先落结束时间，评分策略才能拿到本次耗时（超时扣分）
             Runtime.score = HandleScore();
             Runtime.isCompleted = true;
-            Runtime.endTime = Time.time;
             if (taskDataManager != null) taskDataManager.CompleteStep(this);
             else Debug.LogError($"{GetStepID()} 缺少 TaskDataManager，无法推进流程");
+        }
+
+        /// <summary>
+        /// P2：按评分策略计算得分。
+        /// 实现了 IScorePolicyEx 的策略可以额外拿到本步耗时（难度分级/超时扣分）；
+        /// 只实现了 IScorePolicy 的旧策略行为完全不变。
+        /// </summary>
+        private float EvaluateScore()
+        {
+            IScorePolicy policy = ScorePolicy != null ? ScorePolicy : DefaultPolicy;
+            ScoreContext ctx = new ScoreContext
+            {
+                stepID = GetStepID(),
+                baseScore = taskStepData != null ? taskStepData.baseScore : 0f,
+                errors = Runtime != null ? Runtime.errors : 0,
+                duration = Runtime != null ? Runtime.Duration : 0f,
+                isSkip = Runtime != null && Runtime.isSkip
+            };
+            IScorePolicyEx ex = policy as IScorePolicyEx;
+            return ex != null ? ex.CalcScore(ctx) : policy.CalcScore(ctx.baseScore, ctx.errors);
         }
 
         public void AddErroTimes()
         {
             if (Runtime == null) Runtime = new TaskStepRuntime(GetStepID(), taskStepData != null ? taskStepData.baseScore : 0f);
             Runtime.errors++;
+            if (taskDataManager != null) taskDataManager.RecordStepAction(GetStepID(), "Step_Error", false, "第 " + Runtime.errors + " 次错误");   // P2：动作级日志
         }
 
         public virtual float HandleScore()
         {
             // 说明：Submit 会先把状态置为 TaskComplete 再调用本方法（保留判断以兼容外部直接调用）
             if (taskState == TaskState.TaskComplete)
-                // 评分规则：0 次错误=满分；1 次错误=半分；2 次及以上=0 分（isSkip 的步骤不计入总分）
-            return (ScorePolicy != null ? ScorePolicy : DefaultPolicy).CalcScore(taskStepData != null ? taskStepData.baseScore : 0f, Runtime != null ? Runtime.errors : 0);
+                // 评分规则由 ScorePolicy 决定（默认：0 错满分 / 1 错半分 / 2 错及以上 0 分；isSkip 的步骤不计入总分）
+            return EvaluateScore();
             else return 0;
         }
 
@@ -198,6 +223,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             else
                 if (operationGroup != null) operationGroup.OperationSkip();   // 修复：空引用保护
             if (Runtime != null) Runtime.isSkip = true;
+            if (taskDataManager != null) taskDataManager.RecordStepAction(GetStepID(), "Step_Skip", true, "跳过步骤");   // P2：动作级日志
             Submit();
         }
 

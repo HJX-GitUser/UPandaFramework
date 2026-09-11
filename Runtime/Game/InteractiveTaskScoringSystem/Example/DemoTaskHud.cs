@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 using UnityEngine;
 
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
@@ -46,6 +47,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             if (TaskDataManager.Instance == null) return;
             if (Input.GetKeyDown(KeyCode.G)) TaskDataManager.Instance.OperationInstructions();
             if (Input.GetKeyDown(KeyCode.K)) TaskDataManager.Instance.SkipTask();
+            if (Input.GetKeyDown(KeyCode.S)) SaveReplay();
         }
 
         private void HandleStepStarted(TaskStepData step)
@@ -82,6 +84,22 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             tipsHideTime = Time.time + 3f;
         }
 
+        /// <summary>
+        /// P2：保存动作级回放日志（走 TaskDataManager.SaveReplayLog，默认落到 StreamingAssets）。
+        /// 保存后可用菜单「UPandaGF/交互任务评分系统/回放复盘查看器」载入复盘。
+        /// </summary>
+        private void SaveReplay()
+        {
+            string path = TaskDataManager.Instance.SaveReplayLog();
+            if (string.IsNullOrEmpty(path))
+            {
+                ShowTips("回放日志保存失败（没有日志或写入被拒）");
+                return;
+            }
+            ShowTips("回放日志已保存：" + Path.GetFileName(path));
+            Debug.Log("[示例] 回放日志路径：" + path);
+        }
+
         private void OnGUI()
         {
             if (boxStyle == null)
@@ -99,6 +117,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             else
             {
                 sb.AppendLine($"总分：{mgr.totalScore:F1}");
+                if (mgr.scorePolicy != null) sb.AppendLine($"评分策略：{mgr.scorePolicy.Description}");
                 TaskStepData cur = mgr.currentTaskStep;
                 TaskStepRuntime rt = mgr.GetRuntime(mgr.currentStepIndex);
                 if (cur != null)
@@ -116,12 +135,12 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             }
             sb.AppendLine("-----------------------------");
             sb.AppendLine("左键点击方块完成操作");
-            sb.AppendLine("G = 步骤引导   K = 跳过当前步骤");
+            sb.AppendLine("G = 步骤引导   K = 跳过当前步骤   S = 保存回放日志");
             if (!string.IsNullOrEmpty(lastEventLog)) sb.AppendLine("事件：" + lastEventLog);
             if (Time.time < tipsHideTime) sb.AppendLine("提示：" + tipsText);
 
-            GUI.Box(new Rect(10, 10, 460, 210), GUIContent.none, boxStyle);
-            GUI.Label(new Rect(22, 18, 436, 194), sb.ToString(), labelStyle);
+            GUI.Box(new Rect(10, 10, 520, 250), GUIContent.none, boxStyle);
+            GUI.Label(new Rect(22, 18, 496, 234), sb.ToString(), labelStyle);
         }
 
         private static int CountTotal(TaskDataManager mgr)

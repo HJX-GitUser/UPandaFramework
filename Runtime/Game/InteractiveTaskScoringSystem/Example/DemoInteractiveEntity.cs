@@ -45,6 +45,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// </summary>
         public bool ConditionMet(TaskEntityBase arg)
         {
+            //Debug.Log($"[示例] 操作检查：点击的对象是 {arg.name}，本实体是 {name}，判定结果：{(arg == this ? "通过" : "不通过")}");
             return arg == this;
         }
 
