@@ -34,7 +34,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         private const string Step2OpA = "Step2-0-0";
         private const string Step2OpB = "Step2-0-1";
 
-        [MenuItem("UPandaGF/交互任务评分系统/创建演示场景", false, 1)]
+        [MenuItem("UPandaGF/Runtime/交互任务评分系统/创建演示场景", false)]
         public static void BuildDemo()
         {
             // 先询问是否保存当前场景，用户取消则不做任何改动

@@ -62,7 +62,7 @@ public class GameLaunchExample : MonoBehaviour
 | 载具控制 | `Runtime/Game/VehicleSystem/Sample/VerticalScene.unity` | Rigidbody + WheelCollider 车辆，`W/S/A/D` 驾驶、`空格` 手刹漂移、`C` 切视角 |
 | 高亮描边 | `Runtime/Game/QuickOutline/Samples/Scenes/QuickOutline.unity` | 描边效果演示（`OutlineMask` / `OutlineFill`） |
 | 回放系统 | `Runtime/Game/ReplaySystem/Sample/HFScene.unity` | 录制 / 回放演示场景 |
-| 交互式任务评分 | 菜单 `UPandaGF -> 交互任务评分系统 -> 创建演示场景` 一键生成 | 生成配置资产 + 实体预制体 + 可运行场景（落 `Example/Demo/`）；演示内容见模块文档 |
+| 交互式任务评分 | 菜单 `UPandaGF -> Runtime -> 交互任务评分系统 -> 创建演示场景` 一键生成 | 生成配置资产 + 实体预制体 + 可运行场景（落 `Example/Demo/`）；演示内容见模块文档 |
 
 ## 目录结构
 
@@ -87,7 +87,7 @@ upanda-framework/
 │   ├── Manager/                 核心管理器层
 │   │   ├── GameRoot/            UPGameRoot 启动入口 + SourcesLoadMgr 资源抽象
 │   │   ├── Singleton/           单例基类
-│   │   ├── DebugSystem/         日志系统
+│   │   ├── DebugSystem/         日志系统（含本目录 README.md）
 │   │   ├── EventCenterModule/   事件系统（含本目录 README.md）
 │   │   ├── AssetsMgr/           资源管理（Resources / AB / StreamingAssets）
 │   │   ├── DownloadMgr/         下载器（含本目录 README.md）
@@ -152,9 +152,11 @@ upanda-framework/
 
 ### 日志系统（Manager/DebugSystem）
 
-- **PLogger**：对 `Debug` 的封装，通过 `OPEN_PLOG` 宏在编译期剔除日志，避免运行时字符串拼接造成的性能损耗；支持彩色日志、时间戳、线程 ID 前缀、本地文件输出，由 `LogConfig` 统一配置。
-  - 启动 / 剔除日志：菜单 `UPandaGF -> 启动日志/剔除日志`。
-- **Reporter（LogView）**：项目出包后可在真机开启日志面板查看日志与调试信息。
+- **PLogger**：日志门面 —— `[Conditional("OPEN_PLOG")]` 编译期剔除（关日志零成本、实参不求值）；运行时由 `LogConfig`（`StreamingAssets/Data/LogConfig.json`）控制总开关、Warning/Error 分级、前缀 / 时间 / 线程号与单条截断。
+- **PLogHelper**：后台线程把日志落盘；**Reporter / LogListenerManager**：两套真机日志面板（IMGUI / UGUI）。
+- 菜单 `UPandaGF -> 日志系统`：启动日志 / 剔除日志 / 日志系统诊断 / 日志自检（19 项断言）。
+
+> 用法、日志链路、面板对比、FAQ 与已知限制：见 `Runtime/Manager/DebugSystem/README.md`。
 
 ### 事件系统（Manager/EventCenterModule）
 
@@ -165,7 +167,7 @@ upanda-framework/
 | `EventCenter` | 委托式**单例**，参数为 `EventArgBase` 子类 | 跨模块 / 全局通知；支持带 owner 注册（owner 销毁自动注销）、优先级、一次性监听 |
 | `EventBus` | 接口式，可 `new` 多实例，消息为 `struct` | 帧内高频（零 GC）、需要多套互不干扰的上下文；监听者用弱引用防泄漏 |
 
-两者均已做到：监听者抛异常不中断其余监听者、派发中增删订阅不重复不漏派发、用户回调在锁外执行。配套工具：菜单 `UPandaGF -> 事件系统 -> 事件调试窗口 / 事件模块自检`。
+两者均已做到：监听者抛异常不中断其余监听者、派发中增删订阅不重复不漏派发、用户回调在锁外执行。配套工具：菜单 `UPandaGF -> Runtime -> 事件系统 -> 事件调试窗口 / 事件模块自检`。
 
 > 用法示例、内部结构、执行语义、FAQ 与已知限制：见 `Runtime/Manager/EventCenterModule/README.md`。
 
@@ -276,7 +278,7 @@ upanda-framework/
 把“考核流程”拆成若干**步骤**，每步由一个或多个**操作**（串联 / 并联）组成；只允许点击当前步骤激活的交互物，点错计一次错误，完成后按错误次数 / 耗时结算分数。
 
 - **核心能力**：纯逻辑层 `Core/`（不依赖 `UnityEngine`，可单测）、配置与运行状态分离（可重玩 / 多实例 / 存档）、可插拔评分策略（难度分级 + 超时扣分）、动作级回放日志。
-- **编辑器工具**（菜单 `UPandaGF -> 交互任务评分系统`）：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 一键生成演示场景。
+- **编辑器工具**（菜单 `UPandaGF -> Runtime -> 交互任务评分系统`）：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 一键生成演示场景。
 - **演示快捷键**：`G` 引导、`K` 跳过当前步骤、`S` 保存回放日志。
 
 > 架构与调用链、评分规则、回放与工具细节、扩展指南、已知限制与 FAQ：见 `Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md`。
@@ -297,6 +299,8 @@ upanda-framework/
 
 ### 编辑器工具链（Editor）
 
+> 菜单分组约定：**模块级工具**统一放在 `UPandaGF -> Runtime -> <模块名>`（交互任务评分系统 / 事件系统）；**框架级工具**在 `UPandaGF -> Tools / 日志系统 / AB包工具` 以及 `UPandaGF -> 创建UPGameRoot`。
+
 - **FrameWorkInitEditor**：一键初始化目录结构、创建 `UPGameRoot`、清理 Prefab 缺失脚本。
 - **AssetBundleTools**：AB 打包、管理与上传（FTP / Nginx）。
 - **ExcelTool**（`Editor/Excel/`）：根据 Excel 配置生成数据类与数据容器类，依赖 `Libraries/Excel.dll`。
@@ -304,8 +308,8 @@ upanda-framework/
 - **HyBridCLREditor**：HybridCLR 热更程序集拷贝配置（`DLLCopyConfigWindow`）。
 - **CustomInspector**：
   - `UPGameRootEditor`：启动根节点面板（资源加载方式、热更开关、远程地址、AES 配置等）。
-  - `EventCenterModule/`：事件调试窗口 + 事件模块自检（菜单 `UPandaGF/事件系统/…`），用法见事件模块文档。
-  - `InteractiveTaskScoringSystem/`：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 演示场景生成器 + 各组件自定义 Inspector（菜单 `UPandaGF/交互任务评分系统/…`），用法见评分系统文档。
+  - `EventCenterModule/`：事件调试窗口 + 事件模块自检（菜单 `UPandaGF/Runtime/事件系统/…`），用法见事件模块文档。
+  - `InteractiveTaskScoringSystem/`：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 演示场景生成器 + 各组件自定义 Inspector（菜单 `UPandaGF/Runtime/交互任务评分系统/…`），用法见评分系统文档。
 - **EditorTools**：编辑器小工具
   - `ResourcePathCopy`：复制资源路径。
   - `AutoColliderGenerator`：自动生成碰撞体。
@@ -318,6 +322,7 @@ upanda-framework/
 
 | 文档 | 内容 |
 |---|---|
+| `Runtime/Manager/DebugSystem/README.md` | 日志系统：两级开关（编译期剔除 / 运行期过滤）、日志链路、落盘机制、两套真机面板、编辑器工具、FAQ、已知限制与变更记录 |
 | `Runtime/Manager/EventCenterModule/README.md` | 事件系统：两套实现的内部结构、执行语义、选型建议、编辑器工具、FAQ、已知限制与变更记录 |
 | `Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md` | 交互式任务评分系统：架构与调用链、评分规则与难度分级、回放、编辑器工具链、扩展指南、已知限制、FAQ |
 | `Runtime/Game/RobotCCDIK/README.md` | 机械臂 CCD 逆运动学：原理、参数调优、姿态录制回放 |

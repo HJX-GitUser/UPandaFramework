@@ -15,7 +15,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     /// </summary>
     public static class InteractiveTaskSelfCheck
     {
-        [MenuItem("UPandaGF/交互任务评分系统/运行逻辑自检", false, 22)]
+        [MenuItem("UPandaGF/Runtime/交互任务评分系统/运行逻辑自检")]
         public static void Run()
         {
             int total = 0;

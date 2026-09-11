@@ -221,7 +221,7 @@ bus.Dispatch(new DamageMsg { value = 3 });
 
 ## 6. 编辑器工具与验证
 
-菜单都在 `UPandaGF -> 事件系统` 下：
+菜单都在 `UPandaGF -> Runtime -> 事件系统` 下：
 
 | 菜单 | 说明 |
 | --- | --- |

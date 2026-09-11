@@ -15,7 +15,7 @@ namespace UPandaGF.EditorTools
     /// </summary>
     public class EventCenterDebugWindow : EditorWindow
     {
-        private const string MenuPath = "UPandaGF/事件系统/事件调试窗口";
+        private const string MenuPath = "UPandaGF/Runtime/事件系统/事件调试窗口";
 
         private Vector2 scroll;
         private bool autoRefresh = true;

@@ -66,7 +66,7 @@ namespace UPandaGF.EditorTools
         private static readonly List<string> fails = new List<string>();
         private static readonly List<string> skips = new List<string>();
 
-        [MenuItem("UPandaGF/事件系统/事件模块自检", false, 31)]
+        [MenuItem("UPandaGF/Runtime/事件系统/事件模块自检", false, 31)]
         public static void Run()
         {
             string report = RunSilent();

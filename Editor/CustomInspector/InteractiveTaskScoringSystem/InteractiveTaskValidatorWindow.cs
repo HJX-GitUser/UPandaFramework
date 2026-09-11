@@ -18,7 +18,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         private string summary = "点击「校验当前场景」开始体检";
         private Vector2 scroll;
 
-        [MenuItem("UPandaGF/交互任务评分系统/任务流程校验器", false, 20)]
+        [MenuItem("UPandaGF/Runtime/交互任务评分系统/任务流程校验器")]
         public static void Open()
         {
             InteractiveTaskValidatorWindow window = GetWindow<InteractiveTaskValidatorWindow>("交互任务校验");

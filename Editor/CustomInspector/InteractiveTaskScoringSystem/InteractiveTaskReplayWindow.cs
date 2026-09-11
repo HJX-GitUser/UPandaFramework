@@ -37,7 +37,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         private double lastTick;
         private int selectedEntry = -1;
 
-        [MenuItem("UPandaGF/交互任务评分系统/回放复盘查看器", false, 23)]
+        [MenuItem("UPandaGF/Runtime/交互任务评分系统/回放复盘查看器")]
         public static void Open()
         {
             InteractiveTaskReplayWindow win = GetWindow<InteractiveTaskReplayWindow>("回放复盘");

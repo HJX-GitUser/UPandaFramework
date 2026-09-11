@@ -284,6 +284,8 @@ public class Reporter : MonoBehaviour
 
 	public Vector2 size = new Vector2(32, 32);
 	public float maxSize = 20;
+	/// <summary>日志条数上限：超过后按批丢弃最旧的日志（0 = 不限）。避免长时间运行内存持续增长。</summary>
+	public int maxLogCount = 3000;
 	public int numOfCircleToShow = 1;
 	static string[] scenes;
 	string currentScene;
@@ -1968,6 +1970,11 @@ public class Reporter : MonoBehaviour
 
 
 		logs.Add(log);
+		// 修复：按条数上限丢弃最旧的日志（原实现只在总内存超过 maxSize 时整体 Clear，会一性丢掉全部历史）
+		if (maxLogCount > 0 && logs.Count > maxLogCount)
+		{
+			logs.RemoveRange(0, logs.Count - maxLogCount);
+		}
 		if (!collapse || isNew) {
 			bool skip = false;
 			if (log.logType == _LogType.Log && !showLog)
