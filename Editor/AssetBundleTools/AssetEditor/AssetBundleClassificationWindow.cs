@@ -11,7 +11,6 @@ using System.Threading;
 using System.Security.Cryptography;
 using System.Text;
 using UPandaGF.GFEditor;
-using log4net;
 
 namespace AssetBundleBrowser
 {
@@ -57,7 +56,10 @@ namespace AssetBundleBrowser
         // 添加构建状态变量
         private bool isBuildingSingle = false;
         private string currentBuildingBundle = "";
-        private float buildProgress = 0f;
+
+        // AES 配置一致性检测缓存
+        private UPandaGF.UPGameRoot aesSyncGameRoot = null;
+        private bool aesSyncSearched = false;
 
         /// <summary>
         /// Bundle显示列表
@@ -74,6 +76,10 @@ namespace AssetBundleBrowser
             public List<string> assets = new List<string>();
             public List<string> dependencies = new List<string>();
             public string path;
+            /// <summary>
+            /// 是否已构建（未构建的包没有真实的大小/MD5，不会写入清单）
+            /// </summary>
+            public bool isBuilt = false;
             public bool isVariant = false;
             public string variant = "";
         }
@@ -84,26 +90,30 @@ namespace AssetBundleBrowser
             GetData();
             await GetABSourcesRelated();
             RefreshAssetBundleList();
-            // 监听Editor更新，用于显示构建进度
-            // EditorApplication.update += OnEditorUpdate;
         }
         private void GetData()
         {
             config = UPandaGFConfig.LoadJsonConfig<AssetBundleClassificationWindowConfig>(configName);
             //获取主包信息
             string m_OutputPath = _mainBrower.m_BuildTabData.m_OutputPath;
-            string bundleName = _mainBrower.m_BuildTabData.m_BuildTarget.ToString();
+            // Unity 用"输出目录名"作为主包（manifest bundle）的文件名：默认路径 AssetBundles/<BuildTarget> 下恰好等于 BuildTarget 名，
+            // 但用户 Browse 改成别的目录后主包名就是那个目录名，因此这里不能硬编码 BuildTarget
+            string bundleName = GetLastPathSegment(m_OutputPath);
             if (mainBundleInfo == null) mainBundleInfo = new AssetBundleInfo();
             mainBundleInfo.name = bundleName;
-            string fullPath = Path.Combine(m_OutputPath, bundleName);
-            if (!File.Exists(fullPath))
+            string fullPath = GetBuildPathForBundle(bundleName);
+            if (string.IsNullOrEmpty(fullPath) || !File.Exists(fullPath))
             {
-                Debug.Log("资源包未构建：" + fullPath);
+                Debug.Log($"主包未构建：{Path.Combine(m_OutputPath, bundleName)}");
+                mainBundleInfo.isBuilt = false;
                 mainBundleInfo.size = 0;
+                mainBundleInfo.md5 = string.Empty;
+                mainBundleInfo.path = "未构建";
             }
             else
             {
                 FileInfo fileInfo = new FileInfo(fullPath);
+                mainBundleInfo.isBuilt = true;
                 mainBundleInfo.size = fileInfo.Length;
                 mainBundleInfo.md5 = GetMD5(fullPath);
                 mainBundleInfo.path = fullPath;
@@ -116,21 +126,82 @@ namespace AssetBundleBrowser
             UPandaGFConfig.SaveJsonConfig(config, configName);
         }
 
-        private void OnEditorUpdate()
+        /// <summary>
+        /// 取场景中的 UPGameRoot（用于校验 AES 配置是否与打包端一致）
+        /// </summary>
+        private static UPandaGF.UPGameRoot FindSceneGameRoot()
         {
-            // 更新构建进度显示
-            //if (isBuildingSingle)
-            //{
-            //    Repaint();
-            //}
+            UPandaGF.UPGameRoot[] roots = Resources.FindObjectsOfTypeAll<UPandaGF.UPGameRoot>();
+            foreach (UPandaGF.UPGameRoot root in roots)
+            {
+                if (root == null) continue;
+                if (!root.gameObject.scene.IsValid()) continue;   // 过滤工程资源
+                if (EditorUtility.IsPersistent(root)) continue;   // 过滤预制体资源
+                return root;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// AES 配置有两份（本窗口的 JSON 与场景中 UPGameRoot 的序列化字段），这里做一致性提醒 + 一键同步
+        /// </summary>
+        private void DrawAESConfigSync()
+        {
+            if (!aesSyncSearched)
+            {
+                aesSyncGameRoot = FindSceneGameRoot();
+                aesSyncSearched = true;
+            }
+
+            GUILayout.BeginHorizontal();
+            if (aesSyncGameRoot == null)
+            {
+                EditorGUILayout.HelpBox("场景中未找到 UPGameRoot。运行时的解密配置来自它，本窗口的 AES 设置不会自动生效。", MessageType.Info);
+                if (GUILayout.Button("重新检测", GUILayout.Width(80))) aesSyncSearched = false;
+            }
+            else
+            {
+                AssetBundleClassificationWindowConfig sceneConfig = aesSyncGameRoot.AssetAESConfig;
+                bool same = sceneConfig != null
+                    && sceneConfig.enable == config.enable
+                    && string.Equals(sceneConfig.AESKEY, config.AESKEY)
+                    && string.Equals(sceneConfig.AESIV, config.AESIV);
+
+                if (same)
+                {
+                    EditorGUILayout.HelpBox("场景中 UPGameRoot 的 AES 配置与本窗口一致。", MessageType.Info);
+                }
+                else
+                {
+                    EditorGUILayout.HelpBox("场景中 UPGameRoot 的 AES 配置与本窗口不一致：运行时解密会失败并中止 AB 模式初始化，请同步后再打包。", MessageType.Warning);
+                }
+
+                if (GUILayout.Button("同步到场景中的 UPGameRoot", GUILayout.Width(220)))
+                {
+                    Undo.RecordObject(aesSyncGameRoot, "Sync AssetBundle AES Config");
+                    if (aesSyncGameRoot.AssetAESConfig == null)
+                        aesSyncGameRoot.AssetAESConfig = new AssetBundleClassificationWindowConfig();
+                    aesSyncGameRoot.AssetAESConfig.enable = config.enable;
+                    aesSyncGameRoot.AssetAESConfig.AESKEY = config.AESKEY;
+                    aesSyncGameRoot.AssetAESConfig.AESIV = config.AESIV;
+                    EditorUtility.SetDirty(aesSyncGameRoot);
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(aesSyncGameRoot.gameObject.scene);
+                    Debug.Log("AES 配置已同步到场景中的 UPGameRoot（记得保存场景）");
+                }
+                if (GUILayout.Button("重新检测", GUILayout.Width(80)))
+                {
+                    aesSyncSearched = false;
+                }
+            }
+            GUILayout.EndHorizontal();
         }
 
         public void OnGUI()
         {
-            // 显示构建进度
+            // 构建中提示：BuildPipeline 是同步阻塞调用，拿不到真实进度，这里只做状态提示 + 防重入
             if (isBuildingSingle)
             {
-                DrawBuildProgress();
+                EditorGUILayout.HelpBox($"正在构建：{currentBuildingBundle}\n构建期间编辑器会阻塞，请等待完成。", MessageType.Info);
             }
             assetSettings = EditorGUILayout.Foldout(assetSettings, "加密设置");
             if (assetSettings)
@@ -145,6 +216,7 @@ namespace AssetBundleBrowser
                 config.AESIV = EditorGUILayout.TextField("IV", config.AESIV);
                 EditorGUILayout.EndToggleGroup();
                 GUILayout.Space(5);
+                DrawAESConfigSync();
             }
             DrawMainBundlAsset();
             DrawToolbar();
@@ -163,13 +235,20 @@ namespace AssetBundleBrowser
                 }
             }
 
+            // 统一写回"加载配置"：不依赖每一行都被绘制（被搜索过滤掉的行也能保留用户的选择）
+            SyncLoadPathToSourcesDic();
         }
 
-        // 显示构建进度
-        private void DrawBuildProgress()
+        /// <summary>
+        /// 把列表当前的"加载配置"同步到 sourcesDic，作为下次 RefreshAssetBundleList 的初值
+        /// </summary>
+        private void SyncLoadPathToSourcesDic()
         {
-            Rect progressRect = new Rect(0, 0, 200, 20);
-            EditorGUI.ProgressBar(progressRect, buildProgress, $"正在构建: {currentBuildingBundle}");
+            if (sourcesDic == null) return;
+            foreach (AssetBundleInfo bundleInfo in assetBundleInfos)
+            {
+                sourcesDic[bundleInfo.name] = bundleInfo.loadPath;
+            }
         }
 
         // 创建纯色纹理
@@ -304,6 +383,12 @@ namespace AssetBundleBrowser
         /// 资源数据存储文件后缀
         /// </summary>
         private static string assetRefextension = ".assetref";
+
+        /// <summary>
+        /// 资源清单（assetData.assetref）的完整本地路径；上传页签等复用，避免路径重复硬编码
+        /// </summary>
+        internal static string AssetDataFullPath => Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
+
         /// <summary>
         /// 遍历项目目录，生成AB资源关联数据
         /// </summary>
@@ -321,12 +406,25 @@ namespace AssetBundleBrowser
                 md5 = mainBundleInfo.md5,
                 loadPath = mainBundleInfo.loadPath
             };
-            //AssetBundle数据
-            List<AssetBundleLoadInfo> abLoadInfo = GetAssetBundleInfo();
+            //AssetBundle数据（只登记已构建的包）
+            List<string> unbuiltBundles = new List<string>();
+            List<AssetBundleLoadInfo> abLoadInfo = GetAssetBundleInfo(unbuiltBundles);
             foreach (AssetBundleLoadInfo item in abLoadInfo)
             {
-                //Debug.Log(item.bundleName);
                 aBSourcesRef.bundleInfo.Add(item.bundleName, item);
+            }
+
+            if (unbuiltBundles.Count > 0)
+            {
+                Debug.LogWarning($"有 {unbuiltBundles.Count} 个 AssetBundle 尚未构建，本次不会写入清单（请先打包后再点「更新配置」）。若这些包之前打包过，控制台可能同时提示「已被移除」，属预期：\n{FormatUnbuiltBundles(unbuiltBundles)}");
+            }
+
+            // 主包未构建时清单没有任何可用信息，直接不写，避免用空清单覆盖上一次可用的清单
+            if (!mainBundleInfo.isBuilt)
+            {
+                Debug.LogError($"主包未构建：{mainBundleInfo.path}\n本次不写入 {assetRefName + assetRefextension}，以免覆盖上一次可用的清单。请先执行 Build All 或右键单个包构建。");
+                SaveData();
+                return;
             }
             //资源加载数据
             foreach (string assetPath in allAssetPaths)
@@ -346,10 +444,12 @@ namespace AssetBundleBrowser
                     {
                         assetBundleName += $".{variantName}";
                     }
+                    // 资源所属的包未构建（没写进 bundleInfo）时跳过，
+                    // 否则运行时 GetABLoadPath 会因为查不到包信息而抛 KeyNotFoundException
+                    if (!aBSourcesRef.bundleInfo.ContainsKey(assetBundleName))
+                        continue;
                     // 获取资源的名字
                     string assetName = Path.GetFileNameWithoutExtension(assetPath);
-                    // 创建一个 AssetInfo 对象，并添加到列表中
-                    //ABLoadPath arg = sourcesDic[assetBundleName];
                     AssetRelatedArg assetInfo = new AssetRelatedArg(assetBundleName, assetName);
                     aBSourcesRef.sourcesDic.Add(assetPath, assetInfo);
                 }
@@ -359,7 +459,8 @@ namespace AssetBundleBrowser
 
             Save(aBSourcesRef);
             SaveData();
-            Debug.Log($"项目共有 {sourcesRelated.sourcesDic.Count} 个资源");
+            Debug.Log($"项目共有 {sourcesRelated.sourcesDic.Count} 个资源，{sourcesRelated.bundleInfo.Count} 个已构建的包"
+                + (unbuiltBundles.Count > 0 ? $"，跳过 {unbuiltBundles.Count} 个未构建的包" : string.Empty));
             AssetDatabase.Refresh();
         }
 
@@ -642,7 +743,6 @@ namespace AssetBundleBrowser
             float lableW = pathColumnWidth - 40;
             lableW = Mathf.Clamp(lableW, 20, pathColumnWidth - 40);
             bundleInfo.loadPath = (ABLoadPath)EditorGUILayout.EnumPopup(bundleInfo.loadPath, GUILayout.Width(lableW), GUILayout.MinWidth(lableW));
-            sourcesDic[bundleInfo.name] = bundleInfo.loadPath;
             GUILayout.FlexibleSpace();
 
             GUILayout.EndHorizontal();
@@ -687,7 +787,7 @@ namespace AssetBundleBrowser
             EditorGUILayout.LabelField("大小:", FormatFileSize(selectedBundle.size));
             EditorGUILayout.LabelField("加载方式:", selectedBundle.loadPath.ToString());
             EditorGUILayout.LabelField("路径:", selectedBundle.path);
-            EditorGUILayout.LabelField("MD5:", selectedBundle.md5);
+            EditorGUILayout.LabelField("MD5:", selectedBundle.isBuilt ? selectedBundle.md5 : "未构建");
 
             if (selectedBundle.isVariant)
             {
@@ -782,24 +882,29 @@ namespace AssetBundleBrowser
                 if (File.Exists(buildPath))
                 {
                     FileInfo fileInfo = new FileInfo(buildPath);
+                    info.isBuilt = true;
                     info.size = fileInfo.Length;
                     info.path = buildPath;
                     info.md5 = GetMD5(fileInfo.FullName);
                 }
                 else
                 {
-                    // 如果没有构建，估计大小
+                    // 未构建：不能写"占位 MD5"，否则热更的 MD5 比对会全部失真；生成清单时会跳过这类包
+                    info.isBuilt = false;
                     info.size = 0;//EstimateBundleSize(assetPaths);
                     info.path = "未构建";
-                    info.md5 = "未构建";
+                    info.md5 = string.Empty;
                 }
 
-                // 检查是否是变体
-                int variantIndex = bundleName.IndexOf('.');
+                // 检查是否是变体（与 Unity 规则一致：先取最后一个 '/' 之后的短名，再按短名中最后一个 '.' 分割变体）
+                string shortName = bundleName;
+                int lastSlash = shortName.LastIndexOf('/');
+                if (lastSlash >= 0) shortName = shortName.Substring(lastSlash + 1);
+                int variantIndex = shortName.LastIndexOf('.');
                 if (variantIndex > 0)
                 {
                     info.isVariant = true;
-                    info.variant = bundleName.Substring(variantIndex + 1);
+                    info.variant = shortName.Substring(variantIndex + 1);
                 }
 
                 assetBundleInfos.Add(info);
@@ -815,11 +920,18 @@ namespace AssetBundleBrowser
         /// 获取资源包信息
         /// </summary>
         /// <returns></returns>
-        private List<AssetBundleLoadInfo> GetAssetBundleInfo()
+        private List<AssetBundleLoadInfo> GetAssetBundleInfo(List<string> unbuiltBundles)
         {
             List<AssetBundleLoadInfo> abInfo = new List<AssetBundleLoadInfo>();
             foreach (var bundle in assetBundleInfos)
             {
+                // 未构建的包不写进清单：它的大小/MD5 没有真实值
+                if (!bundle.isBuilt)
+                {
+                    if (unbuiltBundles != null) unbuiltBundles.Add(bundle.name);
+                    continue;
+                }
+
                 AssetBundleLoadInfo info = new AssetBundleLoadInfo
                 {
                     bundleName = bundle.name,
@@ -827,10 +939,25 @@ namespace AssetBundleBrowser
                     size = bundle.size,
                     md5 = bundle.md5
                 };
-                //Debug.Log($"bundleName:{info.bundleName},size:{info.size},md5:{info.md5},loadPath:{info.loadPath}");
                 abInfo.Add(info);
             }
             return abInfo;
+        }
+
+        /// <summary>
+        /// 未构建包的提示文本（最多列举 10 个）
+        /// </summary>
+        private static string FormatUnbuiltBundles(List<string> unbuiltBundles)
+        {
+            int count = Mathf.Min(unbuiltBundles.Count, 10);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < count; i++)
+            {
+                sb.Append("  - ").Append(unbuiltBundles[i]).Append('\n');
+            }
+            if (unbuiltBundles.Count > count)
+                sb.Append("  ...（其余 ").Append(unbuiltBundles.Count - count).Append(" 个省略）\n");
+            return sb.ToString();
         }
 
         /// <summary>
@@ -858,26 +985,42 @@ namespace AssetBundleBrowser
             }
         }
 
+        /// <summary>
+        /// 取路径最后一级名称（主包名 = 输出目录名，BuildPipeline 用输出目录名命名 manifest bundle）
+        /// </summary>
+        private static string GetLastPathSegment(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return string.Empty;
+            char[] separators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+            string trimmed = path.TrimEnd(separators);
+            int index = trimmed.LastIndexOfAny(separators);
+            return index >= 0 ? trimmed.Substring(index + 1) : trimmed;
+        }
+
+        /// <summary>
+        /// 查找包文件：输出路径可能是工程内相对路径，或工程内/外的绝对路径
+        /// </summary>
         private string GetBuildPathForBundle(string bundleName)
         {
-            if (_mainBrower == null) return "";
+            if (_mainBrower == null || string.IsNullOrEmpty(bundleName)) return string.Empty;
 
             string m_OutputPath = _mainBrower.m_BuildTabData.m_OutputPath;
-            if (string.IsNullOrEmpty(m_OutputPath)) return "";
+            if (string.IsNullOrEmpty(m_OutputPath)) return string.Empty;
 
-            string result = "AssetBundles/";
-            int startIndex = m_OutputPath.IndexOf("AssetBundles/");
-            if (startIndex != -1)
+            string[] possiblePaths;
+            if (Path.IsPathRooted(m_OutputPath))
             {
-                result = m_OutputPath.Substring(startIndex);
+                possiblePaths = new string[] { Path.Combine(m_OutputPath, bundleName) };
             }
-            // 这里需要根据你的构建输出路径进行调整
-            string[] possiblePaths =
+            else
             {
-            $"{Application.dataPath}/{result}/{bundleName}",
-            $"{Application.streamingAssetsPath}/{result}/{bundleName}",
-            $"{System.Environment.CurrentDirectory}/{result}/{bundleName}"
-        };
+                possiblePaths = new string[]
+                {
+                    Path.Combine(System.Environment.CurrentDirectory, m_OutputPath, bundleName),  // 工程根
+                    Path.Combine(Application.dataPath, m_OutputPath, bundleName),                // 输出目录位于 Assets 下
+                    Path.Combine(Application.streamingAssetsPath, m_OutputPath, bundleName),    // 已拷到 StreamingAssets
+                };
+            }
 
             foreach (string path in possiblePaths)
             {
@@ -887,7 +1030,7 @@ namespace AssetBundleBrowser
                 }
             }
 
-            return "";
+            return string.Empty;
         }
 
         private long EstimateBundleSize(string[] assetPaths)
@@ -983,7 +1126,7 @@ namespace AssetBundleBrowser
             });
 
             //在资源管理器中显示(如果已构建)
-            if (bundleInfo.path != "未构建" && !string.IsNullOrEmpty(bundleInfo.path))
+            if (bundleInfo.isBuilt)
             {
                 menu.AddItem(new GUIContent("在资源管理器中显示"), false, () =>
                 {
@@ -1009,10 +1152,17 @@ namespace AssetBundleBrowser
             {
                 EditorGUIUtility.systemCopyBuffer = bundleInfo.path;
             });
-            menu.AddItem(new GUIContent("复制MD5码"), false, () =>
+            if (bundleInfo.isBuilt)
             {
-                EditorGUIUtility.systemCopyBuffer = bundleInfo.md5;
-            });
+                menu.AddItem(new GUIContent("复制MD5码"), false, () =>
+                {
+                    EditorGUIUtility.systemCopyBuffer = bundleInfo.md5;
+                });
+            }
+            else
+            {
+                menu.AddDisabledItem(new GUIContent("复制MD5码(未构建)"));
+            }
             //复制加载路径枚举
             menu.AddItem(new GUIContent($"复制加载路径:{bundleInfo.loadPath}"), false, () =>
             {
@@ -1024,7 +1174,7 @@ namespace AssetBundleBrowser
 
 
         // 构建单个AssetBundle
-        private async void BuildSingleAssetBundle(string bundleName)
+        private void BuildSingleAssetBundle(string bundleName)
         {
             // 1. 记录开始时间（Ticks为100纳秒单位）
             long startTicks = System.DateTime.UtcNow.Ticks;
@@ -1045,7 +1195,6 @@ namespace AssetBundleBrowser
             {
                 isBuildingSingle = true;
                 currentBuildingBundle = bundleName;
-                buildProgress = 0f;
 
                 Debug.Log($"开始构建单个AssetBundle: {bundleName}");
                 // 获取构建配置
@@ -1088,15 +1237,10 @@ namespace AssetBundleBrowser
                 };
                 builds.Add(build);
 
-                // 开始构建
-                buildProgress = 0.2f;
-                await Task.Run(() => Thread.Sleep(100)); // 让进度条显示
-
                 Debug.Log($"构建AssetBundle: {bundleName}, 包含资源数: {assetPaths.Length}");
                 Debug.Log($"输出路径: {outputPath}");
 
-                // 执行构建
-                buildProgress = 0.5f;
+                // 执行构建（BuildPipeline 是同步阻塞调用，期间无法刷新界面）
                 var result = BuildPipeline.BuildAssetBundles(outputPath, builds.ToArray(), buildOptions, buildTarget);
 
                 if (result == null)
@@ -1104,10 +1248,6 @@ namespace AssetBundleBrowser
                     Debug.LogError($"构建AssetBundle '{bundleName}' 失败");
                     return;
                 }
-
-                // 构建完成
-                buildProgress = 1.0f;
-                await Task.Run(() => Thread.Sleep(500)); // 显示完成状态
 
                 Debug.Log($"AssetBundle '{bundleName}' 构建完成!");
                 Debug.Log($"文件大小: {new FileInfo(Path.Combine(outputPath, bundleName)).Length} bytes");
@@ -1127,7 +1267,6 @@ namespace AssetBundleBrowser
             {
                 isBuildingSingle = false;
                 currentBuildingBundle = "";
-                buildProgress = 0f;
             }
 
             // 2. 计算耗时并输出（转换为毫秒）
@@ -1137,7 +1276,7 @@ namespace AssetBundleBrowser
         }
 
         // 构建AssetBundle及其依赖
-        private async void BuildAssetBundleWithDependencies(string bundleName)
+        private void BuildAssetBundleWithDependencies(string bundleName)
         {
             // 1. 记录开始时间（Ticks为100纳秒单位）
             long startTicks = System.DateTime.UtcNow.Ticks;
@@ -1156,7 +1295,6 @@ namespace AssetBundleBrowser
             {
                 isBuildingSingle = true;
                 currentBuildingBundle = bundleName;
-                buildProgress = 0f;
 
                 Debug.Log($"开始构建AssetBundle及其依赖: {bundleName}");
 
@@ -1221,15 +1359,10 @@ namespace AssetBundleBrowser
                     return;
                 }
 
-                //开始构建
-                buildProgress = 0.2f;
-                await Task.Run(() => Thread.Sleep(100)); // 让进度条显示
-
                 Debug.Log($"构建 {builds.Count} 个AssetBundle");
                 Debug.Log($"输出路径: {outputPath}");
 
-                //执行构建
-                buildProgress = 0.5f;
+                //执行构建（同步阻塞调用，期间无法刷新界面）
                 var result = BuildPipeline.BuildAssetBundles(outputPath, builds.ToArray(), buildOptions, buildTarget);
 
                 if (result == null)
@@ -1237,10 +1370,6 @@ namespace AssetBundleBrowser
                     Debug.LogError("构建AssetBundle失败");
                     return;
                 }
-
-                //构建完成
-                buildProgress = 1.0f;
-                await Task.Run(() => Thread.Sleep(500)); // 显示完成状态
 
                 Debug.Log($"AssetBundle '{bundleName}' 及其依赖构建完成!");
                 //刷新列表
@@ -1259,7 +1388,6 @@ namespace AssetBundleBrowser
             {
                 isBuildingSingle = false;
                 currentBuildingBundle = "";
-                buildProgress = 0f;
             }
             // 2. 计算耗时并输出（转换为毫秒）
             long endTicks = System.DateTime.UtcNow.Ticks;

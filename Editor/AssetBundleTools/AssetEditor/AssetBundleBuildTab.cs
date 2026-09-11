@@ -165,7 +165,7 @@ namespace AssetBundleBrowser
             m_CopyToStreaming = new ToggleData(
                 false,
                 "[Copy to StreamingAssets]",
-                "[After build completes, will copy all build content to " + m_streamingPath + " for use in stand-alone player.]",
+                "[After build completes, will copy all build content to <StreamingAssets>/<OutputPath> (keeping the folder structure) for use in stand-alone player.]",
                 m_UserData.m_OnToggles);
 
             m_TargetContent = new GUIContent("Build Target", "Choose target platform to build for.");
@@ -247,17 +247,17 @@ namespace AssetBundleBrowser
                         m_UserData.m_OnToggles.Remove(m_ForceRebuild.content.text);
                     m_ForceRebuild.state = newState;
                 }
-                //newState = GUILayout.Toggle(
-                //    m_CopyToStreaming.state,
-                //    m_CopyToStreaming.content);
-                //if (newState != m_CopyToStreaming.state)
-                //{
-                //    if (newState)
-                //        m_UserData.m_OnToggles.Add(m_CopyToStreaming.content.text);
-                //    else
-                //        m_UserData.m_OnToggles.Remove(m_CopyToStreaming.content.text);
-                //    m_CopyToStreaming.state = newState;
-                //}
+                newState = GUILayout.Toggle(
+                    m_CopyToStreaming.state,
+                    m_CopyToStreaming.content);
+                if (newState != m_CopyToStreaming.state)
+                {
+                    if (newState)
+                        m_UserData.m_OnToggles.Add(m_CopyToStreaming.content.text);
+                    else
+                        m_UserData.m_OnToggles.Remove(m_CopyToStreaming.content.text);
+                    m_CopyToStreaming.state = newState;
+                }
             }
 
             // advanced options
@@ -330,9 +330,10 @@ namespace AssetBundleBrowser
 
                 if (m_ForceRebuild.state)
                 {
+                    string streamingTarget = GetStreamingTargetPath();
                     string message = "Do you want to delete all files in the directory " + m_UserData.m_OutputPath;
                     if (m_CopyToStreaming.state)
-                        message += " and " + m_streamingPath;
+                        message += " and " + streamingTarget;
                     message += "?";
                     if (EditorUtility.DisplayDialog("File delete confirmation", message, "Yes", "No"))
                     {
@@ -341,9 +342,10 @@ namespace AssetBundleBrowser
                             if (Directory.Exists(m_UserData.m_OutputPath))
                                 Directory.Delete(m_UserData.m_OutputPath, true);
 
+                            // 只删本次的拷贝目标（<StreamingAssets>/<OutputPath>），绝不删整个 StreamingAssets
                             if (m_CopyToStreaming.state)
-                                if (Directory.Exists(m_streamingPath))
-                                    Directory.Delete(m_streamingPath, true);
+                                if (Directory.Exists(streamingTarget))
+                                    Directory.Delete(streamingTarget, true);
                         }
                         catch (System.Exception e)
                         {
@@ -375,7 +377,7 @@ namespace AssetBundleBrowser
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
             if (m_CopyToStreaming.state)
-                DirectoryCopy(m_UserData.m_OutputPath, m_streamingPath);
+                DirectoryCopy(m_UserData.m_OutputPath, GetStreamingTargetPath());
 
             // 2. 计算耗时并输出（转换为毫秒）
             long endTicks = System.DateTime.UtcNow.Ticks;
@@ -402,6 +404,32 @@ namespace AssetBundleBrowser
             return opt;
         }
 
+
+        /// <summary>
+        /// AB 包拷贝到 StreamingAssets 的目标目录：保留输出路径层级（如 Assets/StreamingAssets/AssetBundles/StandaloneWindows），
+        /// 否则运行时按 LoadAssetPath 找不到包
+        /// </summary>
+        private string GetStreamingTargetPath()
+        {
+            string relative = (m_UserData.m_OutputPath ?? string.Empty).Replace("\\", "/");
+            relative = relative.Trim(new char[] { System.IO.Path.AltDirectorySeparatorChar });
+            string projectRoot = System.IO.Path.GetFullPath(".").Replace("\\", "/").TrimEnd(new char[] { System.IO.Path.AltDirectorySeparatorChar });
+
+            if (relative.StartsWith(projectRoot + "/"))
+                relative = relative.Substring(projectRoot.Length + 1);
+
+            // 工程外的绝对路径：只保留最后一级目录名，避免拷到 StreamingAssets 之外
+            if (System.IO.Path.IsPathRooted(relative))
+            {
+                int index = relative.LastIndexOf(System.IO.Path.AltDirectorySeparatorChar);
+                relative = index >= 0 ? relative.Substring(index + 1) : relative;
+            }
+
+            if (relative.StartsWith("Assets/"))
+                return relative;
+
+            return m_streamingPath.TrimEnd(new char[] { System.IO.Path.AltDirectorySeparatorChar }) + "/" + relative;
+        }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName)
         {

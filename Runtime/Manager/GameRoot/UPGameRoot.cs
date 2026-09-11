@@ -171,7 +171,16 @@ namespace UPandaGF
         private async Task<bool> DownloadFirstTime(ABSourcesRelated tempSourceRef)
         {
             List<DownloadItem> downloadList = new List<DownloadItem>();
-            downloadList.Add(GetDownInfo(tempSourceRef.mainBundleInfo.bundleName, tempSourceRef.mainBundleInfo.size));
+            // 主包只有在"加载位置就是 PersistentDataPath"时才需要下载：
+            // 若主包从 StreamingAssets / 远程加载，下载到本地不会被使用（下载地址需与加载地址一致）
+            if (tempSourceRef.mainBundleInfo.loadPath == ABLoadPath.PersistentDataPath)
+            {
+                downloadList.Add(GetDownInfo(tempSourceRef.mainBundleInfo.bundleName, tempSourceRef.mainBundleInfo.size));
+            }
+            else
+            {
+                PLogger.LogWarning($"主包加载位置为 {tempSourceRef.mainBundleInfo.loadPath}，本次热更不会下载主包");
+            }
             foreach (var item in tempSourceRef.bundleInfo.Values)
             {
                 if (item.loadPath == ABLoadPath.PersistentDataPath)

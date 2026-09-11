@@ -37,6 +37,11 @@ internal class UpLoadABEditor
     public string configName = "UpLoadABEditorConfig";
     public UpLoadABEditorConfig config;
 
+    /// <summary>
+    /// 资源清单（assetData.assetref）的本地完整路径：与资源分类窗口共用，避免路径重复硬编码
+    /// </summary>
+    private static string AssetDataFullPath => AssetBundleClassificationWindow.AssetDataFullPath;
+
     public void OnEnable(AssetBundleBrowserMain bm)
     {
         abMainE = bm;
@@ -144,24 +149,33 @@ internal class UpLoadABEditor
     {
         FTPUpLoadABConfig FTPConfig = GetFTPConfig();
         FTPConfig.UpABURL = EditorGUILayout.TextField("上传地址", FTPConfig.UpABURL);
+        FTPConfig.ManifestABURL = EditorGUILayout.TextField("清单上传地址", FTPConfig.ManifestABURL);
         EditorGUILayout.LabelField("FTP通信凭证:");
         FTPConfig.Ftp_UserName = EditorGUILayout.TextField("ftp用户名", FTPConfig.Ftp_UserName);
         FTPConfig.Ftp_Password = EditorGUILayout.TextField("ftp密码", FTPConfig.Ftp_Password);
-        if (GUILayout.Button("上传AB包和对比文件"))
+        EditorGUILayout.LabelField("清单本地路径", AssetDataFullPath);
+        if (GUILayout.Button("上传AB包和清单"))
         {
             DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
             if (config.contactMethod == ContactMethod.FTP)
             {
                 upLoadFTP.UpLoadAllABFile(LocalABPath);
+                // 清单必须与AB包一起更新，否则远端清单没变，热更的 MD5 比对与下载都不会发生
+                upLoadFTP.UpLoadFile(AssetDataFullPath, FTPConfig.ManifestABURL);
+            }
+        }
+        if (GUILayout.Button("只上传清单（assetData.assetref）"))
+        {
+            if (config.contactMethod == ContactMethod.FTP)
+            {
+                upLoadFTP.UpLoadFile(AssetDataFullPath, FTPConfig.ManifestABURL);
             }
         }
     }
 
     private void HTTPGUI()
     {
-        //if (upLoadHTTP == null) upLoadHTTP = new UpLoadHTTP();
-        ////upLoadHTTP.HTTPConfig.serverUrl = EditorGUILayout.TextField("上传地址", upLoadHTTP. HTTPConfig.serverUrl);
-        //upLoadHTTP.OnGUI();
+        EditorGUILayout.HelpBox("HTTP 上传是手动工具：请把打包输出目录与「清单文件」一起加入上传列表，并保证远端结构与 UPGameRoot 的加载路径一致。\n清单本地路径：" + AssetDataFullPath, MessageType.Info);
         if (GUILayout.Button("HTTP 上传工具"))
         {
             NginxUploader.ShowWindow();

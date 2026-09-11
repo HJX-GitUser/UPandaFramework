@@ -13,6 +13,11 @@ public class FTPUpLoadABConfig
     //[Tooltip("上传AB包地址")]
     public string UpABURL;
 
+    /// <summary>
+    /// 资源清单（assetData.assetref）的上传地址：约定为 {remoteURL}/AssetBundles/，与 UPGameRoot.UpdateAssets 的读取位置一致
+    /// </summary>
+    public string ManifestABURL;
+
     //FTP通信凭证
     //ftp用户名
     public string Ftp_UserName;
@@ -22,6 +27,7 @@ public class FTPUpLoadABConfig
     public FTPUpLoadABConfig(string BuidTarget)
     {
         UpABURL = $"ftp://127.0.0.1/AssetBundles/{BuidTarget}/";
+        ManifestABURL = "ftp://127.0.0.1/AssetBundles/";
         Ftp_UserName = "Admin";
         Ftp_Password = "Admin123";
     }
@@ -35,6 +41,7 @@ public class UpLoadFTP
         {
             Config = new FTPUpLoadABConfig(BuidTarget);
             Config.UpABURL = EditorPrefs.GetString("UpLoadABEditor_UpABURL", Config.UpABURL);
+            Config.ManifestABURL = EditorPrefs.GetString("UpLoadABEditor_ManifestABURL", Config.ManifestABURL);
             Config.Ftp_UserName = EditorPrefs.GetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
             Config.Ftp_Password = EditorPrefs.GetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
         }
@@ -51,6 +58,7 @@ public class UpLoadFTP
     public void SaveData()
     {
         EditorPrefs.SetString("UpLoadABEditor_UpABURL", Config.UpABURL);
+        EditorPrefs.SetString("UpLoadABEditor_ManifestABURL", Config.ManifestABURL);
         EditorPrefs.SetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
         EditorPrefs.SetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
         Debug.Log("FTP配置已保存");
@@ -69,13 +77,34 @@ public class UpLoadFTP
         }
         DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
         FileInfo[] fileInfos = directory.GetFiles();
+        int uploadCount = 0;
         foreach (FileInfo fileInfo in fileInfos)
         {
             if (IsABAssets(fileInfo))
             {
                 FtpUploadFile(fileInfo.FullName, fileInfo.Name);
+                uploadCount++;
             }
         }
+        Debug.Log($"已发起 {uploadCount} 个AB包的上传（异步，结果见后续日志）：{Config.UpABURL}");
+    }
+
+    /// <summary>
+    /// 上传单个文件到指定地址（用于资源清单 assetData.assetref）
+    /// </summary>
+    public void UpLoadFile(string localFilePath, string remoteURL)
+    {
+        if (string.IsNullOrEmpty(localFilePath) || !File.Exists(localFilePath))
+        {
+            Debug.LogError($"文件不存在，上传已跳过：{localFilePath}\n请先在资源分类窗口点「更新配置」生成清单。");
+            return;
+        }
+        if (string.IsNullOrEmpty(remoteURL))
+        {
+            Debug.LogError("上传地址为空，上传已跳过");
+            return;
+        }
+        FtpUploadFile(localFilePath, Path.GetFileName(localFilePath), remoteURL);
     }
 
     private bool IsABAssets(FileInfo fileInfo)
@@ -93,14 +122,18 @@ public class UpLoadFTP
     /// </summary>
     /// <param name="filePath"></param>
     /// <param name="fileName"></param>
-    private async void FtpUploadFile(string filePath, string fileName)
+    private async void FtpUploadFile(string filePath, string fileName, string remoteURL = null)
     {
+        string baseUrl = string.IsNullOrEmpty(remoteURL) ? Config.UpABURL : remoteURL;
+        if (!baseUrl.EndsWith("/"))
+            baseUrl += "/";
+
         await Task.Run(() =>
         {
             try
             {
                 //1.创建一个FTP连接 用于上传
-                FtpWebRequest req = FtpWebRequest.Create(new Uri(Config.UpABURL + fileName)) as FtpWebRequest;
+                FtpWebRequest req = FtpWebRequest.Create(new Uri(baseUrl + fileName)) as FtpWebRequest;
                 //2.设置一个通信凭证 这样才能上传
                 NetworkCredential n = new NetworkCredential(Config.Ftp_UserName, Config.Ftp_Password);
                 req.Credentials = n;
@@ -139,7 +172,7 @@ public class UpLoadFTP
             }
             catch (Exception ex)
             {
-                Debug.Log(fileName + "上传失败，错误信息：" + ex.Message);
+                Debug.LogError(fileName + "上传失败，错误信息：" + ex.Message);
             }
         });
     }

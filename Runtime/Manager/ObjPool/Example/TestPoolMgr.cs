@@ -21,7 +21,17 @@ public class TestPoolMgr : MonoBehaviour
     [Tooltip("启动时每个预制体预先实例化多少个放入池中（0 = 不预热）")]
     public int prewarmCount = 0;
 
-    private async void Start()
+    private void Awake()
+    {
+        EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnRootStarted);
+        IAssetsLoader loader = UPGameRoot.Instance.GetAssetsLoader();
+    }
+    void OnDestroy()
+    {
+         EventCenter.Instance.RemoveEventListener<GFLoadedEvent>(OnRootStarted);
+    }
+
+    private async void OnRootStarted(GFLoadedEvent evt)
     {
         if (prewarmCount <= 0) return;
 

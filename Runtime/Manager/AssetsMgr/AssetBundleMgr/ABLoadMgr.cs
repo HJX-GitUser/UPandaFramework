@@ -13,7 +13,6 @@ namespace UPandaGF
     /// </summary>
     public class ABLoadMgr : LazyMonoSingletonBase<ABLoadMgr>
     {
-        private bool isInit = false;
         /// <summary>
         /// 是否从StreamingAssets路径下加载
         /// </summary>
@@ -64,7 +63,6 @@ namespace UPandaGF
         /// <returns></returns>
         public async Task Init(string pathUrl, string mainName, ABLoadPath mainLoadPath)
         {
-            isInit = true;
             PathUrl = pathUrl;
             MainName = mainName;
             MainPackageLoadPath = mainLoadPath;
@@ -212,6 +210,13 @@ namespace UPandaGF
 
         private IEnumerator LoadAssetBundle(string abName, ABLoadPath loodPath, UnityAction<AssetBundle> callback)
         {
+            // 已成功加载过：直接回调，避免重复加载（重复 Add 会抛 ArgumentException）
+            if (_loadedBundles.TryGetValue(abName, out AssetBundle cached) && cached != null)
+            {
+                callback(cached);
+                yield break;
+            }
+
             // string fullPath = Path.Combine(PathUrl, abName);
             string fullPath = Path.Combine(GetFullPath(loodPath), abName);
             AssetBundle ab = null;
@@ -339,29 +344,34 @@ namespace UPandaGF
                 Debug.LogError("主包未加载");
                 return null;
             };
-            //获取依赖包
+            //获取依赖包：加载失败不写缓存，否则 null 会被当成"已加载"，后续永远不再重试
             string[] strs = manifest.GetAllDependencies(abName);
             for (int i = 0; i < strs.Length; i++)
             {
-                if (!_loadedBundles.ContainsKey(strs[i]))
-                {
-                    AssetBundle ab = await LoadAssetBundle(strs[i], loodPath);
-                    if (!_loadedBundles.ContainsKey(strs[i])) _loadedBundles.Add(strs[i], ab);
+                if (_loadedBundles.ContainsKey(strs[i]))
+                    continue;
 
+                AssetBundle dependency = await LoadAssetBundle(strs[i], loodPath);
+                if (dependency == null)
+                {
+                    Debug.LogError($"依赖包加载失败，中止加载：{abName} -> {strs[i]}");
+                    return null;
                 }
+                _loadedBundles[strs[i]] = dependency;
             }
+
             //加载目标包
             if (!_loadedBundles.ContainsKey(abName))
             {
-                AssetBundle ab = await LoadAssetBundle(abName, loodPath);
-                if (!_loadedBundles.ContainsKey(abName)) _loadedBundles.Add(abName, ab);
+                AssetBundle target = await LoadAssetBundle(abName, loodPath);
+                if (target == null)
+                {
+                    Debug.LogError($"AssetBundle加载失败：{abName}");
+                    return null;
+                }
+                _loadedBundles[abName] = target;
             }
 
-            if (_loadedBundles[abName] == null)
-            {
-                _loadedBundles.Remove(abName);
-                return null;
-            }
             return _loadedBundles[abName];
         }
         private IEnumerator LoadDependenciesAndAimBundle(string abName, ABLoadPath loodPath, UnityAction<AssetBundle> callback)
@@ -372,33 +382,41 @@ namespace UPandaGF
                 callback(null);
                 yield break;
             };
-            //获取依赖包
+            //获取依赖包：加载失败不写缓存，避免 null 被当成"已加载"
             string[] strs = manifest.GetAllDependencies(abName);
             for (int i = 0; i < strs.Length; i++)
             {
-                if (!_loadedBundles.ContainsKey(strs[i]))
+                if (_loadedBundles.ContainsKey(strs[i]))
+                    continue;
+
+                string dependencyName = strs[i];
+                AssetBundle dependency = null;
+                yield return StartCoroutine(LoadAssetBundle(dependencyName, loodPath, (arg) => dependency = arg));
+
+                if (dependency == null)
                 {
-                    yield return StartCoroutine(LoadAssetBundle(strs[i], loodPath, (arg) =>
-                     {
-                         _loadedBundles.Add(strs[i], arg);
-                     }));
+                    Debug.LogError($"依赖包加载失败，中止加载：{abName} -> {dependencyName}");
+                    callback(null);
+                    yield break;
                 }
+                _loadedBundles[dependencyName] = dependency;
             }
+
             //加载目标包
             if (!_loadedBundles.ContainsKey(abName))
             {
-                yield return StartCoroutine(LoadAssetBundle(abName, loodPath, (arg) =>
-                 {
-                     _loadedBundles.Add(abName, arg);
-                 }));
+                AssetBundle target = null;
+                yield return StartCoroutine(LoadAssetBundle(abName, loodPath, (arg) => target = arg));
+
+                if (target == null)
+                {
+                    Debug.LogError($"AssetBundle加载失败：{abName}");
+                    callback(null);
+                    yield break;
+                }
+                _loadedBundles[abName] = target;
             }
 
-            if (_loadedBundles[abName] == null)
-            {
-                _loadedBundles.Remove(abName);
-                callback(null);
-                yield break;
-            }
             callback(_loadedBundles[abName]);
         }
 
@@ -426,14 +444,24 @@ namespace UPandaGF
         /// <param name="resName">资源名</param>
         public async Task<T> LoadResAsync<T>(string abName, string resName, ABLoadPath loodPath) where T : UnityEngine.Object
         {
-            await LoadDependenciesAndAimBundle(abName, loodPath);
-            return await LoadAsset<T>(_loadedBundles[abName], resName);
+            AssetBundle bundle = await LoadDependenciesAndAimBundle(abName, loodPath);
+            if (bundle == null)
+            {
+                Debug.LogError($"加载资源失败，AssetBundle未就绪：{abName}/{resName}");
+                return null;
+            }
+            return await LoadAsset<T>(bundle, resName);
         }
 
         public async Task<Object> LoadResAsync(string abName, string resName, System.Type type, ABLoadPath loodPath)
         {
-            await LoadDependenciesAndAimBundle(abName, loodPath);
-            return await LoadAsset(_loadedBundles[abName], resName, type);
+            AssetBundle bundle = await LoadDependenciesAndAimBundle(abName, loodPath);
+            if (bundle == null)
+            {
+                Debug.LogError($"加载资源失败，AssetBundle未就绪：{abName}/{resName}");
+                return null;
+            }
+            return await LoadAsset(bundle, resName, type);
         }
 
         public void LoadResAsync<T>(string abName, string resName, ABLoadPath loodPath, UnityAction<T> callBack) where T : Object
@@ -442,16 +470,15 @@ namespace UPandaGF
         }
         private IEnumerator ReallyLoadResAsync<T>(string abName, string resName, ABLoadPath loodPath, UnityAction<T> callBack) where T : Object
         {
-            yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) =>
-             {
-                 //目标包和依赖包加载结束，arg是目标包， abDic[abName]也能得到目标包
-             }));
-            if (_loadedBundles[abName] == null)
+            AssetBundle bundle = null;
+            yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) => bundle = arg));
+            if (bundle == null)
             {
+                Debug.LogError($"加载资源失败，AssetBundle未就绪：{abName}/{resName}");
                 callBack(null);
                 yield break;
             }
-            StartCoroutine(LoadAsset(_loadedBundles[abName], resName, callBack));
+            StartCoroutine(LoadAsset(bundle, resName, callBack));
         }
 
         public void LoadResAsync(string abName, string resName, System.Type type, ABLoadPath loodPath, UnityAction<Object> callBack)
@@ -464,16 +491,15 @@ namespace UPandaGF
         }
         private IEnumerator ReallyLoadResAsync(string abName, string resName, System.Type type, ABLoadPath loodPath, UnityAction<Object> callBack)
         {
-            yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) =>
-             {
-                 //目标包和依赖包加载结束，arg是目标包， abDic[abName]也能得到目标包
-             }));
-            if (_loadedBundles[abName] == null)
+            AssetBundle bundle = null;
+            yield return StartCoroutine(LoadDependenciesAndAimBundle(abName, loodPath, (arg) => bundle = arg));
+            if (bundle == null)
             {
+                Debug.LogError($"加载资源失败，AssetBundle未就绪：{abName}/{resName}");
                 callBack(null);
                 yield break;
             }
-            StartCoroutine(LoadAsset(_loadedBundles[abName], resName, type, callBack));
+            StartCoroutine(LoadAsset(bundle, resName, type, callBack));
         }
         #endregion
 
@@ -504,8 +530,11 @@ namespace UPandaGF
             StopAllCoroutines();
             AssetBundle.UnloadAllAssetBundles(false);
             _loadedBundles.Clear();
+            _loadingBundles.Clear();
             //卸载主包
             mainAB = null;
+            // manifest 是从主包加载出来的资产，必须一并清掉；否则依赖查询仍会引用已卸载的包
+            manifest = null;
         }
         #endregion
 

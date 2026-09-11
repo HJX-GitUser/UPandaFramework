@@ -174,8 +174,10 @@ upanda-framework/
 ### 资源管理（Manager/AssetsMgr + SourcesLoadMgr）
 
 1. **AB 包打包工具**
-   - 基于官方 `AssetBundle Browser` 扩展，新增资源上传页签，并创建资源对比文件用于热更新。
+   - 基于官方 `AssetBundle Browser` 扩展为 `Configure / Build Set / Inspect / UpLoadAB` 四个页签：可视化指定包名、单包或含依赖打包、逐包设置加载位置（StreamingAssets / Persistent / Remote）、生成资源清单 `assetData.assetref`（可 AES 加密），并支持 FTP / Nginx 上传。
    - 路径：`UPandaGF -> AB包工具 -> AssetBundle Browser`。
+
+   > 打包 → 清单 → 上传 → 运行时加载 / 热更的完整流程、数据格式与已知限制：见 `Editor/AssetBundleTools/README.md`。
 
 2. **IAssetsLoader**
    - AB 包加载接口，统一了"编辑器直读 / AssetBundle"两种模式。
@@ -212,7 +214,8 @@ upanda-framework/
    - `StreamingAssets` 路径下的资源加载工具，已处理跨平台兼容性，提供多种加载方式。
 
 5. **AssetBundleMgr**
-   - `ABLoadMgr` 负责 AB 的本地 / 远程加载，`AssetBundelUpdataMgr` 负责资源热更。
+   - `ABLoadMgr` 负责 AB 的本地 / 远程加载（主包 / manifest / 依赖递归 / 卸载）。
+   - 资源热更已由 `UPGameRoot.enableAssetUpdate` + `Downloader` 按清单 MD5 增量完成（详见 AB 工具文档）；`AssetBundelUpdataMgr` 是**已废弃**的旧方案（文本对比文件 + FTP），勿再使用。
 
 6. **FileUtility**
    - 文件工具：另存 / 移动（先复制后删除，可指定是否覆盖）等常用文件操作。
@@ -302,7 +305,7 @@ upanda-framework/
 > 菜单分组约定：**模块级工具**统一放在 `UPandaGF -> Runtime -> <模块名>`（交互任务评分系统 / 事件系统）；**框架级工具**在 `UPandaGF -> Tools / 日志系统 / AB包工具` 以及 `UPandaGF -> 创建UPGameRoot`。
 
 - **FrameWorkInitEditor**：一键初始化目录结构、创建 `UPGameRoot`、清理 Prefab 缺失脚本。
-- **AssetBundleTools**：AB 打包、管理与上传（FTP / Nginx）。
+- **AssetBundleTools**：AB 打包、管理与上传（FTP / Nginx），详见 `Editor/AssetBundleTools/README.md`。
 - **ExcelTool**（`Editor/Excel/`）：根据 Excel 配置生成数据类与数据容器类，依赖 `Libraries/Excel.dll`。
 - **UIAutoGenerator**：UI 自动生成。
 - **HyBridCLREditor**：HybridCLR 热更程序集拷贝配置（`DLLCopyConfigWindow`）。
@@ -332,6 +335,7 @@ upanda-framework/
 | `Runtime/Manager/ObjPool/README.md` | GameObject 对象池 |
 | `Runtime/Manager/DownloadMgr/README.md` | 下载器：队列 / 并发 / 断点续传 / 超时重试 |
 | `Runtime/Manager/HTTPTool/README.md` | 基于 UnityWebRequest 的 HTTP 请求模块 |
+| `Editor/AssetBundleTools/README.md` | AssetBundle 打包与热更系统：页签用法、清单格式、三种加载位置、热更语义、已知限制、FAQ |
 
 ## 源码约定
 
