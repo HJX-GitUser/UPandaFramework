@@ -1,4 +1,4 @@
-using System.Text;
+Ôªøusing System.Text;
 using UnityEditor;
 using UnityEngine;
 using System.IO;
@@ -18,16 +18,16 @@ namespace UPandaGF.GFEditor
                 if (!Directory.Exists(configPath))
                 {
                     Directory.CreateDirectory(configPath);
-                    AssetDatabase.Refresh();  // ÷ÿ“™£∫À¢–¬ AssetDatabase
+                    AssetDatabase.Refresh();  // ÈáçË¶ÅÔºöÂà∑Êñ∞ AssetDatabase
                 }
                 string fullPath = Path.Combine(configPath, fileName + ".json");
                 File.WriteAllText(fullPath, json, Encoding.UTF8);
                 AssetDatabase.Refresh();
-                //Debug.Log($"≈‰÷√“—±£¥Ê: {fullPath}");
+                //Debug.Log($"ÈÖçÁΩÆÂ∑≤‰øùÂ≠ò: {fullPath}");
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"±£¥Ê≈‰÷√ ß∞‹: {e.Message}");
+                Debug.LogError($"‰øùÂ≠òÈÖçÁΩÆÂ§±Ë¥•: {e.Message}");
             }
         }
 
@@ -41,11 +41,11 @@ namespace UPandaGF.GFEditor
                 {
                     string json = File.ReadAllText(fullPath, Encoding.UTF8);
                     config = JsonUtility.FromJson<T>(json);
-                    //Debug.Log($"≈‰÷√“—º”‘ÿ: {fullPath}");
+                    //Debug.Log($"ÈÖçÁΩÆÂ∑≤Âä†ËΩΩ: {fullPath}");
                 }
                 catch (System.Exception e)
                 {
-                    Debug.LogError($"º”‘ÿ≈‰÷√ ß∞‹: {e.Message}");
+                    Debug.LogError($"Âä†ËΩΩÈÖçÁΩÆÂ§±Ë¥•: {e.Message}");
                 }
             }
             return config;

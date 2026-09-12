@@ -1,4 +1,4 @@
-using System.IO;
+ï»¿using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -35,19 +35,19 @@ public class DebugerInitEditor : Editor
             {
                 string jsonData = File.ReadAllText(configPath);
                 config = JsonUtility.FromJson<LogConfig>(jsonData);
-                //Debug.Log("ÈÕÖ¾ÅäÖÃ¼ÓÔØ³É¹¦");
+                //Debug.Log("æ—¥å¿—é…ç½®åŠ è½½æˆåŠŸ");
             }
             else
             {
-                // ÎÄ¼ş²»´æÔÚÊ±´´½¨Ä¬ÈÏÅäÖÃ
+                // æ–‡ä»¶ä¸å­˜åœ¨æ—¶åˆ›å»ºé»˜è®¤é…ç½®
                 config = component.logConfig;
-                Debug.LogWarning($"{configPath} ÅäÖÃÎÄ¼ş²»´æÔÚ£¬ÒÑ´´½¨Ä¬ÈÏÅäÖÃ");
+                Debug.LogWarning($"{configPath} é…ç½®æ–‡ä»¶ä¸å­˜åœ¨ï¼Œå·²åˆ›å»ºé»˜è®¤é…ç½®");
                 SaveConfig();
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"¼ÓÔØÈÕÖ¾ÅäÖÃÊ§°Ü: {e.Message}");
+            Debug.LogError($"åŠ è½½æ—¥å¿—é…ç½®å¤±è´¥: {e.Message}");
         }
     }
 
@@ -75,7 +75,7 @@ public class DebugerInitEditor : Editor
             Directory.CreateDirectory(savePath);
         }
         File.WriteAllText(component.GetConfigDateFullPath, data);
-        Debug.Log($"ÈÕÖ¾ÅäÖÃÒÑ±£´æ£º{savePath}\n{data}");
+        Debug.Log($"æ—¥å¿—é…ç½®å·²ä¿å­˜ï¼š{savePath}\n{data}");
         AssetDatabase.Refresh();
     }
 

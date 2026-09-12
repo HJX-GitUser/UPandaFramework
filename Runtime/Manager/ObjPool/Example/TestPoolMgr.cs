@@ -1,24 +1,24 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 using UPandaGF;
 
 /// <summary>
-/// ¶ÔÏó³ØÊ¹ÓÃÊ¾Àı£ºÑİÊ¾È¡¶ÔÏó£¨Task / »Øµ÷Á½ÖÖÒì²½ĞÎÊ½£©¡¢»ØÊÕ¡¢Ô¤ÈÈÓëÍ³¼Æ¡£
-/// ÅäÌ×³¡¾°£ºExample/PoolUseScene.unity£»ÅäÌ×Ô¤ÖÆÌå£ºResources/Obj1.prefab¡¢Resources/Obj2.prefab
+/// å¯¹è±¡æ± ä½¿ç”¨ç¤ºä¾‹ï¼šæ¼”ç¤ºå–å¯¹è±¡ï¼ˆTask / å›è°ƒä¸¤ç§å¼‚æ­¥å½¢å¼ï¼‰ã€å›æ”¶ã€é¢„çƒ­ä¸ç»Ÿè®¡ã€‚
+/// é…å¥—åœºæ™¯ï¼šExample/PoolUseScene.unityï¼›é…å¥—é¢„åˆ¶ä½“ï¼šResources/Obj1.prefabã€Resources/Obj2.prefab
 /// </summary>
 public class TestPoolMgr : MonoBehaviour
 {
     List<GameObject> cubes = new List<GameObject>();
     List<GameObject> spheres = new List<GameObject>();
 
-    [Tooltip("true£ºÊ¹ÓÃ Task ĞÎÊ½Òì²½È¡¶ÔÏó£»false£ºÊ¹ÓÃ»Øµ÷ĞÎÊ½")]
+    [Tooltip("trueï¼šä½¿ç”¨ Task å½¢å¼å¼‚æ­¥å–å¯¹è±¡ï¼›falseï¼šä½¿ç”¨å›è°ƒå½¢å¼")]
     public bool LoadAsync = true;
 
     public AssetLoadMethod loadMethod;
     public string obj1Path = "Obj1";
     public string obj2Path = "Obj2";
 
-    [Tooltip("Æô¶¯Ê±Ã¿¸öÔ¤ÖÆÌåÔ¤ÏÈÊµÀı»¯¶àÉÙ¸ö·ÅÈë³ØÖĞ£¨0 = ²»Ô¤ÈÈ£©")]
+    [Tooltip("å¯åŠ¨æ—¶æ¯ä¸ªé¢„åˆ¶ä½“é¢„å…ˆå®ä¾‹åŒ–å¤šå°‘ä¸ªæ”¾å…¥æ± ä¸­ï¼ˆ0 = ä¸é¢„çƒ­ï¼‰")]
     public int prewarmCount = 0;
 
     private void Awake()
@@ -35,28 +35,28 @@ public class TestPoolMgr : MonoBehaviour
     {
         if (prewarmCount <= 0) return;
 
-        // Ô¤ÈÈ£ºÌáÇ°°Ñ¶ÔÏó·Å½ø³Ø×Ó£¬±ÜÃâÊ×´ÎÈ¡¶ÔÏóÊ±µÄ¼ÓÔØ¼â·å
+        // é¢„çƒ­ï¼šæå‰æŠŠå¯¹è±¡æ”¾è¿›æ± å­ï¼Œé¿å…é¦–æ¬¡å–å¯¹è±¡æ—¶çš„åŠ è½½å°–å³°
         await GameObjectPoolMgr.Instance.Prewarm(obj1Path, prewarmCount, loadMethod);
         await GameObjectPoolMgr.Instance.Prewarm(obj2Path, prewarmCount, loadMethod);
     }
 
     private void OnGUI()
     {
-        if (GUI.Button(new Rect(10, 25, 100, 50), "´´½¨Obj1"))
+        if (GUI.Button(new Rect(10, 25, 100, 50), "åˆ›å»ºObj1"))
         {
             CreatObj1();
         }
-        if (GUI.Button(new Rect(110, 25, 100, 50), "´´½¨Obj2"))
+        if (GUI.Button(new Rect(110, 25, 100, 50), "åˆ›å»ºObj2"))
         {
             CreatObj2();
         }
 
-        if (GUI.Button(new Rect(10, 80, 200, 50), "»ØÊÕËùÓĞ"))
+        if (GUI.Button(new Rect(10, 80, 200, 50), "å›æ”¶æ‰€æœ‰"))
         {
             PushAll();
         }
 
-        GUI.Label(new Rect(10, 135, 320, 25), $"³ØÖĞ¿ÕÏĞ¶ÔÏó£º{GameObjectPoolMgr.Instance.TotalPooledCount}");
+        GUI.Label(new Rect(10, 135, 320, 25), $"æ± ä¸­ç©ºé—²å¯¹è±¡ï¼š{GameObjectPoolMgr.Instance.TotalPooledCount}");
     }
 
     private void CreatObj1()
@@ -67,7 +67,7 @@ public class TestPoolMgr : MonoBehaviour
         }
         else
         {
-            // »Øµ÷ĞÎÊ½£ººóĞøÂß¼­Ğ´ÔÚ»Øµ÷Àï
+            // å›è°ƒå½¢å¼ï¼šåç»­é€»è¾‘å†™åœ¨å›è°ƒé‡Œ
             GameObjectPoolMgr.Instance.GetObjAsync(obj1Path, SetupObj1, loadMethod);
         }
     }
@@ -80,10 +80,10 @@ public class TestPoolMgr : MonoBehaviour
 
     private void SetupObj1(GameObject obj)
     {
-        // ¼ÓÔØÊ§°Ü£¨º¬³¬Ê±£©»áÒÔ null ·µ»Ø/»Øµ÷£¬±ØĞëÅĞ¿Õ
+        // åŠ è½½å¤±è´¥ï¼ˆå«è¶…æ—¶ï¼‰ä¼šä»¥ null è¿”å›/å›è°ƒï¼Œå¿…é¡»åˆ¤ç©º
         if (obj == null)
         {
-            Debug.LogError($"Obj1 ´´½¨Ê§°Ü£º{obj1Path}");
+            Debug.LogError($"Obj1 åˆ›å»ºå¤±è´¥ï¼š{obj1Path}");
             return;
         }
 
@@ -96,7 +96,7 @@ public class TestPoolMgr : MonoBehaviour
         GameObject obj = await GameObjectPoolMgr.Instance.GetObjAsync(obj2Path, loadMethod);
         if (obj == null)
         {
-            Debug.LogError($"Obj2 ´´½¨Ê§°Ü£º{obj2Path}");
+            Debug.LogError($"Obj2 åˆ›å»ºå¤±è´¥ï¼š{obj2Path}");
             return;
         }
 
@@ -122,8 +122,8 @@ public class TestPoolMgr : MonoBehaviour
     }
 
     /// <summary>
-    /// ¸´ÓÃÇ°¸´Î»×´Ì¬¡£¸üÍÆ¼öµÄ×ö·¨£º¸øÔ¤ÖÆÌå¸ù½Úµã¹ÒÒ»¸öÊµÏÖ IPoolable µÄ×é¼ş£¬
-    /// ÔÚ OnDespawn / OnSpawn Àï´¦Àí¸´Î»£¬ÕâÑùÈÎºÎÈ¡ÓÃ·½¶¼²»ĞèÒªÖØ¸´Ğ´ÕâÀà´úÂë¡£
+    /// å¤ç”¨å‰å¤ä½çŠ¶æ€ã€‚æ›´æ¨èçš„åšæ³•ï¼šç»™é¢„åˆ¶ä½“æ ¹èŠ‚ç‚¹æŒ‚ä¸€ä¸ªå®ç° IPoolable çš„ç»„ä»¶ï¼Œ
+    /// åœ¨ OnDespawn / OnSpawn é‡Œå¤„ç†å¤ä½ï¼Œè¿™æ ·ä»»ä½•å–ç”¨æ–¹éƒ½ä¸éœ€è¦é‡å¤å†™è¿™ç±»ä»£ç ã€‚
     /// </summary>
     private static void ResetRigidbody(GameObject obj)
     {

@@ -1,26 +1,26 @@
-using System;
+ï»¿using System;
 using System.IO;
 using UnityEngine;
 
 public static class FileUtility
 {
     /// <summary>
-    /// ½«ÎÄ¼şÁí´æµ½ĞÂÎ»ÖÃ£¬²¢É¾³ıÔ­ÎÄ¼ş£¨ÀàËÆÒÆ¶¯£¬µ«ÏÈ¸´ÖÆºóÉ¾³ı£©
+    /// å°†æ–‡ä»¶å¦å­˜åˆ°æ–°ä½ç½®ï¼Œå¹¶åˆ é™¤åŸæ–‡ä»¶ï¼ˆç±»ä¼¼ç§»åŠ¨ï¼Œä½†å…ˆå¤åˆ¶ååˆ é™¤ï¼‰
     /// </summary>
-    /// <param name="sourcePath">Ô´ÎÄ¼şÂ·¾¶</param>
-    /// <param name="destPath">Ä¿±êÎÄ¼şÂ·¾¶</param>
-    /// <param name="overwrite">Èç¹ûÄ¿±êÎÄ¼şÒÑ´æÔÚ£¬ÊÇ·ñ¸²¸Ç</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="sourcePath">æºæ–‡ä»¶è·¯å¾„</param>
+    /// <param name="destPath">ç›®æ ‡æ–‡ä»¶è·¯å¾„</param>
+    /// <param name="overwrite">å¦‚æœç›®æ ‡æ–‡ä»¶å·²å­˜åœ¨ï¼Œæ˜¯å¦è¦†ç›–</param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     public static bool SaveAsAndDeleteOriginal(string sourcePath, string destPath, bool overwrite = false)
     {
-        // 1. ¼ì²éÔ´ÎÄ¼şÊÇ·ñ´æÔÚ
+        // 1. æ£€æŸ¥æºæ–‡ä»¶æ˜¯å¦å­˜åœ¨
         if (!File.Exists(sourcePath))
         {
-            Debug.LogError($"Ô´ÎÄ¼ş²»´æÔÚ: {sourcePath}");
+            Debug.LogError($"æºæ–‡ä»¶ä¸å­˜åœ¨: {sourcePath}");
             return false;
         }
 
-        // 2. È·±£Ä¿±êÄ¿Â¼´æÔÚ
+        // 2. ç¡®ä¿ç›®æ ‡ç›®å½•å­˜åœ¨
         string destDir = Path.GetDirectoryName(destPath);
         if (!Directory.Exists(destDir))
         {
@@ -29,28 +29,28 @@ public static class FileUtility
 
         try
         {
-            // 3. ¸´ÖÆÎÄ¼ş£¨Èç¹ûÄ¿±êÎÄ¼ş´æÔÚÇÒ overwrite Îª false£¬Ôò File.Copy »áÅ×³öÒì³££©
+            // 3. å¤åˆ¶æ–‡ä»¶ï¼ˆå¦‚æœç›®æ ‡æ–‡ä»¶å­˜åœ¨ä¸” overwrite ä¸º falseï¼Œåˆ™ File.Copy ä¼šæŠ›å‡ºå¼‚å¸¸ï¼‰
             File.Copy(sourcePath, destPath, overwrite);
 
-            // 4. ¸´ÖÆ³É¹¦ºóÉ¾³ıÔ­ÎÄ¼ş
+            // 4. å¤åˆ¶æˆåŠŸååˆ é™¤åŸæ–‡ä»¶
             File.Delete(sourcePath);
 
-            Debug.Log($"ÎÄ¼şÁí´æ³É¹¦: {sourcePath} -> {destPath}");
+            Debug.Log($"æ–‡ä»¶å¦å­˜æˆåŠŸ: {sourcePath} -> {destPath}");
             return true;
         }
         catch (IOException ex)
         {
-            Debug.LogError($"ÎÄ¼ş²Ù×÷Ê§°Ü£¨IOÒì³££©: {ex.Message}");
+            Debug.LogError($"æ–‡ä»¶æ“ä½œå¤±è´¥ï¼ˆIOå¼‚å¸¸ï¼‰: {ex.Message}");
             return false;
         }
         catch (UnauthorizedAccessException ex)
         {
-            Debug.LogError($"ÎÄ¼ş²Ù×÷Ê§°Ü£¨È¨ÏŞ²»×ã£©: {ex.Message}");
+            Debug.LogError($"æ–‡ä»¶æ“ä½œå¤±è´¥ï¼ˆæƒé™ä¸è¶³ï¼‰: {ex.Message}");
             return false;
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"ÎÄ¼ş²Ù×÷Ê§°Ü£¨Î´ÖªÒì³££©: {ex.Message}");
+            Debug.LogError($"æ–‡ä»¶æ“ä½œå¤±è´¥ï¼ˆæœªçŸ¥å¼‚å¸¸ï¼‰: {ex.Message}");
             return false;
         }
     }

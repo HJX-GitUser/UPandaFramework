@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,16 +6,16 @@ using UnityEngine.Networking;
 using UPandaGF;
 
 /// <summary>
-/// HTTP ¿Í»§¶Ë£ºÎ¬»¤·¢ËÍ¶ÓÁĞ²¢°´²¢·¢ÉÏÏŞ·¢ËÍÇëÇó¡£
-/// ÓÉ HttpManager ÔÚµ¥ÀıÎïÌåÉÏ¶¯Ì¬Ìí¼Ó£¬¿¿ Update Çı¶¯¶ÓÁĞ£¬ËùÓĞ»Øµ÷¶¼ÔÚÖ÷Ïß³Ì¡£
+/// HTTP å®¢æˆ·ç«¯ï¼šç»´æŠ¤å‘é€é˜Ÿåˆ—å¹¶æŒ‰å¹¶å‘ä¸Šé™å‘é€è¯·æ±‚ã€‚
+/// ç”± HttpManager åœ¨å•ä¾‹ç‰©ä½“ä¸ŠåŠ¨æ€æ·»åŠ ï¼Œé  Update é©±åŠ¨é˜Ÿåˆ—ï¼Œæ‰€æœ‰å›è°ƒéƒ½åœ¨ä¸»çº¿ç¨‹ã€‚
 /// </summary>
 public class HttpClient : MonoBehaviour
 {
-    /// <summary>²¢·¢ÉÏÏŞ£º1 = ´®ĞĞ£¨Ä¬ÈÏ£©£»´óÓÚ 1 Ê±Í¬Ê±·¢ËÍ¶à¸öÇëÇó</summary>
+    /// <summary>å¹¶å‘ä¸Šé™ï¼š1 = ä¸²è¡Œï¼ˆé»˜è®¤ï¼‰ï¼›å¤§äº 1 æ—¶åŒæ—¶å‘é€å¤šä¸ªè¯·æ±‚</summary>
     public int MaxConcurrentRequests { get; set; } = 1;
 
-    private readonly Queue<HttpPack> _sendQueue = new Queue<HttpPack>();      // µÈ´ı·¢ËÍ
-    private readonly HashSet<HttpPack> _runningRequests = new HashSet<HttpPack>();  // ÕıÔÚ·¢ËÍ
+    private readonly Queue<HttpPack> _sendQueue = new Queue<HttpPack>();      // ç­‰å¾…å‘é€
+    private readonly HashSet<HttpPack> _runningRequests = new HashSet<HttpPack>();  // æ­£åœ¨å‘é€
     private int _runningCount;
 
     private void Update()
@@ -27,7 +27,7 @@ public class HttpClient : MonoBehaviour
             HttpPack pack = _sendQueue.Dequeue();
             if (pack == null) continue;
 
-            // ÅÅ¶ÓÆÚ¼ä±»È¡Ïû£ºÖ±½ÓÊÍ·Å£¬²»·¢ËÍÒ²²»»Øµ÷
+            // æ’é˜ŸæœŸé—´è¢«å–æ¶ˆï¼šç›´æ¥é‡Šæ”¾ï¼Œä¸å‘é€ä¹Ÿä¸å›è°ƒ
             if (pack.IsCanceled)
             {
                 pack.DisposeWebRequest();
@@ -41,7 +41,7 @@ public class HttpClient : MonoBehaviour
     }
 
     /// <summary>
-    /// ÇëÇóÈë¶Ó£¨ÄÚ²¿È·±£µ×²ã UnityWebRequest ÒÑ´´½¨£©
+    /// è¯·æ±‚å…¥é˜Ÿï¼ˆå†…éƒ¨ç¡®ä¿åº•å±‚ UnityWebRequest å·²åˆ›å»ºï¼‰
     /// </summary>
     public void SendRequest(HttpPack pack)
     {
@@ -58,7 +58,7 @@ public class HttpClient : MonoBehaviour
         _sendQueue.Enqueue(pack);
     }
 
-    /// <summary>Çå¿ÕµÈ´ı¶ÓÁĞ£¨²»Ó°ÏìÕıÔÚ·¢ËÍµÄÇëÇó£¬È¡ÏûËüÃÇÇëÓÃ CancelAll£©</summary>
+    /// <summary>æ¸…ç©ºç­‰å¾…é˜Ÿåˆ—ï¼ˆä¸å½±å“æ­£åœ¨å‘é€çš„è¯·æ±‚ï¼Œå–æ¶ˆå®ƒä»¬è¯·ç”¨ CancelAllï¼‰</summary>
     public void ClearQueue()
     {
         while (_sendQueue.Count > 0)
@@ -71,14 +71,14 @@ public class HttpClient : MonoBehaviour
         }
     }
 
-    /// <summary>È¡ÏûÈ«²¿ÇëÇó£ºµÈ´ı¶ÓÁĞ±»Çå¿Õ£¬½øĞĞÖĞµÄÇëÇó»á±» Abort£¨²»»á´¥·¢ÈÎºÎ»Øµ÷£©</summary>
+    /// <summary>å–æ¶ˆå…¨éƒ¨è¯·æ±‚ï¼šç­‰å¾…é˜Ÿåˆ—è¢«æ¸…ç©ºï¼Œè¿›è¡Œä¸­çš„è¯·æ±‚ä¼šè¢« Abortï¼ˆä¸ä¼šè§¦å‘ä»»ä½•å›è°ƒï¼‰</summary>
     public void CancelAll()
     {
         ClearQueue();
 
         if (_runningRequests.Count == 0) return;
 
-        // ¸´ÖÆÒ»·İÔÙÈ¡Ïû£¬±ÜÃâ±éÀúÊ±¼¯ºÏ±»ĞŞ¸Ä
+        // å¤åˆ¶ä¸€ä»½å†å–æ¶ˆï¼Œé¿å…éå†æ—¶é›†åˆè¢«ä¿®æ”¹
         var running = new List<HttpPack>(_runningRequests);
         for (int i = 0; i < running.Count; i++)
         {
@@ -87,13 +87,13 @@ public class HttpClient : MonoBehaviour
     }
 
     /// <summary>
-    /// ÇëÇóĞ­³Ì£ºµÈ´ıÖØÊÔ¼ä¸ô -> ·¢Æğ -> µÈ´ı£¨¿ÉÑ¡ÉÏ±¨½ø¶È£©-> Í³Ò»ÊÕÎ²¡£
-    /// ×¢Òâ£ºµü´úÆ÷ÄÚ²»ÄÜĞ´ try/catch£¬ËùÒÔ"¿ÉÄÜÅ×Òì³£"µÄ·¢Æğ¶¯×÷·ÅÔÚ
-    /// TryStartRequest£¨ÆÕÍ¨·½·¨£©Àï£¬±£Ö¤ÈÎºÎÒì³£¶¼²»»áÌø¹ıÊÕÎ²Á÷³Ì¡£
+    /// è¯·æ±‚åç¨‹ï¼šç­‰å¾…é‡è¯•é—´éš” -> å‘èµ· -> ç­‰å¾…ï¼ˆå¯é€‰ä¸ŠæŠ¥è¿›åº¦ï¼‰-> ç»Ÿä¸€æ”¶å°¾ã€‚
+    /// æ³¨æ„ï¼šè¿­ä»£å™¨å†…ä¸èƒ½å†™ try/catchï¼Œæ‰€ä»¥"å¯èƒ½æŠ›å¼‚å¸¸"çš„å‘èµ·åŠ¨ä½œæ”¾åœ¨
+    /// TryStartRequestï¼ˆæ™®é€šæ–¹æ³•ï¼‰é‡Œï¼Œä¿è¯ä»»ä½•å¼‚å¸¸éƒ½ä¸ä¼šè·³è¿‡æ”¶å°¾æµç¨‹ã€‚
     /// </summary>
     private IEnumerator ProcessRequest(HttpPack pack)
     {
-        // ÖØÊÔÇ°µÈ´ı£¨Ê×´Î·¢ËÍ²»µÈ´ı£©£¬±ÜÃâÍøÂçÒì³£Ê±Ë²¼ä·´¸´ÖØÊÔ
+        // é‡è¯•å‰ç­‰å¾…ï¼ˆé¦–æ¬¡å‘é€ä¸ç­‰å¾…ï¼‰ï¼Œé¿å…ç½‘ç»œå¼‚å¸¸æ—¶ç¬é—´åå¤é‡è¯•
         if (pack.AttemptCount > 0 && pack.RetryDelay > 0f)
         {
             yield return new WaitForSeconds(pack.RetryDelay);
@@ -110,7 +110,7 @@ public class HttpClient : MonoBehaviour
             }
             else
             {
-                // ½öÔÚÓĞ½ø¶È»Øµ÷Ê±ÖğÖ¡ÂÖÑ¯£¬±ÜÃâÎŞÎ½¿ªÏú
+                // ä»…åœ¨æœ‰è¿›åº¦å›è°ƒæ—¶é€å¸§è½®è¯¢ï¼Œé¿å…æ— è°“å¼€é”€
                 while (!operation.isDone)
                 {
                     pack.ReportProgress();
@@ -124,7 +124,7 @@ public class HttpClient : MonoBehaviour
     }
 
     /// <summary>
-    /// ·¢ÆğÇëÇó£¨ÆÕÍ¨·½·¨£¬ÄÚ²¿²¶»ñÒì³££©£»·µ»ØÊÇ·ñ³É¹¦ÄÃµ½Òì²½²Ù×÷
+    /// å‘èµ·è¯·æ±‚ï¼ˆæ™®é€šæ–¹æ³•ï¼Œå†…éƒ¨æ•è·å¼‚å¸¸ï¼‰ï¼›è¿”å›æ˜¯å¦æˆåŠŸæ‹¿åˆ°å¼‚æ­¥æ“ä½œ
     /// </summary>
     private bool TryStartRequest(HttpPack pack, out UnityWebRequestAsyncOperation operation)
     {
@@ -132,7 +132,7 @@ public class HttpClient : MonoBehaviour
 
         if (pack == null || pack.WebRequest == null)
         {
-            PLogger.LogError("[HttpClient] ÇëÇó¶ÔÏóÎª¿Õ£¬ÎŞ·¨·¢ËÍ");
+            PLogger.LogError("[HttpClient] è¯·æ±‚å¯¹è±¡ä¸ºç©ºï¼Œæ— æ³•å‘é€");
             return false;
         }
 
@@ -144,14 +144,14 @@ public class HttpClient : MonoBehaviour
         }
         catch (Exception e)
         {
-            PLogger.LogError($"[HttpClient] ·¢ÆğÇëÇóÊ§°Ü¡£URL: {pack.Url}, Message: {e}");
+            PLogger.LogError($"[HttpClient] å‘èµ·è¯·æ±‚å¤±è´¥ã€‚URL: {pack.Url}, Message: {e}");
             return false;
         }
     }
 
     /// <summary>
-    /// Í³Ò»ÊÕÎ²£ºÅĞ¶¨³É¹¦/Ê§°Ü¡¢°´ĞèÖØÊÔ¡¢ÊÍ·ÅÇëÇó¡¢¸´Î»²¢·¢¼ÆÊı¡£
-    /// ÕâÀï¾ø²»ÄÜÅ×Òì³£³öÈ¥£¬·ñÔò¶ÓÁĞ»áÓÀ¾ÃÍ£°Ú£¬Òò´ËÕûÌå°üÔÚ try/catch/finally ÖĞ¡£
+    /// ç»Ÿä¸€æ”¶å°¾ï¼šåˆ¤å®šæˆåŠŸ/å¤±è´¥ã€æŒ‰éœ€é‡è¯•ã€é‡Šæ”¾è¯·æ±‚ã€å¤ä½å¹¶å‘è®¡æ•°ã€‚
+    /// è¿™é‡Œç»ä¸èƒ½æŠ›å¼‚å¸¸å‡ºå»ï¼Œå¦åˆ™é˜Ÿåˆ—ä¼šæ°¸ä¹…åœæ‘†ï¼Œå› æ­¤æ•´ä½“åŒ…åœ¨ try/catch/finally ä¸­ã€‚
     /// </summary>
     private void FinishRequest(HttpPack pack)
     {
@@ -165,7 +165,7 @@ public class HttpClient : MonoBehaviour
 
         try
         {
-            // ±»È¡Ïû£º¾²Ä¬½áÊø£¨²»»Øµ÷¡¢²»ÖØÊÔ£©
+            // è¢«å–æ¶ˆï¼šé™é»˜ç»“æŸï¼ˆä¸å›è°ƒã€ä¸é‡è¯•ï¼‰
             if (pack.IsCanceled) return;
 
             if (IsRequestSuccess(pack.WebRequest))
@@ -179,15 +179,15 @@ public class HttpClient : MonoBehaviour
         }
         catch (Exception e)
         {
-            PLogger.LogError($"[HttpClient] ´¦ÀíÏìÓ¦Òì³£¡£URL: {pack.Url}, Message: {e}");
+            PLogger.LogError($"[HttpClient] å¤„ç†å“åº”å¼‚å¸¸ã€‚URL: {pack.Url}, Message: {e}");
             pack.OnFailure?.Invoke($"HTTP Handle Exception. URL: {pack.Url}, Message: {e.Message}");
         }
         finally
         {
             if (willRetry)
             {
-                // ÖØ½¨ÇëÇó£ºÉÏÒ»´ÎµÄ WebRequest ÒÑ²»¿É¸´ÓÃ£¨ÕâÒ²ĞŞ¸´ÁËÔ­À´ÖØÊÔÊ±
-                // WebRequest Îª null µ¼ÖÂµÄ¿ÕÒıÓÃ£©
+                // é‡å»ºè¯·æ±‚ï¼šä¸Šä¸€æ¬¡çš„ WebRequest å·²ä¸å¯å¤ç”¨ï¼ˆè¿™ä¹Ÿä¿®å¤äº†åŸæ¥é‡è¯•æ—¶
+                // WebRequest ä¸º null å¯¼è‡´çš„ç©ºå¼•ç”¨ï¼‰
                 pack.CreateWebRequest();
                 _sendQueue.Enqueue(pack);
             }
@@ -202,7 +202,7 @@ public class HttpClient : MonoBehaviour
     }
 
     /// <summary>
-    /// ³É¹¦ÅĞ¶¨£¨¼æÈİĞÂ¾É Unity °æ±¾£©
+    /// æˆåŠŸåˆ¤å®šï¼ˆå…¼å®¹æ–°æ—§ Unity ç‰ˆæœ¬ï¼‰
     /// </summary>
     private bool IsRequestSuccess(UnityWebRequest request)
     {
@@ -216,8 +216,8 @@ public class HttpClient : MonoBehaviour
     }
 
     /// <summary>
-    /// Ê§°Ü´¦Àí£º»¹ÓĞÖØÊÔ´ÎÊı¾Í·µ»Ø true£¨ÓÉµ÷ÓÃ·½ÖØĞÂÈë¶Ó£©£¬·ñÔò»Øµ÷Ò»´Î OnFailure ²¢·µ»Ø false¡£
-    /// ×¢Òâ£ºOnFailure Ö»ÔÚ·ÅÆúÊ±´¥·¢Ò»´Î£¬ÖØÊÔ¹ı³ÌÍ¨¹ı OnRetry / ÈÕÖ¾ÌåÏÖ¡£
+    /// å¤±è´¥å¤„ç†ï¼šè¿˜æœ‰é‡è¯•æ¬¡æ•°å°±è¿”å› trueï¼ˆç”±è°ƒç”¨æ–¹é‡æ–°å…¥é˜Ÿï¼‰ï¼Œå¦åˆ™å›è°ƒä¸€æ¬¡ OnFailure å¹¶è¿”å› falseã€‚
+    /// æ³¨æ„ï¼šOnFailure åªåœ¨æ”¾å¼ƒæ—¶è§¦å‘ä¸€æ¬¡ï¼Œé‡è¯•è¿‡ç¨‹é€šè¿‡ OnRetry / æ—¥å¿—ä½“ç°ã€‚
     /// </summary>
     private bool TryScheduleRetry(HttpPack pack)
     {
@@ -226,22 +226,22 @@ public class HttpClient : MonoBehaviour
         if (pack.RetryCount > 0)
         {
             pack.RetryCount--;
-            PLogger.LogWarning($"[HttpClient] ÇëÇóÊ§°Ü£¬×¼±¸ÖØÊÔ¡£URL: {pack.Url}, Ê£ÓàÖØÊÔ´ÎÊı: {pack.RetryCount}, Ô­Òò: {error}");
+            PLogger.LogWarning($"[HttpClient] è¯·æ±‚å¤±è´¥ï¼Œå‡†å¤‡é‡è¯•ã€‚URL: {pack.Url}, å‰©ä½™é‡è¯•æ¬¡æ•°: {pack.RetryCount}, åŸå› : {error}");
             pack.OnRetry?.Invoke(pack.RetryCount, error);
             return true;
         }
 
-        PLogger.LogError($"[HttpClient] ÇëÇóÊ§°Ü£¨ÖØÊÔÒÑÓÃ¾¡£©¡£URL: {pack.Url}, Ô­Òò: {error}");
+        PLogger.LogError($"[HttpClient] è¯·æ±‚å¤±è´¥ï¼ˆé‡è¯•å·²ç”¨å°½ï¼‰ã€‚URL: {pack.Url}, åŸå› : {error}");
         pack.OnFailure?.Invoke(error);
         return false;
     }
 
     /// <summary>
-    /// ×é×°´íÎóĞÅÏ¢£ºµØÖ·¡¢×´Ì¬Âë¡¢´íÎóÔ­Òò£¬²¢¾¡Á¿¸½ÉÏ·şÎñ¶Ë·µ»ØµÄ´íÎóÌå£¨4xx/5xx ³£¼û£©
+    /// ç»„è£…é”™è¯¯ä¿¡æ¯ï¼šåœ°å€ã€çŠ¶æ€ç ã€é”™è¯¯åŸå› ï¼Œå¹¶å°½é‡é™„ä¸ŠæœåŠ¡ç«¯è¿”å›çš„é”™è¯¯ä½“ï¼ˆ4xx/5xx å¸¸è§ï¼‰
     /// </summary>
     private static string BuildErrorMessage(UnityWebRequest request)
     {
-        if (request == null) return "ÇëÇó¶ÔÏóÎª¿Õ";
+        if (request == null) return "è¯·æ±‚å¯¹è±¡ä¸ºç©º";
 
         string message = $"HTTP Request Failed. URL: {request.url}, Code: {request.responseCode}, Error: {request.error}";
 
@@ -258,13 +258,13 @@ public class HttpClient : MonoBehaviour
         }
         catch (Exception)
         {
-            // ¶ÁÈ¡ÏìÓ¦ÌåÊ§°Ü²»Ó°Ïì´íÎóÉÏ±¨
+            // è¯»å–å“åº”ä½“å¤±è´¥ä¸å½±å“é”™è¯¯ä¸ŠæŠ¥
         }
 
         return message;
     }
 
-    /// <summary>°´×î´ó³¤¶È½Ø¶ÏÎÄ±¾£¨´íÎóÌå¿ÉÄÜºÜ³¤£©</summary>
+    /// <summary>æŒ‰æœ€å¤§é•¿åº¦æˆªæ–­æ–‡æœ¬ï¼ˆé”™è¯¯ä½“å¯èƒ½å¾ˆé•¿ï¼‰</summary>
     private static string Truncate(string text, int maxLength)
     {
         if (string.IsNullOrEmpty(text) || text.Length <= maxLength) return text;

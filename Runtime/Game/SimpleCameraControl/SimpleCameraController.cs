@@ -1,27 +1,27 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
 public class SimpleCameraController : MonoBehaviour
 {
-    [Header("ÒÆ¶¯ÉèÖÃ")]
+    [Header("ç§»åŠ¨è®¾ç½®")]
     [SerializeField] private float moveSpeed = 10f;
     [SerializeField] private float fastMoveMultiplier = 3f;
 
-    [Header("Ğı×ªÉèÖÃ")]
+    [Header("æ—‹è½¬è®¾ç½®")]
     [SerializeField] private float rotationSpeed = 5f;
     [SerializeField] private float smoothTime = 0.1f;
 
-    [Header("Ëõ·ÅÉèÖÃ")]
+    [Header("ç¼©æ”¾è®¾ç½®")]
     [SerializeField] private float zoomSpeed = 10f;
     [SerializeField] private float minZoom = 1f;
     [SerializeField] private float maxZoom = 100f;
 
-    [Header("°´¼üÉèÖÃ")]
-    [SerializeField] private KeyCode rotateKey = KeyCode.Mouse1;  // ÓÒ¼üĞı×ª
-    [SerializeField] private KeyCode moveKey = KeyCode.Mouse1;  // ÓÒ¼üÒÆ¶¯
-    [SerializeField] private KeyCode panKey = KeyCode.Mouse2;     // ÖĞ¼üÆ½ÒÆ
+    [Header("æŒ‰é”®è®¾ç½®")]
+    [SerializeField] private KeyCode rotateKey = KeyCode.Mouse1;  // å³é”®æ—‹è½¬
+    [SerializeField] private KeyCode moveKey = KeyCode.Mouse1;  // å³é”®ç§»åŠ¨
+    [SerializeField] private KeyCode panKey = KeyCode.Mouse2;     // ä¸­é”®å¹³ç§»
 
-    // Ë½ÓĞ±äÁ¿
+    // ç§æœ‰å˜é‡
     private Vector3 targetPosition;
     private Quaternion targetRotation;
     private Vector3 rotationVelocity = Vector3.zero;
@@ -58,11 +58,11 @@ public class SimpleCameraController : MonoBehaviour
             float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
             float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed;
 
-            // SceneÊÓÍ¼·ç¸ñµÄĞı×ª
+            // Sceneè§†å›¾é£æ ¼çš„æ—‹è½¬
             Vector3 euler = targetRotation.eulerAngles;
             euler.x -= mouseY;
             euler.y += mouseX;
-            euler.z = 0; // ±£³ÖzÖáÎª0£¬·ÀÖ¹ÇãĞ±
+            euler.z = 0; // ä¿æŒzè½´ä¸º0ï¼Œé˜²æ­¢å€¾æ–œ
 
             targetRotation = Quaternion.Euler(euler);
         }
@@ -75,7 +75,7 @@ public class SimpleCameraController : MonoBehaviour
             float mouseX = Input.GetAxis("Mouse X");
             float mouseY = Input.GetAxis("Mouse Y");
 
-            // ¸ù¾İµ±Ç°ÊÓ½Ç¼ÆËãÆ½ÒÆ·½Ïò
+            // æ ¹æ®å½“å‰è§†è§’è®¡ç®—å¹³ç§»æ–¹å‘
             Vector3 right = targetRotation * Vector3.right;
             Vector3 up = targetRotation * Vector3.up;
 
@@ -89,11 +89,11 @@ public class SimpleCameraController : MonoBehaviour
         scroll = Input.GetAxis("Mouse ScrollWheel");
         if (Mathf.Abs(scroll) > 0.01f)
         {
-            // SceneÊÓÍ¼·ç¸ñµÄËõ·Å£ºÑØÊÓÏß·½ÏòÇ°½ø/ºóÍË
+            // Sceneè§†å›¾é£æ ¼çš„ç¼©æ”¾ï¼šæ²¿è§†çº¿æ–¹å‘å‰è¿›/åé€€
             Vector3 zoomDirection = targetRotation * Vector3.forward;
             currentZoom = Mathf.Clamp(currentZoom - scroll * zoomSpeed, minZoom, maxZoom);
 
-            // ¸üĞÂÄ¿±êÎ»ÖÃ
+            // æ›´æ–°ç›®æ ‡ä½ç½®
             Vector3 lookAtPoint = targetPosition + zoomDirection * currentZoom;
             targetPosition = lookAtPoint - zoomDirection * currentZoom;
         }
@@ -119,7 +119,7 @@ public class SimpleCameraController : MonoBehaviour
                 Vector3 right = targetRotation * Vector3.right;
                 Vector3 up = targetRotation * Vector3.up;
 
-                // ÒÆ³ı´¹Ö±·ÖÁ¿£¬±£³ÖË®Æ½ÒÆ¶¯
+                // ç§»é™¤å‚ç›´åˆ†é‡ï¼Œä¿æŒæ°´å¹³ç§»åŠ¨
                 forward.y = 0;
                 forward.Normalize();
                 right.y = 0;
@@ -130,7 +130,7 @@ public class SimpleCameraController : MonoBehaviour
             }
         }
 
-        // ¾Û½¹µ½ÎïÌå (F¼ü)
+        // èšç„¦åˆ°ç‰©ä½“ (Fé”®)
         if (Input.GetKeyDown(KeyCode.F) && SelectionHasGameObject())
         {
             FocusOnSelection();
@@ -148,7 +148,7 @@ public class SimpleCameraController : MonoBehaviour
 #if UNITY_EDITOR
         return UnityEditor.Selection.activeGameObject != null;
 #else
-        // ÔËĞĞÊ±°æ±¾£¬ÕâÀïĞèÒªÌæ»»Îª×Ô¼ºµÄÑ¡ÔñÂß¼­
+        // è¿è¡Œæ—¶ç‰ˆæœ¬ï¼Œè¿™é‡Œéœ€è¦æ›¿æ¢ä¸ºè‡ªå·±çš„é€‰æ‹©é€»è¾‘
         return false;
 #endif
     }
@@ -179,7 +179,7 @@ public class SimpleCameraController : MonoBehaviour
         return new Bounds(gameObject.transform.position, Vector3.one * 2f);
     }
 
-    // ÖØÖÃÏà»úÎ»ÖÃ
+    // é‡ç½®ç›¸æœºä½ç½®
     public void ResetCamera()
     {
         targetPosition = Vector3.zero + Vector3.back * 10f;

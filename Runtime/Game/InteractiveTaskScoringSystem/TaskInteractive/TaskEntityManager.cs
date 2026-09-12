@@ -1,24 +1,24 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
     /// <summary>
-    /// ÈÎÎñ½»»¥¶ÔÏó¹ÜÀíÆ÷
+    /// ä»»åŠ¡äº¤äº’å¯¹è±¡ç®¡ç†å™¨
     /// </summary>
     public class TaskEntityManager : LazySingletonBase<TaskEntityManager>
     {
         private Dictionary<string, TaskEntityBase> entityDic = new Dictionary<string, TaskEntityBase>();
-        private static int registeredCount = 0;   // ĞŞ¸´£ºÅĞ¶ÏÊÇ·ñÕæµÄ×¢²á¹ıÊµÌå£¨±ÜÃâÏú»Ù½×¶ÎÎŞÎ½´´½¨µ¥Àı£©
+        private static int registeredCount = 0;   // ä¿®å¤ï¼šåˆ¤æ–­æ˜¯å¦çœŸçš„æ³¨å†Œè¿‡å®ä½“ï¼ˆé¿å…é”€æ¯é˜¶æ®µæ— è°“åˆ›å»ºå•ä¾‹ï¼‰
 
-        /// <summary>ÊÇ·ñ×¢²á¹ıÊµÌå£¨¾²Ì¬ÅĞ¶Ï£¬²»»á´¥·¢µ¥Àı´´½¨£©</summary>
+        /// <summary>æ˜¯å¦æ³¨å†Œè¿‡å®ä½“ï¼ˆé™æ€åˆ¤æ–­ï¼Œä¸ä¼šè§¦å‘å•ä¾‹åˆ›å»ºï¼‰</summary>
         public static bool HasRegistered => registeredCount > 0;
         public void Register(TaskEntityBase arg)
         {
-            if (arg == null || arg.StepIDGroup == null || arg.StepIDGroup.Length == 0) return;   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+            if (arg == null || arg.StepIDGroup == null || arg.StepIDGroup.Length == 0) return;   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
             foreach (var item in arg.StepIDGroup)
             {
-                if (string.IsNullOrEmpty(item)) continue;   // ĞŞ¸´£ººöÂÔÎ´ÌîĞ´µÄ¿Õ ID
+                if (string.IsNullOrEmpty(item)) continue;   // ä¿®å¤ï¼šå¿½ç•¥æœªå¡«å†™çš„ç©º ID
                     if (!entityDic.ContainsKey(item))
                 {
                     entityDic.Add(item, arg);
@@ -26,23 +26,23 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 }
                 else
                 {
-                    PLogger.LogError($"²½ÖèID¡¸{item}¡¹ÖØ¸´×¢²á£¡\nĞÂ¶ÔÏó£º{arg.name}\nÒÑ×¢²á£º{entityDic[item].name}");   // ĞŞ¸´£ºÔ­ĞÅÏ¢´òÓ¡µÄÊÇÊı×éÃû£¬ÇÒ¸¸ÎïÌåÎª¿ÕÊ±»¹»á¿ÕÒıÓÃ
+                    PLogger.LogError($"æ­¥éª¤IDã€Œ{item}ã€é‡å¤æ³¨å†Œï¼\næ–°å¯¹è±¡ï¼š{arg.name}\nå·²æ³¨å†Œï¼š{entityDic[item].name}");   // ä¿®å¤ï¼šåŸä¿¡æ¯æ‰“å°çš„æ˜¯æ•°ç»„åï¼Œä¸”çˆ¶ç‰©ä½“ä¸ºç©ºæ—¶è¿˜ä¼šç©ºå¼•ç”¨
                 }
             }
-            
+
         }
 
         public TaskEntityBase FindEntity(string id)
         {
             TaskEntityBase arg = entityDic.ContainsKey(id) ? entityDic[id] : null;
-            if (arg == null) Debug.LogError($"id{id} ²éÕÒÊ§°Ü£¡");
+            if (arg == null) Debug.LogError($"id{id} æŸ¥æ‰¾å¤±è´¥ï¼");
             return arg;
         }
 
         public void Clear()
         {
             entityDic.Clear();
-            registeredCount = 0;   // ĞŞ¸´£ºÍ¬²½ÖØÖÃ¼ÆÊı
+            registeredCount = 0;   // ä¿®å¤ï¼šåŒæ­¥é‡ç½®è®¡æ•°
         }
     }
 }

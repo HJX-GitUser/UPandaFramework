@@ -1,21 +1,21 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UPandaGF.RunTime.TaskSystem
 {
-    // ¶¨ÒåÈÎÎñ½±ÀøÀàĞÍµÄÃ¶¾Ù
+    // å®šä¹‰ä»»åŠ¡å¥–åŠ±ç±»å‹çš„æšä¸¾
     public enum TaskRewardType
     {
-        None,//ÎŞ
-        Gold,//Ç®
-        Item,//ÎïÆ·
-        Experience,//¾­Ñé
-        Score//·ÖÊı
+        None,//æ— 
+        Gold,//é’±
+        Item,//ç‰©å“
+        Experience,//ç»éªŒ
+        Score//åˆ†æ•°
     }
 
     /// <summary>
-    /// ÈÎÎñ½±Àø
+    /// ä»»åŠ¡å¥–åŠ±
     /// </summary>
     [System.Serializable]
     public class TaskReward

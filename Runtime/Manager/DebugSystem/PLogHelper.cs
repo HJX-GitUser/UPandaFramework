@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -15,19 +15,19 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// ÈÕÖ¾ÂäÅÌÄ£¿é£º¶©ÔÄ <c>Application.logMessageReceivedThreaded</c>£¨ÄÃµ½µÄÊÇ**ËùÓĞ** Debug.Log£¬
-    /// ²»Ö»ÊÇ PLogger ·¢³öµÄ£©£¬ÈëÎŞËø¶ÓÁĞ£¬ÓÉ**ºóÌ¨Ïß³Ì**Ğ´ÎÄ¼ş£¬±ÜÃâÖ÷Ïß³Ì×ö´ÅÅÌ IO¡£
+    /// æ—¥å¿—è½ç›˜æ¨¡å—ï¼šè®¢é˜… <c>Application.logMessageReceivedThreaded</c>ï¼ˆæ‹¿åˆ°çš„æ˜¯**æ‰€æœ‰** Debug.Logï¼Œ
+    /// ä¸åªæ˜¯ PLogger å‘å‡ºçš„ï¼‰ï¼Œå…¥æ— é”é˜Ÿåˆ—ï¼Œç”±**åå°çº¿ç¨‹**å†™æ–‡ä»¶ï¼Œé¿å…ä¸»çº¿ç¨‹åšç£ç›˜ IOã€‚
     ///
-    /// ÓÉ <see cref="PLogger.InitLog"/> ÔÚ cfg.logSave = true Ê±´´½¨£¨¹ÒÔÚ DontDestroyOnLoad µÄ LogHelper ½ÚµãÉÏ£©¡£
+    /// ç”± <see cref="PLogger.InitLog"/> åœ¨ cfg.logSave = true æ—¶åˆ›å»ºï¼ˆæŒ‚åœ¨ DontDestroyOnLoad çš„ LogHelper èŠ‚ç‚¹ä¸Šï¼‰ã€‚
     /// </summary>
     public class PLogHelper : MonoBehaviour
     {
-        /// <summary>Ö»°şÀë PLogger/Unity Ö§³ÖµÄ¸»ÎÄ±¾±êÇ©£¬±ÜÃâÎóÉËÈÕÖ¾ÕıÎÄÀïµÄ &lt; &gt;</summary>
+        /// <summary>åªå‰¥ç¦» PLogger/Unity æ”¯æŒçš„å¯Œæ–‡æœ¬æ ‡ç­¾ï¼Œé¿å…è¯¯ä¼¤æ—¥å¿—æ­£æ–‡é‡Œçš„ &lt; &gt;</summary>
         private static readonly Regex RichTextTag = new Regex(@"</?(color|b|i|size|material)(=[^>]*)?>", RegexOptions.Compiled);
 
-        /// <summary>Ğ´Ïß³Ì»½ĞÑ³¬Ê±£º¼´Ê¹Ã»ÈË Set Ò²ÄÜÖÜÆÚĞÔĞÑÀ´¼ì²éÍË³ö±êÖ¾</summary>
+        /// <summary>å†™çº¿ç¨‹å”¤é†’è¶…æ—¶ï¼šå³ä½¿æ²¡äºº Set ä¹Ÿèƒ½å‘¨æœŸæ€§é†’æ¥æ£€æŸ¥é€€å‡ºæ ‡å¿—</summary>
         private const int WakeTimeoutMs = 200;
-        /// <summary>Í£Ö¹Ê±µÈ´ıĞ´Ïß³ÌÊÕÎ²µÄ×î³¤Ê±¼ä</summary>
+        /// <summary>åœæ­¢æ—¶ç­‰å¾…å†™çº¿ç¨‹æ”¶å°¾çš„æœ€é•¿æ—¶é—´</summary>
         private const int StopJoinTimeoutMs = 500;
 
         private StreamWriter mStreamWriter;
@@ -39,18 +39,18 @@ namespace UPandaGF
 
         private string mNowTime { get { return DateTime.Now.ToString("yyyy:MM:dd HH:mm:ss"); } }
 
-        /// <summary>Ğ´Ïß³ÌÊÇ·ñÔÚÔËĞĞ</summary>
+        /// <summary>å†™çº¿ç¨‹æ˜¯å¦åœ¨è¿è¡Œ</summary>
         public bool IsRunning { get { return mThreadRuning; } }
 
-        /// <summary>µ±Ç°ÈÕÖ¾ÎÄ¼şÍêÕûÂ·¾¶£¨Ê§°ÜÊ±Îª null£©</summary>
+        /// <summary>å½“å‰æ—¥å¿—æ–‡ä»¶å®Œæ•´è·¯å¾„ï¼ˆå¤±è´¥æ—¶ä¸º nullï¼‰</summary>
         public string LogFilePath { get; private set; }
 
-        /// <summary>¶ÓÁĞÖĞ´ıĞ´ÈëµÄÌõÊı£¨Õï¶ÏÓÃ£©</summary>
+        /// <summary>é˜Ÿåˆ—ä¸­å¾…å†™å…¥çš„æ¡æ•°ï¼ˆè¯Šæ–­ç”¨ï¼‰</summary>
         public int PendingCount { get { return mConCurrentQueue.Count; } }
 
         public void InitLogFileModule(string savePath, string logfineName)
         {
-            // ĞŞ¸´£ºÔ­ÊµÏÖÃ»ÓĞÒì³£±£»¤£¬Ä¿Â¼²»¿ÉĞ´ / ÎÄ¼ş±»Õ¼ÓÃ»áÈÃÒì³£Ã°Åİ»Ø PLogger.InitLog ÖĞ¶Ï³õÊ¼»¯
+            // ä¿®å¤ï¼šåŸå®ç°æ²¡æœ‰å¼‚å¸¸ä¿æŠ¤ï¼Œç›®å½•ä¸å¯å†™ / æ–‡ä»¶è¢«å ç”¨ä¼šè®©å¼‚å¸¸å†’æ³¡å› PLogger.InitLog ä¸­æ–­åˆå§‹åŒ–
             try
             {
                 if (!Directory.Exists(savePath))
@@ -60,11 +60,11 @@ namespace UPandaGF
                 LogFilePath = Path.Combine(savePath, logfineName);
                 mStreamWriter = new StreamWriter(LogFilePath);
                 mStreamWriter.AutoFlush = false;
-                mStreamWriter.WriteLine($"=== ÈÕÖ¾¿ªÊ¼ {DateTime.Now:yyyy-MM-dd HH:mm:ss}  Æ½Ì¨ {Application.platform}  °æ±¾ {Application.version} ===");
+                mStreamWriter.WriteLine($"=== æ—¥å¿—å¼€å§‹ {DateTime.Now:yyyy-MM-dd HH:mm:ss}  å¹³å° {Application.platform}  ç‰ˆæœ¬ {Application.version} ===");
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogError($"[PLogger] ÈÕÖ¾ÎÄ¼ş´´½¨Ê§°Ü£¬ÒÑÌø¹ıÎÄ¼şÂäÅÌ£º{SavePathOf(savePath, logfineName)}  {e.Message}");
+                UnityEngine.Debug.LogError($"[PLogger] æ—¥å¿—æ–‡ä»¶åˆ›å»ºå¤±è´¥ï¼Œå·²è·³è¿‡æ–‡ä»¶è½ç›˜ï¼š{SavePathOf(savePath, logfineName)}  {e.Message}");
                 mStreamWriter = null;
                 return;
             }
@@ -73,7 +73,7 @@ namespace UPandaGF
             mThreadRuning = true;
 
             mFileThread = new Thread(FileLogThread);
-            mFileThread.IsBackground = true;   // ĞŞ¸´£º·ÇºóÌ¨Ïß³Ì»áÔÚÍ£Ö¹ Play / ÍË³öÊ±×è°­½ø³ÌÊÕÎ²
+            mFileThread.IsBackground = true;   // ä¿®å¤ï¼šéåå°çº¿ç¨‹ä¼šåœ¨åœæ­¢ Play / é€€å‡ºæ—¶é˜»ç¢è¿›ç¨‹æ”¶å°¾
             mFileThread.Name = "PLogFileWriter";
             mFileThread.Start();
         }
@@ -84,7 +84,7 @@ namespace UPandaGF
             {
                 while (mThreadRuning)
                 {
-                    // ĞŞ¸´£ºÔ­ÊµÏÖÓÃÎŞ³¬Ê±µÄ WaitOne + ÍË³öÊ±Ö» Reset£¨Reset ²»»á»½ĞÑÏß³Ì£©¡ú Ïß³Ì¿ÉÄÜÓÀÔ¶ĞÑ²»À´
+                    // ä¿®å¤ï¼šåŸå®ç°ç”¨æ— è¶…æ—¶çš„ WaitOne + é€€å‡ºæ—¶åª Resetï¼ˆReset ä¸ä¼šå”¤é†’çº¿ç¨‹ï¼‰â†’ çº¿ç¨‹å¯èƒ½æ°¸è¿œé†’ä¸æ¥
                     mManualRestEvent.WaitOne(WakeTimeoutMs);
                     if (!mThreadRuning) break;
                     DrainQueue();
@@ -92,7 +92,7 @@ namespace UPandaGF
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogError($"[PLogger] ÈÕÖ¾Ğ´Ïß³ÌÒì³£ÍË³ö£º{e.Message}");
+                UnityEngine.Debug.LogError($"[PLogger] æ—¥å¿—å†™çº¿ç¨‹å¼‚å¸¸é€€å‡ºï¼š{e.Message}");
             }
             finally
             {
@@ -100,7 +100,7 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>°Ñ¶ÓÁĞÀïÊ£ÓàÈÕÖ¾Ò»´ÎĞ´Íê£¨ËøÄÚÅúÁ¿Ğ´£¬±ÜÃâÃ¿Ìõ¶¼ÇÀËø£©</summary>
+        /// <summary>æŠŠé˜Ÿåˆ—é‡Œå‰©ä½™æ—¥å¿—ä¸€æ¬¡å†™å®Œï¼ˆé”å†…æ‰¹é‡å†™ï¼Œé¿å…æ¯æ¡éƒ½æŠ¢é”ï¼‰</summary>
         private void DrainQueue()
         {
             LogData data;
@@ -126,7 +126,7 @@ namespace UPandaGF
                             mStreamWriter.Write("Log >>> ");
                             break;
                     }
-                    // ĞŞ¸´£ºĞ´ÎÄ¼şÊ±°şµô <color=xxx> Ö®ÀàµÄ¸»ÎÄ±¾±êÇ©£¨¿ØÖÆÌ¨ĞèÒª£¬ÎÄ±¾ÎÄ¼şÀïÖ»»á±ä³ÉÔëÒô£©
+                    // ä¿®å¤ï¼šå†™æ–‡ä»¶æ—¶å‰¥æ‰ <color=xxx> ä¹‹ç±»çš„å¯Œæ–‡æœ¬æ ‡ç­¾ï¼ˆæ§åˆ¶å°éœ€è¦ï¼Œæ–‡æœ¬æ–‡ä»¶é‡Œåªä¼šå˜æˆå™ªéŸ³ï¼‰
                     mStreamWriter.WriteLine(StripRichText(data.log));
                     mStreamWriter.WriteLine(data.trace);
                     mStreamWriter.Write("\r\n");
@@ -146,14 +146,14 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// °²È«Í£Ö¹£º»½ĞÑĞ´Ïß³Ì ¡ú µÈ´ıÊÕÎ² ¡ú Ğ´ÍêÊ£ÓàÈÕÖ¾ ¡ú ¹Ø±ÕÎÄ¼ş¡£
-        /// ±ØĞëÔÚÏú»Ù/ÍË³öÊ±µ÷ÓÃ£¬Ìæ´úÔ­À´"Ö±½Ó Close + ÖÃ null"µÄ×ö·¨£¨ÄÇÊÇ¾ºÌ¬£©¡£
+        /// å®‰å…¨åœæ­¢ï¼šå”¤é†’å†™çº¿ç¨‹ â†’ ç­‰å¾…æ”¶å°¾ â†’ å†™å®Œå‰©ä½™æ—¥å¿— â†’ å…³é—­æ–‡ä»¶ã€‚
+        /// å¿…é¡»åœ¨é”€æ¯/é€€å‡ºæ—¶è°ƒç”¨ï¼Œæ›¿ä»£åŸæ¥"ç›´æ¥ Close + ç½® null"çš„åšæ³•ï¼ˆé‚£æ˜¯ç«æ€ï¼‰ã€‚
         /// </summary>
         public void StopSafely()
         {
             Application.logMessageReceivedThreaded -= OnLogMessageReceivedThreaded;
             mThreadRuning = false;
-            mManualRestEvent.Set();   // »½ĞÑĞ´Ïß³Ì£¨Ô­ÏÈÖ» Reset£¬Ïß³Ì»áÒ»Ö±×èÈûÔÚ WaitOne ÉÏ£©
+            mManualRestEvent.Set();   // å”¤é†’å†™çº¿ç¨‹ï¼ˆåŸå…ˆåª Resetï¼Œçº¿ç¨‹ä¼šä¸€ç›´é˜»å¡åœ¨ WaitOne ä¸Šï¼‰
 
             if (mFileThread != null && mFileThread.IsAlive)
             {
@@ -162,7 +162,7 @@ namespace UPandaGF
             }
             mFileThread = null;
 
-            DrainQueue();   // ÊÕÎ²£º°ÑÊ£ÓàÈÕÖ¾Ğ´Íê£¨´ËÊ±Ğ´Ïß³ÌÒÑÍË³ö£¬²»»áÔÙÇÀËø£©
+            DrainQueue();   // æ”¶å°¾ï¼šæŠŠå‰©ä½™æ—¥å¿—å†™å®Œï¼ˆæ­¤æ—¶å†™çº¿ç¨‹å·²é€€å‡ºï¼Œä¸ä¼šå†æŠ¢é”ï¼‰
 
             lock (mWriterLock)
             {
@@ -174,7 +174,7 @@ namespace UPandaGF
                 }
                 catch (Exception e)
                 {
-                    UnityEngine.Debug.LogError($"[PLogger] ¹Ø±ÕÈÕÖ¾ÎÄ¼şÊ§°Ü£º{e.Message}");
+                    UnityEngine.Debug.LogError($"[PLogger] å…³é—­æ—¥å¿—æ–‡ä»¶å¤±è´¥ï¼š{e.Message}");
                 }
                 mStreamWriter = null;
             }
@@ -192,7 +192,7 @@ namespace UPandaGF
 
         private void OnLogMessageReceivedThreaded(string condition, string stackTrace, LogType type)
         {
-            if (!mThreadRuning) return;   // ÊÕÎ²½×¶Î²»ÔÙÈë¶Ó£¬±ÜÃâĞ´ÈëÒÑ¹Ø±ÕµÄÁ÷
+            if (!mThreadRuning) return;   // æ”¶å°¾é˜¶æ®µä¸å†å…¥é˜Ÿï¼Œé¿å…å†™å…¥å·²å…³é—­çš„æµ
             mConCurrentQueue.Enqueue(new LogData { log = mNowTime + " " + condition, trace = stackTrace, type = type });
             mManualRestEvent.Set();
         }

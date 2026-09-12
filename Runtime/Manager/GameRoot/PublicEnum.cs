@@ -1,11 +1,11 @@
-using System.Collections;
+锘縰sing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UPandaGF
 {
     /// <summary>
-    /// 资源加载方式
+    /// 璧勬簮鍔犺浇鏂瑰紡
     /// </summary>
     public enum AssetLoadMethod
     {

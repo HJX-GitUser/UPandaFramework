@@ -1,4 +1,4 @@
-using System.IO;
+ï»¿using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 namespace UPandaGF
 {
     /// <summary>
-    /// ×ÊÔ´¼ÓÔØ·â×°
+    /// èµ„æºåŠ è½½å°è£…
     /// </summary>
     public class AssetsLoader : MonoBehaviour, IAssetsLoader
     {
@@ -21,15 +21,15 @@ namespace UPandaGF
         private ABSourcesRelated sourceRef;
 
         /// <summary>
-        /// ×ÊÔ´¹ØÁªÊı¾İ´æ´¢µÄÎ»ÖÃ
+        /// èµ„æºå…³è”æ•°æ®å­˜å‚¨çš„ä½ç½®
         /// </summary>
         private string assetRefSavePath = "/Data/";
         /// <summary>
-        /// ×ÊÔ´¹ØÁªÊı¾İÎÄ¼şÃû
+        /// èµ„æºå…³è”æ•°æ®æ–‡ä»¶å
         /// </summary>
         private string assetRefName = "assetData";
         /// <summary>
-        /// ×ÊÔ´¹ØÁª´æ´¢ÎÄ¼şºó×º
+        /// èµ„æºå…³è”å­˜å‚¨æ–‡ä»¶åç¼€
         /// </summary>
         private string assetRefextension = ".assetref";
 
@@ -48,7 +48,7 @@ namespace UPandaGF
             }
             else
             {
-                //×ÊÔ´¹ØÁªÊı¾İ
+                //èµ„æºå…³è”æ•°æ®
                 string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
                 byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
                 if (b != null) sourceRef = LoadABSourcesRelated(b);
@@ -59,17 +59,17 @@ namespace UPandaGF
             {
                 if (sourceRef == null)
                 {
-                    PLogger.LogError("×ÊÔ´¹ØÁªÊı¾İ assetData.assetref È±Ê§»ò·´ĞòÁĞ»¯Ê§°Ü£¬ÎŞ·¨ÒÔ AssetBundle ·½Ê½¼ÓÔØ×ÊÔ´");
+                    PLogger.LogError("èµ„æºå…³è”æ•°æ® assetData.assetref ç¼ºå¤±æˆ–ååºåˆ—åŒ–å¤±è´¥ï¼Œæ— æ³•ä»¥ AssetBundle æ–¹å¼åŠ è½½èµ„æº");
                     return;
                 }
                 if (sourceRef.mainBundleInfo == null)
                 {
-                    PLogger.LogError("×ÊÔ´¹ØÁªÊı¾İÈ±ÉÙÖ÷°üĞÅÏ¢ mainBundleInfo");
+                    PLogger.LogError("èµ„æºå…³è”æ•°æ®ç¼ºå°‘ä¸»åŒ…ä¿¡æ¯ mainBundleInfo");
                     return;
                 }
                 abLoadMgr = ABLoadMgr.Instance;
                 abLoadMgr.remoteURL = reomoteURL;
-                PLogger.Log($"Ö÷°ü£º{sourceRef.mainBundleInfo.bundleName}£¬¼ÓÔØ·½Ê½£º{sourceRef.mainBundleInfo.loadPath}");
+                PLogger.Log($"ä¸»åŒ…ï¼š{sourceRef.mainBundleInfo.bundleName}ï¼ŒåŠ è½½æ–¹å¼ï¼š{sourceRef.mainBundleInfo.loadPath}");
                 await abLoadMgr.Init(LoadAssetPath, sourceRef.mainBundleInfo.bundleName, sourceRef.mainBundleInfo.loadPath);
                 abLoadMgr.SetABSourcesRelated(sourceRef);
             }
@@ -153,7 +153,7 @@ namespace UPandaGF
         {
             if (string.IsNullOrEmpty(path))
             {
-                PLogger.LogError($"³¡¾°Â·¾¶Îª¿Õ£º{path}");
+                PLogger.LogError($"åœºæ™¯è·¯å¾„ä¸ºç©ºï¼š{path}");
                 return;
             }
             string sceneName = Path.GetFileNameWithoutExtension(path);
@@ -176,7 +176,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ¼ÓÔØ³¡¾°ËùÔÚ AssetBundle£¬¾ÍĞ÷ºóÒì²½¼ÓÔØ³¡¾°
+        /// åŠ è½½åœºæ™¯æ‰€åœ¨ AssetBundleï¼Œå°±ç»ªåå¼‚æ­¥åŠ è½½åœºæ™¯
         /// </summary>
         private void LoadSceneAssetBundle(AssetRelatedArg arg, string scenePath, string sceneName, LoadSceneMode loadSceneMode, UnityAction assetLoadComplete, UnityAction sceneLoadComplete)
         {
@@ -184,7 +184,7 @@ namespace UPandaGF
             {
                 if (bundle == null)
                 {
-                    PLogger.LogError("³¡¾°ËùÔÚ AssetBundle ¼ÓÔØÊ§°Ü£º" + scenePath);
+                    PLogger.LogError("åœºæ™¯æ‰€åœ¨ AssetBundle åŠ è½½å¤±è´¥ï¼š" + scenePath);
                     assetLoadComplete?.Invoke();
                     return;
                 }
@@ -198,7 +198,7 @@ namespace UPandaGF
             Assembly hotUpdateAss = null;
             if (string.IsNullOrEmpty(path))
             {
-                PLogger.LogError("³ÌĞò¼¯Â·¾¶Îª¿Õ");
+                PLogger.LogError("ç¨‹åºé›†è·¯å¾„ä¸ºç©º");
                 callback?.Invoke(null);
                 return;
             }
@@ -207,7 +207,7 @@ namespace UPandaGF
             {
                 if (dllAsset == null)
                 {
-                    PLogger.LogError("³ÌĞò¼¯ÎÄ¼ş¼ÓÔØÊ§°Ü£º" + path);
+                    PLogger.LogError("ç¨‹åºé›†æ–‡ä»¶åŠ è½½å¤±è´¥ï¼š" + path);
                     callback?.Invoke(null);
                     return;
                 }
@@ -217,12 +217,12 @@ namespace UPandaGF
                 }
                 catch (System.Exception e)
                 {
-                    PLogger.LogError($"¼ÓÔØ³ÌĞò¼¯ {path} Ê§°Ü£º{e}");
+                    PLogger.LogError($"åŠ è½½ç¨‹åºé›† {path} å¤±è´¥ï¼š{e}");
                 }
                 callback?.Invoke(hotUpdateAss);
             });
 #else
-            // EditorÏÂÎŞĞè¼ÓÔØ£¬Ö±½Ó²éÕÒ»ñµÃHotUpdate³ÌĞò¼¯
+            // Editorä¸‹æ— éœ€åŠ è½½ï¼Œç›´æ¥æŸ¥æ‰¾è·å¾—HotUpdateç¨‹åºé›†
             string AssemblyName = Path.GetFileName(path).Split('.')[0];
             try
             {
@@ -241,14 +241,14 @@ namespace UPandaGF
             Assembly hotUpdateAss = null;
             if (string.IsNullOrEmpty(path))
             {
-                PLogger.LogError("³ÌĞò¼¯Â·¾¶Îª¿Õ");
+                PLogger.LogError("ç¨‹åºé›†è·¯å¾„ä¸ºç©º");
                 return null;
             }
 #if !UNITY_EDITOR
             TextAsset dllAsset = await LoadAsync<TextAsset>(path);
             if (dllAsset == null)
             {
-                PLogger.LogError("³ÌĞò¼¯ÎÄ¼ş¼ÓÔØÊ§°Ü£º" + path);
+                PLogger.LogError("ç¨‹åºé›†æ–‡ä»¶åŠ è½½å¤±è´¥ï¼š" + path);
                 return null;
             }
             try
@@ -257,10 +257,10 @@ namespace UPandaGF
             }
             catch (System.Exception e)
             {
-                PLogger.LogError($"¼ÓÔØ³ÌĞò¼¯ {path} Ê§°Ü£º{e}");
+                PLogger.LogError($"åŠ è½½ç¨‹åºé›† {path} å¤±è´¥ï¼š{e}");
             }
 #else
-            // EditorÏÂÎŞĞè¼ÓÔØ£¬Ö±½Ó²éÕÒ»ñµÃHotUpdate³ÌĞò¼¯
+            // Editorä¸‹æ— éœ€åŠ è½½ï¼Œç›´æ¥æŸ¥æ‰¾è·å¾—HotUpdateç¨‹åºé›†
             string AssemblyName = Path.GetFileName(path).Split('.')[0];
             try
             {
@@ -297,14 +297,14 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ¸ù¾İ×ÊÔ´Â·¾¶²éÑ¯×ÊÔ´¼ÓÔØ²ÎÊı£»×ÊÔ´²»´æÔÚÊ±¼ÇÂ¼´íÎó²¢·µ»Ø false
+        /// æ ¹æ®èµ„æºè·¯å¾„æŸ¥è¯¢èµ„æºåŠ è½½å‚æ•°ï¼›èµ„æºä¸å­˜åœ¨æ—¶è®°å½•é”™è¯¯å¹¶è¿”å› false
         /// </summary>
         private bool TryGetAssetArg(string path, out AssetRelatedArg arg)
         {
             arg = null;
             if (sourceRef != null && sourceRef.sourcesDic.TryGetValue(path, out arg))
                 return true;
-            PLogger.LogError("¸Ã×ÊÔ´²»´æÔÚ£º" + path);
+            PLogger.LogError("è¯¥èµ„æºä¸å­˜åœ¨ï¼š" + path);
             return false;
         }
 
@@ -312,7 +312,7 @@ namespace UPandaGF
         {
             if (bytes == null || bytes.Length == 0)
             {
-                PLogger.LogError("×ÊÔ´¹ØÁªÊı¾İÎª¿Õ£¬ÎŞ·¨·´ĞòÁĞ»¯");
+                PLogger.LogError("èµ„æºå…³è”æ•°æ®ä¸ºç©ºï¼Œæ— æ³•ååºåˆ—åŒ–");
                 return null;
             }
             try
@@ -324,12 +324,12 @@ namespace UPandaGF
                     bytes = AESEncryption.AESDecrypt(bytes, AESKEY, AESIV);
                     if (bytes == null)
                     {
-                        PLogger.LogError("×ÊÔ´¹ØÁªÊı¾İ AES ½âÃÜÊ§°Ü£¬Çë¼ì²éÃÜÔ¿/IV ÅäÖÃ");
+                        PLogger.LogError("èµ„æºå…³è”æ•°æ® AES è§£å¯†å¤±è´¥ï¼Œè¯·æ£€æŸ¥å¯†é’¥/IV é…ç½®");
                         return null;
                     }
                 }
                 ABSourcesRelated obj;
-#pragma warning disable SYSLIB0011 // BinaryFormatter ¹ıÊ±¾¯¸æ£º×Ô²úÄÚ²¿Êı¾İ£¬ÇÒĞè¼æÈİ¼ÈÓĞ .assetref£¨ÄÚº¬ Dictionary£¬JsonUtility ÎŞ·¨Ö±½ÓĞòÁĞ»¯£©
+#pragma warning disable SYSLIB0011 // BinaryFormatter è¿‡æ—¶è­¦å‘Šï¼šè‡ªäº§å†…éƒ¨æ•°æ®ï¼Œä¸”éœ€å…¼å®¹æ—¢æœ‰ .assetrefï¼ˆå†…å« Dictionaryï¼ŒJsonUtility æ— æ³•ç›´æ¥åºåˆ—åŒ–ï¼‰
                 using (MemoryStream ms = new MemoryStream(bytes))
                 {
                     BinaryFormatter bf = new BinaryFormatter();
@@ -338,12 +338,12 @@ namespace UPandaGF
                 }
 #pragma warning restore SYSLIB0011
                 if (obj == null)
-                    PLogger.LogError("×ÊÔ´¹ØÁªÊı¾İ·´ĞòÁĞ»¯½á¹ûÎª¿Õ£¬Çë¼ì²éÊı¾İÓë AES ÅäÖÃ");
+                    PLogger.LogError("èµ„æºå…³è”æ•°æ®ååºåˆ—åŒ–ç»“æœä¸ºç©ºï¼Œè¯·æ£€æŸ¥æ•°æ®ä¸ AES é…ç½®");
                 return obj;
             }
             catch (System.Exception e)
             {
-                PLogger.LogError($"×ÊÔ´¹ØÁªÊı¾İ·´ĞòÁĞ»¯Ê§°Ü£º{e}");
+                PLogger.LogError($"èµ„æºå…³è”æ•°æ®ååºåˆ—åŒ–å¤±è´¥ï¼š{e}");
                 return null;
             }
         }

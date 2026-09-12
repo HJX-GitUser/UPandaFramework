@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,20 +9,20 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     [System.Serializable]
     public class TaskStepData
     {
-        public string stepID;                   // ²½Öèid
-        public string description;              // ÃèÊö
-        public float baseScore = 10f;           // »ù´¡·ÖÊı
-        public int order = 0;                   // P2£º²½ÖèÖ´ĞĞË³Ğò£¬Ô½Ğ¡Ô½ÏÈÖ´ĞĞ£»È«Îª 0 Ê±°´³¡¾°½Úµã²ã¼¶Ë³Ğò£¨¼æÈİ¾ÉÊı¾İ£©
+        public string stepID;                   // æ­¥éª¤id
+        public string description;              // æè¿°
+        public float baseScore = 10f;           // åŸºç¡€åˆ†æ•°
+        public int order = 0;                   // P2ï¼šæ­¥éª¤æ‰§è¡Œé¡ºåºï¼Œè¶Šå°è¶Šå…ˆæ‰§è¡Œï¼›å…¨ä¸º 0 æ—¶æŒ‰åœºæ™¯èŠ‚ç‚¹å±‚çº§é¡ºåºï¼ˆå…¼å®¹æ—§æ•°æ®ï¼‰
         public string tip;
 
 
-        // ÔËĞĞÊ±×´Ì¬£¨´íÎó´ÎÊı/µÃ·Ö/Íê³É/Ìø¹ı£©ÒÑÒÆµ½ TaskStepRuntime£¬²»ÔÙĞ´ÔÚÅäÖÃ×Ê²úÉÏ£º
-        // ÕâÑùÖØÍæ¡¢¶àÊµÀı²¢ĞĞ¡¢´æµµ¶¼²»»áÎÛÈ¾ ScriptableObject£¨¼û Core/TaskStepRuntime.cs£©
+        // è¿è¡Œæ—¶çŠ¶æ€ï¼ˆé”™è¯¯æ¬¡æ•°/å¾—åˆ†/å®Œæˆ/è·³è¿‡ï¼‰å·²ç§»åˆ° TaskStepRuntimeï¼Œä¸å†å†™åœ¨é…ç½®èµ„äº§ä¸Šï¼š
+        // è¿™æ ·é‡ç©ã€å¤šå®ä¾‹å¹¶è¡Œã€å­˜æ¡£éƒ½ä¸ä¼šæ±¡æŸ“ ScriptableObjectï¼ˆè§ Core/TaskStepRuntime.csï¼‰
 
         public TaskStepData[] childrenStep;
     }
 
-    [CreateAssetMenu(fileName = "TaskConfig", menuName = "UPandaGF/InteractiveTaskScoringSystem/ÈÎÎñÅäÖÃ")]
+    [CreateAssetMenu(fileName = "TaskConfig", menuName = "UPandaGF/InteractiveTaskScoringSystem/ä»»åŠ¡é…ç½®")]
     [System.Serializable]
     public class TaskConfig : ScriptableObject
     {

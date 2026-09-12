@@ -1,10 +1,10 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ¶öººÄ£Ê½µ¥Àı»ùÀà
-/// ÔÚÀà¼ÓÔØÊ±¾Í´´½¨ÊµÀı
+/// é¥¿æ±‰æ¨¡å¼å•ä¾‹åŸºç±»
+/// åœ¨ç±»åŠ è½½æ—¶å°±åˆ›å»ºå®ä¾‹
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBehaviour
@@ -14,7 +14,7 @@ public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBe
     static EagerMonoSingletonBase() { }
 
     /// <summary>
-    /// µ¥ÀıÊµÀı
+    /// å•ä¾‹å®ä¾‹
     /// </summary>
     public static T Instance
     {
@@ -22,27 +22,27 @@ public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBe
         {
             if (_applicationIsQuitting)
             {
-                Debug.LogWarning($"[{typeof(T)}] ÊµÀıÒÑÔÚÓ¦ÓÃ³ÌĞòÍË³öÊ±±»Ïú»Ù£¬·µ»Ønull¡£");
+                Debug.LogWarning($"[{typeof(T)}] å®ä¾‹å·²åœ¨åº”ç”¨ç¨‹åºé€€å‡ºæ—¶è¢«é”€æ¯ï¼Œè¿”å›nullã€‚");
                 return null;
             }
 
             if (_instance == null)
             {
-                // ÔÚ³¡¾°ÖĞ²éÕÒÊÇ·ñÒÑ´æÔÚÊµÀı
+                // åœ¨åœºæ™¯ä¸­æŸ¥æ‰¾æ˜¯å¦å·²å­˜åœ¨å®ä¾‹
                 _instance = FindObjectOfType<T>();
                 GameObject singletonObject;
                 if (_instance == null)
                 {
-                    // ´´½¨ĞÂµÄGameObjectÀ´¹ÒÔØµ¥Àı×é¼ş
+                    // åˆ›å»ºæ–°çš„GameObjectæ¥æŒ‚è½½å•ä¾‹ç»„ä»¶
                     singletonObject = new GameObject();
                     _instance = singletonObject.AddComponent<T>();
                     singletonObject.name = typeof(T).ToString() + "_EagerSingleton";
-                    // Á¢¼´³õÊ¼»¯
-                    Debug.Log($"[{typeof(T)}] ´´½¨µ¥ÀıÊµÀı(Eager)");
+                    // ç«‹å³åˆå§‹åŒ–
+                    Debug.Log($"[{typeof(T)}] åˆ›å»ºå•ä¾‹å®ä¾‹(Eager)");
                 }
                 else
                 {
-                    Debug.Log($"[{typeof(T)}] Ê¹ÓÃ³¡¾°ÖĞÒÑ´æÔÚµÄÊµÀı");
+                    Debug.Log($"[{typeof(T)}] ä½¿ç”¨åœºæ™¯ä¸­å·²å­˜åœ¨çš„å®ä¾‹");
                     singletonObject = _instance.gameObject;
                 }
                 DontDestroyOnLoad(singletonObject);
@@ -54,14 +54,14 @@ public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBe
     //[UnityEngine.RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void InitializeOnLoad()
     {
-        // ÔÚ³¡¾°¼ÓÔØÇ°Ç¿ÖÆ³õÊ¼»¯ÊµÀı£¨Ä£Äâ¶öººÄ£Ê½£©
+        // åœ¨åœºæ™¯åŠ è½½å‰å¼ºåˆ¶åˆå§‹åŒ–å®ä¾‹ï¼ˆæ¨¡æ‹Ÿé¥¿æ±‰æ¨¡å¼ï¼‰
         if (_instance == null)
         {
-            // ´¥·¢InstanceÊôĞÔµÄgetterÀ´´´½¨ÊµÀı
+            // è§¦å‘Instanceå±æ€§çš„getteræ¥åˆ›å»ºå®ä¾‹
             var temp = Instance;
             if (temp != null)
             {
-                Debug.Log($"[{typeof(T)}] EagerMonoSingletonÔ¤³õÊ¼»¯Íê³É");
+                Debug.Log($"[{typeof(T)}] EagerMonoSingletoné¢„åˆå§‹åŒ–å®Œæˆ");
             }
         }
     }
@@ -72,11 +72,11 @@ public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBe
         {
             _instance = this as T;
             DontDestroyOnLoad(gameObject);
-            Debug.Log($"[{typeof(T)}] EagerMonoSingleton Awake³õÊ¼»¯");
+            Debug.Log($"[{typeof(T)}] EagerMonoSingleton Awakeåˆå§‹åŒ–");
         }
         else if (_instance != this)
         {
-            Debug.LogWarning($"[{typeof(T)}] ¼ì²âµ½ÖØ¸´ÊµÀı£¬Ïú»ÙĞÂÊµÀı");
+            Debug.LogWarning($"[{typeof(T)}] æ£€æµ‹åˆ°é‡å¤å®ä¾‹ï¼Œé”€æ¯æ–°å®ä¾‹");
             Destroy(gameObject);
         }
         OnAwake();
@@ -96,5 +96,5 @@ public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBe
     }
 
     protected virtual void OnAwake() { }
-  
+
 }

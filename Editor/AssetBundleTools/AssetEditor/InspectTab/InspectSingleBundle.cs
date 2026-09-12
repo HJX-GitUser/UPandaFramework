@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using System.IO;
 
@@ -71,7 +71,7 @@ namespace AssetBundleBrowser
                         if(m_assetBundleInspectTab != null)
                             m_assetBundleInspectTab.RefreshBundles();
                     }
-                } 
+                }
             }
         }
     }

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -117,7 +117,7 @@ public class EditorGUIExample : EditorWindow
         layer = EditorGUILayout.LayerField("层级选择", layer);
         tag = EditorGUILayout.TagField("标签选择", tag);
         //颜色获取控件
-        color = EditorGUILayout.ColorField(new GUIContent("自定义颜色获取"), 
+        color = EditorGUILayout.ColorField(new GUIContent("自定义颜色获取"),
                                             color, true, false, false);
         #endregion
 
@@ -172,7 +172,7 @@ public class EditorGUIExample : EditorWindow
             i2 = EditorGUILayout.DelayedIntField("Int输入框", i2);
             EditorGUILayout.LabelField(i2.ToString());
             #endregion
-            
+
 
             #region 5 开关、开关组控件
             //开关组控件

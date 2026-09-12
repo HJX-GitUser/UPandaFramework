@@ -1,4 +1,4 @@
-using System.ComponentModel;
+ï»¿using System.ComponentModel;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -20,7 +20,7 @@ namespace UPandaGF.GFEditor
             serializedObject.Update();
             EditorGUILayout.LabelField("UPGameRoot", EditorStyles.boldLabel);
             EditorGUILayout.Space();
-            ShowArg("method", "×ÊÔ´¼ÓÔØ·½Ê½");
+            ShowArg("method", "èµ„æºåŠ è½½æ–¹å¼");
             switch (component.method)
             {
                 case AssetLoaddingMethod.Editor:
@@ -35,7 +35,7 @@ namespace UPandaGF.GFEditor
 #if OPEN_PLOG
             if (!EditorApplication.isPlaying)
             {
-                ShowArg("EnableDebugModel", "Æô¶¯ÈÕÖ¾´°¿Ú");
+                ShowArg("EnableDebugModel", "å¯åŠ¨æ—¥å¿—çª—å£");
                 if (component.EnableDebugModel)
                 {
                     if (component.reporter == null)
@@ -44,7 +44,7 @@ namespace UPandaGF.GFEditor
                         CreateReporter(arg);
                         component.reporter = component.GetComponentInChildren<Reporter>();
                     }
-                    EditorGUILayout.HelpBox("Æô¶¯¸ÃÑ¡Ïî£¬ÔÚÔËĞĞÊ±¿ÉÒÔµã»÷×óÉÏ½Ç°´Å¥Æô¶¯ÈÕÖ¾Ãæ°å£¬ÓÃÓÚ´ò°üÏîÄ¿Ê±µ÷ÊÔ£¬ÕıÊ½°üÈ¡Ïû¹´Ñ¡", MessageType.Info);
+                    EditorGUILayout.HelpBox("å¯åŠ¨è¯¥é€‰é¡¹ï¼Œåœ¨è¿è¡Œæ—¶å¯ä»¥ç‚¹å‡»å·¦ä¸Šè§’æŒ‰é’®å¯åŠ¨æ—¥å¿—é¢æ¿ï¼Œç”¨äºæ‰“åŒ…é¡¹ç›®æ—¶è°ƒè¯•ï¼Œæ­£å¼åŒ…å–æ¶ˆå‹¾é€‰", MessageType.Info);
                 }
                 else
                 {
@@ -62,7 +62,7 @@ namespace UPandaGF.GFEditor
                 {
                     DestroyImmediate(component.reporter.gameObject);
                     component.reporter = null;
-                    Debug.Log("reporterÌŞ³ı");
+                    Debug.Log("reporterå‰”é™¤");
                 }
             }
 #endif
@@ -72,8 +72,8 @@ namespace UPandaGF.GFEditor
         private void AssetEditorGUI()
         {
             EditorGUILayout.Space();
-            EditorGUILayout.HelpBox("°Ñ×ÊÔ´Ìí¼Óµ½AssetBundleºó£¬ĞèÒª¸üĞÂ×ÊÔ´¹ØÁªÊı¾İ²ÅÄÜ¼ÓÔØ", MessageType.Info);
-            if (GUILayout.Button("¸üĞÂ×ÊÔ´¹ØÁªÊı¾İ"))
+            EditorGUILayout.HelpBox("æŠŠèµ„æºæ·»åŠ åˆ°AssetBundleåï¼Œéœ€è¦æ›´æ–°èµ„æºå…³è”æ•°æ®æ‰èƒ½åŠ è½½", MessageType.Info);
+            if (GUILayout.Button("æ›´æ–°èµ„æºå…³è”æ•°æ®"))
             {
                 //AssetBundleBuildTab.GenerateAssetBundleInfo();
             }
@@ -84,14 +84,14 @@ namespace UPandaGF.GFEditor
         {
             if (component.AssetAESConfig.enable)
             {
-                EditorGUILayout.HelpBox($"AES¼ÓÃÜÅäÖÃ£º\nkey:{component.AssetAESConfig.AESKEY}\niv:{component.AssetAESConfig.AESIV}", MessageType.Info);
+                EditorGUILayout.HelpBox($"AESåŠ å¯†é…ç½®ï¼š\nkey:{component.AssetAESConfig.AESKEY}\niv:{component.AssetAESConfig.AESIV}", MessageType.Info);
             }
-            ShowArg("enableAssetUpdate", "Æô¶¯×ÊÔ´¸üĞÂ");
+            ShowArg("enableAssetUpdate", "å¯åŠ¨èµ„æºæ›´æ–°");
             EditorGUILayout.Space();
             EditorGUILayout.Space();
-            ShowArg("reomoteURL", "Ô¶³Ì¼ÓÔØURL");
-            ShowArg("LoadAssetPath", "Ïà¶ÔÂ·¾¶");
-            if (GUILayout.Button("ÖØÖÃ"))
+            ShowArg("reomoteURL", "è¿œç¨‹åŠ è½½URL");
+            ShowArg("LoadAssetPath", "ç›¸å¯¹è·¯å¾„");
+            if (GUILayout.Button("é‡ç½®"))
             {
                 component.LoadAssetPath = "AssetBundles/StandaloneWindows/";
             }
@@ -109,7 +109,7 @@ namespace UPandaGF.GFEditor
         {
             if (obj.gameObject.GetComponentInChildren<Reporter>() != null)
             {
-                Debug.LogWarning("ReporterÒÑ´´½¨£¡");
+                Debug.LogWarning("Reporterå·²åˆ›å»ºï¼");
                 return;
             };
             const int ReporterExecOrder = -12000;

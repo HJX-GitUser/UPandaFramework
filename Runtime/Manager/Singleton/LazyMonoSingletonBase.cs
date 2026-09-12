@@ -1,10 +1,10 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ÀÁººÄ£Ê½µ¥Àı»ùÀà
-/// µÚÒ»´Î·ÃÎÊÊ±²Å»á´´½¨ÊµÀı
+/// æ‡’æ±‰æ¨¡å¼å•ä¾‹åŸºç±»
+/// ç¬¬ä¸€æ¬¡è®¿é—®æ—¶æ‰ä¼šåˆ›å»ºå®ä¾‹
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public abstract class LazyMonoSingletonBase<T> : MonoBehaviour where T : MonoBehaviour
@@ -19,7 +19,7 @@ public abstract class LazyMonoSingletonBase<T> : MonoBehaviour where T : MonoBeh
         {
             if (_applicationIsQuitting)
             {
-                Debug.LogWarning($"[{typeof(T)}] ÊµÀıÒÑÔÚÓ¦ÓÃ³ÌĞòÍË³öÊ±±»Ïú»Ù£¬·µ»Ønull¡£");
+                Debug.LogWarning($"[{typeof(T)}] å®ä¾‹å·²åœ¨åº”ç”¨ç¨‹åºé€€å‡ºæ—¶è¢«é”€æ¯ï¼Œè¿”å›nullã€‚");
                 return null;
             }
 
@@ -27,23 +27,23 @@ public abstract class LazyMonoSingletonBase<T> : MonoBehaviour where T : MonoBeh
             {
                 if (_instance == null)
                 {
-                    // ÔÚ³¡¾°ÖĞ²éÕÒÊÇ·ñÒÑ´æÔÚÊµÀı
+                    // åœ¨åœºæ™¯ä¸­æŸ¥æ‰¾æ˜¯å¦å·²å­˜åœ¨å®ä¾‹
                     _instance = FindObjectOfType<T>();
                     GameObject singletonObject;
                     if (_instance == null)
                     {
-                        // ´´½¨ĞÂµÄGameObjectÀ´¹ÒÔØµ¥Àı×é¼ş
+                        // åˆ›å»ºæ–°çš„GameObjectæ¥æŒ‚è½½å•ä¾‹ç»„ä»¶
                         singletonObject = new GameObject();
                         _instance = singletonObject.AddComponent<T>();
                         singletonObject.name = typeof(T).ToString() + "_LazySingleton";
-                        Debug.Log($"[{typeof(T)}] ´´½¨µ¥ÀıÊµÀı(Lazy)");
+                        Debug.Log($"[{typeof(T)}] åˆ›å»ºå•ä¾‹å®ä¾‹(Lazy)");
                     }
                     else
                     {
-                        Debug.Log($"[{typeof(T)}] Ê¹ÓÃ³¡¾°ÖĞÒÑ´æÔÚµÄÊµÀı");
+                        Debug.Log($"[{typeof(T)}] ä½¿ç”¨åœºæ™¯ä¸­å·²å­˜åœ¨çš„å®ä¾‹");
                         singletonObject = _instance.gameObject;
                     }
-                    // ±ê¼ÇÎª²»Ïú»Ù£¬¿ç³¡¾°±£³Ö
+                    // æ ‡è®°ä¸ºä¸é”€æ¯ï¼Œè·¨åœºæ™¯ä¿æŒ
                     DontDestroyOnLoad(singletonObject);
                 }
                 return _instance;
@@ -60,7 +60,7 @@ public abstract class LazyMonoSingletonBase<T> : MonoBehaviour where T : MonoBeh
         }
         else if (_instance != this)
         {
-            Debug.LogWarning($"[{typeof(T)}] ´æÔÚÖØ¸´ÊµÀı£¬Ïú»ÙĞÂÊµÀı");
+            Debug.LogWarning($"[{typeof(T)}] å­˜åœ¨é‡å¤å®ä¾‹ï¼Œé”€æ¯æ–°å®ä¾‹");
             Destroy(gameObject);
         }
         OnAwake();

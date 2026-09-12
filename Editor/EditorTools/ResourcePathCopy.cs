@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -29,7 +29,7 @@ namespace UPandaGF.ResourcePathCopyTool
                 if (string.IsNullOrEmpty(path))
                     continue;
 
-                // »ñÈ¡´¦ÀíºóµÄÂ·¾¶
+                // è·å–å¤„ç†åçš„è·¯å¾„
                 string resourcePath = GetResourcePath(path);
 
                 if (!string.IsNullOrEmpty(resourcePath))
@@ -43,11 +43,11 @@ namespace UPandaGF.ResourcePathCopyTool
                 string combinedPath = string.Join("\n", paths);
                 EditorGUIUtility.systemCopyBuffer = combinedPath;
 
-                Debug.Log($"ÒÑ¸´ÖÆ {paths.Count} ¸ö×ÊÔ´Â·¾¶µ½¼ôÌù°å:\n{combinedPath}");
+                Debug.Log($"å·²å¤åˆ¶ {paths.Count} ä¸ªèµ„æºè·¯å¾„åˆ°å‰ªè´´æ¿:\n{combinedPath}");
 
-                // ÏÔÊ¾ÌáÊ¾
-                EditorUtility.DisplayDialog("¸´ÖÆ³É¹¦",
-                    $"ÒÑ¸´ÖÆ {paths.Count} ¸ö×ÊÔ´Â·¾¶µ½¼ôÌù°å", "È·¶¨");
+                // æ˜¾ç¤ºæç¤º
+                EditorUtility.DisplayDialog("å¤åˆ¶æˆåŠŸ",
+                    $"å·²å¤åˆ¶ {paths.Count} ä¸ªèµ„æºè·¯å¾„åˆ°å‰ªè´´æ¿", "ç¡®å®š");
             }
         }
 
@@ -58,7 +58,7 @@ namespace UPandaGF.ResourcePathCopyTool
             if (selectedObjects == null || selectedObjects.Length == 0)
                 return false;
 
-            // ¼ì²éÖÁÉÙÓĞÒ»¸ö×ÊÔ´ÔÚResourcesÄ¿Â¼ÏÂ
+            // æ£€æŸ¥è‡³å°‘æœ‰ä¸€ä¸ªèµ„æºåœ¨Resourcesç›®å½•ä¸‹
             foreach (var obj in selectedObjects)
             {
                 string path = AssetDatabase.GetAssetPath(obj);
@@ -72,47 +72,47 @@ namespace UPandaGF.ResourcePathCopyTool
         }
 
         /// <summary>
-        /// ÅĞ¶ÏÂ·¾¶ÊÇ·ñÔÚResourcesÄ¿Â¼ÏÂ
+        /// åˆ¤æ–­è·¯å¾„æ˜¯å¦åœ¨Resourcesç›®å½•ä¸‹
         /// </summary>
         public static bool IsInResourcesFolder(string assetPath)
         {
             if (string.IsNullOrEmpty(assetPath))
                 return false;
 
-            // ¼ì²éÂ·¾¶ÊÇ·ñ°üº¬ResourcesÄ¿Â¼
+            // æ£€æŸ¥è·¯å¾„æ˜¯å¦åŒ…å«Resourcesç›®å½•
             int resourcesIndex = assetPath.IndexOf(ResourcesFolderPath);
             if (resourcesIndex >= 0)
                 return true;
 
-            // Ò²¼ì²éÆäËûResourcesÄ¿Â¼£¨¿ÉÄÜ´æÔÚ¶à¸ö£©
+            // ä¹Ÿæ£€æŸ¥å…¶ä»–Resourcesç›®å½•ï¼ˆå¯èƒ½å­˜åœ¨å¤šä¸ªï¼‰
             int resourcesIndex2 = assetPath.IndexOf(ResourcesFolderName);
             return resourcesIndex2 >= 0;
         }
 
         /// <summary>
-        /// »ñÈ¡ResourceÏà¶ÔÂ·¾¶£¨²»°üº¬ºó×º£©
+        /// è·å–Resourceç›¸å¯¹è·¯å¾„ï¼ˆä¸åŒ…å«åç¼€ï¼‰
         /// </summary>
         public static string GetResourcePath(string assetPath)
         {
             if (string.IsNullOrEmpty(assetPath))
                 return null;
 
-            // ÕÒµ½Resources/ÔÚÂ·¾¶ÖĞµÄÎ»ÖÃ
+            // æ‰¾åˆ°Resources/åœ¨è·¯å¾„ä¸­çš„ä½ç½®
             int resourcesIndex = assetPath.IndexOf(ResourcesFolderName);
             if (resourcesIndex < 0)
             {
-                Debug.LogWarning($"×ÊÔ´²»ÔÚResourcesÄ¿Â¼ÏÂ: {assetPath}");
+                Debug.LogWarning($"èµ„æºä¸åœ¨Resourcesç›®å½•ä¸‹: {assetPath}");
                 return null;
             }
 
-            // »ñÈ¡Resources/ºóÃæµÄÂ·¾¶
+            // è·å–Resources/åé¢çš„è·¯å¾„
             int startIndex = resourcesIndex + ResourcesFolderName.Length;
             if (startIndex >= assetPath.Length)
                 return null;
 
             string relativePath = assetPath.Substring(startIndex);
 
-            // È¥³ıÎÄ¼şºó×º
+            // å»é™¤æ–‡ä»¶åç¼€
             int dotIndex = relativePath.LastIndexOf('.');
             if (dotIndex > 0)
             {
@@ -138,12 +138,12 @@ namespace UPandaGF.ResourcePathCopyTool
                 if (string.IsNullOrEmpty(path))
                     continue;
 
-                // »ñÈ¡ResourcesÄ¿Â¼
+                // è·å–Resourcesç›®å½•
                 string resourcesFolder = GetResourcesFolder(path);
                 if (string.IsNullOrEmpty(resourcesFolder))
                     continue;
 
-                // »ñÈ¡´¦ÀíºóµÄÂ·¾¶
+                // è·å–å¤„ç†åçš„è·¯å¾„
                 string resourcePath = GetResourcePath(path);
 
                 if (!string.IsNullOrEmpty(resourcePath))
@@ -166,18 +166,18 @@ namespace UPandaGF.ResourcePathCopyTool
                     {
                         outputLines.Add(path);
                     }
-                    outputLines.Add(""); // ¿ÕĞĞ·Ö¸ô
+                    outputLines.Add(""); // ç©ºè¡Œåˆ†éš”
                 }
 
                 string result = string.Join("\n", outputLines).Trim();
                 EditorGUIUtility.systemCopyBuffer = result;
 
-                Debug.Log($"ÒÑ¸´ÖÆ {groupedPaths.Values.Sum(list => list.Count)} ¸ö×ÊÔ´Â·¾¶£¨°´ÎÄ¼ş¼Ğ·Ö×é£©");
+                Debug.Log($"å·²å¤åˆ¶ {groupedPaths.Values.Sum(list => list.Count)} ä¸ªèµ„æºè·¯å¾„ï¼ˆæŒ‰æ–‡ä»¶å¤¹åˆ†ç»„ï¼‰");
             }
         }
 
         /// <summary>
-        /// »ñÈ¡ResourcesÎÄ¼ş¼ĞÂ·¾¶
+        /// è·å–Resourcesæ–‡ä»¶å¤¹è·¯å¾„
         /// </summary>
         private static string GetResourcesFolder(string assetPath)
         {
@@ -185,13 +185,13 @@ namespace UPandaGF.ResourcePathCopyTool
             if (resourcesIndex < 0)
                 return null;
 
-            // ·µ»ØÍêÕûµÄResourcesÎÄ¼ş¼ĞÂ·¾¶
+            // è¿”å›å®Œæ•´çš„Resourcesæ–‡ä»¶å¤¹è·¯å¾„
             return assetPath.Substring(0, resourcesIndex + ResourcesFolderName.Length - 1);
         }
     }
 
     /// <summary>
-    /// À©Õ¹±à¼­Æ÷´°¿Ú£¬ÔÚProjectÊÓÍ¼ÖĞÏÔÊ¾×ÊÔ´Â·¾¶
+    /// æ‰©å±•ç¼–è¾‘å™¨çª—å£ï¼Œåœ¨Projectè§†å›¾ä¸­æ˜¾ç¤ºèµ„æºè·¯å¾„
     /// </summary>
     public class ResourcePathDisplay : EditorWindow
     {
@@ -223,17 +223,17 @@ namespace UPandaGF.ResourcePathCopyTool
                 if (string.IsNullOrEmpty(path))
                     continue;
 
-                // Ô­Ê¼Â·¾¶
+                // åŸå§‹è·¯å¾„
                 allPaths.Add(path);
 
-                // ResourcesÏà¶ÔÂ·¾¶
+                // Resourcesç›¸å¯¹è·¯å¾„
                 string resourcePath = ResourcePathCopy.GetResourcePath(path);
                 if (!string.IsNullOrEmpty(resourcePath))
                 {
                     resourcePaths.Add(resourcePath);
                 }
 
-                // C#´úÂë¸ñÊ½Â·¾¶
+                // C#ä»£ç æ ¼å¼è·¯å¾„
                 string csharpPath = GetCSharpPath(resourcePath);
                 if (!string.IsNullOrEmpty(csharpPath))
                 {
@@ -241,19 +241,19 @@ namespace UPandaGF.ResourcePathCopyTool
                 }
             }
 
-            // ´´½¨¶à¸ñÊ½Êä³ö
+            // åˆ›å»ºå¤šæ ¼å¼è¾“å‡º
             string output = "";
 
             if (allPaths.Count > 0)
             {
-                output += "=== Ô­Ê¼Â·¾¶ ===\n" + string.Join("\n", allPaths) + "\n\n";
+                output += "=== åŸå§‹è·¯å¾„ ===\n" + string.Join("\n", allPaths) + "\n\n";
             }
 
             if (resourcePaths.Count > 0)
             {
-                output += "=== ResourcesÏà¶ÔÂ·¾¶ ===\n" + string.Join("\n", resourcePaths) + "\n\n";
+                output += "=== Resourcesç›¸å¯¹è·¯å¾„ ===\n" + string.Join("\n", resourcePaths) + "\n\n";
 
-                // Ìí¼Óµ½×î½ü¸´ÖÆ¼ÇÂ¼
+                // æ·»åŠ åˆ°æœ€è¿‘å¤åˆ¶è®°å½•
                 recentCopiedPaths.InsertRange(0, resourcePaths);
                 if (recentCopiedPaths.Count > MaxRecentPaths)
                 {
@@ -263,28 +263,28 @@ namespace UPandaGF.ResourcePathCopyTool
 
             if (csharpPaths.Count > 0)
             {
-                output += "=== C#´úÂë¸ñÊ½ ===\n" + string.Join("\n", csharpPaths) + "\n\n";
+                output += "=== C#ä»£ç æ ¼å¼ ===\n" + string.Join("\n", csharpPaths) + "\n\n";
             }
 
             if (!string.IsNullOrEmpty(output))
             {
                 EditorGUIUtility.systemCopyBuffer = output.Trim();
-                Debug.Log($"ÒÑ¸´ÖÆ {selectedObjects.Length} ¸ö×ÊÔ´µÄ¶àÖÖ¸ñÊ½Â·¾¶");
+                Debug.Log($"å·²å¤åˆ¶ {selectedObjects.Length} ä¸ªèµ„æºçš„å¤šç§æ ¼å¼è·¯å¾„");
 
-                // ÏÔÊ¾ÌáÊ¾´°¿Ú
+                // æ˜¾ç¤ºæç¤ºçª—å£
                 ShowCopyResultWindow(selectedObjects.Length, resourcePaths);
             }
         }
 
         /// <summary>
-        /// »ñÈ¡C#´úÂë¸ñÊ½µÄÂ·¾¶
+        /// è·å–C#ä»£ç æ ¼å¼çš„è·¯å¾„
         /// </summary>
         private static string GetCSharpPath(string resourcePath)
         {
             if (string.IsNullOrEmpty(resourcePath))
                 return null;
 
-            // ½«Â·¾¶×ª»»ÎªÓĞĞ§µÄC#±êÊ¶·û
+            // å°†è·¯å¾„è½¬æ¢ä¸ºæœ‰æ•ˆçš„C#æ ‡è¯†ç¬¦
             string[] parts = resourcePath.Split('/');
             List<string> validParts = new List<string>();
 
@@ -293,11 +293,11 @@ namespace UPandaGF.ResourcePathCopyTool
                 if (string.IsNullOrEmpty(part))
                     continue;
 
-                // ÒÆ³ı·Ç·¨×Ö·û£¬Ö»±£Áô×ÖÄ¸¡¢Êı×Ö¡¢ÏÂ»®Ïß
+                // ç§»é™¤éæ³•å­—ç¬¦ï¼Œåªä¿ç•™å­—æ¯ã€æ•°å­—ã€ä¸‹åˆ’çº¿
                 string validPart = Regex.Replace(part, @"[^a-zA-Z0-9_]", "");
                 if (!string.IsNullOrEmpty(validPart))
                 {
-                    // È·±£²»ÒÔÊı×Ö¿ªÍ·
+                    // ç¡®ä¿ä¸ä»¥æ•°å­—å¼€å¤´
                     if (char.IsDigit(validPart[0]))
                     {
                         validPart = "_" + validPart;
@@ -309,21 +309,21 @@ namespace UPandaGF.ResourcePathCopyTool
             if (validParts.Count == 0)
                 return $"\"{resourcePath}\"";
 
-            // ×ª»»Îª³£Á¿ĞÎÊ½
+            // è½¬æ¢ä¸ºå¸¸é‡å½¢å¼
             string constantName = string.Join("_", validParts).ToUpper();
             return $"public const string {constantName} = \"{resourcePath}\";";
         }
 
         /// <summary>
-        /// ÏÔÊ¾¸´ÖÆ½á¹û´°¿Ú
+        /// æ˜¾ç¤ºå¤åˆ¶ç»“æœçª—å£
         /// </summary>
         private static void ShowCopyResultWindow(int count, List<string> paths)
         {
-            if (EditorUtility.DisplayDialog("¸´ÖÆ³É¹¦",
-                $"ÒÑ¸´ÖÆ {count} ¸ö×ÊÔ´Â·¾¶\n\n" +
-                $"Ê¾Àı: {paths.FirstOrDefault() ?? "N/A"}\n\n" +
-                "ÊÇ·ñ´ò¿ªÂ·¾¶ÖúÊÖ²é¿´ÏêÇé£¿",
-                "²é¿´", "¹Ø±Õ"))
+            if (EditorUtility.DisplayDialog("å¤åˆ¶æˆåŠŸ",
+                $"å·²å¤åˆ¶ {count} ä¸ªèµ„æºè·¯å¾„\n\n" +
+                $"ç¤ºä¾‹: {paths.FirstOrDefault() ?? "N/A"}\n\n" +
+                "æ˜¯å¦æ‰“å¼€è·¯å¾„åŠ©æ‰‹æŸ¥çœ‹è¯¦æƒ…ï¼Ÿ",
+                "æŸ¥çœ‹", "å…³é—­"))
             {
                 ShowWindow();
             }
@@ -333,19 +333,19 @@ namespace UPandaGF.ResourcePathCopyTool
         {
             EditorGUILayout.Space(10);
 
-            // ±êÌâ
+            // æ ‡é¢˜
             EditorGUILayout.LabelField("Resource Path Helper", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("ÓÒ¼üµã»÷ResourcesÄ¿Â¼ÏÂµÄ×ÊÔ´£¬Ñ¡Ôñ²Ëµ¥¸´ÖÆÂ·¾¶", MessageType.Info);
+            EditorGUILayout.HelpBox("å³é”®ç‚¹å‡»Resourcesç›®å½•ä¸‹çš„èµ„æºï¼Œé€‰æ‹©èœå•å¤åˆ¶è·¯å¾„", MessageType.Info);
 
             EditorGUILayout.Space(20);
 
-            // ¿ìËÙ²Ù×÷°´Å¥
+            // å¿«é€Ÿæ“ä½œæŒ‰é’®
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("¸´ÖÆÑ¡ÖĞ×ÊÔ´Â·¾¶", GUILayout.Height(30)))
+            if (GUILayout.Button("å¤åˆ¶é€‰ä¸­èµ„æºè·¯å¾„", GUILayout.Height(30)))
             {
                 CopyResourcePathAdvanced();
             }
-            if (GUILayout.Button("Ë¢ĞÂÑ¡ÖĞ×ÊÔ´", GUILayout.Height(30)))
+            if (GUILayout.Button("åˆ·æ–°é€‰ä¸­èµ„æº", GUILayout.Height(30)))
             {
                 RefreshSelectedResources();
             }
@@ -353,14 +353,14 @@ namespace UPandaGF.ResourcePathCopyTool
 
             EditorGUILayout.Space(20);
 
-            // ×î½ü¸´ÖÆµÄÂ·¾¶
-            EditorGUILayout.LabelField("×î½ü¸´ÖÆµÄÂ·¾¶", EditorStyles.boldLabel);
+            // æœ€è¿‘å¤åˆ¶çš„è·¯å¾„
+            EditorGUILayout.LabelField("æœ€è¿‘å¤åˆ¶çš„è·¯å¾„", EditorStyles.boldLabel);
 
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.ExpandHeight(true));
 
             if (recentCopiedPaths.Count == 0)
             {
-                EditorGUILayout.HelpBox("ÔİÎŞ¼ÇÂ¼\nÇëÓÒ¼üµã»÷ResourcesÄ¿Â¼ÏÂµÄ×ÊÔ´²¢Ñ¡Ôñ¸´ÖÆ", MessageType.Warning);
+                EditorGUILayout.HelpBox("æš‚æ— è®°å½•\nè¯·å³é”®ç‚¹å‡»Resourcesç›®å½•ä¸‹çš„èµ„æºå¹¶é€‰æ‹©å¤åˆ¶", MessageType.Warning);
             }
             else
             {
@@ -368,18 +368,18 @@ namespace UPandaGF.ResourcePathCopyTool
                 {
                     EditorGUILayout.BeginHorizontal();
 
-                    // ĞòºÅ
+                    // åºå·
                     EditorGUILayout.LabelField($"{i + 1}.", GUILayout.Width(30));
 
-                    // Â·¾¶
+                    // è·¯å¾„
                     EditorGUILayout.SelectableLabel(recentCopiedPaths[i],
                         EditorStyles.textField, GUILayout.Height(EditorGUIUtility.singleLineHeight));
 
-                    // ¸´ÖÆ°´Å¥
-                    if (GUILayout.Button("¸´ÖÆ", GUILayout.Width(50)))
+                    // å¤åˆ¶æŒ‰é’®
+                    if (GUILayout.Button("å¤åˆ¶", GUILayout.Width(50)))
                     {
                         EditorGUIUtility.systemCopyBuffer = recentCopiedPaths[i];
-                        Debug.Log($"ÒÑ¸´ÖÆ: {recentCopiedPaths[i]}");
+                        Debug.Log($"å·²å¤åˆ¶: {recentCopiedPaths[i]}");
                     }
 
                     EditorGUILayout.EndHorizontal();
@@ -390,22 +390,22 @@ namespace UPandaGF.ResourcePathCopyTool
 
             EditorGUILayout.Space(10);
 
-            // Çå¿Õ°´Å¥
-            if (recentCopiedPaths.Count > 0 && GUILayout.Button("Çå¿Õ¼ÇÂ¼", GUILayout.Height(25)))
+            // æ¸…ç©ºæŒ‰é’®
+            if (recentCopiedPaths.Count > 0 && GUILayout.Button("æ¸…ç©ºè®°å½•", GUILayout.Height(25)))
             {
                 recentCopiedPaths.Clear();
             }
         }
 
         /// <summary>
-        /// Ë¢ĞÂ²¢ÏÔÊ¾Ñ¡ÖĞµÄ×ÊÔ´
+        /// åˆ·æ–°å¹¶æ˜¾ç¤ºé€‰ä¸­çš„èµ„æº
         /// </summary>
         private void RefreshSelectedResources()
         {
             var selectedObjects = Selection.objects;
             if (selectedObjects == null || selectedObjects.Length == 0)
             {
-                Debug.Log("ÇëÏÈÔÚProject´°¿ÚÖĞÑ¡Ôñ×ÊÔ´");
+                Debug.Log("è¯·å…ˆåœ¨Projectçª—å£ä¸­é€‰æ‹©èµ„æº");
                 return;
             }
 
@@ -425,7 +425,7 @@ namespace UPandaGF.ResourcePathCopyTool
 
             if (resources.Count > 0)
             {
-                string result = "Ñ¡ÖĞµÄResources×ÊÔ´:\n" + string.Join("\n", resources);
+                string result = "é€‰ä¸­çš„Resourcesèµ„æº:\n" + string.Join("\n", resources);
                 EditorGUIUtility.systemCopyBuffer = result;
                 Debug.Log(result);
             }
@@ -434,23 +434,23 @@ namespace UPandaGF.ResourcePathCopyTool
         //[InitializeOnLoadMethod]
         //private static void Initialize()
         //{
-        //    // ×¢²áProject´°¿ÚµÄÓÒ¼ü²Ëµ¥
+        //    // æ³¨å†ŒProjectçª—å£çš„å³é”®èœå•
         //    EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemGUI;
         //}
 
         ///// <summary>
-        ///// ÔÚProject´°¿ÚµÄÏîÄ¿ÏîÉÏ»æÖÆGUI
+        ///// åœ¨Projectçª—å£çš„é¡¹ç›®é¡¹ä¸Šç»˜åˆ¶GUI
         ///// </summary>
         //private static void OnProjectWindowItemGUI(string guid, Rect selectionRect)
         //{
-        //    // Ö»ÔÚÓÒ¼üµã»÷Ê±ÏÔÊ¾
+        //    // åªåœ¨å³é”®ç‚¹å‡»æ—¶æ˜¾ç¤º
         //    if (Event.current.type == EventType.MouseDown && Event.current.button == 1 &&
         //        selectionRect.Contains(Event.current.mousePosition))
         //    {
         //        string path = AssetDatabase.GUIDToAssetPath(guid);
         //        if (!string.IsNullOrEmpty(path) && ResourcePathCopy.IsInResourcesFolder(path))
         //        {
-        //            // ´´½¨²Ëµ¥
+        //            // åˆ›å»ºèœå•
         //            GenericMenu menu = new GenericMenu();
 
         //            menu.AddItem(new GUIContent("Copy Resource Path"), false, () =>
@@ -472,7 +472,7 @@ namespace UPandaGF.ResourcePathCopyTool
     }
 
     /// <summary>
-    /// ×Ô¶¨ÒåProject´°¿ÚµÄÓÒ¼ü²Ëµ¥À©Õ¹
+    /// è‡ªå®šä¹‰Projectçª—å£çš„å³é”®èœå•æ‰©å±•
     /// </summary>
     public class ProjectWindowExtension
     {
@@ -490,7 +490,7 @@ namespace UPandaGF.ResourcePathCopyTool
                 string path = AssetDatabase.GetAssetPath(obj);
                 if (!string.IsNullOrEmpty(path))
                 {
-                    // ×ª»»Îª¾ø¶ÔÂ·¾¶
+                    // è½¬æ¢ä¸ºç»å¯¹è·¯å¾„
                     string fullPath = Path.GetFullPath(path);
                     paths.Add(fullPath);
                 }
@@ -500,7 +500,7 @@ namespace UPandaGF.ResourcePathCopyTool
             {
                 string result = string.Join("\n", paths);
                 EditorGUIUtility.systemCopyBuffer = result;
-                Debug.Log($"ÒÑ¸´ÖÆÍêÕûÂ·¾¶:\n{result}");
+                Debug.Log($"å·²å¤åˆ¶å®Œæ•´è·¯å¾„:\n{result}");
             }
         }
 
@@ -530,19 +530,19 @@ namespace UPandaGF.ResourcePathCopyTool
             {
                 string result = string.Join("\n", guids);
                 EditorGUIUtility.systemCopyBuffer = result;
-                Debug.Log($"ÒÑ¸´ÖÆGUID:\n{result}");
+                Debug.Log($"å·²å¤åˆ¶GUID:\n{result}");
             }
         }
 
-        [MenuItem("UPandaGF/Tools/Éú³ÉÒ»¸öGuidÊä³öµ½Console")]
+        [MenuItem("UPandaGF/Tools/ç”Ÿæˆä¸€ä¸ªGuidè¾“å‡ºåˆ°Console")]
         static void Touming()
         {
             string uID = Guid.NewGuid().ToString();
             EditorGUIUtility.systemCopyBuffer = uID;
             Debug.Log(uID);
             EditorUtility.DisplayDialog("Guid",
-                "GuidÒÑ¸´ÖÆµ½¼ôÇĞ°å",
-                "È·¶¨");
+                "Guidå·²å¤åˆ¶åˆ°å‰ªåˆ‡æ¿",
+                "ç¡®å®š");
         }
     }
 }

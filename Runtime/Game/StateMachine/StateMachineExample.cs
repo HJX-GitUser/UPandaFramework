@@ -1,78 +1,78 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace UPandaGF.StateMechine
 {
     // ============================================================
-    // ×´Ì¬»úÊ¹ÓÃ°¸Àı
+    // çŠ¶æ€æœºä½¿ç”¨æ¡ˆä¾‹
     // ------------------------------------------------------------
-    // ÑİÊ¾Ò»¸ö¡¸Íæ¼Ò¡¹·Ö²ã×´Ì¬»úµÄÍêÕûÓÃ·¨£º
-    //   Player£¨¸ù£©
-    //     ©À©¤ Idle        ´ı»ú
-    //     ©À©¤ Move        ÒÆ¶¯£¨°üº¬×Ó×´Ì¬£©
-    //     ©¦   ©À©¤ Walk    ×ßÂ·
-    //     ©¦   ©¸©¤ Run     ÅÜ²½
-    //     ©¸©¤ Attack      ¹¥»÷
+    // æ¼”ç¤ºä¸€ä¸ªã€Œç©å®¶ã€åˆ†å±‚çŠ¶æ€æœºçš„å®Œæ•´ç”¨æ³•ï¼š
+    //   Playerï¼ˆæ ¹ï¼‰
+    //     â”œâ”€ Idle        å¾…æœº
+    //     â”œâ”€ Move        ç§»åŠ¨ï¼ˆåŒ…å«å­çŠ¶æ€ï¼‰
+    //     â”‚   â”œâ”€ Walk    èµ°è·¯
+    //     â”‚   â””â”€ Run     è·‘æ­¥
+    //     â””â”€ Attack      æ”»å‡»
     //
-    // °Ñ±¾½Å±¾¹Òµ½³¡¾°ÈÎÒâ¿ÕÎïÌåÉÏ£¬½øÈë Play Ä£Ê½ºó£º
-    //   Êı×Ö¼ü 1 ¡ú ´ı»ú£¨µ¥¼¶ÇĞ»»£©
-    //   Êı×Ö¼ü 2 ¡ú ÒÆ¶¯£¨µ¥¼¶ÇĞ»»£¬½øÈëÄ¬ÈÏ×Ó×´Ì¬ Walk£©
-    //   Êı×Ö¼ü 3 ¡ú ÅÜ²½£¨¶à¼¶Â·¾¶ÇĞ»» "Move/Run"£©
-    //   Êı×Ö¼ü 4 ¡ú ¹¥»÷£¨µ¥¼¶ÇĞ»»£©
-    //   B ¼ü    ¡ú ·µ»ØÉÏÒ»¼¶×´Ì¬£¨GoBack£©
-    //   T ¼ü    ¡ú ´òÓ¡×´Ì¬Ê÷£¨µ÷ÊÔ£©
+    // æŠŠæœ¬è„šæœ¬æŒ‚åˆ°åœºæ™¯ä»»æ„ç©ºç‰©ä½“ä¸Šï¼Œè¿›å…¥ Play æ¨¡å¼åï¼š
+    //   æ•°å­—é”® 1 â†’ å¾…æœºï¼ˆå•çº§åˆ‡æ¢ï¼‰
+    //   æ•°å­—é”® 2 â†’ ç§»åŠ¨ï¼ˆå•çº§åˆ‡æ¢ï¼Œè¿›å…¥é»˜è®¤å­çŠ¶æ€ Walkï¼‰
+    //   æ•°å­—é”® 3 â†’ è·‘æ­¥ï¼ˆå¤šçº§è·¯å¾„åˆ‡æ¢ "Move/Run"ï¼‰
+    //   æ•°å­—é”® 4 â†’ æ”»å‡»ï¼ˆå•çº§åˆ‡æ¢ï¼‰
+    //   B é”®    â†’ è¿”å›ä¸Šä¸€çº§çŠ¶æ€ï¼ˆGoBackï¼‰
+    //   T é”®    â†’ æ‰“å°çŠ¶æ€æ ‘ï¼ˆè°ƒè¯•ï¼‰
     // ============================================================
 
-    /// <summary>Íæ¼Ò¸ù×´Ì¬</summary>
+    /// <summary>ç©å®¶æ ¹çŠ¶æ€</summary>
     public class PlayerState : BaseState
     {
         public override string StateID => "Player";
-        public override void OnEnter() { Debug.Log("[×´Ì¬] ½øÈë Player"); }
-        public override void OnExit() { Debug.Log("[×´Ì¬] ÍË³ö Player"); }
+        public override void OnEnter() { Debug.Log("[çŠ¶æ€] è¿›å…¥ Player"); }
+        public override void OnExit() { Debug.Log("[çŠ¶æ€] é€€å‡º Player"); }
     }
 
-    /// <summary>´ı»ú×´Ì¬</summary>
+    /// <summary>å¾…æœºçŠ¶æ€</summary>
     public class IdleState : BaseState
     {
         public override string StateID => "Idle";
-        public override void OnEnter() { Debug.Log("[×´Ì¬] ½øÈë Idle"); }
-        public override void OnExit() { Debug.Log("[×´Ì¬] ÍË³ö Idle"); }
+        public override void OnEnter() { Debug.Log("[çŠ¶æ€] è¿›å…¥ Idle"); }
+        public override void OnExit() { Debug.Log("[çŠ¶æ€] é€€å‡º Idle"); }
     }
 
-    /// <summary>ÒÆ¶¯×´Ì¬£¨°üº¬ Walk / Run Á½¸ö×Ó×´Ì¬£©</summary>
+    /// <summary>ç§»åŠ¨çŠ¶æ€ï¼ˆåŒ…å« Walk / Run ä¸¤ä¸ªå­çŠ¶æ€ï¼‰</summary>
     public class MoveState : BaseState
     {
         public override string StateID => "Move";
-        public override void OnEnter() { Debug.Log("[×´Ì¬] ½øÈë Move"); }
-        public override void OnExit() { Debug.Log("[×´Ì¬] ÍË³ö Move"); }
+        public override void OnEnter() { Debug.Log("[çŠ¶æ€] è¿›å…¥ Move"); }
+        public override void OnExit() { Debug.Log("[çŠ¶æ€] é€€å‡º Move"); }
     }
 
-    /// <summary>×ßÂ·×´Ì¬</summary>
+    /// <summary>èµ°è·¯çŠ¶æ€</summary>
     public class WalkState : BaseState
     {
         public override string StateID => "Walk";
-        public override void OnEnter() { Debug.Log("[×´Ì¬] ½øÈë Walk"); }
-        public override void OnExit() { Debug.Log("[×´Ì¬] ÍË³ö Walk"); }
+        public override void OnEnter() { Debug.Log("[çŠ¶æ€] è¿›å…¥ Walk"); }
+        public override void OnExit() { Debug.Log("[çŠ¶æ€] é€€å‡º Walk"); }
     }
 
-    /// <summary>ÅÜ²½×´Ì¬</summary>
+    /// <summary>è·‘æ­¥çŠ¶æ€</summary>
     public class RunState : BaseState
     {
         public override string StateID => "Run";
-        public override void OnEnter() { Debug.Log("[×´Ì¬] ½øÈë Run"); }
-        public override void OnExit() { Debug.Log("[×´Ì¬] ÍË³ö Run"); }
+        public override void OnEnter() { Debug.Log("[çŠ¶æ€] è¿›å…¥ Run"); }
+        public override void OnExit() { Debug.Log("[çŠ¶æ€] é€€å‡º Run"); }
     }
 
-    /// <summary>¹¥»÷×´Ì¬</summary>
+    /// <summary>æ”»å‡»çŠ¶æ€</summary>
     public class AttackState : BaseState
     {
         public override string StateID => "Attack";
-        public override void OnEnter() { Debug.Log("[×´Ì¬] ½øÈë Attack"); }
-        public override void OnExit() { Debug.Log("[×´Ì¬] ÍË³ö Attack"); }
+        public override void OnEnter() { Debug.Log("[çŠ¶æ€] è¿›å…¥ Attack"); }
+        public override void OnExit() { Debug.Log("[çŠ¶æ€] é€€å‡º Attack"); }
     }
 
     /// <summary>
-    /// ×´Ì¬»úÊ¹ÓÃÊ¾Àı£ºÑİÊ¾×¢²á¡¢ÇĞ»»¡¢·µ»Ø¡¢ÊÂ¼ş¼àÌıÓëµ÷ÊÔ´òÓ¡¡£
-    /// ¹ÒÔØµ½³¡¾°ÈÎÒâ¿ÕÎïÌåÉÏ¼´¿ÉÔËĞĞ¡£
+    /// çŠ¶æ€æœºä½¿ç”¨ç¤ºä¾‹ï¼šæ¼”ç¤ºæ³¨å†Œã€åˆ‡æ¢ã€è¿”å›ã€äº‹ä»¶ç›‘å¬ä¸è°ƒè¯•æ‰“å°ã€‚
+    /// æŒ‚è½½åˆ°åœºæ™¯ä»»æ„ç©ºç‰©ä½“ä¸Šå³å¯è¿è¡Œã€‚
     /// </summary>
     public class StateMachineExample : MonoBehaviour
     {
@@ -83,31 +83,31 @@ namespace UPandaGF.StateMechine
 
         void Start()
         {
-            // 1. »ñÈ¡»ò´´½¨¹ÜÀíÆ÷£¨ÓëÊ¾Àı¹ÒÔÚÍ¬Ò»ÎïÌå£©
+            // 1. è·å–æˆ–åˆ›å»ºç®¡ç†å™¨ï¼ˆä¸ç¤ºä¾‹æŒ‚åœ¨åŒä¸€ç‰©ä½“ï¼‰
             manager = GetComponent<StateMachineManager>();
             if (manager == null) manager = gameObject.AddComponent<StateMachineManager>();
 
-            // 2. ¼àÌı×´Ì¬¸Ä±äÊÂ¼ş£¨²ÎÊı£º¾ÉÂ·¾¶ -> ĞÂÂ·¾¶£©
+            // 2. ç›‘å¬çŠ¶æ€æ”¹å˜äº‹ä»¶ï¼ˆå‚æ•°ï¼šæ—§è·¯å¾„ -> æ–°è·¯å¾„ï¼‰
             manager.OnStateChanged += (oldPath, newPath) =>
-                Debug.Log($"×´Ì¬ÇĞ»»: {oldPath} -> {newPath}");
+                Debug.Log($"çŠ¶æ€åˆ‡æ¢: {oldPath} -> {newPath}");
 
-            // 3. ×¢²á×´Ì¬²¢½¨Á¢²ã¼¶£¨ÏÈ×¢²á¸ù£¬ÔÙ×¢²á×Ó£©
+            // 3. æ³¨å†ŒçŠ¶æ€å¹¶å»ºç«‹å±‚çº§ï¼ˆå…ˆæ³¨å†Œæ ¹ï¼Œå†æ³¨å†Œå­ï¼‰
             player = new PlayerState();
-            manager.RegisterState(player);                    // ¸ù×´Ì¬
+            manager.RegisterState(player);                    // æ ¹çŠ¶æ€
 
-            manager.RegisterState(new IdleState(), "Player"); // Player µÄ×Ó×´Ì¬
+            manager.RegisterState(new IdleState(), "Player"); // Player çš„å­çŠ¶æ€
             move = new MoveState();
             manager.RegisterState(move, "Player");
             manager.RegisterState(new AttackState(), "Player");
 
-            manager.RegisterState(new WalkState(), "Move");   // Move µÄ×Ó×´Ì¬
+            manager.RegisterState(new WalkState(), "Move");   // Move çš„å­çŠ¶æ€
             manager.RegisterState(new RunState(), "Move");
 
-            // 4. ÉèÖÃÄ¬ÈÏ×Ó×´Ì¬£¨×¢Òâ£ºSetDefaultChild Ö»ÔÚÏÂ´Î OnEnter Ê±ÉúĞ§£©
+            // 4. è®¾ç½®é»˜è®¤å­çŠ¶æ€ï¼ˆæ³¨æ„ï¼šSetDefaultChild åªåœ¨ä¸‹æ¬¡ OnEnter æ—¶ç”Ÿæ•ˆï¼‰
             player.SetDefaultChild("Idle");
             move.SetDefaultChild("Walk");
 
-            // 5. ÊÖ¶¯¼¤»î³õÊ¼×Ó×´Ì¬£¨ÑİÊ¾Ö±½ÓÇĞ»»×Ó×´Ì¬£©
+            // 5. æ‰‹åŠ¨æ¿€æ´»åˆå§‹å­çŠ¶æ€ï¼ˆæ¼”ç¤ºç›´æ¥åˆ‡æ¢å­çŠ¶æ€ï¼‰
             player.SwitchToChild("Idle");
 
             Debug.Log(manager.GetStateInfo());
@@ -117,13 +117,13 @@ namespace UPandaGF.StateMechine
         {
             if (manager == null) return;
 
-            // ¼üÅÌÑİÊ¾²»Í¬µÄÇĞ»»·½Ê½
-            if (Input.GetKeyDown(KeyCode.Alpha1)) manager.SwitchState("Idle");     // µ¥¼¶ÇĞ»»
-            if (Input.GetKeyDown(KeyCode.Alpha2)) manager.SwitchState("Move");     // µ¥¼¶ÇĞ»»£¨½øÈëÄ¬ÈÏ Walk£©
-            if (Input.GetKeyDown(KeyCode.Alpha3)) manager.SwitchState("Move/Run"); // ¶à¼¶Â·¾¶ÇĞ»»
-            if (Input.GetKeyDown(KeyCode.Alpha4)) manager.SwitchState("Attack");   // µ¥¼¶ÇĞ»»
-            if (Input.GetKeyDown(KeyCode.B)) manager.GoBack();                     // ·µ»ØÉÏÒ»¼¶
-            if (Input.GetKeyDown(KeyCode.T)) Debug.Log(manager.GetStateInfo());    // ´òÓ¡×´Ì¬Ê÷
+            // é”®ç›˜æ¼”ç¤ºä¸åŒçš„åˆ‡æ¢æ–¹å¼
+            if (Input.GetKeyDown(KeyCode.Alpha1)) manager.SwitchState("Idle");     // å•çº§åˆ‡æ¢
+            if (Input.GetKeyDown(KeyCode.Alpha2)) manager.SwitchState("Move");     // å•çº§åˆ‡æ¢ï¼ˆè¿›å…¥é»˜è®¤ Walkï¼‰
+            if (Input.GetKeyDown(KeyCode.Alpha3)) manager.SwitchState("Move/Run"); // å¤šçº§è·¯å¾„åˆ‡æ¢
+            if (Input.GetKeyDown(KeyCode.Alpha4)) manager.SwitchState("Attack");   // å•çº§åˆ‡æ¢
+            if (Input.GetKeyDown(KeyCode.B)) manager.GoBack();                     // è¿”å›ä¸Šä¸€çº§
+            if (Input.GetKeyDown(KeyCode.T)) Debug.Log(manager.GetStateInfo());    // æ‰“å°çŠ¶æ€æ ‘
         }
     }
 }

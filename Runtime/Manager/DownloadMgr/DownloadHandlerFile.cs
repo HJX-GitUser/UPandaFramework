@@ -1,66 +1,66 @@
-using System;
+ï»¿using System;
 using System.IO;
 using UnityEngine.Networking;
 
 namespace UPandaGF
 {
     /// <summary>
-    /// ÏÂÔØÂäÅÌ¾ä±ú£¨DownloadHandlerScript À©Õ¹°æ£©¡£
+    /// ä¸‹è½½è½ç›˜å¥æŸ„ï¼ˆDownloadHandlerScript æ‰©å±•ç‰ˆï¼‰ã€‚
     ///
-    /// Ïà±ÈÔ­Ê¼ÊµÏÖ£¬½â¾öÁË 4 ¸öÎÊÌâ£º
-    /// 1) ÑÓ³Ù´ò¿ªÎÄ¼ş£ºÔÚÊÕµ½µÚÒ»¿éÊı¾İÊ±²Å´´½¨ÎÄ¼ş¡£Ô­ÊµÏÖÒÀÀµ ReceiveContentLengthHeader£¬
-    ///    ¶ø·şÎñ¶ËÊ¹ÓÃ·Ö¿é´«Êä£¨chunked£©»òÎ´·µ»Ø Content-Length Ê±¸Ã»Øµ÷²»»á´¥·¢£¬
-    ///    ½á¹û fileStream Ê¼ÖÕÎª null£¬Õû·İÊı¾İ¶¼±»¶ªÆú£»
-    /// 2) Ğø´«°²È«ĞÔ£º¿É´«Èë shouldAppend »Øµ÷£¬Ö»ÓĞ·şÎñ¶ËÕæµÄ·µ»Ø 206£¨Partial Content£©Ê±²Å×·¼ÓĞ´Èë£¬
-    ///    ·ñÔò¸ÄÎª¸²¸ÇĞ´Èë£¬±ÜÃâ"·şÎñÆ÷²»Ö§³Ö Range È´°ÑÍêÕûÏìÓ¦×·¼Óµ½¾ÉÎÄ¼şºóÃæ"µ¼ÖÂÎÄ¼şËğ»µ£»
-    /// 3) Òì³£°²È«£º´ò¿ª/Ğ´ÈëÊ§°ÜÈ«²¿²¶»ñ²¢¼ÇÂ¼£¨WriteFailed / LastError£©£¬
-    ///    Í¨¹ı·µ»Ø false ÈÃ Unity ÖĞ¶ÏÏÂÔØ£¬¶ø²»ÊÇÈÃÒì³£´ÓÏÂÔØ»Øµ÷ÀïÅ×³ö£»
-    /// 4) ¾ä±ú¿ÉÖ÷¶¯ÊÍ·Å£ºÌá¹© Close()£¬¹©Íâ²¿ÔÚÈ¡Ïû/ÖĞ¶ÏÇëÇóÇ°ÏÔÊ½¹Ø±ÕÎÄ¼şÁ÷£¬±ÜÃâÎÄ¼ş±»Õ¼ÓÃ¡£
+    /// ç›¸æ¯”åŸå§‹å®ç°ï¼Œè§£å†³äº† 4 ä¸ªé—®é¢˜ï¼š
+    /// 1) å»¶è¿Ÿæ‰“å¼€æ–‡ä»¶ï¼šåœ¨æ”¶åˆ°ç¬¬ä¸€å—æ•°æ®æ—¶æ‰åˆ›å»ºæ–‡ä»¶ã€‚åŸå®ç°ä¾èµ– ReceiveContentLengthHeaderï¼Œ
+    ///    è€ŒæœåŠ¡ç«¯ä½¿ç”¨åˆ†å—ä¼ è¾“ï¼ˆchunkedï¼‰æˆ–æœªè¿”å› Content-Length æ—¶è¯¥å›è°ƒä¸ä¼šè§¦å‘ï¼Œ
+    ///    ç»“æœ fileStream å§‹ç»ˆä¸º nullï¼Œæ•´ä»½æ•°æ®éƒ½è¢«ä¸¢å¼ƒï¼›
+    /// 2) ç»­ä¼ å®‰å…¨æ€§ï¼šå¯ä¼ å…¥ shouldAppend å›è°ƒï¼Œåªæœ‰æœåŠ¡ç«¯çœŸçš„è¿”å› 206ï¼ˆPartial Contentï¼‰æ—¶æ‰è¿½åŠ å†™å…¥ï¼Œ
+    ///    å¦åˆ™æ”¹ä¸ºè¦†ç›–å†™å…¥ï¼Œé¿å…"æœåŠ¡å™¨ä¸æ”¯æŒ Range å´æŠŠå®Œæ•´å“åº”è¿½åŠ åˆ°æ—§æ–‡ä»¶åé¢"å¯¼è‡´æ–‡ä»¶æŸåï¼›
+    /// 3) å¼‚å¸¸å®‰å…¨ï¼šæ‰“å¼€/å†™å…¥å¤±è´¥å…¨éƒ¨æ•è·å¹¶è®°å½•ï¼ˆWriteFailed / LastErrorï¼‰ï¼Œ
+    ///    é€šè¿‡è¿”å› false è®© Unity ä¸­æ–­ä¸‹è½½ï¼Œè€Œä¸æ˜¯è®©å¼‚å¸¸ä»ä¸‹è½½å›è°ƒé‡ŒæŠ›å‡ºï¼›
+    /// 4) å¥æŸ„å¯ä¸»åŠ¨é‡Šæ”¾ï¼šæä¾› Close()ï¼Œä¾›å¤–éƒ¨åœ¨å–æ¶ˆ/ä¸­æ–­è¯·æ±‚å‰æ˜¾å¼å…³é—­æ–‡ä»¶æµï¼Œé¿å…æ–‡ä»¶è¢«å ç”¨ã€‚
     /// </summary>
     public class DownloadHandlerFile : DownloadHandlerScript
     {
-        /// <summary>ÂäÅÌÂ·¾¶</summary>
+        /// <summary>è½ç›˜è·¯å¾„</summary>
         private readonly string filePath;
 
-        /// <summary>ÊÇ·ñÔÊĞíÒÔ×·¼Ó·½Ê½Ğø´«£¨×îÖÕÊÇ·ñ×·¼Ó»¹Òª¿´ shouldAppend µÄ·µ»ØÖµ£©</summary>
+        /// <summary>æ˜¯å¦å…è®¸ä»¥è¿½åŠ æ–¹å¼ç»­ä¼ ï¼ˆæœ€ç»ˆæ˜¯å¦è¿½åŠ è¿˜è¦çœ‹ shouldAppend çš„è¿”å›å€¼ï¼‰</summary>
         private readonly bool append;
 
-        /// <summary>Ğø´«È·ÈÏ»Øµ÷£º·µ»Ø true ²Å×·¼ÓĞ´Èë£¨Í¨³£ÓÃÓÚÅĞ¶ÏÏìÓ¦ÂëÊÇ·ñÎª 206£©</summary>
+        /// <summary>ç»­ä¼ ç¡®è®¤å›è°ƒï¼šè¿”å› true æ‰è¿½åŠ å†™å…¥ï¼ˆé€šå¸¸ç”¨äºåˆ¤æ–­å“åº”ç æ˜¯å¦ä¸º 206ï¼‰</summary>
         private readonly Func<bool> shouldAppend;
 
-        /// <summary>ÎÄ¼şÁ÷£¨ÑÓ³Ù´´½¨£©</summary>
+        /// <summary>æ–‡ä»¶æµï¼ˆå»¶è¿Ÿåˆ›å»ºï¼‰</summary>
         private FileStream fileStream;
 
-        /// <summary>ÊÇ·ñÒÑµ÷ÓÃ Close()£¨Ö®ºó²»ÔÙ½ÓÊÜÊı¾İ£©</summary>
+        /// <summary>æ˜¯å¦å·²è°ƒç”¨ Close()ï¼ˆä¹‹åä¸å†æ¥å—æ•°æ®ï¼‰</summary>
         private bool closed;
 
-        /// <summary>ÊÇ·ñ·¢ÉúÁË´ò¿ª/Ğ´ÈëÊ§°Ü</summary>
+        /// <summary>æ˜¯å¦å‘ç”Ÿäº†æ‰“å¼€/å†™å…¥å¤±è´¥</summary>
         public bool WriteFailed { get; private set; }
 
-        /// <summary>Ê§°ÜÔ­Òò£¨ÎŞÊ§°ÜÊ±Îª null£©</summary>
+        /// <summary>å¤±è´¥åŸå› ï¼ˆæ— å¤±è´¥æ—¶ä¸º nullï¼‰</summary>
         public string LastError { get; private set; }
 
-        /// <summary>±¾´ÎÒÑĞ´ÈëµÄ×Ö½ÚÊı£¨Ğø´«Ê±Ö»Í³¼Æ±¾´ÎĞÂÔö²¿·Ö£©</summary>
+        /// <summary>æœ¬æ¬¡å·²å†™å…¥çš„å­—èŠ‚æ•°ï¼ˆç»­ä¼ æ—¶åªç»Ÿè®¡æœ¬æ¬¡æ–°å¢éƒ¨åˆ†ï¼‰</summary>
         public long WrittenBytes { get; private set; }
 
-        /// <summary>·şÎñ¶Ë·µ»ØµÄ Content-Length£¨·Ö¿é´«ÊäÊ±Îª 0£©</summary>
+        /// <summary>æœåŠ¡ç«¯è¿”å›çš„ Content-Lengthï¼ˆåˆ†å—ä¼ è¾“æ—¶ä¸º 0ï¼‰</summary>
         public long ContentLength { get; private set; }
 
-        /// <summary>×îÖÕÊÇ·ñÒÔ×·¼Ó·½Ê½Ğ´Èë£¨´ò¿ªÎÄ¼şºó²ÅÓĞÒâÒå£©</summary>
+        /// <summary>æœ€ç»ˆæ˜¯å¦ä»¥è¿½åŠ æ–¹å¼å†™å…¥ï¼ˆæ‰“å¼€æ–‡ä»¶åæ‰æœ‰æ„ä¹‰ï¼‰</summary>
         public bool AppendMode { get; private set; }
 
-        /// <summary>ÂäÅÌÂ·¾¶</summary>
+        /// <summary>è½ç›˜è·¯å¾„</summary>
         public string FilePath { get { return filePath; } }
 
-        /// <param name="path">ÂäÅÌÂ·¾¶£¨¸¸Ä¿Â¼²»´æÔÚ»á×Ô¶¯´´½¨£©</param>
-        /// <param name="append">ÊÇ·ñÔÊĞíĞø´«£¨×·¼ÓĞ´Èë£©</param>
-        /// <param name="shouldAppend">Ğø´«È·ÈÏ»Øµ÷£¬·µ»Ø false Ê±¸ÄÎª¸²¸ÇĞ´Èë£»Îª null ±íÊ¾²»Ğ£Ñé</param>
+        /// <param name="path">è½ç›˜è·¯å¾„ï¼ˆçˆ¶ç›®å½•ä¸å­˜åœ¨ä¼šè‡ªåŠ¨åˆ›å»ºï¼‰</param>
+        /// <param name="append">æ˜¯å¦å…è®¸ç»­ä¼ ï¼ˆè¿½åŠ å†™å…¥ï¼‰</param>
+        /// <param name="shouldAppend">ç»­ä¼ ç¡®è®¤å›è°ƒï¼Œè¿”å› false æ—¶æ”¹ä¸ºè¦†ç›–å†™å…¥ï¼›ä¸º null è¡¨ç¤ºä¸æ ¡éªŒ</param>
         public DownloadHandlerFile(string path, bool append = false, Func<bool> shouldAppend = null)
             : base(new byte[1024 * 8])
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentException("ÏÂÔØÂäÅÌÂ·¾¶²»ÄÜÎª¿Õ", "path");
+                throw new ArgumentException("ä¸‹è½½è½ç›˜è·¯å¾„ä¸èƒ½ä¸ºç©º", "path");
             }
 
             this.filePath = path;
@@ -68,17 +68,17 @@ namespace UPandaGF
             this.shouldAppend = shouldAppend;
         }
 
-        /// <summary>·şÎñ¶Ë¸ø³ö Content-Length Ê±¼ÇÂ¼£¨×¢Òâ£º·Ö¿é´«Êä²»»á´¥·¢´Ë»Øµ÷£©</summary>
+        /// <summary>æœåŠ¡ç«¯ç»™å‡º Content-Length æ—¶è®°å½•ï¼ˆæ³¨æ„ï¼šåˆ†å—ä¼ è¾“ä¸ä¼šè§¦å‘æ­¤å›è°ƒï¼‰</summary>
         protected override void ReceiveContentLengthHeader(ulong contentLength)
         {
             ContentLength = (long)contentLength;
         }
 
-        /// <summary>ÊÕµ½Êı¾İ¿é£ºÊ×´ÎÊÕµ½Ê±²Å´ò¿ªÎÄ¼ş£¬È»ºóĞ´Èë</summary>
+        /// <summary>æ”¶åˆ°æ•°æ®å—ï¼šé¦–æ¬¡æ”¶åˆ°æ—¶æ‰æ‰“å¼€æ–‡ä»¶ï¼Œç„¶åå†™å…¥</summary>
         protected override bool ReceiveData(byte[] data, int dataLength)
         {
             if (WriteFailed || closed) return false;
-            if (data == null || dataLength <= 0) return true;   // ¿Õ¿é²»ËãÊ§°Ü
+            if (data == null || dataLength <= 0) return true;   // ç©ºå—ä¸ç®—å¤±è´¥
 
             if (!OpenFile()) return false;
 
@@ -91,21 +91,21 @@ namespace UPandaGF
             catch (Exception e)
             {
                 WriteFailed = true;
-                LastError = $"Ğ´ÈëÎÄ¼şÊ§°Ü£º{e.Message}";
-                PLogger.LogError($"[DownloadHandlerFile] {LastError}£¨{filePath}£©");
-                return false;   // ·µ»Ø false »áÈÃ Unity ÖĞ¶ÏÏÂÔØ
+                LastError = $"å†™å…¥æ–‡ä»¶å¤±è´¥ï¼š{e.Message}";
+                PLogger.LogError($"[DownloadHandlerFile] {LastError}ï¼ˆ{filePath}ï¼‰");
+                return false;   // è¿”å› false ä¼šè®© Unity ä¸­æ–­ä¸‹è½½
             }
         }
 
-        /// <summary>ÏÂÔØÕı³£½áÊø</summary>
+        /// <summary>ä¸‹è½½æ­£å¸¸ç»“æŸ</summary>
         protected override void CompleteContent()
         {
             Close();
         }
 
         /// <summary>
-        /// Ë¢ĞÂ²¢¹Ø±ÕÎÄ¼ş¾ä±ú¡£¿ÉÖØ¸´µ÷ÓÃ¡£
-        /// È¡Ïû/ÖĞ¶ÏÏÂÔØÇ°ÇëÏÔÊ½µ÷ÓÃ£¬È·±£ÎÄ¼ş²»»á±»Õ¼ÓÃ¡£
+        /// åˆ·æ–°å¹¶å…³é—­æ–‡ä»¶å¥æŸ„ã€‚å¯é‡å¤è°ƒç”¨ã€‚
+        /// å–æ¶ˆ/ä¸­æ–­ä¸‹è½½å‰è¯·æ˜¾å¼è°ƒç”¨ï¼Œç¡®ä¿æ–‡ä»¶ä¸ä¼šè¢«å ç”¨ã€‚
         /// </summary>
         public void Close()
         {
@@ -120,7 +120,7 @@ namespace UPandaGF
             }
             catch (Exception e)
             {
-                PLogger.LogWarning($"[DownloadHandlerFile] ¹Ø±ÕÎÄ¼şÊ§°Ü£º{e.Message}£¨{filePath}£©");
+                PLogger.LogWarning($"[DownloadHandlerFile] å…³é—­æ–‡ä»¶å¤±è´¥ï¼š{e.Message}ï¼ˆ{filePath}ï¼‰");
             }
             finally
             {
@@ -129,15 +129,15 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ½ø¶ÈÒ»ÂÉ·µ»Ø 0£º½ø¶ÈÓÉ Downloader Í³Ò»¼ÆËã
-        /// £¨Ğø´«Ê±ÕæÊµ½ø¶È = Ğø´«Æğµã + ±¾´ÎÏÂÔØ×Ö½ÚÊı£¬¾ä±ú×ÔÉíÄÃ²»µ½Ğø´«Æğµã£©¡£
+        /// è¿›åº¦ä¸€å¾‹è¿”å› 0ï¼šè¿›åº¦ç”± Downloader ç»Ÿä¸€è®¡ç®—
+        /// ï¼ˆç»­ä¼ æ—¶çœŸå®è¿›åº¦ = ç»­ä¼ èµ·ç‚¹ + æœ¬æ¬¡ä¸‹è½½å­—èŠ‚æ•°ï¼Œå¥æŸ„è‡ªèº«æ‹¿ä¸åˆ°ç»­ä¼ èµ·ç‚¹ï¼‰ã€‚
         /// </summary>
         protected override float GetProgress()
         {
             return 0f;
         }
 
-        /// <summary>´ò¿ªÎÄ¼ş£¨¸¸Ä¿Â¼²»´æÔÚÊ±´´½¨£©£»ÒÑ´ò¿ªÔòÖ±½Ó·µ»Ø true</summary>
+        /// <summary>æ‰“å¼€æ–‡ä»¶ï¼ˆçˆ¶ç›®å½•ä¸å­˜åœ¨æ—¶åˆ›å»ºï¼‰ï¼›å·²æ‰“å¼€åˆ™ç›´æ¥è¿”å› true</summary>
         private bool OpenFile()
         {
             if (fileStream != null) return true;
@@ -151,8 +151,8 @@ namespace UPandaGF
                     Directory.CreateDirectory(directory);
                 }
 
-                // Ö»ÓĞ"ÇëÇóÁËĞø´«"ÇÒ"·şÎñ¶ËÈ·Êµ°´ Range ÏìÓ¦"Ê±²Å×·¼ÓĞ´Èë£¬
-                // ·ñÔòÒ»ÂÉ¸²¸ÇĞ´Èë£¬·ÀÖ¹ÍêÕûÏìÓ¦±»×·¼Óµ½¾ÉÎÄ¼şºóÃæ
+                // åªæœ‰"è¯·æ±‚äº†ç»­ä¼ "ä¸”"æœåŠ¡ç«¯ç¡®å®æŒ‰ Range å“åº”"æ—¶æ‰è¿½åŠ å†™å…¥ï¼Œ
+                // å¦åˆ™ä¸€å¾‹è¦†ç›–å†™å…¥ï¼Œé˜²æ­¢å®Œæ•´å“åº”è¢«è¿½åŠ åˆ°æ—§æ–‡ä»¶åé¢
                 bool doAppend = append && (shouldAppend == null || shouldAppend());
                 AppendMode = doAppend;
 
@@ -168,8 +168,8 @@ namespace UPandaGF
             catch (Exception e)
             {
                 WriteFailed = true;
-                LastError = $"´ò¿ªÎÄ¼şÊ§°Ü£º{e.Message}";
-                PLogger.LogError($"[DownloadHandlerFile] {LastError}£¨{filePath}£©");
+                LastError = $"æ‰“å¼€æ–‡ä»¶å¤±è´¥ï¼š{e.Message}";
+                PLogger.LogError($"[DownloadHandlerFile] {LastError}ï¼ˆ{filePath}ï¼‰");
                 fileStream = null;
                 return false;
             }

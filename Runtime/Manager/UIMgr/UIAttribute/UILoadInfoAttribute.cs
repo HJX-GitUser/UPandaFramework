@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,11 +13,11 @@ namespace UPandaGF
         public string loadPath { get; }
 
         /// <summary>
-        /// UIº”‘ÿ–≈œ¢
+        /// UIÂä†ËΩΩ‰ø°ÊÅØ
         /// </summary>
-        /// <param name="ui_LayerArg">œ‘ æ≤„º∂</param>
-        /// <param name="loadMethodArg">º”‘ÿ∑Ω Ω</param>
-        /// <param name="loadPathArg">°æResources÷ª–Ë“™œ‡∂‘¬∑æ∂£¨AssetBundle–Ë“™±‡º≠∆˜¬∑æ∂£¨ƒ„ø…“‘‘⁄Project√Ê∞Â∂‘”¶◊ ‘¥…œ”“º¸->Copy Path°ø</param>
+        /// <param name="ui_LayerArg">ÊòæÁ§∫Â±ÇÁ∫ß</param>
+        /// <param name="loadMethodArg">Âä†ËΩΩÊñπÂºè</param>
+        /// <param name="loadPathArg">„ÄêResourcesÂè™ÈúÄË¶ÅÁõ∏ÂØπË∑ØÂæÑÔºåAssetBundleÈúÄË¶ÅÁºñËæëÂô®Ë∑ØÂæÑÔºå‰Ω†ÂèØ‰ª•Âú®ProjectÈù¢ÊùøÂØπÂ∫îËµÑÊ∫ê‰∏äÂè≥ÈîÆ->Copy Path„Äë</param>
         public UILoadInfoAttribute(E_UI_Layer ui_LayerArg, AssetLoadMethod loadMethodArg, string loadPathArg)
         {
             ui_Layer = ui_LayerArg;

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -7,52 +7,52 @@ using UnityEngine.Events;
 namespace UPandaGF
 {
     /// <summary>
-    /// ¶ÔÏó³ØÈİÆ÷£º°´ key£¨×ÊÔ´Â·¾¶£©¹éÀà±£´æÍ¬Ò»Àà¶ÔÏóµÄ¿ÕÏĞÊµÀı¡£
-    /// ÄÚ²¿Ê¹ÓÃ LIFO Õ»£¨×î½ü¹é»¹µÄ×îÏÈ±»¸´ÓÃ£©£¬¿ÉÑ¡ÔÚ Hierarchy ÖĞ°´²ã¼¶ÊÕÄÉ¡£
+    /// å¯¹è±¡æ± å®¹å™¨ï¼šæŒ‰ keyï¼ˆèµ„æºè·¯å¾„ï¼‰å½’ç±»ä¿å­˜åŒä¸€ç±»å¯¹è±¡çš„ç©ºé—²å®ä¾‹ã€‚
+    /// å†…éƒ¨ä½¿ç”¨ LIFO æ ˆï¼ˆæœ€è¿‘å½’è¿˜çš„æœ€å…ˆè¢«å¤ç”¨ï¼‰ï¼Œå¯é€‰åœ¨ Hierarchy ä¸­æŒ‰å±‚çº§æ”¶çº³ã€‚
     /// </summary>
     public class PoolData
     {
-        private readonly string containerName;                     // ÈİÆ÷Ãû£¨¼´³ØµÄ key£©
+        private readonly string containerName;                     // å®¹å™¨åï¼ˆå³æ± çš„ keyï¼‰
         private readonly Stack<GameObject> poolList = new Stack<GameObject>();
 
-        private GameObject fatherObj;                              // ²ã¼¶ÊÕÄÉÓÃµÄ¸¸½Úµã£¨¿ªÆôÊÕÄÉÊ±¶èĞÔ´´½¨£©
+        private GameObject fatherObj;                              // å±‚çº§æ”¶çº³ç”¨çš„çˆ¶èŠ‚ç‚¹ï¼ˆå¼€å¯æ”¶çº³æ—¶æƒ°æ€§åˆ›å»ºï¼‰
 
-        /// <summary>µ±Ç°»º´æµÄ¿ÕÏĞ¶ÔÏóÊıÁ¿</summary>
+        /// <summary>å½“å‰ç¼“å­˜çš„ç©ºé—²å¯¹è±¡æ•°é‡</summary>
         public int Count { get { return poolList.Count; } }
 
-        /// <summary>²ã¼¶ÊÕÄÉ½Úµã£¨Î´¿ªÆôÊÕÄÉ»òÉĞÎ´´´½¨Ê±Îª null£©</summary>
+        /// <summary>å±‚çº§æ”¶çº³èŠ‚ç‚¹ï¼ˆæœªå¼€å¯æ”¶çº³æˆ–å°šæœªåˆ›å»ºæ—¶ä¸º nullï¼‰</summary>
         public GameObject FatherObj { get { return fatherObj; } }
 
         /// <summary>
-        /// ¹¹Ôìº¯Êı
+        /// æ„é€ å‡½æ•°
         /// </summary>
-        /// <param name="containerName">ÈİÆ÷Ãû£¨Ò»°ãÎª×ÊÔ´Â·¾¶£©</param>
+        /// <param name="containerName">å®¹å™¨åï¼ˆä¸€èˆ¬ä¸ºèµ„æºè·¯å¾„ï¼‰</param>
         public PoolData(string containerName)
         {
             this.containerName = string.IsNullOrEmpty(containerName) ? "Pool" : containerName;
         }
 
         /// <summary>
-        /// ¶ÔÏóÈë³Ø£º»Øµ÷ OnDespawn -> Ê§»î -> Ñ¹Õ» ->£¨¿ªÆôÊÕÄÉÊ±£©¹Òµ½ÈİÆ÷½ÚµãÏÂ¡£
-        /// ³¬³öÉÏÏŞÊ±Ö±½ÓÏú»Ù¶ÔÏó¡£
+        /// å¯¹è±¡å…¥æ± ï¼šå›è°ƒ OnDespawn -> å¤±æ´» -> å‹æ ˆ ->ï¼ˆå¼€å¯æ”¶çº³æ—¶ï¼‰æŒ‚åˆ°å®¹å™¨èŠ‚ç‚¹ä¸‹ã€‚
+        /// è¶…å‡ºä¸Šé™æ—¶ç›´æ¥é”€æ¯å¯¹è±¡ã€‚
         /// </summary>
-        /// <param name="obj">Òª»ØÊÕµÄ¶ÔÏó</param>
-        /// <param name="poolRoot">¶ÔÏó³Ø¸ù½Úµã£¨½öÊÕÄÉÄ£Ê½ĞèÒª£¬¿ÉÎª null£©</param>
-        /// <param name="openLayout">ÊÇ·ñ°´²ã¼¶ÊÕÄÉ</param>
-        /// <param name="maxCount">ÔÊĞí»º´æµÄ¿ÕÏĞ¶ÔÏóÉÏÏŞ£¬0 = ²»ÏŞ£¨Ã¿´ÎÈë³ØÊµÊ±¶ÁÈ¡£©</param>
-        /// <returns>ÊÇ·ñÕæµÄ·Å½øÁË³Ø×Ó£¨false ±íÊ¾³¬³öÉÏÏŞÒÑ±»Ïú»Ù£©</returns>
+        /// <param name="obj">è¦å›æ”¶çš„å¯¹è±¡</param>
+        /// <param name="poolRoot">å¯¹è±¡æ± æ ¹èŠ‚ç‚¹ï¼ˆä»…æ”¶çº³æ¨¡å¼éœ€è¦ï¼Œå¯ä¸º nullï¼‰</param>
+        /// <param name="openLayout">æ˜¯å¦æŒ‰å±‚çº§æ”¶çº³</param>
+        /// <param name="maxCount">å…è®¸ç¼“å­˜çš„ç©ºé—²å¯¹è±¡ä¸Šé™ï¼Œ0 = ä¸é™ï¼ˆæ¯æ¬¡å…¥æ± å®æ—¶è¯»å–ï¼‰</param>
+        /// <returns>æ˜¯å¦çœŸçš„æ”¾è¿›äº†æ± å­ï¼ˆfalse è¡¨ç¤ºè¶…å‡ºä¸Šé™å·²è¢«é”€æ¯ï¼‰</returns>
         public bool PushObj(GameObject obj, GameObject poolRoot, bool openLayout, int maxCount)
         {
             if (obj == null) return false;
 
-            // ³¬³öÉÏÏŞ£º²»»º´æ£¬Ö±½ÓÏú»Ù£¬±ÜÃâ³ØÎŞÏŞÅòÕÍ
+            // è¶…å‡ºä¸Šé™ï¼šä¸ç¼“å­˜ï¼Œç›´æ¥é”€æ¯ï¼Œé¿å…æ± æ— é™è†¨èƒ€
             if (maxCount > 0 && poolList.Count >= maxCount)
             {
                 UnityEngine.Object.Destroy(obj);
                 return false;
             }
 
-            NotifyDespawn(obj);          // ÏÈ¸øÒµÎñÒ»´Î¸´Î»»ú»á£¨´ËÊ±¶ÔÏó»¹ÊÇ¼¤»î×´Ì¬£©
+            NotifyDespawn(obj);          // å…ˆç»™ä¸šåŠ¡ä¸€æ¬¡å¤ä½æœºä¼šï¼ˆæ­¤æ—¶å¯¹è±¡è¿˜æ˜¯æ¿€æ´»çŠ¶æ€ï¼‰
             obj.SetActive(false);
             poolList.Push(obj);
 
@@ -69,8 +69,8 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ¶ÔÏó³ö³Ø£ºµ¯Õ» -> ±ØÒªµÄ»°ÍÑÀë¸¸½Úµã -> ¼¤»î -> »Øµ÷ OnSpawn¡£
-        /// ³ØÎª¿Õ£¨»ò¶ÔÏóÒÑ±»Íâ²¿Ïú»Ù£©Ê±·µ»Ø null¡£
+        /// å¯¹è±¡å‡ºæ± ï¼šå¼¹æ ˆ -> å¿…è¦çš„è¯è„±ç¦»çˆ¶èŠ‚ç‚¹ -> æ¿€æ´» -> å›è°ƒ OnSpawnã€‚
+        /// æ± ä¸ºç©ºï¼ˆæˆ–å¯¹è±¡å·²è¢«å¤–éƒ¨é”€æ¯ï¼‰æ—¶è¿”å› nullã€‚
         /// </summary>
         public GameObject GetObj()
         {
@@ -78,11 +78,11 @@ namespace UPandaGF
             {
                 GameObject obj = poolList.Pop();
 
-                // ¶ÔÏó¿ÉÄÜÔÚ³ØÀï±»Íâ²¿ Destroy µôÁË£¬Ìø¹ı
+                // å¯¹è±¡å¯èƒ½åœ¨æ± é‡Œè¢«å¤–éƒ¨ Destroy æ‰äº†ï¼Œè·³è¿‡
                 if (obj == null) continue;
 
-                // Ö»ÍÑÀë"±¾ÈİÆ÷¹ÒÉÏÈ¥µÄ"¸¸½Úµã£º²»ÔÙÒÀÀµ²¼¾Ö¿ª¹Ø£¬
-                // ±ÜÃâ¿ª¹ØÔÚÔËĞĞÆÚ±»¸Ä¶¯ºó¶ÔÏóÒ»Ö±ÁôÔÚ³Ø½ÚµãÏÂ
+                // åªè„±ç¦»"æœ¬å®¹å™¨æŒ‚ä¸Šå»çš„"çˆ¶èŠ‚ç‚¹ï¼šä¸å†ä¾èµ–å¸ƒå±€å¼€å…³ï¼Œ
+                // é¿å…å¼€å…³åœ¨è¿è¡ŒæœŸè¢«æ”¹åŠ¨åå¯¹è±¡ä¸€ç›´ç•™åœ¨æ± èŠ‚ç‚¹ä¸‹
                 if (fatherObj != null && obj.transform.parent == fatherObj.transform)
                 {
                     obj.transform.SetParent(null);
@@ -97,8 +97,8 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// Ïú»ÙÈİÆ÷ÄÚËùÓĞ¿ÕÏĞ¶ÔÏóÓëÈİÆ÷½Úµã¡£
-        /// ×¢Òâ£ºÒÑ¾­È¡³ö¡¢ÕıÔÚÊ¹ÓÃÖĞµÄ¶ÔÏó²»ÊôÓÚ³Ø£¬²»»á±»Ïú»Ù£¨ÓÉµ÷ÓÃ·½¸ºÔğ£©¡£
+        /// é”€æ¯å®¹å™¨å†…æ‰€æœ‰ç©ºé—²å¯¹è±¡ä¸å®¹å™¨èŠ‚ç‚¹ã€‚
+        /// æ³¨æ„ï¼šå·²ç»å–å‡ºã€æ­£åœ¨ä½¿ç”¨ä¸­çš„å¯¹è±¡ä¸å±äºæ± ï¼Œä¸ä¼šè¢«é”€æ¯ï¼ˆç”±è°ƒç”¨æ–¹è´Ÿè´£ï¼‰ã€‚
         /// </summary>
         public void Dispose()
         {
@@ -115,7 +115,7 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>°´Ğè´´½¨²ã¼¶ÊÕÄÉ½Úµã</summary>
+        /// <summary>æŒ‰éœ€åˆ›å»ºå±‚çº§æ”¶çº³èŠ‚ç‚¹</summary>
         private GameObject EnsureFatherObj(GameObject poolRoot)
         {
             if (fatherObj != null) return fatherObj;
@@ -126,14 +126,14 @@ namespace UPandaGF
             return fatherObj;
         }
 
-        /// <summary>»Øµ÷¸ù½ÚµãÉÏµÄ IPoolable£¨²»µİ¹é×ÓÎïÌå£©</summary>
+        /// <summary>å›è°ƒæ ¹èŠ‚ç‚¹ä¸Šçš„ IPoolableï¼ˆä¸é€’å½’å­ç‰©ä½“ï¼‰</summary>
         private static void NotifySpawn(GameObject obj)
         {
             IPoolable poolable = obj.GetComponent<IPoolable>();
             if (poolable != null) poolable.OnSpawn();
         }
 
-        /// <summary>»Øµ÷¸ù½ÚµãÉÏµÄ IPoolable£¨²»µİ¹é×ÓÎïÌå£©</summary>
+        /// <summary>å›è°ƒæ ¹èŠ‚ç‚¹ä¸Šçš„ IPoolableï¼ˆä¸é€’å½’å­ç‰©ä½“ï¼‰</summary>
         private static void NotifyDespawn(GameObject obj)
         {
             IPoolable poolable = obj.GetComponent<IPoolable>();
@@ -142,48 +142,48 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// GameObject ¶ÔÏó³Ø£¨´¿ C# ÀÁ¼ÓÔØµ¥Àı£©¡£
+    /// GameObject å¯¹è±¡æ± ï¼ˆçº¯ C# æ‡’åŠ è½½å•ä¾‹ï¼‰ã€‚
     ///
-    /// ÌØĞÔ£º
-    ///   - °´×ÊÔ´Â·¾¶·ÖÈİÆ÷»º´æ¶ÔÏó£¬³ØÖĞÓĞ»õÊ±Áã¼ÓÔØ¡¢Áã·ÖÅä£¨³ı³ö³Ø±¾Éí£©
-    ///   - Ö§³Ö Resources / AssetBundle Á½ÖÖ¼ÓÔØ·½Ê½£»³Ø¿ÕÊ±×Ô¶¯¼ÓÔØ²¢ÊµÀı»¯
-    ///   - Òì²½È¡¶ÔÏóÌá¹© Task Óë»Øµ÷Á½ÖÖĞÎÊ½£»Í¬²½È¡¶ÔÏó½öÖ§³Ö Resources£¨ÒÑ±ê¼Ç¹ıÊ±£©
-    ///   - ¿ÉÑ¡²ã¼¶ÊÕÄÉ£¨isOpenLayout£©£¬¿ª·¢ÆÚ±ãÓÚÔÚ Hierarchy ²é¿´
-    ///   - Ö§³Öµ¥¸öÈİÆ÷µÄ»º´æÉÏÏŞ£¨maxCountPerKey£©ÓëÔ¤ÈÈ£¨Prewarm£©
-    ///   - ¿ÉÑ¡µÄ IPoolable »Øµ÷£¬ÓÃÓÚ¸´ÓÃ¶ÔÏóÊ±¸´Î»×´Ì¬
+    /// ç‰¹æ€§ï¼š
+    ///   - æŒ‰èµ„æºè·¯å¾„åˆ†å®¹å™¨ç¼“å­˜å¯¹è±¡ï¼Œæ± ä¸­æœ‰è´§æ—¶é›¶åŠ è½½ã€é›¶åˆ†é…ï¼ˆé™¤å‡ºæ± æœ¬èº«ï¼‰
+    ///   - æ”¯æŒ Resources / AssetBundle ä¸¤ç§åŠ è½½æ–¹å¼ï¼›æ± ç©ºæ—¶è‡ªåŠ¨åŠ è½½å¹¶å®ä¾‹åŒ–
+    ///   - å¼‚æ­¥å–å¯¹è±¡æä¾› Task ä¸å›è°ƒä¸¤ç§å½¢å¼ï¼›åŒæ­¥å–å¯¹è±¡ä»…æ”¯æŒ Resourcesï¼ˆå·²æ ‡è®°è¿‡æ—¶ï¼‰
+    ///   - å¯é€‰å±‚çº§æ”¶çº³ï¼ˆisOpenLayoutï¼‰ï¼Œå¼€å‘æœŸä¾¿äºåœ¨ Hierarchy æŸ¥çœ‹
+    ///   - æ”¯æŒå•ä¸ªå®¹å™¨çš„ç¼“å­˜ä¸Šé™ï¼ˆmaxCountPerKeyï¼‰ä¸é¢„çƒ­ï¼ˆPrewarmï¼‰
+    ///   - å¯é€‰çš„ IPoolable å›è°ƒï¼Œç”¨äºå¤ç”¨å¯¹è±¡æ—¶å¤ä½çŠ¶æ€
     ///
-    /// ÏêÏ¸ËµÃ÷ÓëÊ¾Àı¼ûÍ¬Ä¿Â¼ README.md¡£
+    /// è¯¦ç»†è¯´æ˜ä¸ç¤ºä¾‹è§åŒç›®å½• README.mdã€‚
     /// </summary>
     public class GameObjectPoolMgr : LazySingletonBase<GameObjectPoolMgr>, IDisposable
     {
         /// <summary>
-        /// ¶ÔÏó·Å»Ø³ØºóÊÇ·ñÔÚ Hierarchy ÖĞ°´²ã¼¶ÊÕÄÉ£¨<key>_F ÈİÆ÷¹Òµ½ Pool ½ÚµãÏÂ£©¡£
-        /// ¿ª·¢ÆÚ·½±ã²é¿´£»´ò°üÊ±¿ÉÉèÎª false Ê¡Ò»µã¿ªÏú¡£
-        /// ËµÃ÷£º¸Ã¿ª¹ØÖ»Ó°Ïì"ÊÕÄÉ"£¬ÔËĞĞÆÚ¿ª¹ØÇĞ»»²»»áÔÙµ¼ÖÂ¶ÔÏóÈ¡²»³öÀ´£¨³ö³ØÊ±°´Êµ¼Ê¸¸½ÚµãÅĞ¶Ï£©¡£
+        /// å¯¹è±¡æ”¾å›æ± åæ˜¯å¦åœ¨ Hierarchy ä¸­æŒ‰å±‚çº§æ”¶çº³ï¼ˆ<key>_F å®¹å™¨æŒ‚åˆ° Pool èŠ‚ç‚¹ä¸‹ï¼‰ã€‚
+        /// å¼€å‘æœŸæ–¹ä¾¿æŸ¥çœ‹ï¼›æ‰“åŒ…æ—¶å¯è®¾ä¸º false çœä¸€ç‚¹å¼€é”€ã€‚
+        /// è¯´æ˜ï¼šè¯¥å¼€å…³åªå½±å“"æ”¶çº³"ï¼Œè¿è¡ŒæœŸå¼€å…³åˆ‡æ¢ä¸ä¼šå†å¯¼è‡´å¯¹è±¡å–ä¸å‡ºæ¥ï¼ˆå‡ºæ± æ—¶æŒ‰å®é™…çˆ¶èŠ‚ç‚¹åˆ¤æ–­ï¼‰ã€‚
         /// </summary>
         public static bool isOpenLayout = true;
 
-        /// <summary>µ¥¸öÈİÆ÷ÔÊĞí»º´æµÄ¿ÕÏĞ¶ÔÏóÉÏÏŞ£¬0 = ²»ÏŞ£»³¬³öÉÏÏŞµÄ¶ÔÏó»á±»Ö±½ÓÏú»Ù</summary>
+        /// <summary>å•ä¸ªå®¹å™¨å…è®¸ç¼“å­˜çš„ç©ºé—²å¯¹è±¡ä¸Šé™ï¼Œ0 = ä¸é™ï¼›è¶…å‡ºä¸Šé™çš„å¯¹è±¡ä¼šè¢«ç›´æ¥é”€æ¯</summary>
         public int maxCountPerKey = 0;
 
-        /// <summary>Resources Òì²½¼ÓÔØ³¬Ê±£¨Ãë£©£¬³¬Ê±ÊÓÎª¼ÓÔØÊ§°Ü</summary>
+        /// <summary>Resources å¼‚æ­¥åŠ è½½è¶…æ—¶ï¼ˆç§’ï¼‰ï¼Œè¶…æ—¶è§†ä¸ºåŠ è½½å¤±è´¥</summary>
         public float loadTimeout = 15f;
 
         private Dictionary<string, PoolData> poolDic;
-        private readonly HashSet<GameObject> pooledObjects = new HashSet<GameObject>();   // ÒÑÔÚ³ØÖĞµÄ¶ÔÏó£¬·ÀÖ¹ÖØ¸´Èë³Øµ¼ÖÂ"Ò»¸öÊµÀı±»È¡Á½´Î"
-        private GameObject poolObj;                 // ³Ø¸ù½Úµã£¨½öÊÕÄÉÄ£Ê½ĞèÒª£©
+        private readonly HashSet<GameObject> pooledObjects = new HashSet<GameObject>();   // å·²åœ¨æ± ä¸­çš„å¯¹è±¡ï¼Œé˜²æ­¢é‡å¤å…¥æ± å¯¼è‡´"ä¸€ä¸ªå®ä¾‹è¢«å–ä¸¤æ¬¡"
+        private GameObject poolObj;                 // æ± æ ¹èŠ‚ç‚¹ï¼ˆä»…æ”¶çº³æ¨¡å¼éœ€è¦ï¼‰
 
-        private ResourcesLoader resourcesLoader;    // ¶èĞÔ»ñÈ¡
-        private IAssetsLoader assetsLoader;         // ¶èĞÔ»ñÈ¡£¨½ö AssetBundle Ä£Ê½Ê¹ÓÃ£©
+        private ResourcesLoader resourcesLoader;    // æƒ°æ€§è·å–
+        private IAssetsLoader assetsLoader;         // æƒ°æ€§è·å–ï¼ˆä»… AssetBundle æ¨¡å¼ä½¿ç”¨ï¼‰
 
         protected override void OnInit()
         {
             poolDic = new Dictionary<string, PoolData>();
         }
 
-        // ==================== ²éÑ¯ ====================
+        // ==================== æŸ¥è¯¢ ====================
 
-        /// <summary>ËùÓĞÈİÆ÷ÖĞ»º´æµÄ¿ÕÏĞ¶ÔÏó×ÜÊı</summary>
+        /// <summary>æ‰€æœ‰å®¹å™¨ä¸­ç¼“å­˜çš„ç©ºé—²å¯¹è±¡æ€»æ•°</summary>
         public int TotalPooledCount
         {
             get
@@ -199,32 +199,32 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>È¡Ö¸¶¨ key µÄÈİÆ÷ÖĞ¿ÕÏĞ¶ÔÏóÊıÁ¿£¨Ã»ÓĞ¸ÃÈİÆ÷Ê±·µ»Ø 0£©</summary>
+        /// <summary>å–æŒ‡å®š key çš„å®¹å™¨ä¸­ç©ºé—²å¯¹è±¡æ•°é‡ï¼ˆæ²¡æœ‰è¯¥å®¹å™¨æ—¶è¿”å› 0ï¼‰</summary>
         public int PooledCount(string path)
         {
             PoolData data;
             return TryGetPool(path, out data) ? data.Count : 0;
         }
 
-        /// <summary>ÊÇ·ñÒÑ¾­´æÔÚ¸Ã key µÄÈİÆ÷</summary>
+        /// <summary>æ˜¯å¦å·²ç»å­˜åœ¨è¯¥ key çš„å®¹å™¨</summary>
         public bool Contains(string path)
         {
             return poolDic != null && !string.IsNullOrEmpty(path) && poolDic.ContainsKey(path);
         }
 
-        // ==================== È¡¶ÔÏó ====================
+        // ==================== å–å¯¹è±¡ ====================
 
         /// <summary>
-        /// Òì²½È¡¶ÔÏó£¨ÍÆ¼ö£©
+        /// å¼‚æ­¥å–å¯¹è±¡ï¼ˆæ¨èï¼‰
         /// </summary>
-        /// <param name="path">Â·¾¶¡¾Resources Â·¾¶ÏÂ²»ĞèÒªºó×º£¬AssetBundle ĞèÒªºó×º¡¿</param>
-        /// <param name="loadMethod">¼ÓÔØ·½Ê½</param>
-        /// <returns>³ØÖĞÓĞ»õÖ±½Ó·µ»Ø£»·ñÔò¼ÓÔØ²¢ÊµÀı»¯¡£Ê§°Ü£¨º¬³¬Ê±£©·µ»Ø null</returns>
+        /// <param name="path">è·¯å¾„ã€Resources è·¯å¾„ä¸‹ä¸éœ€è¦åç¼€ï¼ŒAssetBundle éœ€è¦åç¼€ã€‘</param>
+        /// <param name="loadMethod">åŠ è½½æ–¹å¼</param>
+        /// <returns>æ± ä¸­æœ‰è´§ç›´æ¥è¿”å›ï¼›å¦åˆ™åŠ è½½å¹¶å®ä¾‹åŒ–ã€‚å¤±è´¥ï¼ˆå«è¶…æ—¶ï¼‰è¿”å› null</returns>
         public async Task<GameObject> GetObjAsync(string path, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
         {
             if (string.IsNullOrEmpty(path))
             {
-                PLogger.LogError("[GameObjectPoolMgr] path Îª¿Õ£¬ÎŞ·¨È¡¶ÔÏó");
+                PLogger.LogError("[GameObjectPoolMgr] path ä¸ºç©ºï¼Œæ— æ³•å–å¯¹è±¡");
                 return null;
             }
 
@@ -236,17 +236,17 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// Òì²½È¡¶ÔÏó£¨»Øµ÷ĞÎÊ½£¬Óë¿ò¼ÜÆäËüÒì²½ API ·ç¸ñÒ»ÖÂ£©¡£
-        /// Ê§°ÜÊ±Í¬Ñù»áÒÔ null »Øµ÷£¬µ÷ÓÃ·½ĞèÅĞ¿Õ¡£
+        /// å¼‚æ­¥å–å¯¹è±¡ï¼ˆå›è°ƒå½¢å¼ï¼Œä¸æ¡†æ¶å…¶å®ƒå¼‚æ­¥ API é£æ ¼ä¸€è‡´ï¼‰ã€‚
+        /// å¤±è´¥æ—¶åŒæ ·ä¼šä»¥ null å›è°ƒï¼Œè°ƒç”¨æ–¹éœ€åˆ¤ç©ºã€‚
         /// </summary>
-        /// <param name="path">Â·¾¶¡¾Resources Â·¾¶ÏÂ²»ĞèÒªºó×º£¬AssetBundle ĞèÒªºó×º¡¿</param>
-        /// <param name="callback">½á¹û»Øµ÷£¨Ê§°Ü´« null£©</param>
-        /// <param name="loadMethod">¼ÓÔØ·½Ê½</param>
+        /// <param name="path">è·¯å¾„ã€Resources è·¯å¾„ä¸‹ä¸éœ€è¦åç¼€ï¼ŒAssetBundle éœ€è¦åç¼€ã€‘</param>
+        /// <param name="callback">ç»“æœå›è°ƒï¼ˆå¤±è´¥ä¼  nullï¼‰</param>
+        /// <param name="loadMethod">åŠ è½½æ–¹å¼</param>
         public void GetObjAsync(string path, UnityAction<GameObject> callback, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
         {
             if (string.IsNullOrEmpty(path))
             {
-                PLogger.LogError("[GameObjectPoolMgr] path Îª¿Õ£¬ÎŞ·¨È¡¶ÔÏó");
+                PLogger.LogError("[GameObjectPoolMgr] path ä¸ºç©ºï¼Œæ— æ³•å–å¯¹è±¡");
                 if (callback != null) callback(null);
                 return;
             }
@@ -281,24 +281,24 @@ namespace UPandaGF
                     break;
 
                 default:
-                    PLogger.LogError($"[GameObjectPoolMgr] ²»Ö§³ÖµÄ¼ÓÔØ·½Ê½£º{loadMethod}");
+                    PLogger.LogError($"[GameObjectPoolMgr] ä¸æ”¯æŒçš„åŠ è½½æ–¹å¼ï¼š{loadMethod}");
                     if (callback != null) callback(null);
                     break;
             }
         }
 
         /// <summary>
-        /// È¡¶ÔÏó¡¾Í¬²½¡¿¡ª¡ª ½öÖ§³Ö Editor/Resources Ä£Ê½£»AssetBundle ±ØĞëÓÃÒì²½¡£
-        /// ÄÚ²¿×ß ResourcesLoader£¬Óë¿ò¼ÜµÄ»º´æ/ÒıÓÃ¼ÆÊı±£³ÖÒ»ÖÂ¡£
+        /// å–å¯¹è±¡ã€åŒæ­¥ã€‘â€”â€” ä»…æ”¯æŒ Editor/Resources æ¨¡å¼ï¼›AssetBundle å¿…é¡»ç”¨å¼‚æ­¥ã€‚
+        /// å†…éƒ¨èµ° ResourcesLoaderï¼Œä¸æ¡†æ¶çš„ç¼“å­˜/å¼•ç”¨è®¡æ•°ä¿æŒä¸€è‡´ã€‚
         /// </summary>
-        /// <param name="path">Resources Â·¾¶£¨²»ĞèÒªºó×º£©</param>
-        /// <param name="loadMethod">¼ÓÔØ·½Ê½£¬´« AssetBundle »áÖ±½ÓÊ§°Ü·µ»Ø null</param>
-        [Obsolete("Ê¹ÓÃAssetBundleÊ±²»Ö§³Ö¸Ã·½·¨£¬Çë¸ÄÓÃ GetObjAsync")]
+        /// <param name="path">Resources è·¯å¾„ï¼ˆä¸éœ€è¦åç¼€ï¼‰</param>
+        /// <param name="loadMethod">åŠ è½½æ–¹å¼ï¼Œä¼  AssetBundle ä¼šç›´æ¥å¤±è´¥è¿”å› null</param>
+        [Obsolete("ä½¿ç”¨AssetBundleæ—¶ä¸æ”¯æŒè¯¥æ–¹æ³•ï¼Œè¯·æ”¹ç”¨ GetObjAsync")]
         public GameObject GetObj(string path, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
         {
             if (string.IsNullOrEmpty(path))
             {
-                PLogger.LogError("[GameObjectPoolMgr] path Îª¿Õ£¬ÎŞ·¨È¡¶ÔÏó");
+                PLogger.LogError("[GameObjectPoolMgr] path ä¸ºç©ºï¼Œæ— æ³•å–å¯¹è±¡");
                 return null;
             }
 
@@ -307,38 +307,38 @@ namespace UPandaGF
 
             if (loadMethod == AssetLoadMethod.AssetBundle)
             {
-                PLogger.LogError("Ê¹ÓÃAssetBundle¼ÓÔØ²»Ö§³ÖÍ¬²½·½Ê½»ñÈ¡£¬ÇëÊ¹ÓÃÒì²½·½·¨¼ÓÔØ:¡¾GetObjAsync(path, AssetLoadMethod.AssetBundle);¡¿");
+                PLogger.LogError("ä½¿ç”¨AssetBundleåŠ è½½ä¸æ”¯æŒåŒæ­¥æ–¹å¼è·å–ï¼Œè¯·ä½¿ç”¨å¼‚æ­¥æ–¹æ³•åŠ è½½:ã€GetObjAsync(path, AssetLoadMethod.AssetBundle);ã€‘");
                 return null;
             }
 
             return CreateInstance(path, ResourcesLoaderRef.Load<GameObject>(path));
         }
 
-        // ==================== »ØÊÕ / Ô¤ÈÈ / Çå¿Õ ====================
+        // ==================== å›æ”¶ / é¢„çƒ­ / æ¸…ç©º ====================
 
         /// <summary>
-        /// °Ñ¶ÔÏó·Å»Ø¶ÔÏó³Ø¡£
+        /// æŠŠå¯¹è±¡æ”¾å›å¯¹è±¡æ± ã€‚
         /// </summary>
-        /// <param name="name">³ØµÄ key£¨±ØĞëÊÇµ±³õÈ¡¶ÔÏóÊ±ÓÃµÄÍ¬Ò»¸ö path£©</param>
-        /// <param name="obj">Òª»ØÊÕµÄ¶ÔÏó£»Í¬Ò»¸ö¶ÔÏóÖØ¸´Èë³Ø»á±»ºöÂÔ²¢¸ø³ö¾¯¸æ</param>
+        /// <param name="name">æ± çš„ keyï¼ˆå¿…é¡»æ˜¯å½“åˆå–å¯¹è±¡æ—¶ç”¨çš„åŒä¸€ä¸ª pathï¼‰</param>
+        /// <param name="obj">è¦å›æ”¶çš„å¯¹è±¡ï¼›åŒä¸€ä¸ªå¯¹è±¡é‡å¤å…¥æ± ä¼šè¢«å¿½ç•¥å¹¶ç»™å‡ºè­¦å‘Š</param>
         public void PushObj(string name, GameObject obj)
         {
             if (obj == null)
             {
-                PLogger.LogError($"[GameObjectPoolMgr] PushObj ÊÕµ½ null ¶ÔÏó£¬key:{name}");
+                PLogger.LogError($"[GameObjectPoolMgr] PushObj æ”¶åˆ° null å¯¹è±¡ï¼Œkey:{name}");
                 return;
             }
 
             if (string.IsNullOrEmpty(name))
             {
-                PLogger.LogError($"[GameObjectPoolMgr] PushObj µÄ key Îª¿Õ£¬¶ÔÏó£º{obj.name}");
+                PLogger.LogError($"[GameObjectPoolMgr] PushObj çš„ key ä¸ºç©ºï¼Œå¯¹è±¡ï¼š{obj.name}");
                 return;
             }
 
-            // Í¬Ò»¸ö¶ÔÏó²»ÔÊĞíÖØ¸´Èë³Ø£¨·ñÔòÁ½´Î³ö³Ø»áÄÃµ½Í¬Ò»¸öÊµÀı£©
+            // åŒä¸€ä¸ªå¯¹è±¡ä¸å…è®¸é‡å¤å…¥æ± ï¼ˆå¦åˆ™ä¸¤æ¬¡å‡ºæ± ä¼šæ‹¿åˆ°åŒä¸€ä¸ªå®ä¾‹ï¼‰
             if (!pooledObjects.Add(obj))
             {
-                PLogger.LogWarning($"[GameObjectPoolMgr] ¶ÔÏó {obj.name} ÒÑ¾­ÔÚ³ØÖĞ£¬ºöÂÔÖØ¸´Èë³Ø");
+                PLogger.LogWarning($"[GameObjectPoolMgr] å¯¹è±¡ {obj.name} å·²ç»åœ¨æ± ä¸­ï¼Œå¿½ç•¥é‡å¤å…¥æ± ");
                 return;
             }
 
@@ -349,7 +349,7 @@ namespace UPandaGF
                 poolDic.Add(name, data);
             }
 
-            // ³¬³öÉÏÏŞÊ± PoolData »áÖ±½ÓÏú»Ù¶ÔÏó£¬´ËÊ±Òª°Ñ±ê¼Ç³·µô
+            // è¶…å‡ºä¸Šé™æ—¶ PoolData ä¼šç›´æ¥é”€æ¯å¯¹è±¡ï¼Œæ­¤æ—¶è¦æŠŠæ ‡è®°æ’¤æ‰
             if (!data.PushObj(obj, GetPoolRoot(), isOpenLayout, maxCountPerKey))
             {
                 pooledObjects.Remove(obj);
@@ -357,11 +357,11 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// Ô¤ÈÈ£ºÌáÇ°¼ÓÔØ²¢ÊµÀı»¯Èô¸É¸ö¶ÔÏó·ÅÈë³ØÖĞ£¬±ÜÃâÊ×´ÎÈ¡¶ÔÏóÊ±µÄ¼ÓÔØ¼â·å¡£
+        /// é¢„çƒ­ï¼šæå‰åŠ è½½å¹¶å®ä¾‹åŒ–è‹¥å¹²ä¸ªå¯¹è±¡æ”¾å…¥æ± ä¸­ï¼Œé¿å…é¦–æ¬¡å–å¯¹è±¡æ—¶çš„åŠ è½½å°–å³°ã€‚
         /// </summary>
-        /// <param name="path">Â·¾¶¡¾Resources Â·¾¶ÏÂ²»ĞèÒªºó×º£¬AssetBundle ĞèÒªºó×º¡¿</param>
-        /// <param name="count">Ô¤ÊµÀı»¯ÊıÁ¿</param>
-        /// <param name="loadMethod">¼ÓÔØ·½Ê½</param>
+        /// <param name="path">è·¯å¾„ã€Resources è·¯å¾„ä¸‹ä¸éœ€è¦åç¼€ï¼ŒAssetBundle éœ€è¦åç¼€ã€‘</param>
+        /// <param name="count">é¢„å®ä¾‹åŒ–æ•°é‡</param>
+        /// <param name="loadMethod">åŠ è½½æ–¹å¼</param>
         public async Task Prewarm(string path, int count, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
         {
             if (string.IsNullOrEmpty(path) || count <= 0) return;
@@ -369,7 +369,7 @@ namespace UPandaGF
             GameObject prefab = await LoadObjAsync(path, loadMethod);
             if (prefab == null)
             {
-                PLogger.LogError($"[GameObjectPoolMgr] Ô¤ÈÈÊ§°Ü£¬×ÊÔ´¼ÓÔØ²»³öÀ´¡£path:{path}");
+                PLogger.LogError($"[GameObjectPoolMgr] é¢„çƒ­å¤±è´¥ï¼Œèµ„æºåŠ è½½ä¸å‡ºæ¥ã€‚path:{path}");
                 return;
             }
 
@@ -380,8 +380,8 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// Çå¿Õ¶ÔÏó³Ø£ºÏú»ÙËùÓĞÈİÆ÷ÖĞ»º´æµÄ¿ÕÏĞ¶ÔÏó¡¢ÈİÆ÷½ÚµãÓë³Ø¸ù½Úµã¡£
-        /// Ö÷ÒªÓÃÓÚ³¡¾°ÇĞ»»£»ÒÑ¾­È¡³ö¡¢ÕıÔÚÊ¹ÓÃÖĞµÄ¶ÔÏó²»»á±»Ïú»Ù£¨ÓÉµ÷ÓÃ·½¸ºÔğ£©¡£
+        /// æ¸…ç©ºå¯¹è±¡æ± ï¼šé”€æ¯æ‰€æœ‰å®¹å™¨ä¸­ç¼“å­˜çš„ç©ºé—²å¯¹è±¡ã€å®¹å™¨èŠ‚ç‚¹ä¸æ± æ ¹èŠ‚ç‚¹ã€‚
+        /// ä¸»è¦ç”¨äºåœºæ™¯åˆ‡æ¢ï¼›å·²ç»å–å‡ºã€æ­£åœ¨ä½¿ç”¨ä¸­çš„å¯¹è±¡ä¸ä¼šè¢«é”€æ¯ï¼ˆç”±è°ƒç”¨æ–¹è´Ÿè´£ï¼‰ã€‚
         /// </summary>
         public void Clear()
         {
@@ -403,15 +403,15 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>¹© LazySingletonBase.Release() µ÷ÓÃ£¬µÈ¼ÛÓÚ Clear()</summary>
+        /// <summary>ä¾› LazySingletonBase.Release() è°ƒç”¨ï¼Œç­‰ä»·äº Clear()</summary>
         public void Dispose()
         {
             Clear();
         }
 
-        // ==================== ÄÚ²¿ÊµÏÖ ====================
+        // ==================== å†…éƒ¨å®ç° ====================
 
-        /// <summary>´Ó³ØÖĞÈ¡³öÒ»¸ö¶ÔÏó£»³ØÖĞÃ»ÓĞ¿ÉÓÃ¶ÔÏóÊ±·µ»Ø false</summary>
+        /// <summary>ä»æ± ä¸­å–å‡ºä¸€ä¸ªå¯¹è±¡ï¼›æ± ä¸­æ²¡æœ‰å¯ç”¨å¯¹è±¡æ—¶è¿”å› false</summary>
         private bool TryGetFromPool(string path, out GameObject obj)
         {
             obj = null;
@@ -426,7 +426,7 @@ namespace UPandaGF
             return true;
         }
 
-        /// <summary>È¡ÈİÆ÷£¨Ë³´ø¶µµ× poolDic Î´³õÊ¼»¯µÄÇé¿ö£©</summary>
+        /// <summary>å–å®¹å™¨ï¼ˆé¡ºå¸¦å…œåº• poolDic æœªåˆå§‹åŒ–çš„æƒ…å†µï¼‰</summary>
         private bool TryGetPool(string path, out PoolData data)
         {
             data = null;
@@ -436,7 +436,7 @@ namespace UPandaGF
             return poolDic.TryGetValue(path, out data) && data != null;
         }
 
-        /// <summary>°´Ğè´´½¨³Ø¸ù½Úµã£¨¹Ø±ÕÊÕÄÉÊ±²»ĞèÒª£©</summary>
+        /// <summary>æŒ‰éœ€åˆ›å»ºæ± æ ¹èŠ‚ç‚¹ï¼ˆå…³é—­æ”¶çº³æ—¶ä¸éœ€è¦ï¼‰</summary>
         private GameObject GetPoolRoot()
         {
             if (!isOpenLayout) return null;
@@ -445,20 +445,20 @@ namespace UPandaGF
             return poolObj;
         }
 
-        /// <summary>ÊµÀı»¯Ô¤ÖÆÌå£»prefab Îª null£¨¼ÓÔØÊ§°Ü£©Ê±´òÓ¡´íÎó²¢·µ»Ø null</summary>
+        /// <summary>å®ä¾‹åŒ–é¢„åˆ¶ä½“ï¼›prefab ä¸º nullï¼ˆåŠ è½½å¤±è´¥ï¼‰æ—¶æ‰“å°é”™è¯¯å¹¶è¿”å› null</summary>
         private GameObject CreateInstance(string path, GameObject prefab)
         {
             if (prefab == null)
             {
-                PLogger.LogError($"[GameObjectPoolMgr] ¼ÓÔØÊ§°Ü£¬ÎŞ·¨´´½¨¶ÔÏó¡£path:{path}");
+                PLogger.LogError($"[GameObjectPoolMgr] åŠ è½½å¤±è´¥ï¼Œæ— æ³•åˆ›å»ºå¯¹è±¡ã€‚path:{path}");
                 return null;
             }
 
-            // Instantiate »á×Ô¶¯¸´ÖÆÔ¤ÖÆÌåµÄÃû×Ö£¬ÎŞĞè£¨Ò²²»Ó¦¸Ã£©È¥¸Ä¹²Ïí×ÊÔ´µÄÃû×Ö
+            // Instantiate ä¼šè‡ªåŠ¨å¤åˆ¶é¢„åˆ¶ä½“çš„åå­—ï¼Œæ— éœ€ï¼ˆä¹Ÿä¸åº”è¯¥ï¼‰å»æ”¹å…±äº«èµ„æºçš„åå­—
             return GameObject.Instantiate(prefab);
         }
 
-        /// <summary>°´¼ÓÔØ·½Ê½¼ÓÔØÔ¤ÖÆÌå£¨²»ÊµÀı»¯£©</summary>
+        /// <summary>æŒ‰åŠ è½½æ–¹å¼åŠ è½½é¢„åˆ¶ä½“ï¼ˆä¸å®ä¾‹åŒ–ï¼‰</summary>
         private async Task<GameObject> LoadObjAsync(string path, AssetLoadMethod loadMethod)
         {
             switch (loadMethod)
@@ -472,14 +472,14 @@ namespace UPandaGF
                     return await loader.LoadAsync<GameObject>(path);
 
                 default:
-                    PLogger.LogError($"[GameObjectPoolMgr] ²»Ö§³ÖµÄ¼ÓÔØ·½Ê½£º{loadMethod}");
+                    PLogger.LogError($"[GameObjectPoolMgr] ä¸æ”¯æŒçš„åŠ è½½æ–¹å¼ï¼š{loadMethod}");
                     return null;
             }
         }
 
         /// <summary>
-        /// Resources Òì²½¼ÓÔØ£ºResourcesLoader Ö»Ìá¹©»Øµ÷ĞÎÊ½£¬
-        /// ÕâÀïÓÃ Task + ³¬Ê±°üÒ»²ã£¬±ÜÃâ»Øµ÷³Ù³Ù²»À´Ê±ÓÀ¾ÃµÈ´ı¡£
+        /// Resources å¼‚æ­¥åŠ è½½ï¼šResourcesLoader åªæä¾›å›è°ƒå½¢å¼ï¼Œ
+        /// è¿™é‡Œç”¨ Task + è¶…æ—¶åŒ…ä¸€å±‚ï¼Œé¿å…å›è°ƒè¿Ÿè¿Ÿä¸æ¥æ—¶æ°¸ä¹…ç­‰å¾…ã€‚
         /// </summary>
         private async Task<GameObject> LoadByResourcesAsync(string path)
         {
@@ -500,13 +500,13 @@ namespace UPandaGF
 
             if (!isLoaded)
             {
-                PLogger.LogError($"[GameObjectPoolMgr] ¼ÓÔØ³¬Ê±£¨{loadTimeout} Ãë£©¡£path:{path}");
+                PLogger.LogError($"[GameObjectPoolMgr] åŠ è½½è¶…æ—¶ï¼ˆ{loadTimeout} ç§’ï¼‰ã€‚path:{path}");
             }
 
             return asset;
         }
 
-        /// <summary>×ÊÔ´¼ÓÔØÆ÷£¨¶èĞÔ»ñÈ¡£¬Resources Ä£Ê½²»»á´¥Åö UPGameRoot£©</summary>
+        /// <summary>èµ„æºåŠ è½½å™¨ï¼ˆæƒ°æ€§è·å–ï¼ŒResources æ¨¡å¼ä¸ä¼šè§¦ç¢° UPGameRootï¼‰</summary>
         private ResourcesLoader ResourcesLoaderRef
         {
             get
@@ -517,9 +517,9 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// AssetBundle ×ÊÔ´¼ÓÔØÆ÷£¨¶èĞÔ»ñÈ¡£©¡£
-        /// ×¢Òâ£ºUPGameRoot ÊÇ¶öººµ¥Àı£¬È±Ê§Ê±»á×Ô¶¯´´½¨ÊµÀı£¬
-        /// Òò´ËÖ»ÓĞÕæÕıÓÃµ½ AssetBundle Ä£Ê½Ê±²Å»áÈ¥È¡Ëü¡£
+        /// AssetBundle èµ„æºåŠ è½½å™¨ï¼ˆæƒ°æ€§è·å–ï¼‰ã€‚
+        /// æ³¨æ„ï¼šUPGameRoot æ˜¯é¥¿æ±‰å•ä¾‹ï¼Œç¼ºå¤±æ—¶ä¼šè‡ªåŠ¨åˆ›å»ºå®ä¾‹ï¼Œ
+        /// å› æ­¤åªæœ‰çœŸæ­£ç”¨åˆ° AssetBundle æ¨¡å¼æ—¶æ‰ä¼šå»å–å®ƒã€‚
         /// </summary>
         private IAssetsLoader AssetsLoaderRef
         {
@@ -531,7 +531,7 @@ namespace UPandaGF
                 assetsLoader = root != null ? root.GetAssetsLoader() : null;
                 if (assetsLoader == null)
                 {
-                    PLogger.LogError("[GameObjectPoolMgr] ×ÊÔ´¼ÓÔØÆ÷²»¿ÉÓÃ£¨UPGameRoot Î´³õÊ¼»¯»ò×ÊÔ´ÏµÍ³ÉĞÎ´¾ÍĞ÷£©£¬AssetBundle Ä£Ê½ÎŞ·¨¼ÓÔØ");
+                    PLogger.LogError("[GameObjectPoolMgr] èµ„æºåŠ è½½å™¨ä¸å¯ç”¨ï¼ˆUPGameRoot æœªåˆå§‹åŒ–æˆ–èµ„æºç³»ç»Ÿå°šæœªå°±ç»ªï¼‰ï¼ŒAssetBundle æ¨¡å¼æ— æ³•åŠ è½½");
                 }
                 return assetsLoader;
             }

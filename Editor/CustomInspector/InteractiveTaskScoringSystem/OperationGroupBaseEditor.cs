@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -22,33 +22,33 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             {
                 GUILayout.Space(20);
 
-                if (GUILayout.Button("Add »ù´¡ÈÎÎñ¼ì²é"))
+                if (GUILayout.Button("Add åŸºç¡€ä»»åŠ¡æ£€æŸ¥"))
                 {
                     int _count = component.transform.childCount;
                     GameObject obj = CreatNode($"OperationCheck({_count})");
                     OperationCheckBase oc = obj.AddComponent<OperationCheckBase>();
-                    Undo.RecordObject(obj, "Add »ù´¡ÈÎÎñ¼ì²é");
+                    Undo.RecordObject(obj, "Add åŸºç¡€ä»»åŠ¡æ£€æŸ¥");
                 }
-                if (GUILayout.Button("Add ²Ù×÷¼ì²é×é£¨´®Áª£©"))
+                if (GUILayout.Button("Add æ“ä½œæ£€æŸ¥ç»„ï¼ˆä¸²è”ï¼‰"))
                 {
                     GameObject obj = CreatNode("SeriesOperationGroup");
                     obj.AddComponent<SeriesOperationGroup>();
-                    Undo.RecordObject(obj, "Add ²Ù×÷¼ì²é×é£¨´®Áª£©");
+                    Undo.RecordObject(obj, "Add æ“ä½œæ£€æŸ¥ç»„ï¼ˆä¸²è”ï¼‰");
                 }
-                if (GUILayout.Button("Add ²Ù×÷¼ì²é×é£¨²¢Áª£©"))
+                if (GUILayout.Button("Add æ“ä½œæ£€æŸ¥ç»„ï¼ˆå¹¶è”ï¼‰"))
                 {
                     GameObject obj = CreatNode("ParallelOperationGroup");
                     obj.AddComponent<ParallelOperationGroup>();
-                    Undo.RecordObject(obj, "Add ²Ù×÷¼ì²é×é£¨²¢Áª£©");
+                    Undo.RecordObject(obj, "Add æ“ä½œæ£€æŸ¥ç»„ï¼ˆå¹¶è”ï¼‰");
                 }
 
                 if (isSeriesOperationGroup)
                 {
-                    EditorGUILayout.HelpBox("¡¾´®Áª¼ì²é×é¡¿\n×Ó½ÚµãÈÎÎñ¼ì²éÒÀ´ÎÆô¶¯£¬Ö±ÖÁÈ«²¿Íê³É", MessageType.Info);
+                    EditorGUILayout.HelpBox("ã€ä¸²è”æ£€æŸ¥ç»„ã€‘\nå­èŠ‚ç‚¹ä»»åŠ¡æ£€æŸ¥ä¾æ¬¡å¯åŠ¨ï¼Œç›´è‡³å…¨éƒ¨å®Œæˆ", MessageType.Info);
                 }
                 else
                 {
-                    EditorGUILayout.HelpBox("¡¾²¢Áª¼ì²é×é¡¿\n×Ó½ÚµãÈÎÎñ¼ì²éÈ«²¿Æô¶¯£¬Ö±ÖÁÍê³ÉÊıÁ¿Âú×ãCompleteCount¡£\nCompleteCountµÈÓÚ0ÇÒ²½ÖèÊıÁ¿´óÓÚ0Ê±£¬ÕâĞèÒªÈÎÎñÈ«²¿Íê³É", MessageType.Info);
+                    EditorGUILayout.HelpBox("ã€å¹¶è”æ£€æŸ¥ç»„ã€‘\nå­èŠ‚ç‚¹ä»»åŠ¡æ£€æŸ¥å…¨éƒ¨å¯åŠ¨ï¼Œç›´è‡³å®Œæˆæ•°é‡æ»¡è¶³CompleteCountã€‚\nCompleteCountç­‰äº0ä¸”æ­¥éª¤æ•°é‡å¤§äº0æ—¶ï¼Œè¿™éœ€è¦ä»»åŠ¡å…¨éƒ¨å®Œæˆ", MessageType.Info);
                 }
             }
         }

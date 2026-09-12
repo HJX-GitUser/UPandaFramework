@@ -1,23 +1,23 @@
-using System.IO;
+ï»¿using System.IO;
 using UnityEditor;
 using UnityEngine;
 
 public class PLoggerEditor
 {
-    [MenuItem("UPandaGF/ÈÕÖ¾ÏµÍ³/Æô¶¯ÈÕÖ¾", false, 0)]
+    [MenuItem("UPandaGF/æ—¥å¿—ç³»ç»Ÿ/å¯åŠ¨æ—¥å¿—", false, 0)]
     public static void EnablePLoger()
     {
         ScriptingDefineSymbols.AddScriptingDefineSymbol("OPEN_PLOG");
-        Debug.Log("ÒÑÎª Standalone / iOS / Android / WebGL Ìí¼Ó OPEN_PLOG ºê¶¨Òå£¬ÖØĞÂ±àÒëºóÈÕÖ¾ÉúĞ§¡£");
+        Debug.Log("å·²ä¸º Standalone / iOS / Android / WebGL æ·»åŠ  OPEN_PLOG å®å®šä¹‰ï¼Œé‡æ–°ç¼–è¯‘åæ—¥å¿—ç”Ÿæ•ˆã€‚");
     }
 
-    [MenuItem("UPandaGF/ÈÕÖ¾ÏµÍ³/ÌŞ³ıÈÕÖ¾", false, 1)]
+    [MenuItem("UPandaGF/æ—¥å¿—ç³»ç»Ÿ/å‰”é™¤æ—¥å¿—", false, 1)]
     public static void ClosePLoger()
     {
         ScriptingDefineSymbols.RemoveScriptingDefineSymbol("OPEN_PLOG");
-        // ĞŞ¸´£º²»ÔÙË³ÊÖÉ¾³ı StreamingAssets/Data/LogConfig.json ¡ª¡ª Ô­ÊµÏÖ°Ñ"¹ØÈÕÖ¾"ºÍ"É¾ÅäÖÃ"°óÔÚÒ»Æğ£¬
-        // ÓÃ»§Ö»ÊÇ²»Ïë´òÈÕÖ¾£¬½á¹ûÅäÖÃ×Ê²úÒ»ÆğÃ»ÁË¡£É¾²»É¾½»¸øÊ¹ÓÃÕß×Ô¼º¾ö¶¨¡£
-        Debug.Log("ÒÑÒÆ³ı OPEN_PLOG ºê¶¨Òå£¬ÖØĞÂ±àÒëºóÈÕÖ¾µ÷ÓÃ»á±»ÕûÌåÌŞ³ı¡£ÈÕÖ¾ÅäÖÃÎÄ¼ş±£³Ö²»±ä£º"
+        // ä¿®å¤ï¼šä¸å†é¡ºæ‰‹åˆ é™¤ StreamingAssets/Data/LogConfig.json â€”â€” åŸå®ç°æŠŠ"å…³æ—¥å¿—"å’Œ"åˆ é…ç½®"ç»‘åœ¨ä¸€èµ·ï¼Œ
+        // ç”¨æˆ·åªæ˜¯ä¸æƒ³æ‰“æ—¥å¿—ï¼Œç»“æœé…ç½®èµ„äº§ä¸€èµ·æ²¡äº†ã€‚åˆ ä¸åˆ äº¤ç»™ä½¿ç”¨è€…è‡ªå·±å†³å®šã€‚
+        Debug.Log("å·²ç§»é™¤ OPEN_PLOG å®å®šä¹‰ï¼Œé‡æ–°ç¼–è¯‘åæ—¥å¿—è°ƒç”¨ä¼šè¢«æ•´ä½“å‰”é™¤ã€‚æ—¥å¿—é…ç½®æ–‡ä»¶ä¿æŒä¸å˜ï¼š"
             + Application.streamingAssetsPath + "/Data/LogConfig.json");
     }
 

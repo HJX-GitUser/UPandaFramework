@@ -1,15 +1,15 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.Events;
 
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
     /// <summary>
-    /// ´®Áª²Ù×÷¼àÌı×é
+    /// ä¸²è”æ“ä½œç›‘å¬ç»„
     /// </summary>
     public class SeriesOperationGroup : OperationGroupBase
     {
         /// <summary>
-        /// µ±Ç°²Ù×÷²½Öè
+        /// å½“å‰æ“ä½œæ­¥éª¤
         /// </summary>
         private int currentIndex;
 
@@ -18,23 +18,23 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             if (OperationCount == 0)
             {
-                Debug.LogWarning($"ÈÎÎñid:{taskStep.taskStepData.stepID} ´®Áª²Ù×÷×éÈÎÎñ¼ì²é²½ÖèÎ´ÅäÖÃ£¡£¡£¡");
+                Debug.LogWarning($"ä»»åŠ¡id:{taskStep.taskStepData.stepID} ä¸²è”æ“ä½œç»„ä»»åŠ¡æ£€æŸ¥æ­¥éª¤æœªé…ç½®ï¼ï¼ï¼");
                 return;
             }
             if (currentIndex < OperationCount)
             {
-                if (ChildStep[currentIndex] == null || ChildStep[currentIndex].GetOperationPhase != OperationPhase.TargetCheck) return;   // ĞŞ¸´£º×Ó²½ÖèÒÑÔÚÖ´ĞĞ»òÒÑÍê³ÉÊ±£¬±¾´Îµã»÷²»ÅĞÎª²Ù×÷´íÎó
+                if (ChildStep[currentIndex] == null || ChildStep[currentIndex].GetOperationPhase != OperationPhase.TargetCheck) return;   // ä¿®å¤ï¼šå­æ­¥éª¤å·²åœ¨æ‰§è¡Œæˆ–å·²å®Œæˆæ—¶ï¼Œæœ¬æ¬¡ç‚¹å‡»ä¸åˆ¤ä¸ºæ“ä½œé”™è¯¯
                 if (CheckOperation(arg))
                 {
                     OpearationExecute(() =>
                     {
-                        Debug.Log($"{taskStep.taskStepData.stepID}²Ù×÷Íê³É£¡£¡£¡");
-                        //EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent($"<color=yellow>{taskStep.taskStepData.stepID}²Ù×÷Íê³É</color>"));
+                        Debug.Log($"{taskStep.taskStepData.stepID}æ“ä½œå®Œæˆï¼ï¼ï¼");
+                        //EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent($"<color=yellow>{taskStep.taskStepData.stepID}æ“ä½œå®Œæˆ</color>"));
                     });
                 }
                 else
                 {
-                    EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("²Ù×÷´íÎó!!!"));
+                    EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("æ“ä½œé”™è¯¯!!!"));
                     taskStep.AddErroTimes();
                 }
             }
@@ -47,7 +47,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         public override void OperationInstructions()
         {
-            if (ChildStep == null || currentIndex < 0 || currentIndex >= OperationCount) return;   // ĞŞ¸´£ºÔ½½ç±£»¤
+            if (ChildStep == null || currentIndex < 0 || currentIndex >= OperationCount) return;   // ä¿®å¤ï¼šè¶Šç•Œä¿æŠ¤
             ChildStep[currentIndex].OperationInstructions();
         }
 
@@ -56,13 +56,13 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             base.OperationEnable();
             if (OperationCount == 0) return;
             currentIndex = 0;
-            if (ChildStep[currentIndex] != null) ChildStep[currentIndex].OperationEnable();   // ĞŞ¸´£º¿Õ×Ó²½Öè±£»¤
+            if (ChildStep[currentIndex] != null) ChildStep[currentIndex].OperationEnable();   // ä¿®å¤ï¼šç©ºå­æ­¥éª¤ä¿æŠ¤
             operationPhase = OperationPhase.TargetCheck;
         }
 
         public override bool CheckOperation(TaskEntityBase arg)
         {
-            return ChildStep[currentIndex] != null && ChildStep[currentIndex].CheckOperation(arg);   // ĞŞ¸´£º¿Õ×Ó²½Öè±£»¤
+            return ChildStep[currentIndex] != null && ChildStep[currentIndex].CheckOperation(arg);   // ä¿®å¤ï¼šç©ºå­æ­¥éª¤ä¿æŠ¤
         }
 
         public override void OpearationExecute(UnityAction callback)
@@ -74,11 +74,11 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 if (currentIndex < OperationCount)
                 {
                     operationPhase = OperationPhase.TargetCheck;
-                    if (ChildStep[currentIndex] != null) ChildStep[currentIndex].OperationEnable();   // ĞŞ¸´£º¿Õ×Ó²½Öè±£»¤
+                    if (ChildStep[currentIndex] != null) ChildStep[currentIndex].OperationEnable();   // ä¿®å¤ï¼šç©ºå­æ­¥éª¤ä¿æŠ¤
                 }
                 else
                 {
-                    Debug.Log("´®ÁªÈÎÎñ½áÊø");
+                    Debug.Log("ä¸²è”ä»»åŠ¡ç»“æŸ");
                     operationPhase = OperationPhase.Complete;
                     OperationComplete?.Invoke();
                     callback?.Invoke();

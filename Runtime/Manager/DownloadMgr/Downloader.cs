@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.Networking;
 using System;
 using System.Collections;
@@ -9,61 +9,61 @@ using System.Threading.Tasks;
 namespace UPandaGF
 {
     /// <summary>
-    /// µ¥¸öÏÂÔØÈÎÎñ¡£
-    /// ³£ÓÃ×Ö¶Î£¨url / savePath / fileName / fileSize£©¿ÉÖ±½Ó¸³Öµ£¬ÆäÓàÎªÔËĞĞÊ±×´Ì¬¡£
+    /// å•ä¸ªä¸‹è½½ä»»åŠ¡ã€‚
+    /// å¸¸ç”¨å­—æ®µï¼ˆurl / savePath / fileName / fileSizeï¼‰å¯ç›´æ¥èµ‹å€¼ï¼Œå…¶ä½™ä¸ºè¿è¡Œæ—¶çŠ¶æ€ã€‚
     /// </summary>
     public class DownloadItem
     {
-        // ==================== ÓÉµ÷ÓÃ·½ÉèÖÃ ====================
+        // ==================== ç”±è°ƒç”¨æ–¹è®¾ç½® ====================
 
-        /// <summary>ÏÂÔØµØÖ·</summary>
+        /// <summary>ä¸‹è½½åœ°å€</summary>
         public string url;
 
-        /// <summary>±£´æÂ·¾¶¡¾ÍêÕûÎÄ¼şÂ·¾¶¡¿£»Èô´«µÄÊÇÒÑ´æÔÚµÄÄ¿Â¼£¨»òÒÔ / \ ½áÎ²£©£¬»á×Ô¶¯Æ´½Ó fileName</summary>
+        /// <summary>ä¿å­˜è·¯å¾„ã€å®Œæ•´æ–‡ä»¶è·¯å¾„ã€‘ï¼›è‹¥ä¼ çš„æ˜¯å·²å­˜åœ¨çš„ç›®å½•ï¼ˆæˆ–ä»¥ / \ ç»“å°¾ï¼‰ï¼Œä¼šè‡ªåŠ¨æ‹¼æ¥ fileName</summary>
         public string savePath;
 
-        /// <summary>ÎÄ¼şÃû£»Îª¿ÕÊ±×Ô¶¯´Ó url ÍÆµ¼£¨»áÈ¥µô ?query Óë #fragment£©</summary>
+        /// <summary>æ–‡ä»¶åï¼›ä¸ºç©ºæ—¶è‡ªåŠ¨ä» url æ¨å¯¼ï¼ˆä¼šå»æ‰ ?query ä¸ #fragmentï¼‰</summary>
         public string fileName;
 
-        /// <summary>Ô¤ÆÚÎÄ¼ş´óĞ¡£¨×Ö½Ú£¬0 = Î´Öª£©¡£ÓÉÇåµ¥Ìá¹©Ê±¿ÉÓÃÓÚ½ø¶È¼ÆËãÓëÏÂÔØÍêÕûĞÔĞ£Ñé</summary>
+        /// <summary>é¢„æœŸæ–‡ä»¶å¤§å°ï¼ˆå­—èŠ‚ï¼Œ0 = æœªçŸ¥ï¼‰ã€‚ç”±æ¸…å•æä¾›æ—¶å¯ç”¨äºè¿›åº¦è®¡ç®—ä¸ä¸‹è½½å®Œæ•´æ€§æ ¡éªŒ</summary>
         public long fileSize;
 
-        /// <summary>³¬Ê±Ê±¼ä£¨Ãë£©£º-1 = Ê¹ÓÃ Downloader.defaultTimeout£»0 = ²»³¬Ê±</summary>
+        /// <summary>è¶…æ—¶æ—¶é—´ï¼ˆç§’ï¼‰ï¼š-1 = ä½¿ç”¨ Downloader.defaultTimeoutï¼›0 = ä¸è¶…æ—¶</summary>
         public int timeout = -1;
 
-        /// <summary>Ê§°ÜÖØÊÔ´ÎÊı£¨²»º¬Ê×´Î£©£º-1 = Ê¹ÓÃ Downloader.defaultRetryCount</summary>
+        /// <summary>å¤±è´¥é‡è¯•æ¬¡æ•°ï¼ˆä¸å«é¦–æ¬¡ï¼‰ï¼š-1 = ä½¿ç”¨ Downloader.defaultRetryCount</summary>
         public int retryCount = -1;
 
-        /// <summary>ÊÇ·ñÔÊĞí¶ÏµãĞø´«£ºnull = Ê¹ÓÃ Downloader.enableResume</summary>
+        /// <summary>æ˜¯å¦å…è®¸æ–­ç‚¹ç»­ä¼ ï¼šnull = ä½¿ç”¨ Downloader.enableResume</summary>
         public bool? enableResume = null;
 
-        // ==================== ÔËĞĞÊ±×´Ì¬ ====================
+        // ==================== è¿è¡Œæ—¶çŠ¶æ€ ====================
 
-        /// <summary>ÒÑÏÂÔØ´óĞ¡£¨º¬Ğø´«Æğµã£©</summary>
+        /// <summary>å·²ä¸‹è½½å¤§å°ï¼ˆå«ç»­ä¼ èµ·ç‚¹ï¼‰</summary>
         public long downloadedSize;
 
-        /// <summary>ÏÂÔØ½ø¶È£¨0~1£©£»×Ü´óĞ¡Î´ÖªÊ±±£³Ö 0£¬Íê³ÉÊ±ÖÃ 1</summary>
+        /// <summary>ä¸‹è½½è¿›åº¦ï¼ˆ0~1ï¼‰ï¼›æ€»å¤§å°æœªçŸ¥æ—¶ä¿æŒ 0ï¼Œå®Œæˆæ—¶ç½® 1</summary>
         public float progress;
 
-        /// <summary>µ±Ç°×´Ì¬</summary>
+        /// <summary>å½“å‰çŠ¶æ€</summary>
         public DownloadState state;
 
-        /// <summary>´íÎóĞÅÏ¢£¨Ê§°ÜÊ±Ğ´Èë£©</summary>
+        /// <summary>é”™è¯¯ä¿¡æ¯ï¼ˆå¤±è´¥æ—¶å†™å…¥ï¼‰</summary>
         public string error;
 
-        /// <summary>µ±Ç°ÇëÇó¶ÔÏó£¨½öÔÚÏÂÔØÖĞÓĞĞ§£¬½áÊøºóÖÃ¿Õ£©</summary>
+        /// <summary>å½“å‰è¯·æ±‚å¯¹è±¡ï¼ˆä»…åœ¨ä¸‹è½½ä¸­æœ‰æ•ˆï¼Œç»“æŸåç½®ç©ºï¼‰</summary>
         public UnityWebRequest request;
 
-        /// <summary>ÈÎÎñÎ¨Ò» id£¨ÓÉ Downloader ·ÖÅä£¬ÓÃÓÚ»Øµ÷Æ¥Åä£©</summary>
+        /// <summary>ä»»åŠ¡å”¯ä¸€ idï¼ˆç”± Downloader åˆ†é…ï¼Œç”¨äºå›è°ƒåŒ¹é…ï¼‰</summary>
         public string id;
 
-        // ==================== ÄÚ²¿ÔËĞĞÊ±×Ö¶Î ====================
+        // ==================== å†…éƒ¨è¿è¡Œæ—¶å­—æ®µ ====================
 
-        internal int attempt;               // ÒÑ³¢ÊÔ´ÎÊı£¨1 ±íÊ¾Ê×´Î£©
-        internal long resumeSize;           // ±¾´ÎĞø´«Æğµã£¨±¾µØÒÑÓĞ×Ö½ÚÊı£©
-        internal long totalSize;            // ×Ü´óĞ¡£¨Ğø´«Æğµã + ÏìÓ¦ Content-Length£©£¬0 = Î´Öª
-        internal bool pauseRequested;       // Íâ²¿ÇëÇóÔİÍ£
-        internal bool cancelRequested;      // Íâ²¿ÇëÇóÈ¡Ïû
+        internal int attempt;               // å·²å°è¯•æ¬¡æ•°ï¼ˆ1 è¡¨ç¤ºé¦–æ¬¡ï¼‰
+        internal long resumeSize;           // æœ¬æ¬¡ç»­ä¼ èµ·ç‚¹ï¼ˆæœ¬åœ°å·²æœ‰å­—èŠ‚æ•°ï¼‰
+        internal long totalSize;            // æ€»å¤§å°ï¼ˆç»­ä¼ èµ·ç‚¹ + å“åº” Content-Lengthï¼‰ï¼Œ0 = æœªçŸ¥
+        internal bool pauseRequested;       // å¤–éƒ¨è¯·æ±‚æš‚åœ
+        internal bool cancelRequested;      // å¤–éƒ¨è¯·æ±‚å–æ¶ˆ
 
         public override string ToString()
         {
@@ -71,75 +71,75 @@ namespace UPandaGF
         }
     }
 
-    /// <summary>ÏÂÔØ×´Ì¬</summary>
+    /// <summary>ä¸‹è½½çŠ¶æ€</summary>
     public enum DownloadState
     {
-        Waiting,        // ÅÅ¶ÓµÈ´ı
-        Downloading,    // ÏÂÔØÖĞ
-        Completed,      // ÒÑÍê³É
-        Failed,         // Ê§°Ü£¨ÖØÊÔÒÑÓÃ¾¡£©
-        Paused,         // ÒÑÔİÍ££¨¿É ResumeDownload ¼ÌĞø£©
-        Canceled        // ÒÑÈ¡Ïû
+        Waiting,        // æ’é˜Ÿç­‰å¾…
+        Downloading,    // ä¸‹è½½ä¸­
+        Completed,      // å·²å®Œæˆ
+        Failed,         // å¤±è´¥ï¼ˆé‡è¯•å·²ç”¨å°½ï¼‰
+        Paused,         // å·²æš‚åœï¼ˆå¯ ResumeDownload ç»§ç»­ï¼‰
+        Canceled        // å·²å–æ¶ˆ
     }
 
     /// <summary>
-    /// ÏÂÔØÆ÷£¨MonoBehaviour£©£º¶ÓÁĞ + ²¢·¢ÏÂÔØ + ÊÂ¼şÍ¨Öª + async °ü×°¡£
+    /// ä¸‹è½½å™¨ï¼ˆMonoBehaviourï¼‰ï¼šé˜Ÿåˆ— + å¹¶å‘ä¸‹è½½ + äº‹ä»¶é€šçŸ¥ + async åŒ…è£…ã€‚
     ///
-    /// ÌØĞÔ£º
-    ///   - ¶ÓÁĞÓë²¢·¢£ºmaxConcurrentDownloads ¿ØÖÆÍ¬Ê±ÏÂÔØÊı£¨Ä¬ÈÏ 1 = ´®ĞĞ£©
-    ///   - ½ø¶È£ºÓÅÏÈÓÃ¡¸ÏìÓ¦ Content-Length + Ğø´«Æğµã¡¹¼ÆËã£¬½ø¶ÈÑÏ¸ñµ¥µ÷ 0 ¡ú 1
-    ///   - ³¬Ê±£ºÄ¬ÈÏ 30 Ãë£¨¿ÉÅäÖÃ£»0 = ²»³¬Ê±£©£¬±ÜÃâ·şÎñÆ÷ÎŞÏìÓ¦Ê±ÓÀ¾ÃµÈ´ı
-    ///   - ÖØÊÔ£º¿ÉÅäÖÃ´ÎÊıÓë¼ä¸ô£¬ÖØÊÔÆÚ¼ä²»²úÉú´íÎóÊÂ¼ş£»ÖØÊÔºÄ¾¡²Å»Øµ÷ OnDownloadError
-    ///   - ÍêÕûĞÔĞ£Ñé£ºÍê³Éºó±È¶ÔÂäÅÌ´óĞ¡ÓëÔ¤ÆÚ/Content-Length£¬²»Ò»ÖÂÊÓÎªÊ§°Ü
-    ///   - ¶ÏµãĞø´«£ºÄ¬ÈÏ¹Ø±Õ£¨¼û enableResume ËµÃ÷£©£¬¿ªÆôÊ±»áĞ£Ñé·şÎñÆ÷ÊÇ·ñÕæµÄ·µ»Ø 206
-    ///   - ÔİÍ£ / ¼ÌĞø / È¡Ïû£ºÈÎÎñ¼¶ API£¬ÔİÍ£ºó¿ÉÍ¨¹ı ResumeDownload ¼ÌĞø
-    ///   - ÅúÁ¿½á¹û£ºOnAllDownloadsFinished(bool allSuccess) ¸æÖªÊÇ·ñÈ«²¿³É¹¦
+    /// ç‰¹æ€§ï¼š
+    ///   - é˜Ÿåˆ—ä¸å¹¶å‘ï¼šmaxConcurrentDownloads æ§åˆ¶åŒæ—¶ä¸‹è½½æ•°ï¼ˆé»˜è®¤ 1 = ä¸²è¡Œï¼‰
+    ///   - è¿›åº¦ï¼šä¼˜å…ˆç”¨ã€Œå“åº” Content-Length + ç»­ä¼ èµ·ç‚¹ã€è®¡ç®—ï¼Œè¿›åº¦ä¸¥æ ¼å•è°ƒ 0 â†’ 1
+    ///   - è¶…æ—¶ï¼šé»˜è®¤ 30 ç§’ï¼ˆå¯é…ç½®ï¼›0 = ä¸è¶…æ—¶ï¼‰ï¼Œé¿å…æœåŠ¡å™¨æ— å“åº”æ—¶æ°¸ä¹…ç­‰å¾…
+    ///   - é‡è¯•ï¼šå¯é…ç½®æ¬¡æ•°ä¸é—´éš”ï¼Œé‡è¯•æœŸé—´ä¸äº§ç”Ÿé”™è¯¯äº‹ä»¶ï¼›é‡è¯•è€—å°½æ‰å›è°ƒ OnDownloadError
+    ///   - å®Œæ•´æ€§æ ¡éªŒï¼šå®Œæˆåæ¯”å¯¹è½ç›˜å¤§å°ä¸é¢„æœŸ/Content-Lengthï¼Œä¸ä¸€è‡´è§†ä¸ºå¤±è´¥
+    ///   - æ–­ç‚¹ç»­ä¼ ï¼šé»˜è®¤å…³é—­ï¼ˆè§ enableResume è¯´æ˜ï¼‰ï¼Œå¼€å¯æ—¶ä¼šæ ¡éªŒæœåŠ¡å™¨æ˜¯å¦çœŸçš„è¿”å› 206
+    ///   - æš‚åœ / ç»§ç»­ / å–æ¶ˆï¼šä»»åŠ¡çº§ APIï¼Œæš‚åœåå¯é€šè¿‡ ResumeDownload ç»§ç»­
+    ///   - æ‰¹é‡ç»“æœï¼šOnAllDownloadsFinished(bool allSuccess) å‘ŠçŸ¥æ˜¯å¦å…¨éƒ¨æˆåŠŸ
     ///
-    /// ËùÓĞ»Øµ÷¶¼ÔÚÖ÷Ïß³Ì´¥·¢¡£
+    /// æ‰€æœ‰å›è°ƒéƒ½åœ¨ä¸»çº¿ç¨‹è§¦å‘ã€‚
     /// </summary>
     public class Downloader : MonoBehaviour
     {
-        [Header("ÏÂÔØÉèÖÃ")]
-        [Tooltip("×î´óÍ¬Ê±ÏÂÔØÊı")]
+        [Header("ä¸‹è½½è®¾ç½®")]
+        [Tooltip("æœ€å¤§åŒæ—¶ä¸‹è½½æ•°")]
         public int maxConcurrentDownloads = 1;
 
-        [Tooltip("µ¥¸öÈÎÎñµÄÄ¬ÈÏ³¬Ê±Ê±¼ä£¨Ãë£©£¬0 = ²»³¬Ê±")]
+        [Tooltip("å•ä¸ªä»»åŠ¡çš„é»˜è®¤è¶…æ—¶æ—¶é—´ï¼ˆç§’ï¼‰ï¼Œ0 = ä¸è¶…æ—¶")]
         public int defaultTimeout = 30;
 
-        [Tooltip("µ¥¸öÈÎÎñµÄÄ¬ÈÏÖØÊÔ´ÎÊı£¨²»º¬Ê×´Î£©")]
+        [Tooltip("å•ä¸ªä»»åŠ¡çš„é»˜è®¤é‡è¯•æ¬¡æ•°ï¼ˆä¸å«é¦–æ¬¡ï¼‰")]
         public int defaultRetryCount = 0;
 
-        [Tooltip("ÖØÊÔÇ°µÄµÈ´ıÊ±¼ä£¨Ãë£©")]
+        [Tooltip("é‡è¯•å‰çš„ç­‰å¾…æ—¶é—´ï¼ˆç§’ï¼‰")]
         public float retryDelay = 1f;
 
-        [Tooltip("ÊÇ·ñÔÊĞí¶ÏµãĞø´«¡£×¢Òâ£ºÖ»ÓĞÈ·¶¨¡¸±¾µØÎÄ¼şÊÇÍ¬Ò»ÄÚÈİµÄÎ´Íê³ÉÏÂÔØ¡¹Ê±²Å°²È«£»" +
-                 "¿ò¼ÜµÄ MD5 ÔöÁ¿¸üĞÂ³¡¾°ÏÂ±¾µØÎÄ¼ş¿ÉÄÜÊÇ¾É°æ±¾£¬Òò´ËÄ¬ÈÏ¹Ø±Õ¡£¿ªÆôºóÈÔ»áĞ£Ñé 206 ÏìÓ¦Âë")]
+        [Tooltip("æ˜¯å¦å…è®¸æ–­ç‚¹ç»­ä¼ ã€‚æ³¨æ„ï¼šåªæœ‰ç¡®å®šã€Œæœ¬åœ°æ–‡ä»¶æ˜¯åŒä¸€å†…å®¹çš„æœªå®Œæˆä¸‹è½½ã€æ—¶æ‰å®‰å…¨ï¼›" +
+                 "æ¡†æ¶çš„ MD5 å¢é‡æ›´æ–°åœºæ™¯ä¸‹æœ¬åœ°æ–‡ä»¶å¯èƒ½æ˜¯æ—§ç‰ˆæœ¬ï¼Œå› æ­¤é»˜è®¤å…³é—­ã€‚å¼€å¯åä»ä¼šæ ¡éªŒ 206 å“åº”ç ")]
         public bool enableResume = false;
 
-        // ==================== ÊÂ¼ş ====================
+        // ==================== äº‹ä»¶ ====================
 
-        /// <summary>¿ªÊ¼ÏÂÔØÒ»¸öÈÎÎñ£¨ÖØÊÔÊ±Ò²»á´¥·¢£©</summary>
+        /// <summary>å¼€å§‹ä¸‹è½½ä¸€ä¸ªä»»åŠ¡ï¼ˆé‡è¯•æ—¶ä¹Ÿä¼šè§¦å‘ï¼‰</summary>
         public event Action<DownloadItem> OnDownloadStart;
 
-        /// <summary>ÏÂÔØ½ø¶È¸üĞÂ£¨Ã¿Ö¡£©</summary>
+        /// <summary>ä¸‹è½½è¿›åº¦æ›´æ–°ï¼ˆæ¯å¸§ï¼‰</summary>
         public event Action<DownloadItem> OnDownloadProgress;
 
-        /// <summary>µ¥¸öÈÎÎñÏÂÔØ³É¹¦</summary>
+        /// <summary>å•ä¸ªä»»åŠ¡ä¸‹è½½æˆåŠŸ</summary>
         public event Action<DownloadItem> OnDownloadComplete;
 
-        /// <summary>µ¥¸öÈÎÎñÊ§°Ü£¨ÖØÊÔÒÑÓÃ¾¡£¬Õû¸öÈÎÎñÖ»´¥·¢Ò»´Î£©</summary>
+        /// <summary>å•ä¸ªä»»åŠ¡å¤±è´¥ï¼ˆé‡è¯•å·²ç”¨å°½ï¼Œæ•´ä¸ªä»»åŠ¡åªè§¦å‘ä¸€æ¬¡ï¼‰</summary>
         public event Action<DownloadItem> OnDownloadError;
 
-        /// <summary>µ¥¸öÈÎÎñ±»ÔİÍ£</summary>
+        /// <summary>å•ä¸ªä»»åŠ¡è¢«æš‚åœ</summary>
         public event Action<DownloadItem> OnDownloadPause;
 
-        /// <summary>Ò»ÅúÏÂÔØÈ«²¿½áÊø£¨¼æÈİ¾ÉÇ©Ãû£º²»Ğ¯´ø³É¹¦Óë·ñ£©</summary>
+        /// <summary>ä¸€æ‰¹ä¸‹è½½å…¨éƒ¨ç»“æŸï¼ˆå…¼å®¹æ—§ç­¾åï¼šä¸æºå¸¦æˆåŠŸä¸å¦ï¼‰</summary>
         public event Action OnAllDownloadsComplete;
 
-        /// <summary>Ò»ÅúÏÂÔØÈ«²¿½áÊø£¨²ÎÊı = ÊÇ·ñÈ«²¿³É¹¦£©</summary>
+        /// <summary>ä¸€æ‰¹ä¸‹è½½å…¨éƒ¨ç»“æŸï¼ˆå‚æ•° = æ˜¯å¦å…¨éƒ¨æˆåŠŸï¼‰</summary>
         public event Action<bool> OnAllDownloadsFinished;
 
-        // ==================== ÄÚ²¿×´Ì¬ ====================
+        // ==================== å†…éƒ¨çŠ¶æ€ ====================
 
         private readonly List<DownloadItem> pendingItems = new List<DownloadItem>();
         private readonly List<DownloadItem> activeItems = new List<DownloadItem>();
@@ -149,44 +149,44 @@ namespace UPandaGF
         private int downloadIdSeed;
         private int batchCompleted;
 
-        // ==================== ²éÑ¯½Ó¿Ú ====================
+        // ==================== æŸ¥è¯¢æ¥å£ ====================
 
-        /// <summary>ÅÅ¶ÓµÈ´ıÖĞµÄÈÎÎñÊı</summary>
+        /// <summary>æ’é˜Ÿç­‰å¾…ä¸­çš„ä»»åŠ¡æ•°</summary>
         public int PendingCount { get { return pendingItems.Count; } }
 
-        /// <summary>ÕıÔÚÏÂÔØµÄÈÎÎñÊı</summary>
+        /// <summary>æ­£åœ¨ä¸‹è½½çš„ä»»åŠ¡æ•°</summary>
         public int ActiveCount { get { return activeItems.Count; } }
 
-        /// <summary>ÒÑÔİÍ£µÄÈÎÎñÊı</summary>
+        /// <summary>å·²æš‚åœçš„ä»»åŠ¡æ•°</summary>
         public int PausedCount { get { return pausedItems.Count; } }
 
-        /// <summary>±¾Åú´ÎÊ§°ÜµÄÈÎÎñÊı</summary>
+        /// <summary>æœ¬æ‰¹æ¬¡å¤±è´¥çš„ä»»åŠ¡æ•°</summary>
         public int FailedCount { get { return failedItems.Count; } }
 
-        /// <summary>±¾Åú´ÎÊ§°ÜµÄÈÎÎñÁĞ±í</summary>
+        /// <summary>æœ¬æ‰¹æ¬¡å¤±è´¥çš„ä»»åŠ¡åˆ—è¡¨</summary>
         public IReadOnlyList<DownloadItem> FailedItems { get { return failedItems; } }
 
-        /// <summary>ÊÇ·ñÒÑ¿ÕÏĞ£¨ÎŞÅÅ¶Ó¡¢ÎŞÏÂÔØÖĞ¡¢ÎŞÔİÍ££©</summary>
+        /// <summary>æ˜¯å¦å·²ç©ºé—²ï¼ˆæ— æ’é˜Ÿã€æ— ä¸‹è½½ä¸­ã€æ— æš‚åœï¼‰</summary>
         public bool IsIdle
         {
             get { return pendingItems.Count == 0 && activeItems.Count == 0 && pausedItems.Count == 0; }
         }
 
-        /// <summary>Çå¿ÕÊ§°Ü¼ÇÂ¼£¨ĞÂÅú´Î¿ªÊ¼Ê±×Ô¶¯Çå¿Õ£©</summary>
+        /// <summary>æ¸…ç©ºå¤±è´¥è®°å½•ï¼ˆæ–°æ‰¹æ¬¡å¼€å§‹æ—¶è‡ªåŠ¨æ¸…ç©ºï¼‰</summary>
         public void ClearFailedItems()
         {
             failedItems.Clear();
         }
 
-        // ==================== Ìí¼ÓÈÎÎñ ====================
+        // ==================== æ·»åŠ ä»»åŠ¡ ====================
 
         /// <summary>
-        /// Ìí¼Óµ¥¸öÏÂÔØÈÎÎñ
+        /// æ·»åŠ å•ä¸ªä¸‹è½½ä»»åŠ¡
         /// </summary>
-        /// <param name="url">ÏÂÔØµØÖ·</param>
-        /// <param name="savePath">±£´æÂ·¾¶£¨ÍêÕûÎÄ¼şÂ·¾¶£»´«Ä¿Â¼»á×Ô¶¯Æ´½ÓÎÄ¼şÃû£©</param>
-        /// <param name="fileName">ÎÄ¼şÃû£¬Îª¿ÕÔò´Ó url ÍÆµ¼</param>
-        /// <returns>ÈÎÎñ id£¨¿ÉÓÃÓÚÊÂ¼şÆ¥Åä£©£»²ÎÊı·Ç·¨Ê±·µ»Ø null</returns>
+        /// <param name="url">ä¸‹è½½åœ°å€</param>
+        /// <param name="savePath">ä¿å­˜è·¯å¾„ï¼ˆå®Œæ•´æ–‡ä»¶è·¯å¾„ï¼›ä¼ ç›®å½•ä¼šè‡ªåŠ¨æ‹¼æ¥æ–‡ä»¶åï¼‰</param>
+        /// <param name="fileName">æ–‡ä»¶åï¼Œä¸ºç©ºåˆ™ä» url æ¨å¯¼</param>
+        /// <returns>ä»»åŠ¡ idï¼ˆå¯ç”¨äºäº‹ä»¶åŒ¹é…ï¼‰ï¼›å‚æ•°éæ³•æ—¶è¿”å› null</returns>
         public string AddDownload(string url, string savePath, string fileName = null)
         {
             DownloadItem item = CreateItem(url, savePath, fileName);
@@ -198,7 +198,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ÅúÁ¿Ìí¼ÓÏÂÔØÈÎÎñ£¨»á²¹Æë¸÷ÈÎÎñµÄÔËĞĞÊ±×Ö¶Î£©
+        /// æ‰¹é‡æ·»åŠ ä¸‹è½½ä»»åŠ¡ï¼ˆä¼šè¡¥é½å„ä»»åŠ¡çš„è¿è¡Œæ—¶å­—æ®µï¼‰
         /// </summary>
         public void AddBatchDownloads(List<DownloadItem> items)
         {
@@ -213,7 +213,7 @@ namespace UPandaGF
 
                 if (string.IsNullOrEmpty(item.url))
                 {
-                    PLogger.LogError("[Downloader] ÅúÁ¿ÈÎÎñÖĞ´æÔÚ url Îª¿ÕµÄÏî£¬ÒÑÌø¹ı");
+                    PLogger.LogError("[Downloader] æ‰¹é‡ä»»åŠ¡ä¸­å­˜åœ¨ url ä¸ºç©ºçš„é¡¹ï¼Œå·²è·³è¿‡");
                     continue;
                 }
 
@@ -225,16 +225,16 @@ namespace UPandaGF
             TryStartNextDownloads();
         }
 
-        // ==================== ÔİÍ£ / ¼ÌĞø / È¡Ïû ====================
+        // ==================== æš‚åœ / ç»§ç»­ / å–æ¶ˆ ====================
 
-        /// <summary>ÔİÍ£Ö¸¶¨ÈÎÎñ£ºÏÂÔØÖĞµÄ»áÔÚ±¾Ö¡½áÊøºóÖĞ¶Ï²¢ÊÍ·ÅÇëÇó£¬ÅÅ¶ÓÖĞµÄÖ±½ÓÒÆ³ö¶ÓÁĞ</summary>
+        /// <summary>æš‚åœæŒ‡å®šä»»åŠ¡ï¼šä¸‹è½½ä¸­çš„ä¼šåœ¨æœ¬å¸§ç»“æŸåä¸­æ–­å¹¶é‡Šæ”¾è¯·æ±‚ï¼Œæ’é˜Ÿä¸­çš„ç›´æ¥ç§»å‡ºé˜Ÿåˆ—</summary>
         public void PauseDownload(DownloadItem item)
         {
             if (item == null) return;
 
             if (activeItems.Contains(item))
             {
-                item.pauseRequested = true;      // ÓÉÏÂÔØĞ­³ÌÍ³Ò»ÊÕÎ²
+                item.pauseRequested = true;      // ç”±ä¸‹è½½åç¨‹ç»Ÿä¸€æ”¶å°¾
                 return;
             }
 
@@ -247,8 +247,8 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ÔİÍ£µ±Ç°ËùÓĞÕıÔÚ½øĞĞµÄÈÎÎñ¡£
-        /// £¨¾ÉÊµÏÖÖ»ÄÜÔİÍ£Î¨Ò»µÄÒ»¸ö"µ±Ç°ÈÎÎñ"£¬ÕâÀïÔÚ±£³ÖÓïÒåµÄÍ¬Ê±Ö§³Ö²¢·¢£©
+        /// æš‚åœå½“å‰æ‰€æœ‰æ­£åœ¨è¿›è¡Œçš„ä»»åŠ¡ã€‚
+        /// ï¼ˆæ—§å®ç°åªèƒ½æš‚åœå”¯ä¸€çš„ä¸€ä¸ª"å½“å‰ä»»åŠ¡"ï¼Œè¿™é‡Œåœ¨ä¿æŒè¯­ä¹‰çš„åŒæ—¶æ”¯æŒå¹¶å‘ï¼‰
         /// </summary>
         public void PauseCurrentDownload()
         {
@@ -258,7 +258,7 @@ namespace UPandaGF
                 if (item != null) item.pauseRequested = true;
             }
 
-            // »¹ÔÚÅÅ¶ÓµÄÈÎÎñÒ²Ò»ÆğÔİÍ££¬±ÜÃâ"ÔİÍ£ÁËµ«ºóÃæ»¹ÔÚÍµÍµÏÂ"
+            // è¿˜åœ¨æ’é˜Ÿçš„ä»»åŠ¡ä¹Ÿä¸€èµ·æš‚åœï¼Œé¿å…"æš‚åœäº†ä½†åé¢è¿˜åœ¨å·å·ä¸‹"
             while (pendingItems.Count > 0)
             {
                 DownloadItem item = pendingItems[0];
@@ -271,7 +271,7 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>¼ÌĞøÒ»¸öÒÑÔİÍ£µÄÈÎÎñ£¨»á´ÓÒÑÂäÅÌµÄ²¿·Ö¼ÌĞø£¬ÒÀÀµ enableResume£©</summary>
+        /// <summary>ç»§ç»­ä¸€ä¸ªå·²æš‚åœçš„ä»»åŠ¡ï¼ˆä¼šä»å·²è½ç›˜çš„éƒ¨åˆ†ç»§ç»­ï¼Œä¾èµ– enableResumeï¼‰</summary>
         public void ResumeDownload(DownloadItem item)
         {
             if (item == null) return;
@@ -280,7 +280,7 @@ namespace UPandaGF
             item.pauseRequested = false;
             item.state = DownloadState.Waiting;
 
-            // ÖØĞÂÅÅ¶ÓÊ±°Ñ³¢ÊÔ´ÎÊı¸´Î»£¬·ñÔò»áÒòÎª"ÖØÊÔ´ÎÊıÒÑÓÃ¾¡"Ö±½ÓÅĞÊ§°Ü
+            // é‡æ–°æ’é˜Ÿæ—¶æŠŠå°è¯•æ¬¡æ•°å¤ä½ï¼Œå¦åˆ™ä¼šå› ä¸º"é‡è¯•æ¬¡æ•°å·²ç”¨å°½"ç›´æ¥åˆ¤å¤±è´¥
             item.attempt = 0;
             item.error = null;
 
@@ -288,7 +288,7 @@ namespace UPandaGF
             TryStartNextDownloads();
         }
 
-        /// <summary>°´±£´æÂ·¾¶¼ÌĞøÒ»¸öÒÑÔİÍ£µÄÈÎÎñ£¬·µ»ØÊÇ·ñÕÒµ½</summary>
+        /// <summary>æŒ‰ä¿å­˜è·¯å¾„ç»§ç»­ä¸€ä¸ªå·²æš‚åœçš„ä»»åŠ¡ï¼Œè¿”å›æ˜¯å¦æ‰¾åˆ°</summary>
         public bool ResumeDownload(string savePath)
         {
             if (string.IsNullOrEmpty(savePath)) return false;
@@ -305,11 +305,11 @@ namespace UPandaGF
                 }
             }
 
-            PLogger.LogWarning($"[Downloader] Ã»ÓĞÕÒµ½ÒÑÔİÍ£µÄÈÎÎñ£º{savePath}");
+            PLogger.LogWarning($"[Downloader] æ²¡æœ‰æ‰¾åˆ°å·²æš‚åœçš„ä»»åŠ¡ï¼š{savePath}");
             return false;
         }
 
-        /// <summary>È¡ÏûÖ¸¶¨ÈÎÎñ£¨È¡Ïû²»»á´¥·¢ OnDownloadError£©</summary>
+        /// <summary>å–æ¶ˆæŒ‡å®šä»»åŠ¡ï¼ˆå–æ¶ˆä¸ä¼šè§¦å‘ OnDownloadErrorï¼‰</summary>
         public void CancelDownload(DownloadItem item)
         {
             if (item == null) return;
@@ -329,7 +329,7 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>È¡ÏûÈ«²¿ÏÂÔØ£ºÅÅ¶Ó/ÔİÍ£µÄÖ±½Ó¶ªÆú£¬ÏÂÔØÖĞµÄ½»¸øĞ­³ÌÍ³Ò»ÊÍ·Å</summary>
+        /// <summary>å–æ¶ˆå…¨éƒ¨ä¸‹è½½ï¼šæ’é˜Ÿ/æš‚åœçš„ç›´æ¥ä¸¢å¼ƒï¼Œä¸‹è½½ä¸­çš„äº¤ç»™åç¨‹ç»Ÿä¸€é‡Šæ”¾</summary>
         public void CancelAllDownloads()
         {
             for (int i = 0; i < pendingItems.Count; i++)
@@ -346,7 +346,7 @@ namespace UPandaGF
             }
             pausedItems.Clear();
 
-            // ÕıÔÚÏÂÔØµÄÈÎÎñÖ»´ò±ê¼Ç£¬ÓÉ DownloadRoutine Í³Ò» Abort + Dispose + ¸´Î»
+            // æ­£åœ¨ä¸‹è½½çš„ä»»åŠ¡åªæ‰“æ ‡è®°ï¼Œç”± DownloadRoutine ç»Ÿä¸€ Abort + Dispose + å¤ä½
             for (int i = 0; i < activeItems.Count; i++)
             {
                 DownloadItem item = activeItems[i];
@@ -354,10 +354,10 @@ namespace UPandaGF
             }
         }
 
-        // ==================== ½ø¶È ====================
+        // ==================== è¿›åº¦ ====================
 
         /// <summary>
-        /// ×ÜÌå½ø¶È£¨0~1£©£ºÒÑÍê³ÉÈÎÎñ¼Æ 1£¬ÏÂÔØÖĞ/ÔİÍ£ÖĞÈÎÎñ¼Æ¸÷×Ô½ø¶È£¬ÅÅ¶ÓÈÎÎñ¼Æ 0¡£
+        /// æ€»ä½“è¿›åº¦ï¼ˆ0~1ï¼‰ï¼šå·²å®Œæˆä»»åŠ¡è®¡ 1ï¼Œä¸‹è½½ä¸­/æš‚åœä¸­ä»»åŠ¡è®¡å„è‡ªè¿›åº¦ï¼Œæ’é˜Ÿä»»åŠ¡è®¡ 0ã€‚
         /// </summary>
         public float GetTotalProgress()
         {
@@ -379,22 +379,22 @@ namespace UPandaGF
             return Mathf.Clamp01(sum / total);
         }
 
-        // ==================== async ½Ó¿Ú ====================
+        // ==================== async æ¥å£ ====================
 
         /// <summary>
-        /// ÏÂÔØµ¥¸öÎÄ¼ş²¢µÈ´ı½á¹û£¨ÄÚ²¿ÓÃÊÂ¼şÍê³É£¬·µ»Ø½á¹ûÊ±»á×Ô¶¯ÍË¶©£¬²»»áĞ¹Â©ÊÂ¼ş´¦ÀíÆ÷£©
+        /// ä¸‹è½½å•ä¸ªæ–‡ä»¶å¹¶ç­‰å¾…ç»“æœï¼ˆå†…éƒ¨ç”¨äº‹ä»¶å®Œæˆï¼Œè¿”å›ç»“æœæ—¶ä¼šè‡ªåŠ¨é€€è®¢ï¼Œä¸ä¼šæ³„æ¼äº‹ä»¶å¤„ç†å™¨ï¼‰
         /// </summary>
-        /// <param name="url">ÏÂÔØµØÖ·</param>
-        /// <param name="savePath">±£´æÂ·¾¶£¨ÍêÕûÎÄ¼şÂ·¾¶£©</param>
-        /// <param name="progress">¿ÉÑ¡½ø¶È»Øµ÷</param>
-        /// <returns>ÊÇ·ñÏÂÔØ³É¹¦</returns>
+        /// <param name="url">ä¸‹è½½åœ°å€</param>
+        /// <param name="savePath">ä¿å­˜è·¯å¾„ï¼ˆå®Œæ•´æ–‡ä»¶è·¯å¾„ï¼‰</param>
+        /// <param name="progress">å¯é€‰è¿›åº¦å›è°ƒ</param>
+        /// <returns>æ˜¯å¦ä¸‹è½½æˆåŠŸ</returns>
         public async Task<bool> DownloadAsync(string url, string savePath, IProgress<float> progress = null)
         {
             DownloadItem item = CreateItem(url, savePath, null);
             if (item == null) return false;
 
-            // RunContinuationsAsynchronously£º±ÜÃâµÈ´ı·½ÔÚ"Íê³ÉÊÂ¼ş·Ö·¢"ÖĞÍ¾Í¬²½ĞøÅÜ
-            // £¨·ñÔò await Ö®ºóµÄÈÈ¸üÁ÷³Ì»áÇ¶ÔÚÏÂÔØÆ÷µÄ FinishItem ÀïÖ´ĞĞ£¬ÈİÒ×Òı·¢ÖØÈë£©
+            // RunContinuationsAsynchronouslyï¼šé¿å…ç­‰å¾…æ–¹åœ¨"å®Œæˆäº‹ä»¶åˆ†å‘"ä¸­é€”åŒæ­¥ç»­è·‘
+            // ï¼ˆå¦åˆ™ await ä¹‹åçš„çƒ­æ›´æµç¨‹ä¼šåµŒåœ¨ä¸‹è½½å™¨çš„ FinishItem é‡Œæ‰§è¡Œï¼Œå®¹æ˜“å¼•å‘é‡å…¥ï¼‰
             TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             Action<DownloadItem> onComplete = (i) => { if (ReferenceEquals(i, item)) tcs.TrySetResult(true); };
@@ -410,7 +410,7 @@ namespace UPandaGF
                 BeginBatchIfIdle();
                 Enqueue(item);
 
-                // ¶µµ×£º¼´Ê¹´«Êä²ã³¬Ê±Î´ÉúĞ§£¬Ò²²»»áÈÃµ÷ÓÃ·½ÓÀÔ¶¹ÒÆğ
+                // å…œåº•ï¼šå³ä½¿ä¼ è¾“å±‚è¶…æ—¶æœªç”Ÿæ•ˆï¼Œä¹Ÿä¸ä¼šè®©è°ƒç”¨æ–¹æ°¸è¿œæŒ‚èµ·
                 int timeout = item.timeout < 0 ? defaultTimeout : item.timeout;
                 if (timeout > 0)
                 {
@@ -422,7 +422,7 @@ namespace UPandaGF
 
                     if (!tcs.Task.IsCompleted)
                     {
-                        PLogger.LogError($"[Downloader] µÈ´ıÏÂÔØÍê³É³¬Ê±£¨{timeout + 5} Ãë£©£º{item.url}");
+                        PLogger.LogError($"[Downloader] ç­‰å¾…ä¸‹è½½å®Œæˆè¶…æ—¶ï¼ˆ{timeout + 5} ç§’ï¼‰ï¼š{item.url}");
                         CancelDownload(item);
                         tcs.TrySetResult(false);
                     }
@@ -436,20 +436,20 @@ namespace UPandaGF
             }
             finally
             {
-                // ±ØĞëÍË¶©£¬·ñÔòÃ¿´Îµ÷ÓÃ¶¼»áÓÀ¾Ã¶Ñ»ıÊÂ¼ş´¦ÀíÆ÷
+                // å¿…é¡»é€€è®¢ï¼Œå¦åˆ™æ¯æ¬¡è°ƒç”¨éƒ½ä¼šæ°¸ä¹…å †ç§¯äº‹ä»¶å¤„ç†å™¨
                 OnDownloadComplete -= onComplete;
                 OnDownloadError -= onError;
                 if (progress != null) OnDownloadProgress -= onProgress;
             }
         }
 
-        // ==================== ÉúÃüÖÜÆÚ ====================
+        // ==================== ç”Ÿå‘½å‘¨æœŸ ====================
 
         private void OnDestroy()
         {
             CancelAllDownloads();
 
-            // ¶ÔÏóÏú»ÙÊ±Ğ­³Ì»á±»Ç¿ÖÆÖÕÖ¹£¬ÕâÀïÖ±½ÓÊÍ·ÅÈÔÔÚÊ¹ÓÃµÄÇëÇó£¬±ÜÃâÎÄ¼ş¾ä±úĞ¹Â©
+            // å¯¹è±¡é”€æ¯æ—¶åç¨‹ä¼šè¢«å¼ºåˆ¶ç»ˆæ­¢ï¼Œè¿™é‡Œç›´æ¥é‡Šæ”¾ä»åœ¨ä½¿ç”¨çš„è¯·æ±‚ï¼Œé¿å…æ–‡ä»¶å¥æŸ„æ³„æ¼
             for (int i = 0; i < activeItems.Count; i++)
             {
                 DownloadItem item = activeItems[i];
@@ -460,14 +460,14 @@ namespace UPandaGF
             activeItems.Clear();
         }
 
-        // ==================== ÄÚ²¿ÊµÏÖ ====================
+        // ==================== å†…éƒ¨å®ç° ====================
 
-        /// <summary>´´½¨²¢Ğ£ÑéÈÎÎñ£¨²»ÅÅ¶Ó£©</summary>
+        /// <summary>åˆ›å»ºå¹¶æ ¡éªŒä»»åŠ¡ï¼ˆä¸æ’é˜Ÿï¼‰</summary>
         private DownloadItem CreateItem(string url, string savePath, string fileName)
         {
             if (string.IsNullOrEmpty(url))
             {
-                PLogger.LogError("[Downloader] url Îª¿Õ£¬ÎŞ·¨Ìí¼ÓÏÂÔØÈÎÎñ");
+                PLogger.LogError("[Downloader] url ä¸ºç©ºï¼Œæ— æ³•æ·»åŠ ä¸‹è½½ä»»åŠ¡");
                 return null;
             }
 
@@ -483,7 +483,7 @@ namespace UPandaGF
             return item;
         }
 
-        /// <summary>²¹ÆëÍâ²¿´´½¨µÄÈÎÎñµÄÔËĞĞÊ±×Ö¶Î</summary>
+        /// <summary>è¡¥é½å¤–éƒ¨åˆ›å»ºçš„ä»»åŠ¡çš„è¿è¡Œæ—¶å­—æ®µ</summary>
         private void PrepareItem(DownloadItem item)
         {
             if (string.IsNullOrEmpty(item.id)) item.id = $"DL-{++downloadIdSeed}";
@@ -498,7 +498,7 @@ namespace UPandaGF
             item.state = DownloadState.Waiting;
         }
 
-        /// <summary>Ò»ÅúÈÎÎñ¿ªÊ¼Ê±£¨µ±Ç°ÍêÈ«¿ÕÏĞ£©ÖØÖÃÅú´ÎÍ³¼Æ</summary>
+        /// <summary>ä¸€æ‰¹ä»»åŠ¡å¼€å§‹æ—¶ï¼ˆå½“å‰å®Œå…¨ç©ºé—²ï¼‰é‡ç½®æ‰¹æ¬¡ç»Ÿè®¡</summary>
         private void BeginBatchIfIdle()
         {
             if (!IsIdle) return;
@@ -507,7 +507,7 @@ namespace UPandaGF
             failedItems.Clear();
         }
 
-        /// <summary>ÈÎÎñÈë¶Ó²¢³¢ÊÔÆô¶¯</summary>
+        /// <summary>ä»»åŠ¡å…¥é˜Ÿå¹¶å°è¯•å¯åŠ¨</summary>
         private void Enqueue(DownloadItem item)
         {
             item.state = DownloadState.Waiting;
@@ -515,7 +515,7 @@ namespace UPandaGF
             TryStartNextDownloads();
         }
 
-        /// <summary>°´²¢·¢ÉÏÏŞ¾¡¿ÉÄÜ¶àµØÆô¶¯ÏÂÔØ</summary>
+        /// <summary>æŒ‰å¹¶å‘ä¸Šé™å°½å¯èƒ½å¤šåœ°å¯åŠ¨ä¸‹è½½</summary>
         private void TryStartNextDownloads()
         {
             int max = Mathf.Max(1, maxConcurrentDownloads);
@@ -537,12 +537,12 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>ÏÂÔØÖ÷Á÷³Ì</summary>
+        /// <summary>ä¸‹è½½ä¸»æµç¨‹</summary>
         private IEnumerator DownloadRoutine(DownloadItem item)
         {
             item.attempt++;
 
-            // ÖØÊÔµÈ´ı£¨Ê×´Î²»µÈ´ı£©
+            // é‡è¯•ç­‰å¾…ï¼ˆé¦–æ¬¡ä¸ç­‰å¾…ï¼‰
             if (item.attempt > 1 && retryDelay > 0f)
             {
                 yield return new WaitForSeconds(retryDelay);
@@ -557,7 +557,7 @@ namespace UPandaGF
             int timeout = item.timeout < 0 ? defaultTimeout : item.timeout;
             string savePath = ResolveSavePath(item);
 
-            // Ä¿Â¼
+            // ç›®å½•
             try
             {
                 string directory = Path.GetDirectoryName(savePath);
@@ -568,14 +568,14 @@ namespace UPandaGF
             }
             catch (Exception e)
             {
-                item.error = $"´´½¨Ä¿Â¼Ê§°Ü£º{e.Message}";
+                item.error = $"åˆ›å»ºç›®å½•å¤±è´¥ï¼š{e.Message}";
                 FinishItem(item, false);
                 yield break;
             }
 
-            // Ğø´«Æğµã£ºÖ»ÓĞÏÔÊ½¿ªÆô¡¢ÇÒ±¾µØÎÄ¼şĞ¡ÓÚÔ¤ÆÚ´óĞ¡Ê±²ÅĞø´«
-            // £¨¿ò¼ÜµÄ MD5 ÔöÁ¿¸üĞÂ³¡¾°ÏÂ£¬±¾µØÎÄ¼ş¿ÉÄÜÊÇ"ÍêÕûµ«¹ıÆÚ"µÄ¾É°æ±¾£¬
-            //   ´ËÊ±×·¼ÓĞ´Èë»á°ÑĞÂÎÄ¼şÄÚÈİÆ´µ½¾ÉÎÄ¼şºóÃæ ¡ú ±ØĞë½ûÖ¹Ğø´«£©
+            // ç»­ä¼ èµ·ç‚¹ï¼šåªæœ‰æ˜¾å¼å¼€å¯ã€ä¸”æœ¬åœ°æ–‡ä»¶å°äºé¢„æœŸå¤§å°æ—¶æ‰ç»­ä¼ 
+            // ï¼ˆæ¡†æ¶çš„ MD5 å¢é‡æ›´æ–°åœºæ™¯ä¸‹ï¼Œæœ¬åœ°æ–‡ä»¶å¯èƒ½æ˜¯"å®Œæ•´ä½†è¿‡æœŸ"çš„æ—§ç‰ˆæœ¬ï¼Œ
+            //   æ­¤æ—¶è¿½åŠ å†™å…¥ä¼šæŠŠæ–°æ–‡ä»¶å†…å®¹æ‹¼åˆ°æ—§æ–‡ä»¶åé¢ â†’ å¿…é¡»ç¦æ­¢ç»­ä¼ ï¼‰
             long resumeSize = 0;
             if (IsResumeEnabled(item) && item.fileSize > 0 && File.Exists(savePath))
             {
@@ -586,7 +586,7 @@ namespace UPandaGF
                 }
                 catch (Exception e)
                 {
-                    PLogger.LogWarning($"[Downloader] ¶ÁÈ¡±¾µØÎÄ¼ş´óĞ¡Ê§°Ü£¬½«ÕûÎÄ¼şÖØÏÂ£º{savePath}£¬{e.Message}");
+                    PLogger.LogWarning($"[Downloader] è¯»å–æœ¬åœ°æ–‡ä»¶å¤§å°å¤±è´¥ï¼Œå°†æ•´æ–‡ä»¶é‡ä¸‹ï¼š{savePath}ï¼Œ{e.Message}");
                     resumeSize = 0;
                 }
             }
@@ -597,7 +597,7 @@ namespace UPandaGF
             item.progress = 0f;
             item.state = DownloadState.Downloading;
 
-            // ´´½¨ÇëÇó
+            // åˆ›å»ºè¯·æ±‚
             UnityWebRequest request = UnityWebRequest.Get(item.url);
             request.timeout = timeout > 0 ? timeout : 0;
             if (resumeSize > 0)
@@ -619,11 +619,11 @@ namespace UPandaGF
             }
             catch (Exception e)
             {
-                item.error = $"·¢ÆğÇëÇóÊ§°Ü£º{e.Message}";
+                item.error = $"å‘èµ·è¯·æ±‚å¤±è´¥ï¼š{e.Message}";
             }
 
-            // accountingResume£ºÓÃÓÚ"½ø¶È·ÖÄ¸"ºÍ"´óĞ¡Ğ£Ñé"µÄĞø´«Æğµã¡£
-            // ·şÎñÆ÷ºöÂÔ Range Ö±½Ó·µ»Ø 200 Ê±»á±»¹éÁã£¨´ËÊ±¾ä±úÒÑ¸ÄÎªÕûÎÄ¼ş¸²¸ÇĞ´Èë£©
+            // accountingResumeï¼šç”¨äº"è¿›åº¦åˆ†æ¯"å’Œ"å¤§å°æ ¡éªŒ"çš„ç»­ä¼ èµ·ç‚¹ã€‚
+            // æœåŠ¡å™¨å¿½ç•¥ Range ç›´æ¥è¿”å› 200 æ—¶ä¼šè¢«å½’é›¶ï¼ˆæ­¤æ—¶å¥æŸ„å·²æ”¹ä¸ºæ•´æ–‡ä»¶è¦†ç›–å†™å…¥ï¼‰
             long accountingResume = resumeSize;
 
             if (operation != null)
@@ -637,14 +637,14 @@ namespace UPandaGF
 
                     if (timeout > 0 && Time.realtimeSinceStartup - startTime > timeout)
                     {
-                        item.error = $"ÏÂÔØ³¬Ê±£¨{timeout} Ãë£©";
+                        item.error = $"ä¸‹è½½è¶…æ—¶ï¼ˆ{timeout} ç§’ï¼‰";
                         break;
                     }
 
-                    // ¼ì²â"ÇëÇóĞø´«µ«·şÎñÆ÷²»Ö§³Ö"£¨·µ»ØÂë²»ÊÇ 206£©£¬´ËÊ±Òª°´ÕûÎÄ¼şÖØÏÂÍ³¼Æ
+                    // æ£€æµ‹"è¯·æ±‚ç»­ä¼ ä½†æœåŠ¡å™¨ä¸æ”¯æŒ"ï¼ˆè¿”å›ç ä¸æ˜¯ 206ï¼‰ï¼Œæ­¤æ—¶è¦æŒ‰æ•´æ–‡ä»¶é‡ä¸‹ç»Ÿè®¡
                     accountingResume = HandleResumeMismatch(request, item, accountingResume, ref contentLengthRead);
 
-                    // ÏìÓ¦Í·µ½´ïºó²ÅÄÜÄÃµ½ Content-Length£¬ÓÃËüÈ·¶¨×Ü´óĞ¡£¨½ø¶È·ÖÄ¸£©
+                    // å“åº”å¤´åˆ°è¾¾åæ‰èƒ½æ‹¿åˆ° Content-Lengthï¼Œç”¨å®ƒç¡®å®šæ€»å¤§å°ï¼ˆè¿›åº¦åˆ†æ¯ï¼‰
                     if (!contentLengthRead)
                     {
                         UpdateTotalSize(item, request.GetResponseHeader("Content-Length"), accountingResume);
@@ -657,7 +657,7 @@ namespace UPandaGF
                     yield return null;
                 }
 
-                // Ñ­»·ÒòÔİÍ£/È¡Ïû/³¬Ê±ÌáÇ°ÍË³öÊ±¿ÉÄÜ»¹Ã»¶Áµ½ÏìÓ¦Í·£¬ÕâÀï²¹Ò»´Î
+                // å¾ªç¯å› æš‚åœ/å–æ¶ˆ/è¶…æ—¶æå‰é€€å‡ºæ—¶å¯èƒ½è¿˜æ²¡è¯»åˆ°å“åº”å¤´ï¼Œè¿™é‡Œè¡¥ä¸€æ¬¡
                 if (!contentLengthRead)
                 {
                     UpdateTotalSize(item, request.GetResponseHeader("Content-Length"), accountingResume);
@@ -666,7 +666,7 @@ namespace UPandaGF
 
             bool success = string.IsNullOrEmpty(item.error) && IsRequestSuccess(request);
 
-            // Î´ÌáÊ¾´íÎóÊ±ÔÙĞ£ÑéÂäÅÌ´óĞ¡£¬±ÜÃâ"±»½Ø¶ÏµÄÏÂÔØ"±»µ±×÷³É¹¦
+            // æœªæç¤ºé”™è¯¯æ—¶å†æ ¡éªŒè½ç›˜å¤§å°ï¼Œé¿å…"è¢«æˆªæ–­çš„ä¸‹è½½"è¢«å½“ä½œæˆåŠŸ
             if (success)
             {
                 success = VerifyFileSize(item, savePath);
@@ -674,7 +674,7 @@ namespace UPandaGF
 
             if (!success && string.IsNullOrEmpty(item.error))
             {
-                item.error = string.IsNullOrEmpty(request.error) ? "ÏÂÔØÊ§°Ü" : request.error;
+                item.error = string.IsNullOrEmpty(request.error) ? "ä¸‹è½½å¤±è´¥" : request.error;
             }
 
             if (success)
@@ -687,12 +687,12 @@ namespace UPandaGF
             FinishItem(item, success);
         }
 
-        /// <summary>ÈÎÎñÊÕÎ²£ºÖØÊÔÅĞ¶¨¡¢ÊÂ¼şÍ¨Öª¡¢ÇëÇóÊÍ·Å¡¢Åú´ÎÍ³¼ÆÓëÆô¶¯ÏÂÒ»¸ö</summary>
-        /// <param name="item">ÈÎÎñ</param>
-        /// <param name="success">ÊÇ·ñ³É¹¦</param>
+        /// <summary>ä»»åŠ¡æ”¶å°¾ï¼šé‡è¯•åˆ¤å®šã€äº‹ä»¶é€šçŸ¥ã€è¯·æ±‚é‡Šæ”¾ã€æ‰¹æ¬¡ç»Ÿè®¡ä¸å¯åŠ¨ä¸‹ä¸€ä¸ª</summary>
+        /// <param name="item">ä»»åŠ¡</param>
+        /// <param name="success">æ˜¯å¦æˆåŠŸ</param>
         private void FinishItem(DownloadItem item, bool success)
         {
-            // ---------- ÔİÍ£ ----------
+            // ---------- æš‚åœ ----------
             if (item.pauseRequested && !item.cancelRequested)
             {
                 ReleaseRequest(item);
@@ -704,7 +704,7 @@ namespace UPandaGF
                 return;
             }
 
-            // ---------- È¡Ïû ----------
+            // ---------- å–æ¶ˆ ----------
             if (item.cancelRequested)
             {
                 ReleaseRequest(item);
@@ -714,7 +714,7 @@ namespace UPandaGF
                 return;
             }
 
-            // ---------- ³É¹¦ ----------
+            // ---------- æˆåŠŸ ----------
             if (success)
             {
                 ReleaseRequest(item);
@@ -730,7 +730,7 @@ namespace UPandaGF
                 }
                 catch (Exception e)
                 {
-                    PLogger.LogWarning($"[Downloader] ¶ÁÈ¡ÏÂÔØ½á¹û´óĞ¡Ê§°Ü£º{item.savePath}£¬{e.Message}");
+                    PLogger.LogWarning($"[Downloader] è¯»å–ä¸‹è½½ç»“æœå¤§å°å¤±è´¥ï¼š{item.savePath}ï¼Œ{e.Message}");
                 }
 
                 item.state = DownloadState.Completed;
@@ -738,25 +738,25 @@ namespace UPandaGF
                 RemoveActive(item);
                 batchCompleted++;
 
-                // ÏÈÒÆ³ıµ±Ç°ÈÎÎñÔÙÅ×ÊÂ¼ş£¬±£Ö¤»Øµ÷Àï¿´µ½µÄ¶ÓÁĞ×´Ì¬ÊÇ×¼È·µÄ
+                // å…ˆç§»é™¤å½“å‰ä»»åŠ¡å†æŠ›äº‹ä»¶ï¼Œä¿è¯å›è°ƒé‡Œçœ‹åˆ°çš„é˜Ÿåˆ—çŠ¶æ€æ˜¯å‡†ç¡®çš„
                 OnDownloadComplete?.Invoke(item);
                 CheckAllFinished();
                 return;
             }
 
-            // ---------- Ê§°Ü£ºÏÈ¿´ÊÇ·ñ»¹ÄÜÖØÊÔ ----------
+            // ---------- å¤±è´¥ï¼šå…ˆçœ‹æ˜¯å¦è¿˜èƒ½é‡è¯• ----------
             int retryCount = item.retryCount < 0 ? defaultRetryCount : item.retryCount;
             if (item.attempt <= retryCount)
             {
                 ReleaseRequest(item);
-                PLogger.LogWarning($"[Downloader] ÏÂÔØÊ§°Ü£¬×¼±¸µÚ {item.attempt} ´ÎÖØÊÔ£¨×î¶à {retryCount} ´Î£©£º{item.url}£¬Ô­Òò£º{item.error}");
+                PLogger.LogWarning($"[Downloader] ä¸‹è½½å¤±è´¥ï¼Œå‡†å¤‡ç¬¬ {item.attempt} æ¬¡é‡è¯•ï¼ˆæœ€å¤š {retryCount} æ¬¡ï¼‰ï¼š{item.url}ï¼ŒåŸå› ï¼š{item.error}");
 
                 item.error = null;
                 item.progress = 0f;
                 item.state = DownloadState.Waiting;
-                RemoveActive(item);          // ÄÚ²¿»á³¢ÊÔÆô¶¯ºóĞøÈÎÎñ
-                pendingItems.Add(item);      // ·Å»Ø¶ÓÎ²£¬±ÜÃâ×èÈûÆäËüÈÎÎñ
-                TryStartNextDownloads();     // ÈôÓĞ¿ÕµµÔòÁ¢¼´°²ÅÅÖØÊÔ£¨Ğ­³ÌÄÚ»áµÈ´ıÖØÊÔ¼ä¸ô£©
+                RemoveActive(item);          // å†…éƒ¨ä¼šå°è¯•å¯åŠ¨åç»­ä»»åŠ¡
+                pendingItems.Add(item);      // æ”¾å›é˜Ÿå°¾ï¼Œé¿å…é˜»å¡å…¶å®ƒä»»åŠ¡
+                TryStartNextDownloads();     // è‹¥æœ‰ç©ºæ¡£åˆ™ç«‹å³å®‰æ’é‡è¯•ï¼ˆåç¨‹å†…ä¼šç­‰å¾…é‡è¯•é—´éš”ï¼‰
                 return;
             }
 
@@ -765,12 +765,12 @@ namespace UPandaGF
             RemoveActive(item);
             failedItems.Add(item);
 
-            PLogger.LogError($"[Downloader] ÏÂÔØÊ§°Ü£¨ÖØÊÔÒÑÓÃ¾¡£©£º{item.url}£¬Ô­Òò£º{item.error}");
+            PLogger.LogError($"[Downloader] ä¸‹è½½å¤±è´¥ï¼ˆé‡è¯•å·²ç”¨å°½ï¼‰ï¼š{item.url}ï¼ŒåŸå› ï¼š{item.error}");
             OnDownloadError?.Invoke(item);
             CheckAllFinished();
         }
 
-        /// <summary>È«²¿½áÊøºó´¥·¢Åú´ÎÍê³ÉÊÂ¼ş£¨ÓĞÈÎÎñ±»ÔİÍ£Ê±²»Ëã½áÊø£©</summary>
+        /// <summary>å…¨éƒ¨ç»“æŸåè§¦å‘æ‰¹æ¬¡å®Œæˆäº‹ä»¶ï¼ˆæœ‰ä»»åŠ¡è¢«æš‚åœæ—¶ä¸ç®—ç»“æŸï¼‰</summary>
         private void CheckAllFinished()
         {
             if (!IsIdle) return;
@@ -780,14 +780,14 @@ namespace UPandaGF
             OnAllDownloadsFinished?.Invoke(allSuccess);
         }
 
-        /// <summary>´Ó½øĞĞÖĞÁĞ±íÒÆ³ı²¢Æô¶¯ºóĞøÈÎÎñ</summary>
+        /// <summary>ä»è¿›è¡Œä¸­åˆ—è¡¨ç§»é™¤å¹¶å¯åŠ¨åç»­ä»»åŠ¡</summary>
         private void RemoveActive(DownloadItem item)
         {
             activeItems.Remove(item);
             TryStartNextDownloads();
         }
 
-        /// <summary>ÖĞ¶Ï²¢ÊÍ·ÅÇëÇó£¨Á¬Í¬ÂäÅÌ¾ä±ú£¬±ÜÃâÎÄ¼ş±»Õ¼ÓÃ£©</summary>
+        /// <summary>ä¸­æ–­å¹¶é‡Šæ”¾è¯·æ±‚ï¼ˆè¿åŒè½ç›˜å¥æŸ„ï¼Œé¿å…æ–‡ä»¶è¢«å ç”¨ï¼‰</summary>
         private void ReleaseRequest(DownloadItem item)
         {
             if (item == null || item.request == null) return;
@@ -799,11 +799,11 @@ namespace UPandaGF
             {
                 if (!request.isDone) request.Abort();
             }
-            catch (Exception) { /* Abort Ê§°Ü²»Ó°ÏìºóĞøÊÍ·Å */ }
+            catch (Exception) { /* Abort å¤±è´¥ä¸å½±å“åç»­é‡Šæ”¾ */ }
 
             try
             {
-                // ÏÈ°Ñ×Ô¶¨Òå¾ä±úµÄÎÄ¼şÁ÷¹Øµô£¬ÔÙÊÍ·ÅÇëÇó£¬È·±£ÎÄ¼ş¾ä±úÒ»¶¨±»¹Ø±Õ
+                // å…ˆæŠŠè‡ªå®šä¹‰å¥æŸ„çš„æ–‡ä»¶æµå…³æ‰ï¼Œå†é‡Šæ”¾è¯·æ±‚ï¼Œç¡®ä¿æ–‡ä»¶å¥æŸ„ä¸€å®šè¢«å…³é—­
                 DownloadHandlerFile handler = request.downloadHandler as DownloadHandlerFile;
                 if (handler != null) handler.Close();
 
@@ -811,11 +811,11 @@ namespace UPandaGF
             }
             catch (Exception e)
             {
-                PLogger.LogWarning($"[Downloader] ÊÍ·ÅÇëÇóÊ§°Ü£º{item.url}£¬{e.Message}");
+                PLogger.LogWarning($"[Downloader] é‡Šæ”¾è¯·æ±‚å¤±è´¥ï¼š{item.url}ï¼Œ{e.Message}");
             }
         }
 
-        /// <summary>¼ÆËã²¢Ë¢ĞÂ½ø¶È£¨·ÖÄ¸ = Ğø´«Æğµã + Content-Length£¬±£Ö¤µ¥µ÷µİÔö£©</summary>
+        /// <summary>è®¡ç®—å¹¶åˆ·æ–°è¿›åº¦ï¼ˆåˆ†æ¯ = ç»­ä¼ èµ·ç‚¹ + Content-Lengthï¼Œä¿è¯å•è°ƒé€’å¢ï¼‰</summary>
         private static void RefreshProgress(DownloadItem item, long resumeSize)
         {
             item.downloadedSize = resumeSize + (long)item.request.downloadedBytes;
@@ -826,7 +826,7 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>ÓÃÏìÓ¦Í·ÀïµÄ Content-Length ¼ÆËã×Ü´óĞ¡</summary>
+        /// <summary>ç”¨å“åº”å¤´é‡Œçš„ Content-Length è®¡ç®—æ€»å¤§å°</summary>
         private static void UpdateTotalSize(DownloadItem item, string contentLengthHeader, long resumeSize)
         {
             long remain;
@@ -837,10 +837,10 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ¼ì²â"ÇëÇóÁËĞø´«µ«·şÎñÆ÷²»Ö§³Ö"µÄÇé¿ö£¨·µ»ØÂë¼È²»ÊÇ 0 Ò²²»ÊÇ 206£©£º
-        /// ´ËÊ±¾ä±úÒÑ°´¸²¸Ç·½Ê½ÕûÎÄ¼şĞ´Èë£¬½ø¶È·ÖÄ¸Óë´óĞ¡Ğ£ÑéµÄÆğµã±ØĞë¹éÁã¡£
+        /// æ£€æµ‹"è¯·æ±‚äº†ç»­ä¼ ä½†æœåŠ¡å™¨ä¸æ”¯æŒ"çš„æƒ…å†µï¼ˆè¿”å›ç æ—¢ä¸æ˜¯ 0 ä¹Ÿä¸æ˜¯ 206ï¼‰ï¼š
+        /// æ­¤æ—¶å¥æŸ„å·²æŒ‰è¦†ç›–æ–¹å¼æ•´æ–‡ä»¶å†™å…¥ï¼Œè¿›åº¦åˆ†æ¯ä¸å¤§å°æ ¡éªŒçš„èµ·ç‚¹å¿…é¡»å½’é›¶ã€‚
         /// </summary>
-        /// <returns>ĞŞÕıºóµÄĞø´«Æğµã£¨Õı³£Ğø´«Ê±Ô­Ñù·µ»Ø£©</returns>
+        /// <returns>ä¿®æ­£åçš„ç»­ä¼ èµ·ç‚¹ï¼ˆæ­£å¸¸ç»­ä¼ æ—¶åŸæ ·è¿”å›ï¼‰</returns>
         private static long HandleResumeMismatch(UnityWebRequest request, DownloadItem item, long accountingResume, ref bool contentLengthRead)
         {
             if (accountingResume <= 0) return accountingResume;
@@ -848,15 +848,15 @@ namespace UPandaGF
             long code = request.responseCode;
             if (code == 0 || code == 206) return accountingResume;
 
-            PLogger.LogWarning($"[Downloader] ·şÎñÆ÷Î´ÏìÓ¦ 206£¨Êµ¼Ê {code}£©£¬ÒÑ¸ÄÎªÕûÎÄ¼şÖØĞÂÏÂÔØ£º{item.url}");
+            PLogger.LogWarning($"[Downloader] æœåŠ¡å™¨æœªå“åº” 206ï¼ˆå®é™… {code}ï¼‰ï¼Œå·²æ”¹ä¸ºæ•´æ–‡ä»¶é‡æ–°ä¸‹è½½ï¼š{item.url}");
 
             item.resumeSize = 0;
             item.totalSize = 0;
-            contentLengthRead = false;   // ÈÃÍâ²ãÓÃĞÂµÄ Content-Length ÖØĞÂ¼ÆËã×Ü´óĞ¡
+            contentLengthRead = false;   // è®©å¤–å±‚ç”¨æ–°çš„ Content-Length é‡æ–°è®¡ç®—æ€»å¤§å°
             return 0;
         }
 
-        /// <summary>Ğ£ÑéÂäÅÌ´óĞ¡ÊÇ·ñÓëÔ¤ÆÚÒ»ÖÂ£¨Ô¤ÆÚÎ´ÖªÊ±²»Ğ£Ñé£©</summary>
+        /// <summary>æ ¡éªŒè½ç›˜å¤§å°æ˜¯å¦ä¸é¢„æœŸä¸€è‡´ï¼ˆé¢„æœŸæœªçŸ¥æ—¶ä¸æ ¡éªŒï¼‰</summary>
         private bool VerifyFileSize(DownloadItem item, string savePath)
         {
             long expected = item.totalSize > 0 ? item.totalSize : item.fileSize;
@@ -867,26 +867,26 @@ namespace UPandaGF
                 long actual = new FileInfo(savePath).Length;
                 if (actual != expected)
                 {
-                    item.error = $"ÎÄ¼ş´óĞ¡²»Æ¥Åä£¨Ô¤ÆÚ {expected}£¬Êµ¼Ê {actual}£©";
+                    item.error = $"æ–‡ä»¶å¤§å°ä¸åŒ¹é…ï¼ˆé¢„æœŸ {expected}ï¼Œå®é™… {actual}ï¼‰";
                     return false;
                 }
             }
             catch (Exception e)
             {
-                item.error = $"Ğ£ÑéÎÄ¼ş´óĞ¡Ê§°Ü£º{e.Message}";
+                item.error = $"æ ¡éªŒæ–‡ä»¶å¤§å°å¤±è´¥ï¼š{e.Message}";
                 return false;
             }
 
             return true;
         }
 
-        /// <summary>ÊÇ·ñ¶Ô¸ÃÈÎÎñ¿ªÆô¶ÏµãĞø´«</summary>
+        /// <summary>æ˜¯å¦å¯¹è¯¥ä»»åŠ¡å¼€å¯æ–­ç‚¹ç»­ä¼ </summary>
         private bool IsResumeEnabled(DownloadItem item)
         {
             return item.enableResume.HasValue ? item.enableResume.Value : enableResume;
         }
 
-        /// <summary>ÇëÇóÊÇ·ñ³É¹¦</summary>
+        /// <summary>è¯·æ±‚æ˜¯å¦æˆåŠŸ</summary>
         private static bool IsRequestSuccess(UnityWebRequest request)
         {
             if (request == null) return false;
@@ -898,7 +898,7 @@ namespace UPandaGF
 #endif
         }
 
-        /// <summary>½âÎöÊµ¼ÊÂäÅÌÂ·¾¶£ºsavePath ÎªÄ¿Â¼Ê±Æ´½ÓÎÄ¼şÃû</summary>
+        /// <summary>è§£æå®é™…è½ç›˜è·¯å¾„ï¼šsavePath ä¸ºç›®å½•æ—¶æ‹¼æ¥æ–‡ä»¶å</summary>
         private static string ResolveSavePath(DownloadItem item)
         {
             string path = item.savePath;
@@ -917,7 +917,7 @@ namespace UPandaGF
             return path;
         }
 
-        /// <summary>´Ó url ÍÆµ¼ÎÄ¼şÃû£¨È¥µô ?query Óë #fragment£©</summary>
+        /// <summary>ä» url æ¨å¯¼æ–‡ä»¶åï¼ˆå»æ‰ ?query ä¸ #fragmentï¼‰</summary>
         private static string GetFileNameFromUrl(string url)
         {
             if (string.IsNullOrEmpty(url)) return "download";

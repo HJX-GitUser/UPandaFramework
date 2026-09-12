@@ -38,7 +38,7 @@ namespace AssetBundleBrowser
             DrawOutline(fullPos, 1f);
 
             Rect pos = new Rect(fullPos.x + k_BorderSize, fullPos.y + k_BorderSize, fullPos.width - 2 * k_BorderSize, fullPos.height - 2 * k_BorderSize);
-            
+
 
             if (m_Dimensions.y == 0 || m_Dimensions.x != pos.width - k_ScrollbarPadding)
             {
@@ -54,7 +54,7 @@ namespace AssetBundleBrowser
             m_ScrollPosition = GUI.BeginScrollView(pos, m_ScrollPosition, new Rect(0, 0, m_Dimensions.x, m_Dimensions.y));
             int counter = 0;
             float runningHeight = 0.0f;
-            foreach (var message in m_Messages) 
+            foreach (var message in m_Messages)
             {
                 int index = counter % 2;
                 var content = new GUIContent(message.message);

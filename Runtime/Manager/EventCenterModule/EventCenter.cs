@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine.Events;
 
@@ -6,7 +6,7 @@ namespace UPandaGF
 {
     public abstract class EventArgBase { }
 
-    /// <summary>µ¥¸ö¼àÌıÕßµÄµ÷ÊÔĞÅÏ¢£¨¹©¡¸ÊÂ¼şµ÷ÊÔ´°¿Ú¡¹Õ¹Ê¾£©</summary>
+    /// <summary>å•ä¸ªç›‘å¬è€…çš„è°ƒè¯•ä¿¡æ¯ï¼ˆä¾›ã€Œäº‹ä»¶è°ƒè¯•çª—å£ã€å±•ç¤ºï¼‰</summary>
     public class EventListenerInfo
     {
         public string methodName;
@@ -15,7 +15,7 @@ namespace UPandaGF
         public bool hasOwner;
     }
 
-    /// <summary>Ä³¸öÊÂ¼şÀàĞÍµÄµ÷ÊÔĞÅÏ¢£¨¹©¡¸ÊÂ¼şµ÷ÊÔ´°¿Ú¡¹Õ¹Ê¾£©</summary>
+    /// <summary>æŸä¸ªäº‹ä»¶ç±»å‹çš„è°ƒè¯•ä¿¡æ¯ï¼ˆä¾›ã€Œäº‹ä»¶è°ƒè¯•çª—å£ã€å±•ç¤ºï¼‰</summary>
     public class EventTypeDebugInfo
     {
         public string eventType;
@@ -25,8 +25,8 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// ·Ç·ºĞÍÊÓÍ¼£ºÈÃ EventCenter ÄÜÔÚ²»ÖªµÀ T µÄÇé¿öÏÂÍ³¼Æ¼àÌıÕßÊıÁ¿/È¡µ÷ÊÔĞÅÏ¢¡£
-    /// £¨internal ÀàĞÍÖ»ÔÚ±¾³ÌĞò¼¯ÄÚÊ¹ÓÃ£¬²»»áÎÛÈ¾¶ÔÍâ API£©
+    /// éæ³›å‹è§†å›¾ï¼šè®© EventCenter èƒ½åœ¨ä¸çŸ¥é“ T çš„æƒ…å†µä¸‹ç»Ÿè®¡ç›‘å¬è€…æ•°é‡/å–è°ƒè¯•ä¿¡æ¯ã€‚
+    /// ï¼ˆinternal ç±»å‹åªåœ¨æœ¬ç¨‹åºé›†å†…ä½¿ç”¨ï¼Œä¸ä¼šæ±¡æŸ“å¯¹å¤– APIï¼‰
     /// </summary>
     internal interface IPDEventInfo
     {
@@ -35,31 +35,31 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// µ¥¸öÊÂ¼şÀàĞÍµÄ¼àÌıÈİÆ÷¡£
+    /// å•ä¸ªäº‹ä»¶ç±»å‹çš„ç›‘å¬å®¹å™¨ã€‚
     ///
-    /// 2026-09 ÖØ¹¹Òªµã£º
-    ///   1) È¥ÖØ¸ÄÎª±È½Ï**Î¯ÍĞ±¾Éí**£¨Delegate ÏàµÈ = Í¬Ò»·½·¨ + Í¬Ò»Ä¿±ê¶ÔÏó£©£¬²»ÔÙÓÃ GetHashCode£º
-    ///      Ô­ÊµÏÖÖ»´æ int ¹şÏ££¬Á½¸ö²»Í¬Î¯ÍĞ¹şÏ£ÏàÍ¬Ê±»á±»ÎóÅĞÎª¡¸ÖØ¸´¼ÓÈë¡¹¶ø¾²Ä¬¶ªÆúºÏ·¨¼àÌı£»
-    ///   2) ÅÉ·¢¸ÄÎª¡¸¿ìÕÕ + ËøÍâµ÷ÓÃ¡¹£ºÂı¼àÌıÕß²»ÔÙ³¤Ê±¼äÕ¼Ëø£»ÅÉ·¢¹ı³ÌÖĞÔöÉ¾¼àÌı²»»á´íÎ»£¨²»ÖØ¸´¡¢²»Â©ÅÉ·¢£©£»
-    ///   3) Ã¿¸ö¼àÌıÕßµ¥¶À try/catch£ºÒ»¸ö¼àÌıÕßÅ×Òì³£²»ÔÙÖĞ¶ÏÆäÓà¼àÌıÕß£»
-    ///   4) Ö§³Ö owner£¨UnityEngine.Object£©£ºowner ±»Ïú»Ùºó×Ô¶¯Ê§Ğ§²¢ÇåÀí£¬±ÜÃâ¡¸ÒÑÏú»Ù¶ÔÏóÈÔ±»»Øµ÷¡¹£»
-    ///   5) Ö§³ÖÓÅÏÈ¼¶£ºpriority ´óµÄÏÈÊÕµ½ÊÂ¼ş£¬Í¬ÓÅÏÈ¼¶±£³Ö×¢²áË³Ğò£¨ÎÈ¶¨£©¡£
+    /// 2026-09 é‡æ„è¦ç‚¹ï¼š
+    ///   1) å»é‡æ”¹ä¸ºæ¯”è¾ƒ**å§”æ‰˜æœ¬èº«**ï¼ˆDelegate ç›¸ç­‰ = åŒä¸€æ–¹æ³• + åŒä¸€ç›®æ ‡å¯¹è±¡ï¼‰ï¼Œä¸å†ç”¨ GetHashCodeï¼š
+    ///      åŸå®ç°åªå­˜ int å“ˆå¸Œï¼Œä¸¤ä¸ªä¸åŒå§”æ‰˜å“ˆå¸Œç›¸åŒæ—¶ä¼šè¢«è¯¯åˆ¤ä¸ºã€Œé‡å¤åŠ å…¥ã€è€Œé™é»˜ä¸¢å¼ƒåˆæ³•ç›‘å¬ï¼›
+    ///   2) æ´¾å‘æ”¹ä¸ºã€Œå¿«ç…§ + é”å¤–è°ƒç”¨ã€ï¼šæ…¢ç›‘å¬è€…ä¸å†é•¿æ—¶é—´å é”ï¼›æ´¾å‘è¿‡ç¨‹ä¸­å¢åˆ ç›‘å¬ä¸ä¼šé”™ä½ï¼ˆä¸é‡å¤ã€ä¸æ¼æ´¾å‘ï¼‰ï¼›
+    ///   3) æ¯ä¸ªç›‘å¬è€…å•ç‹¬ try/catchï¼šä¸€ä¸ªç›‘å¬è€…æŠ›å¼‚å¸¸ä¸å†ä¸­æ–­å…¶ä½™ç›‘å¬è€…ï¼›
+    ///   4) æ”¯æŒ ownerï¼ˆUnityEngine.Objectï¼‰ï¼šowner è¢«é”€æ¯åè‡ªåŠ¨å¤±æ•ˆå¹¶æ¸…ç†ï¼Œé¿å…ã€Œå·²é”€æ¯å¯¹è±¡ä»è¢«å›è°ƒã€ï¼›
+    ///   5) æ”¯æŒä¼˜å…ˆçº§ï¼špriority å¤§çš„å…ˆæ”¶åˆ°äº‹ä»¶ï¼ŒåŒä¼˜å…ˆçº§ä¿æŒæ³¨å†Œé¡ºåºï¼ˆç¨³å®šï¼‰ã€‚
     /// </summary>
     internal class PD_EventInfo<T> : IPDEventInfo where T : EventArgBase
     {
         private class Listener
         {
             public UnityAction<T> action;
-            public WeakReference<UnityEngine.Object> owner;   // null = Ã»ÓĞ owner£¬ĞèÒªÊÖ¶¯×¢Ïú
+            public WeakReference<UnityEngine.Object> owner;   // null = æ²¡æœ‰ ownerï¼Œéœ€è¦æ‰‹åŠ¨æ³¨é”€
             public int priority;
-            public int seq;                                   // ×¢²áĞòºÅ£ºÍ¬ÓÅÏÈ¼¶ÎÈ¶¨ÅÅĞòÓÃ
+            public int seq;                                   // æ³¨å†Œåºå·ï¼šåŒä¼˜å…ˆçº§ç¨³å®šæ’åºç”¨
         }
 
         private static readonly UnityAction<T>[] Empty = new UnityAction<T>[0];
 
         private readonly List<Listener> listeners = new List<Listener>();
         private readonly object lockObj = new object();
-        private UnityAction<T>[] snapshot = Empty;             // ÅÉ·¢¿ìÕÕ£ºÖ»ÔÚ±ä¸üºóÖØ½¨£¬ÅÉ·¢¹ı³ÌÁã·ÖÅä
+        private UnityAction<T>[] snapshot = Empty;             // æ´¾å‘å¿«ç…§ï¼šåªåœ¨å˜æ›´åé‡å»ºï¼Œæ´¾å‘è¿‡ç¨‹é›¶åˆ†é…
         private bool snapshotDirty = true;
         private int seqSeed;
 
@@ -81,9 +81,9 @@ namespace UPandaGF
                 PurgeDeadOwners();
                 for (int i = 0; i < listeners.Count; i++)
                 {
-                    if (listeners[i].action == action)   // Î¯ÍĞÏàµÈ±È½Ï£¨²»ÓÃ¹şÏ££©
+                    if (listeners[i].action == action)   // å§”æ‰˜ç›¸ç­‰æ¯”è¾ƒï¼ˆä¸ç”¨å“ˆå¸Œï¼‰
                     {
-                        PLogger.LogWarning($"ÊÂ¼ş {typeof(T).Name} µÄ¼àÌı·½·¨ {action.Method.Name} ±»ÖØ¸´¼ÓÈë£¬ÒÑºöÂÔ");
+                        PLogger.LogWarning($"äº‹ä»¶ {typeof(T).Name} çš„ç›‘å¬æ–¹æ³• {action.Method.Name} è¢«é‡å¤åŠ å…¥ï¼Œå·²å¿½ç•¥");
                         return;
                     }
                 }
@@ -109,12 +109,12 @@ namespace UPandaGF
                     if (listeners[i].action != action) continue;
                     listeners.RemoveAt(i);
                     snapshotDirty = true;
-                    return;   // ÓëÔ­ÊµÏÖÒ»ÖÂ£ºÒ»´ÎÖ»ÒÆ³ıÒ»¸ö
+                    return;   // ä¸åŸå®ç°ä¸€è‡´ï¼šä¸€æ¬¡åªç§»é™¤ä¸€ä¸ª
                 }
             }
         }
 
-        /// <summary>ÅÉ·¢£º¿ìÕÕ + ËøÍâµ÷ÓÃ + µ¥¸ö¼àÌıÕßÒì³£¸ôÀë</summary>
+        /// <summary>æ´¾å‘ï¼šå¿«ç…§ + é”å¤–è°ƒç”¨ + å•ä¸ªç›‘å¬è€…å¼‚å¸¸éš”ç¦»</summary>
         public void Invoke(T arg)
         {
             UnityAction<T>[] callbacks;
@@ -135,7 +135,7 @@ namespace UPandaGF
                 }
                 catch (Exception e)
                 {
-                    PLogger.LogError($"[EventCenter] ÊÂ¼ş {typeof(T).Name} µÄ¼àÌıÕß {callbacks[i].Method.Name} Å×³öÒì³££¨ÒÑ¸ôÀë£¬ÆäÓà¼àÌıÕß²»ÊÜÓ°Ïì£©£º{e}");
+                    PLogger.LogError($"[EventCenter] äº‹ä»¶ {typeof(T).Name} çš„ç›‘å¬è€… {callbacks[i].Method.Name} æŠ›å‡ºå¼‚å¸¸ï¼ˆå·²éš”ç¦»ï¼Œå…¶ä½™ç›‘å¬è€…ä¸å—å½±å“ï¼‰ï¼š{e}");
                 }
             }
         }
@@ -152,7 +152,7 @@ namespace UPandaGF
                     result.Add(new EventListenerInfo
                     {
                         methodName = item.action != null ? item.action.Method.Name : "<null>",
-                        targetType = item.action != null && item.action.Target != null ? item.action.Target.GetType().Name : "(¾²Ì¬·½·¨)",
+                        targetType = item.action != null && item.action.Target != null ? item.action.Target.GetType().Name : "(é™æ€æ–¹æ³•)",
                         priority = item.priority,
                         hasOwner = item.owner != null
                     });
@@ -161,7 +161,7 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>ÖØ½¨ÅÉ·¢¿ìÕÕ£¨ĞèÔÚ lock ÄÚµ÷ÓÃ£©</summary>
+        /// <summary>é‡å»ºæ´¾å‘å¿«ç…§ï¼ˆéœ€åœ¨ lock å†…è°ƒç”¨ï¼‰</summary>
         private void RebuildSnapshot()
         {
             snapshotDirty = false;
@@ -179,7 +179,7 @@ namespace UPandaGF
             snapshot = result;
         }
 
-        /// <summary>ÇåÀí owner ÒÑ±»Ïú»ÙµÄ¼àÌı£¨ĞèÔÚ lock ÄÚµ÷ÓÃ£©</summary>
+        /// <summary>æ¸…ç† owner å·²è¢«é”€æ¯çš„ç›‘å¬ï¼ˆéœ€åœ¨ lock å†…è°ƒç”¨ï¼‰</summary>
         private void PurgeDeadOwners()
         {
             for (int i = listeners.Count - 1; i >= 0; i--)
@@ -194,68 +194,68 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// ÊÂ¼şÖĞĞÄ£¨Î¯ÍĞÊ½È«¾ÖÊÂ¼ş£¬µ¥Àı£©¡£
+    /// äº‹ä»¶ä¸­å¿ƒï¼ˆå§”æ‰˜å¼å…¨å±€äº‹ä»¶ï¼Œå•ä¾‹ï¼‰ã€‚
     ///
-    /// ÓÃ·¨£º
-    ///   EventCenter.Instance.AddEventListener&lt;MyEvent&gt;(OnMyEvent);              // ÆÕÍ¨×¢²á
-    ///   EventCenter.Instance.AddEventListener&lt;MyEvent&gt;(this, OnMyEvent);        // ´ø owner£ºthis ±»Ïú»Ùºó×Ô¶¯Ê§Ğ§
-    ///   EventCenter.Instance.AddEventListener&lt;MyEvent&gt;(OnMyEvent, 10);          // ÓÅÏÈ¼¶£ºÊı×Ö´óµÄÏÈÊÕµ½
-    ///   EventCenter.Instance.AddEventListenerOnce&lt;MyEvent&gt;(OnMyEvent);          // Ö»ÊÕÒ»´Î
+    /// ç”¨æ³•ï¼š
+    ///   EventCenter.Instance.AddEventListener&lt;MyEvent&gt;(OnMyEvent);              // æ™®é€šæ³¨å†Œ
+    ///   EventCenter.Instance.AddEventListener&lt;MyEvent&gt;(this, OnMyEvent);        // å¸¦ ownerï¼šthis è¢«é”€æ¯åè‡ªåŠ¨å¤±æ•ˆ
+    ///   EventCenter.Instance.AddEventListener&lt;MyEvent&gt;(OnMyEvent, 10);          // ä¼˜å…ˆçº§ï¼šæ•°å­—å¤§çš„å…ˆæ”¶åˆ°
+    ///   EventCenter.Instance.AddEventListenerOnce&lt;MyEvent&gt;(OnMyEvent);          // åªæ”¶ä¸€æ¬¡
     ///   EventCenter.Instance.EventTrigger(new MyEvent(...));
     ///   EventCenter.Instance.RemoveEventListener&lt;MyEvent&gt;(OnMyEvent);
     ///
-    /// ×¢Òâ£ºÊÂ¼ş²ÎÊıÊÇ class£¨EventArgBase£©£¬Ã¿´ÎÅÉ·¢¶¼»á new Ò»´Î£¬»á²úÉúÉÙÁ¿ GC£»
-    /// Ö¡ÄÚ¸ßÆµ¡¢ÇÒÔÚÒâ GC µÄ³¡¾°½¨Òé¸ÄÓÃ EventBus£¨struct ÏûÏ¢£¬Áã·ÖÅä£©¡£
+    /// æ³¨æ„ï¼šäº‹ä»¶å‚æ•°æ˜¯ classï¼ˆEventArgBaseï¼‰ï¼Œæ¯æ¬¡æ´¾å‘éƒ½ä¼š new ä¸€æ¬¡ï¼Œä¼šäº§ç”Ÿå°‘é‡ GCï¼›
+    /// å¸§å†…é«˜é¢‘ã€ä¸”åœ¨æ„ GC çš„åœºæ™¯å»ºè®®æ”¹ç”¨ EventBusï¼ˆstruct æ¶ˆæ¯ï¼Œé›¶åˆ†é…ï¼‰ã€‚
     ///
-    /// 2026-09 ÖØ¹¹£ºÊÂ¼şÀàĞÍ¸ÄÓÃ Type ×ö¼ü£¨Ô­ÏÈÓÃ typeof(T).GetHashCode()£¬Åö×²»á¾²Ä¬Ê§Ğ§£©¡¢
-    /// È¥ÖØ¸ÄÓÃÎ¯ÍĞÏàµÈ¡¢²¹ÉÏ RemoveEventListener µÄËø¡¢ÅÉ·¢ËøÍâÖ´ĞĞ²¢¸ôÀëÒì³£¡£
+    /// 2026-09 é‡æ„ï¼šäº‹ä»¶ç±»å‹æ”¹ç”¨ Type åšé”®ï¼ˆåŸå…ˆç”¨ typeof(T).GetHashCode()ï¼Œç¢°æ’ä¼šé™é»˜å¤±æ•ˆï¼‰ã€
+    /// å»é‡æ”¹ç”¨å§”æ‰˜ç›¸ç­‰ã€è¡¥ä¸Š RemoveEventListener çš„é”ã€æ´¾å‘é”å¤–æ‰§è¡Œå¹¶éš”ç¦»å¼‚å¸¸ã€‚
     /// </summary>
     public class EventCenter : LazySingletonBase<EventCenter>
     {
         private readonly Dictionary<Type, object> eventDic = new Dictionary<Type, object>();
         private readonly Dictionary<Type, long> dispatchCounts = new Dictionary<Type, long>();
-        private readonly object lockObj = new object();   // Ö»±£»¤ÈİÆ÷±¾Éí£¬ÓÃ»§»Øµ÷Ò»ÂÉÔÚËøÍâÖ´ĞĞ
+        private readonly object lockObj = new object();   // åªä¿æŠ¤å®¹å™¨æœ¬èº«ï¼Œç”¨æˆ·å›è°ƒä¸€å¾‹åœ¨é”å¤–æ‰§è¡Œ
 
-        /// <summary>ÅÉ·¢Ê±Èô¸ÃÊÂ¼şÃ»ÓĞÈÎºÎ¼àÌıÕß£¬ÊÇ·ñ´òÓ¡ÌáÊ¾£¨ÅÅ²é¡¸ÊÂ¼ş·¢ÁËÃ»ÈËÊÕ¡¹£¬Ä¬ÈÏ¹Ø±Õ£©</summary>
+        /// <summary>æ´¾å‘æ—¶è‹¥è¯¥äº‹ä»¶æ²¡æœ‰ä»»ä½•ç›‘å¬è€…ï¼Œæ˜¯å¦æ‰“å°æç¤ºï¼ˆæ’æŸ¥ã€Œäº‹ä»¶å‘äº†æ²¡äººæ”¶ã€ï¼Œé»˜è®¤å…³é—­ï¼‰</summary>
         public bool warnOnMissingListener = false;
 
-        /// <summary>µ±Ç°ÓĞ¼àÌıÕßµÄÊÂ¼şÀàĞÍÊıÁ¿£¨µ÷ÊÔÓÃ£©</summary>
+        /// <summary>å½“å‰æœ‰ç›‘å¬è€…çš„äº‹ä»¶ç±»å‹æ•°é‡ï¼ˆè°ƒè¯•ç”¨ï¼‰</summary>
         public int ListenerTypeCount
         {
             get { lock (lockObj) { return eventDic.Count; } }
         }
 
-        #region ×¢²á / ×¢Ïú
+        #region æ³¨å†Œ / æ³¨é”€
 
-        /// <summary>Ìí¼ÓÊÂ¼ş¼àÌı</summary>
+        /// <summary>æ·»åŠ äº‹ä»¶ç›‘å¬</summary>
         public void AddEventListener<T>(UnityAction<T> action) where T : EventArgBase
         {
             AddEventListener(action, 0, null);
         }
 
-        /// <summary>Ìí¼ÓÊÂ¼ş¼àÌı£¨Ö¸¶¨ÓÅÏÈ¼¶£¬Êı×ÖÔ½´óÔ½ÏÈÊÕµ½ÊÂ¼ş£©</summary>
+        /// <summary>æ·»åŠ äº‹ä»¶ç›‘å¬ï¼ˆæŒ‡å®šä¼˜å…ˆçº§ï¼Œæ•°å­—è¶Šå¤§è¶Šå…ˆæ”¶åˆ°äº‹ä»¶ï¼‰</summary>
         public void AddEventListener<T>(UnityAction<T> action, int priority) where T : EventArgBase
         {
             AddEventListener(action, priority, null);
         }
 
         /// <summary>
-        /// Ìí¼ÓÊÂ¼ş¼àÌı£¨´ø owner£¬ÍÆ¼öÔÚ MonoBehaviour ÖĞÊ¹ÓÃ£©£º
-        /// owner ±» Destroy ºó¸Ã¼àÌı×Ô¶¯Ê§Ğ§²¢´ÓÁĞ±íÇåÀí£¬±ÜÃâÍü¼Ç×¢Ïúµ¼ÖÂµÄĞ¹Â©Óë¡¸¶ÔÒÑÏú»Ù¶ÔÏó»Øµ÷¡¹¡£
+        /// æ·»åŠ äº‹ä»¶ç›‘å¬ï¼ˆå¸¦ ownerï¼Œæ¨èåœ¨ MonoBehaviour ä¸­ä½¿ç”¨ï¼‰ï¼š
+        /// owner è¢« Destroy åè¯¥ç›‘å¬è‡ªåŠ¨å¤±æ•ˆå¹¶ä»åˆ—è¡¨æ¸…ç†ï¼Œé¿å…å¿˜è®°æ³¨é”€å¯¼è‡´çš„æ³„æ¼ä¸ã€Œå¯¹å·²é”€æ¯å¯¹è±¡å›è°ƒã€ã€‚
         /// </summary>
         public void AddEventListener<T>(UnityEngine.Object owner, UnityAction<T> action, int priority = 0) where T : EventArgBase
         {
             AddEventListener(action, priority, owner);
         }
 
-        /// <summary>Ö»¼àÌıÒ»´Î£ºÊÕµ½ÊÂ¼şºó×Ô¶¯×¢Ïú</summary>
+        /// <summary>åªç›‘å¬ä¸€æ¬¡ï¼šæ”¶åˆ°äº‹ä»¶åè‡ªåŠ¨æ³¨é”€</summary>
         public void AddEventListenerOnce<T>(UnityAction<T> action) where T : EventArgBase
         {
             if (action == null) return;
             UnityAction<T> wrapper = null;
             wrapper = arg =>
             {
-                RemoveEventListener<T>(wrapper);   // ÏÈ×¢ÏúÔÙ»Øµ÷£¬±£Ö¤¡¸Ö»ÊÕÒ»´Î¡¹
+                RemoveEventListener<T>(wrapper);   // å…ˆæ³¨é”€å†å›è°ƒï¼Œä¿è¯ã€Œåªæ”¶ä¸€æ¬¡ã€
                 action(arg);
             };
             AddEventListener(wrapper, 0, null);
@@ -278,25 +278,25 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>ÒÆ³ıÊÂ¼ş¼àÌı£¨Í¬Ò»¸ö¡¸·½·¨ + Ä¿±ê¶ÔÏó¡¹Ö»ÒÆ³ıÒ»´Î£©</summary>
+        /// <summary>ç§»é™¤äº‹ä»¶ç›‘å¬ï¼ˆåŒä¸€ä¸ªã€Œæ–¹æ³• + ç›®æ ‡å¯¹è±¡ã€åªç§»é™¤ä¸€æ¬¡ï¼‰</summary>
         public void RemoveEventListener<T>(UnityAction<T> action) where T : EventArgBase
         {
             if (action == null) return;
             Type id = typeof(T);
-            lock (lockObj)   // ĞŞ¸´£ºÔ­ÏÈÕâÀïÂ©ÁË¼ÓËø£¬ÓëÆäËü·½·¨Ïß³Ì°²È«³ĞÅµ²»Ò»ÖÂ
+            lock (lockObj)   // ä¿®å¤ï¼šåŸå…ˆè¿™é‡Œæ¼äº†åŠ é”ï¼Œä¸å…¶å®ƒæ–¹æ³•çº¿ç¨‹å®‰å…¨æ‰¿è¯ºä¸ä¸€è‡´
             {
                 if (!eventDic.TryGetValue(id, out object obj)) return;
                 if (!(obj is PD_EventInfo<T> info)) return;
                 info.RemoveAction(action);
-                if (info.ActionCount == 0) eventDic.Remove(id);   // Ã»ÓĞ¼àÌıÕßÊ±²»ÔÙ±£Áô¿Õ¿Ç
+                if (info.ActionCount == 0) eventDic.Remove(id);   // æ²¡æœ‰ç›‘å¬è€…æ—¶ä¸å†ä¿ç•™ç©ºå£³
             }
         }
 
         #endregion
 
-        #region ÅÉ·¢
+        #region æ´¾å‘
 
-        /// <summary>ÊÂ¼ş´¥·¢£¨ËøÍâÅÉ·¢ + ¼àÌıÕßÒì³£¸ôÀë£©</summary>
+        /// <summary>äº‹ä»¶è§¦å‘ï¼ˆé”å¤–æ´¾å‘ + ç›‘å¬è€…å¼‚å¸¸éš”ç¦»ï¼‰</summary>
         public void EventTrigger<T>(T arg) where T : EventArgBase
         {
             Type id = typeof(T);
@@ -310,18 +310,18 @@ namespace UPandaGF
 
             if (info == null)
             {
-                if (warnOnMissingListener) PLogger.LogWarning($"[EventCenter] ÊÂ¼ş {id.Name} Ã»ÓĞÈÎºÎ¼àÌıÕß");
+                if (warnOnMissingListener) PLogger.LogWarning($"[EventCenter] äº‹ä»¶ {id.Name} æ²¡æœ‰ä»»ä½•ç›‘å¬è€…");
                 return;
             }
 
-            info.Invoke(arg);   // ÄÚ²¿Ö»ÔÚÈ¡¿ìÕÕÊ±¼ÓËø£¬ÓÃ»§»Øµ÷ÔÚËøÍâÖ´ĞĞ
+            info.Invoke(arg);   // å†…éƒ¨åªåœ¨å–å¿«ç…§æ—¶åŠ é”ï¼Œç”¨æˆ·å›è°ƒåœ¨é”å¤–æ‰§è¡Œ
         }
 
         #endregion
 
-        #region µ÷ÊÔ / Í³¼Æ
+        #region è°ƒè¯• / ç»Ÿè®¡
 
-        /// <summary>Ö¸¶¨ÊÂ¼şÀàĞÍµ±Ç°µÄ¼àÌıÕßÊıÁ¿</summary>
+        /// <summary>æŒ‡å®šäº‹ä»¶ç±»å‹å½“å‰çš„ç›‘å¬è€…æ•°é‡</summary>
         public int GetListenerCount<T>() where T : EventArgBase
         {
             lock (lockObj)
@@ -330,13 +330,13 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>Ö¸¶¨ÊÂ¼şÀàĞÍÊÇ·ñÓĞ¼àÌıÕß</summary>
+        /// <summary>æŒ‡å®šäº‹ä»¶ç±»å‹æ˜¯å¦æœ‰ç›‘å¬è€…</summary>
         public bool HasListener<T>() where T : EventArgBase
         {
             return GetListenerCount<T>() > 0;
         }
 
-        /// <summary>Ö¸¶¨ÊÂ¼şÀàĞÍµÄÀÛ¼ÆÅÉ·¢´ÎÊı</summary>
+        /// <summary>æŒ‡å®šäº‹ä»¶ç±»å‹çš„ç´¯è®¡æ´¾å‘æ¬¡æ•°</summary>
         public long GetDispatchCount<T>() where T : EventArgBase
         {
             lock (lockObj)
@@ -345,7 +345,7 @@ namespace UPandaGF
             }
         }
 
-        /// <summary>È¡ËùÓĞÒÑ×¢²áÊÂ¼şÀàĞÍµÄµ÷ÊÔ¿ìÕÕ£¨¹©¡¸ÊÂ¼şµ÷ÊÔ´°¿Ú¡¹Ê¹ÓÃ£©</summary>
+        /// <summary>å–æ‰€æœ‰å·²æ³¨å†Œäº‹ä»¶ç±»å‹çš„è°ƒè¯•å¿«ç…§ï¼ˆä¾›ã€Œäº‹ä»¶è°ƒè¯•çª—å£ã€ä½¿ç”¨ï¼‰</summary>
         public List<EventTypeDebugInfo> GetDebugSnapshot()
         {
             List<EventTypeDebugInfo> result = new List<EventTypeDebugInfo>();
@@ -367,7 +367,7 @@ namespace UPandaGF
             return result;
         }
 
-        /// <summary>Çå¿ÕÅÉ·¢´ÎÊıÍ³¼Æ</summary>
+        /// <summary>æ¸…ç©ºæ´¾å‘æ¬¡æ•°ç»Ÿè®¡</summary>
         public void ResetDispatchCounts()
         {
             lock (lockObj) { dispatchCounts.Clear(); }
@@ -375,7 +375,7 @@ namespace UPandaGF
 
         #endregion
 
-        /// <summary>Çå¿ÕÊÂ¼şÖĞĞÄ</summary>
+        /// <summary>æ¸…ç©ºäº‹ä»¶ä¸­å¿ƒ</summary>
         public void Clear()
         {
             lock (lockObj)

@@ -1,112 +1,112 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using UnityEngine;
 
 namespace UPandaGF.RunTime.RobotCCDIK
 {
     /// <summary>
-    /// CCD ÄæÔË¶¯Ñ§¿ØÖÆÆ÷£¨´®Áª»úĞµ±Û£¬Ã¿¸ö¹Ø½ÚÖ»ÈÆµ¥Ò»¾Ö²¿ÖáĞı×ª£©
-    /// ÄÜÁ¦£ºÎ»ÖÃ + ×ËÌ¬Ë«Ä¿±êÇó½â¡¢¹Ø½ÚÏŞÎ»¡¢Æ½»¬²åÖµ¡¢×ËÌ¬Â¼ÖÆ/»Ø·ÅÖ§³Ö
-    /// Ô¼¶¨£ºËùÓĞ¹Ø½Ú½Ç¶¼ÊÇ"Ïà¶Ô¸´Î»×ËÌ¬£¨Awake Ê±¼ÇÂ¼µÄ×ËÌ¬£©¡¢ÈÆ rotationAxis µÄÔöÁ¿½Ç"
-    /// ÒÀÀµ£º´¿ Unity API£¬²åÖµÓÉĞ­³Ì×Ô°üº¬ÊµÏÖ£¬²»ÒÀÀµÈÎºÎµÚÈı·½²¹¼ä²å¼ş
-    /// ËµÃ÷£ºÊµÏÖÔ­ÀíÓëÊ¹ÓÃ·½Ê½¼ûÍ¬Ä¿Â¼ README.md
+    /// CCD é€†è¿åŠ¨å­¦æ§åˆ¶å™¨ï¼ˆä¸²è”æœºæ¢°è‡‚ï¼Œæ¯ä¸ªå…³èŠ‚åªç»•å•ä¸€å±€éƒ¨è½´æ—‹è½¬ï¼‰
+    /// èƒ½åŠ›ï¼šä½ç½® + å§¿æ€åŒç›®æ ‡æ±‚è§£ã€å…³èŠ‚é™ä½ã€å¹³æ»‘æ’å€¼ã€å§¿æ€å½•åˆ¶/å›æ”¾æ”¯æŒ
+    /// çº¦å®šï¼šæ‰€æœ‰å…³èŠ‚è§’éƒ½æ˜¯"ç›¸å¯¹å¤ä½å§¿æ€ï¼ˆAwake æ—¶è®°å½•çš„å§¿æ€ï¼‰ã€ç»• rotationAxis çš„å¢é‡è§’"
+    /// ä¾èµ–ï¼šçº¯ Unity APIï¼Œæ’å€¼ç”±åç¨‹è‡ªåŒ…å«å®ç°ï¼Œä¸ä¾èµ–ä»»ä½•ç¬¬ä¸‰æ–¹è¡¥é—´æ’ä»¶
+    /// è¯´æ˜ï¼šå®ç°åŸç†ä¸ä½¿ç”¨æ–¹å¼è§åŒç›®å½• README.md
     /// </summary>
     public class CCDIKController : MonoBehaviour
     {
-        #region Ç¶Ì×ÀàĞÍ
+        #region åµŒå¥—ç±»å‹
 
         /// <summary>
-        /// µ¥¸ö¹Ø½ÚµÄÅäÖÃÓëÔËĞĞÊ±×´Ì¬
+        /// å•ä¸ªå…³èŠ‚çš„é…ç½®ä¸è¿è¡Œæ—¶çŠ¶æ€
         /// </summary>
         [Serializable]
         public class JointInfo
         {
-            public Transform joint;                             // ¹Ø½ÚTransform
-            public Axis rotationAxis;                           // Ğı×ªÖá£¨¹Ø½Ú¾Ö²¿×ø±êÏµ£©
-            public float minAngle = -180f;                      // ×îĞ¡½Ç¶È£¨Ïà¶Ô¸´Î»×ËÌ¬£©
-            public float maxAngle = 180f;                       // ×î´ó½Ç¶È£¨Ïà¶Ô¸´Î»×ËÌ¬£©
-            [HideInInspector] public float currentAngle = 0f;    // µ±Ç°½Ç¶È£¨Ïà¶Ô¸´Î»×ËÌ¬µÄÔöÁ¿½Ç£©
+            public Transform joint;                             // å…³èŠ‚Transform
+            public Axis rotationAxis;                           // æ—‹è½¬è½´ï¼ˆå…³èŠ‚å±€éƒ¨åæ ‡ç³»ï¼‰
+            public float minAngle = -180f;                      // æœ€å°è§’åº¦ï¼ˆç›¸å¯¹å¤ä½å§¿æ€ï¼‰
+            public float maxAngle = 180f;                       // æœ€å¤§è§’åº¦ï¼ˆç›¸å¯¹å¤ä½å§¿æ€ï¼‰
+            [HideInInspector] public float currentAngle = 0f;    // å½“å‰è§’åº¦ï¼ˆç›¸å¯¹å¤ä½å§¿æ€çš„å¢é‡è§’ï¼‰
         }
 
         /// <summary>
-        /// ¹Ø½ÚµÄĞı×ªÖá£¨¹Ø½Ú¾Ö²¿×ø±êÏµÏÂµÄµ¥Ò»Öá£©
+        /// å…³èŠ‚çš„æ—‹è½¬è½´ï¼ˆå…³èŠ‚å±€éƒ¨åæ ‡ç³»ä¸‹çš„å•ä¸€è½´ï¼‰
         /// </summary>
         public enum Axis { X, Y, Z }
 
         #endregion
 
-        #region ÅäÖÃ×Ö¶Î
+        #region é…ç½®å­—æ®µ
 
-        [Header("»úÆ÷ÈË¹Ø½ÚÅäÖÃ")]
-        public JointInfo[] joints = new JointInfo[6]; // ¹Ø½ÚÁ´£ºË÷Òı0Îª»ù×ù£¬Ä©Î²×î½Ó½üÄ©¶Ë
+        [Header("æœºå™¨äººå…³èŠ‚é…ç½®")]
+        public JointInfo[] joints = new JointInfo[6]; // å…³èŠ‚é“¾ï¼šç´¢å¼•0ä¸ºåŸºåº§ï¼Œæœ«å°¾æœ€æ¥è¿‘æœ«ç«¯
 
-        [Header("Ä©¶ËÖ´ĞĞÆ÷")]
+        [Header("æœ«ç«¯æ‰§è¡Œå™¨")]
         public Transform endEffector;
 
-        [Header("IK²ÎÊı")]
-        public int maxIterations = 30;                 // ×î´óµü´ú´ÎÊı
-        public float positionTolerance = 0.001f;       // Î»ÖÃÈİ²î
-        public float rotationTolerance = 0.1f;         // ×ËÌ¬Èİ²î£¨¶È£©
-        public float stepFactor = 0.5f;                // ²½³¤Òò×Ó£¨0~1£©£ºÊµ¼Êµ¥´ÎĞı×ªÉÏÏŞ = maxStepAngle * stepFactor
-        public bool useAdaptiveStep = true;            // ×ÔÊÊÓ¦²½³¤£ºÎó²î´óÊ±²½³¤´ó£¬Îó²îĞ¡Ê±²½³¤Ğ¡
-        public float maxStepAngle = 5f;                // µ¥´ÎĞı×ª½Ç¶ÈÉÏÏŞµÄ»ùÊı£¨¶È£©
-        public int orientationJointCount = 3;          // ²ÎÓë×ËÌ¬ĞŞÕıµÄÄ©¶Ë¹Ø½ÚÊıÁ¿£¬0 ±íÊ¾Ö»½âÎ»ÖÃ
+        [Header("IKå‚æ•°")]
+        public int maxIterations = 30;                 // æœ€å¤§è¿­ä»£æ¬¡æ•°
+        public float positionTolerance = 0.001f;       // ä½ç½®å®¹å·®
+        public float rotationTolerance = 0.1f;         // å§¿æ€å®¹å·®ï¼ˆåº¦ï¼‰
+        public float stepFactor = 0.5f;                // æ­¥é•¿å› å­ï¼ˆ0~1ï¼‰ï¼šå®é™…å•æ¬¡æ—‹è½¬ä¸Šé™ = maxStepAngle * stepFactor
+        public bool useAdaptiveStep = true;            // è‡ªé€‚åº”æ­¥é•¿ï¼šè¯¯å·®å¤§æ—¶æ­¥é•¿å¤§ï¼Œè¯¯å·®å°æ—¶æ­¥é•¿å°
+        public float maxStepAngle = 5f;                // å•æ¬¡æ—‹è½¬è§’åº¦ä¸Šé™çš„åŸºæ•°ï¼ˆåº¦ï¼‰
+        public int orientationJointCount = 3;          // å‚ä¸å§¿æ€ä¿®æ­£çš„æœ«ç«¯å…³èŠ‚æ•°é‡ï¼Œ0 è¡¨ç¤ºåªè§£ä½ç½®
 
-        [Header("µ÷ÊÔ")]
+        [Header("è°ƒè¯•")]
         public bool drawDebugLines = true;
         public Color debugColor = Color.green;
 
         #endregion
 
-        #region ÄÚ²¿×´Ì¬
+        #region å†…éƒ¨çŠ¶æ€
 
-        // Ğı×ªÖáÏòÁ¿Ó³Éä£¬Ë÷ÒıÓë Axis Ã¶¾ÙÒ»ÖÂ
+        // æ—‹è½¬è½´å‘é‡æ˜ å°„ï¼Œç´¢å¼•ä¸ Axis æšä¸¾ä¸€è‡´
         private static readonly Vector3[] axisVectors = { Vector3.right, Vector3.up, Vector3.forward };
 
-        private Vector3[] jointPositions;      // ¹Ø½ÚÊÀ½ç×ø±ê»º´æ£¨Ò»´ÎÇó½âÄÚ¸´ÓÃ£¬¼õÉÙTransform·ÃÎÊ£©
-        private Pose[] jointResetPose;         // ¸÷¹Ø½ÚµÄ¸´Î»×ËÌ¬£¨½Ç¶ÈÁãÎ»£©
-        private Coroutine angleLerpRoutine;    // ÕıÔÚÔËĞĞµÄ½Ç¶È²åÖµĞ­³Ì
+        private Vector3[] jointPositions;      // å…³èŠ‚ä¸–ç•Œåæ ‡ç¼“å­˜ï¼ˆä¸€æ¬¡æ±‚è§£å†…å¤ç”¨ï¼Œå‡å°‘Transformè®¿é—®ï¼‰
+        private Pose[] jointResetPose;         // å„å…³èŠ‚çš„å¤ä½å§¿æ€ï¼ˆè§’åº¦é›¶ä½ï¼‰
+        private Coroutine angleLerpRoutine;    // æ­£åœ¨è¿è¡Œçš„è§’åº¦æ’å€¼åç¨‹
 
         #endregion
 
-        #region ÉúÃüÖÜÆÚ
+        #region ç”Ÿå‘½å‘¨æœŸ
 
         private void Awake()
         {
             if (joints == null) joints = new JointInfo[0];
 
-            // JointInfo ÊÇÒıÓÃÀàĞÍ£¬Inspector ĞÂÔöµÄÔªËØ¿ÉÄÜÎª null
+            // JointInfo æ˜¯å¼•ç”¨ç±»å‹ï¼ŒInspector æ–°å¢çš„å…ƒç´ å¯èƒ½ä¸º null
             for (int i = 0; i < joints.Length; i++)
             {
                 if (joints[i] == null)
                 {
-                    Debug.LogError($"¹Ø½Ú {i} µÄÅäÖÃÏîÎ´ÊµÀı»¯£¡");
+                    Debug.LogError($"å…³èŠ‚ {i} çš„é…ç½®é¡¹æœªå®ä¾‹åŒ–ï¼");
                     joints[i] = new JointInfo();
                 }
                 if (joints[i].joint == null)
                 {
-                    Debug.LogError($"¹Ø½Ú {i} µÄ joint Î´¸³Öµ£¡");
+                    Debug.LogError($"å…³èŠ‚ {i} çš„ joint æœªèµ‹å€¼ï¼");
                 }
             }
             if (endEffector == null)
             {
-                Debug.LogError("Ä©¶ËÖ´ĞĞÆ÷Î´¸³Öµ£¡");
+                Debug.LogError("æœ«ç«¯æ‰§è¡Œå™¨æœªèµ‹å€¼ï¼");
             }
 
-            // ·ÖÅä»º´æ²¢¼ÇÂ¼¸´Î»×ËÌ¬£¨¸´Î»×ËÌ¬¼´½Ç¶ÈÁãÎ»£©
+            // åˆ†é…ç¼“å­˜å¹¶è®°å½•å¤ä½å§¿æ€ï¼ˆå¤ä½å§¿æ€å³è§’åº¦é›¶ä½ï¼‰
             EnsureCacheSize();
         }
 
         private void Start()
         {
-            // ±ÜÃâ³¡¾°ÖĞĞòÁĞ»¯²ĞÁôµÄ currentAngle ÉúĞ§
+            // é¿å…åœºæ™¯ä¸­åºåˆ—åŒ–æ®‹ç•™çš„ currentAngle ç”Ÿæ•ˆ
             SyncCurrentAnglesFromPose();
             RefreshJointPositions();
         }
 
         private void OnDestroy()
         {
-            // ×é¼şÏú»ÙÊ±Í£µô²åÖµĞ­³Ì£¬±ÜÃâ»Øµ÷´òµ½ÒÑÏú»ÙµÄ¶ÔÏóÉÏ
+            // ç»„ä»¶é”€æ¯æ—¶åœæ‰æ’å€¼åç¨‹ï¼Œé¿å…å›è°ƒæ‰“åˆ°å·²é”€æ¯çš„å¯¹è±¡ä¸Š
             StopAngleLerp();
         }
 
@@ -120,21 +120,21 @@ namespace UPandaGF.RunTime.RobotCCDIK
 
         #endregion
 
-        #region Íâ²¿½Ó¿Ú
+        #region å¤–éƒ¨æ¥å£
 
         /// <summary>
-        /// ºËĞÄIKÇó½â£ºµü´ú±Æ½üÄ¿±êÎ»ÖÃÓë×ËÌ¬
+        /// æ ¸å¿ƒIKæ±‚è§£ï¼šè¿­ä»£é€¼è¿‘ç›®æ ‡ä½ç½®ä¸å§¿æ€
         /// </summary>
-        /// <param name="targetPosition">Ä¿±êÎ»ÖÃ£¨ÊÀ½ç×ø±ê£©</param>
-        /// <param name="targetRotation">Ä¿±ê×ËÌ¬£¨ÊÀ½çĞı×ª£»orientationJointCount Îª0Ê±ºöÂÔ£©</param>
-        /// <returns>ÊÇ·ñÔÚÈİ²îÄÚÊÕÁ²£»µü´úºÄ¾¡·µ»Ø false£¬´ËÊ±¹Ø½ÚÍ£ÔÚ×îºóÒ»´Îµü´ú½á¹û</returns>
+        /// <param name="targetPosition">ç›®æ ‡ä½ç½®ï¼ˆä¸–ç•Œåæ ‡ï¼‰</param>
+        /// <param name="targetRotation">ç›®æ ‡å§¿æ€ï¼ˆä¸–ç•Œæ—‹è½¬ï¼›orientationJointCount ä¸º0æ—¶å¿½ç•¥ï¼‰</param>
+        /// <returns>æ˜¯å¦åœ¨å®¹å·®å†…æ”¶æ•›ï¼›è¿­ä»£è€—å°½è¿”å› falseï¼Œæ­¤æ—¶å…³èŠ‚åœåœ¨æœ€åä¸€æ¬¡è¿­ä»£ç»“æœ</returns>
         public bool SolveIK(Vector3 targetPosition, Quaternion targetRotation)
         {
             if (joints == null || joints.Length == 0 || endEffector == null) return false;
 
             EnsureCacheSize();
 
-            // Ë¢ĞÂ»º´æ£¬²¢°Ñ currentAngle ÓëÕæÊµ×ËÌ¬¶ÔÆë£¨¹Ø½Ú¿ÉÄÜ±»Íâ²¿¸Ä¶¯¹ı£©
+            // åˆ·æ–°ç¼“å­˜ï¼Œå¹¶æŠŠ currentAngle ä¸çœŸå®å§¿æ€å¯¹é½ï¼ˆå…³èŠ‚å¯èƒ½è¢«å¤–éƒ¨æ”¹åŠ¨è¿‡ï¼‰
             RefreshJointPositions();
             SyncCurrentAnglesFromPose();
 
@@ -142,19 +142,19 @@ namespace UPandaGF.RunTime.RobotCCDIK
 
             for (int iter = 0; iter < maxIterations; iter++)
             {
-                // Î»ÖÃIK£º´ÓÄ©¶Ë¹Ø½ÚÍù»ù×ùÖğ¹Ø½ÚĞŞÕı
+                // ä½ç½®IKï¼šä»æœ«ç«¯å…³èŠ‚å¾€åŸºåº§é€å…³èŠ‚ä¿®æ­£
                 for (int i = joints.Length - 1; i >= 0; i--)
                 {
                     UpdateJointForPosition(i, targetPosition);
                 }
 
-                // ×ËÌ¬IK£ºÖ»ĞŞÕıÄ©¶Ë orientationCount ¸ö¹Ø½Ú
+                // å§¿æ€IKï¼šåªä¿®æ­£æœ«ç«¯ orientationCount ä¸ªå…³èŠ‚
                 for (int i = joints.Length - 1; i >= joints.Length - orientationCount; i--)
                 {
                     UpdateJointForRotation(i, targetRotation);
                 }
 
-                // Á½½×¶Î¶¼¸ÄÍêÔÙÍ³Ò»ÅĞ¶¨Îó²î£¬±ÜÃâÓÃ"ĞŞÕıÇ°"µÄÎó²îÎóÅĞÊÕÁ²
+                // ä¸¤é˜¶æ®µéƒ½æ”¹å®Œå†ç»Ÿä¸€åˆ¤å®šè¯¯å·®ï¼Œé¿å…ç”¨"ä¿®æ­£å‰"çš„è¯¯å·®è¯¯åˆ¤æ”¶æ•›
                 bool positionReached = Vector3.Distance(endEffector.position, targetPosition) < positionTolerance;
                 bool rotationReached = orientationCount <= 0
                     || Quaternion.Angle(endEffector.rotation, targetRotation) < rotationTolerance;
@@ -169,7 +169,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// Æ½»¬ÒÆ¶¯£ºÔÚ duration ÃëÄÚÈÃÄ©¶ËÑØÖ±Ïß/ÇòÃæ²åÖµ±Æ½üÄ¿±ê£¬²¢ÖğÖ¡Çó½âIK
+        /// å¹³æ»‘ç§»åŠ¨ï¼šåœ¨ duration ç§’å†…è®©æœ«ç«¯æ²¿ç›´çº¿/çƒé¢æ’å€¼é€¼è¿‘ç›®æ ‡ï¼Œå¹¶é€å¸§æ±‚è§£IK
         /// </summary>
         public void MoveTo(Vector3 targetPosition, Quaternion targetRotation, float duration = 1f)
         {
@@ -178,7 +178,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
 
         private IEnumerator MoveToCoroutine(Vector3 targetPosition, Quaternion targetRotation, float duration)
         {
-            // duration<=0 Ê±Ö±½ÓÇó½â£¬±ÜÃâ³ıÁã
+            // duration<=0 æ—¶ç›´æ¥æ±‚è§£ï¼Œé¿å…é™¤é›¶
             if (duration <= 0f)
             {
                 SolveIK(targetPosition, targetRotation);
@@ -202,19 +202,19 @@ namespace UPandaGF.RunTime.RobotCCDIK
                 yield return null;
             }
 
-            // ×îÖÕ¾«È·Çó½â
+            // æœ€ç»ˆç²¾ç¡®æ±‚è§£
             SolveIK(targetPosition, targetRotation);
         }
 
         /// <summary>
-        /// Ö±½ÓÉèÖÃ¹Ø½Ú½Ç¶È£¨Á¢¼´ÉúĞ§£¬»á´ò¶ÏÕıÔÚ½øĞĞµÄ²åÖµ£©
+        /// ç›´æ¥è®¾ç½®å…³èŠ‚è§’åº¦ï¼ˆç«‹å³ç”Ÿæ•ˆï¼Œä¼šæ‰“æ–­æ­£åœ¨è¿›è¡Œçš„æ’å€¼ï¼‰
         /// </summary>
-        /// <param name="angles">³¤¶È±ØĞëÓë joints Ò»ÖÂ£¬µ¥Î»£º¶È£¨Ïà¶Ô¸´Î»×ËÌ¬µÄÔöÁ¿½Ç£©</param>
+        /// <param name="angles">é•¿åº¦å¿…é¡»ä¸ joints ä¸€è‡´ï¼Œå•ä½ï¼šåº¦ï¼ˆç›¸å¯¹å¤ä½å§¿æ€çš„å¢é‡è§’ï¼‰</param>
         public void SetJointAngles(float[] angles)
         {
             if (joints == null || angles == null || angles.Length != joints.Length)
             {
-                Debug.LogError($"½Ç¶ÈÊı×é³¤¶È²»Æ¥Åä: ĞèÒª{(joints == null ? 0 : joints.Length)}, µÃµ½{(angles == null ? 0 : angles.Length)}");
+                Debug.LogError($"è§’åº¦æ•°ç»„é•¿åº¦ä¸åŒ¹é…: éœ€è¦{(joints == null ? 0 : joints.Length)}, å¾—åˆ°{(angles == null ? 0 : angles.Length)}");
                 return;
             }
 
@@ -233,17 +233,17 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// Æ½»¬²åÖµ¹Ø½Ú½Ç¶È£¨ÔöÁ¿½ÇÓïÒå£¬Óë currentAngle / GetJointAngles Ò»ÖÂ£©
-        /// ËùÓĞ¹Ø½ÚÍ¬Ê±¿ªÊ¼¡¢Í¬Ê±½áÊø£¬ÕûÌåºÄÊ± time Ãë£¬½áÊøºó´¥·¢ callback
+        /// å¹³æ»‘æ’å€¼å…³èŠ‚è§’åº¦ï¼ˆå¢é‡è§’è¯­ä¹‰ï¼Œä¸ currentAngle / GetJointAngles ä¸€è‡´ï¼‰
+        /// æ‰€æœ‰å…³èŠ‚åŒæ—¶å¼€å§‹ã€åŒæ—¶ç»“æŸï¼Œæ•´ä½“è€—æ—¶ time ç§’ï¼Œç»“æŸåè§¦å‘ callback
         /// </summary>
-        /// <param name="targetAngles">³¤¶È±ØĞëÓë joints Ò»ÖÂ£¬µ¥Î»£º¶È£»»á±»Ç¯Î»µ½¸÷¹Ø½ÚÏŞÎ»</param>
-        /// <param name="time">²åÖµÊ±³¤£¨Ãë£©£¬&lt;=0 Ê±ÏÂÒ»Ö¡µ½Î»</param>
-        /// <param name="callback">²åÖµ½áÊø»Øµ÷£¨±»ĞÂµÄ²åÖµ/SetJointAngles/ResetAngle ´ò¶ÏÊ±²»´¥·¢£©</param>
+        /// <param name="targetAngles">é•¿åº¦å¿…é¡»ä¸ joints ä¸€è‡´ï¼Œå•ä½ï¼šåº¦ï¼›ä¼šè¢«é’³ä½åˆ°å„å…³èŠ‚é™ä½</param>
+        /// <param name="time">æ’å€¼æ—¶é•¿ï¼ˆç§’ï¼‰ï¼Œ&lt;=0 æ—¶ä¸‹ä¸€å¸§åˆ°ä½</param>
+        /// <param name="callback">æ’å€¼ç»“æŸå›è°ƒï¼ˆè¢«æ–°çš„æ’å€¼/SetJointAngles/ResetAngle æ‰“æ–­æ—¶ä¸è§¦å‘ï¼‰</param>
         public void AngleLerp(float[] targetAngles, float time, Action callback = null)
         {
             if (joints == null || targetAngles == null || targetAngles.Length != joints.Length)
             {
-                Debug.LogError($"½Ç¶ÈÊı×é³¤¶È²»Æ¥Åä: ĞèÒª{(joints == null ? 0 : joints.Length)}, µÃµ½{(targetAngles == null ? 0 : targetAngles.Length)}");
+                Debug.LogError($"è§’åº¦æ•°ç»„é•¿åº¦ä¸åŒ¹é…: éœ€è¦{(joints == null ? 0 : joints.Length)}, å¾—åˆ°{(targetAngles == null ? 0 : targetAngles.Length)}");
                 return;
             }
 
@@ -251,7 +251,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
             SyncCurrentAnglesFromPose();
             StopAngleLerp();
 
-            // ÆğÖ¹ÖµÏÈËãºÃ£¬±ÜÃâ²åÖµ¹ı³ÌÖĞ±»Íâ²¿¸Ä¶¯Ó°Ïì
+            // èµ·æ­¢å€¼å…ˆç®—å¥½ï¼Œé¿å…æ’å€¼è¿‡ç¨‹ä¸­è¢«å¤–éƒ¨æ”¹åŠ¨å½±å“
             int count = joints.Length;
             float[] fromAngles = new float[count];
             float[] toAngles = new float[count];
@@ -269,7 +269,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
             }
             else
             {
-                // ¶ÔÏóÎ´¼¤»îÊ±Ğ­³ÌÎŞ·¨ÔËĞĞ£¬¸ÄÎªË²Ê±µ½Î»
+                // å¯¹è±¡æœªæ¿€æ´»æ—¶åç¨‹æ— æ³•è¿è¡Œï¼Œæ”¹ä¸ºç¬æ—¶åˆ°ä½
                 ApplyJointAngles(fromAngles, toAngles, 1f);
                 RefreshJointPositions();
                 callback?.Invoke();
@@ -277,23 +277,23 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// Æ½»¬²åÖµµ½¾ø¶Ô¾Ö²¿Å·À­½Ç£¨ÓÃÓÚ»Ø·ÅÂ¼ÖÆºÃµÄ×ËÌ¬£©
-        /// ²¥·Å½áÊøºó»á×Ô¶¯Í¬²½ currentAngle
+        /// å¹³æ»‘æ’å€¼åˆ°ç»å¯¹å±€éƒ¨æ¬§æ‹‰è§’ï¼ˆç”¨äºå›æ”¾å½•åˆ¶å¥½çš„å§¿æ€ï¼‰
+        /// æ’­æ”¾ç»“æŸåä¼šè‡ªåŠ¨åŒæ­¥ currentAngle
         /// </summary>
-        /// <param name="targetAngles">³¤¶È±ØĞëÓë joints Ò»ÖÂ£¬¸÷¹Ø½ÚµÄ¾Ö²¿Å·À­½Ç£¨¾ø¶Ô×ËÌ¬£©</param>
-        /// <param name="time">²åÖµÊ±³¤£¨Ãë£©£¬&lt;=0 Ê±ÏÂÒ»Ö¡µ½Î»</param>
-        /// <param name="callback">²åÖµ½áÊø»Øµ÷£¨±»´ò¶ÏÊ±²»´¥·¢£©</param>
+        /// <param name="targetAngles">é•¿åº¦å¿…é¡»ä¸ joints ä¸€è‡´ï¼Œå„å…³èŠ‚çš„å±€éƒ¨æ¬§æ‹‰è§’ï¼ˆç»å¯¹å§¿æ€ï¼‰</param>
+        /// <param name="time">æ’å€¼æ—¶é•¿ï¼ˆç§’ï¼‰ï¼Œ&lt;=0 æ—¶ä¸‹ä¸€å¸§åˆ°ä½</param>
+        /// <param name="callback">æ’å€¼ç»“æŸå›è°ƒï¼ˆè¢«æ‰“æ–­æ—¶ä¸è§¦å‘ï¼‰</param>
         public void AngleLerp(Vector3[] targetAngles, float time, Action callback = null)
         {
             if (joints == null || targetAngles == null || targetAngles.Length != joints.Length)
             {
-                Debug.LogError($"Å·À­½ÇÊı×é³¤¶È²»Æ¥Åä: ĞèÒª{(joints == null ? 0 : joints.Length)}, µÃµ½{(targetAngles == null ? 0 : targetAngles.Length)}");
+                Debug.LogError($"æ¬§æ‹‰è§’æ•°ç»„é•¿åº¦ä¸åŒ¹é…: éœ€è¦{(joints == null ? 0 : joints.Length)}, å¾—åˆ°{(targetAngles == null ? 0 : targetAngles.Length)}");
                 return;
             }
 
             StopAngleLerp();
 
-            // ÆğÖ¹ÖµÏÈËãºÃ£¬±ÜÃâ²åÖµ¹ı³ÌÖĞ±»Íâ²¿¸Ä¶¯Ó°Ïì
+            // èµ·æ­¢å€¼å…ˆç®—å¥½ï¼Œé¿å…æ’å€¼è¿‡ç¨‹ä¸­è¢«å¤–éƒ¨æ”¹åŠ¨å½±å“
             int count = joints.Length;
             Quaternion[] fromRots = new Quaternion[count];
             Quaternion[] toRots = new Quaternion[count];
@@ -316,7 +316,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
             }
             else
             {
-                // ¶ÔÏóÎ´¼¤»îÊ±Ğ­³ÌÎŞ·¨ÔËĞĞ£¬¸ÄÎªË²Ê±µ½Î»
+                // å¯¹è±¡æœªæ¿€æ´»æ—¶åç¨‹æ— æ³•è¿è¡Œï¼Œæ”¹ä¸ºç¬æ—¶åˆ°ä½
                 ApplyJointRotations(fromRots, toRots, 1f);
                 SyncCurrentAnglesFromPose();
                 RefreshJointPositions();
@@ -325,7 +325,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// »ñÈ¡µ±Ç°¹Ø½Ú½Ç¶È£¨Ïà¶Ô¸´Î»×ËÌ¬µÄÔöÁ¿½Ç£¬¶È£©
+        /// è·å–å½“å‰å…³èŠ‚è§’åº¦ï¼ˆç›¸å¯¹å¤ä½å§¿æ€çš„å¢é‡è§’ï¼Œåº¦ï¼‰
         /// </summary>
         public float[] GetJointAngles()
         {
@@ -339,7 +339,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// »ñÈ¡µ±Ç°¸÷¹Ø½ÚµÄ¾Ö²¿Å·À­½Ç£¨¾ø¶Ô×ËÌ¬£¬ÓÃÓÚÂ¼ÖÆ/»Ø·Å£©
+        /// è·å–å½“å‰å„å…³èŠ‚çš„å±€éƒ¨æ¬§æ‹‰è§’ï¼ˆç»å¯¹å§¿æ€ï¼Œç”¨äºå½•åˆ¶/å›æ”¾ï¼‰
         /// </summary>
         public Vector3[] GetJointEulerAngles()
         {
@@ -353,8 +353,8 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// ÒÀ¾İ"¸´Î»×ËÌ¬"Óë¹Ø½Úµ±Ç°¾Ö²¿Ğı×ª£¬ÖØĞÂ¼ÆËã¸÷¹Ø½ÚµÄ currentAngle
-        /// ¹Ø½ÚĞı×ª±»Íâ²¿£¨¶¯»­ / Inspector / ÖğÖ¡Ğ´Èë£©¸Ä¶¯¹ıÖ®ºóµ÷ÓÃËü¼´¿É»Ö¸´Ò»ÖÂĞÔ
+        /// ä¾æ®"å¤ä½å§¿æ€"ä¸å…³èŠ‚å½“å‰å±€éƒ¨æ—‹è½¬ï¼Œé‡æ–°è®¡ç®—å„å…³èŠ‚çš„ currentAngle
+        /// å…³èŠ‚æ—‹è½¬è¢«å¤–éƒ¨ï¼ˆåŠ¨ç”» / Inspector / é€å¸§å†™å…¥ï¼‰æ”¹åŠ¨è¿‡ä¹‹åè°ƒç”¨å®ƒå³å¯æ¢å¤ä¸€è‡´æ€§
         /// </summary>
         public void SyncCurrentAnglesFromPose()
         {
@@ -367,7 +367,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
                 Vector3 axis = GetAxisVector(joints[i].rotationAxis);
                 Quaternion baseRot = (i < jointResetPose.Length) ? jointResetPose[i].rotation : Quaternion.identity;
 
-                // È¡Ğı×ªÔÚ¹Ø½ÚÖáÉÏµÄÓĞ·ûºÅÍ¶Ó°£¬µÃµ½ [-180,180] µÄÔöÁ¿½Ç
+                // å–æ—‹è½¬åœ¨å…³èŠ‚è½´ä¸Šçš„æœ‰ç¬¦å·æŠ•å½±ï¼Œå¾—åˆ° [-180,180] çš„å¢é‡è§’
                 Quaternion delta = Quaternion.Inverse(baseRot) * joints[i].joint.localRotation;
                 delta.ToAngleAxis(out float angle, out Vector3 axisLocal);
                 float sign = Vector3.Dot(axisLocal, axis) < 0f ? -1f : 1f;
@@ -377,7 +377,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// ¸´Î»£ºËùÓĞ¹Ø½Ú»Øµ½¸´Î»×ËÌ¬£¬½Ç¶È¹éÒ»Áã£¨»á´ò¶ÏÕıÔÚ½øĞĞµÄ²åÖµ£©
+        /// å¤ä½ï¼šæ‰€æœ‰å…³èŠ‚å›åˆ°å¤ä½å§¿æ€ï¼Œè§’åº¦å½’ä¸€é›¶ï¼ˆä¼šæ‰“æ–­æ­£åœ¨è¿›è¡Œçš„æ’å€¼ï¼‰
         /// </summary>
         public void ResetAngle()
         {
@@ -390,17 +390,17 @@ namespace UPandaGF.RunTime.RobotCCDIK
 
                 joints[i].joint.localPosition = jointResetPose[i].position;
                 joints[i].joint.localRotation = jointResetPose[i].rotation;
-                joints[i].currentAngle = 0f; // ¸´Î»ºó½Ç¶È¹éÁã£¬±£³Ö currentAngle ÓëÕæÊµ×ËÌ¬Ò»ÖÂ
+                joints[i].currentAngle = 0f; // å¤ä½åè§’åº¦å½’é›¶ï¼Œä¿æŒ currentAngle ä¸çœŸå®å§¿æ€ä¸€è‡´
             }
             RefreshJointPositions();
         }
 
         #endregion
 
-        #region ÄÚ²¿ÊµÏÖ
+        #region å†…éƒ¨å®ç°
 
         /// <summary>
-        /// ÅĞ¶ÏÖ¸¶¨Ë÷ÒıµÄ¹Ø½ÚÊÇ·ñ¿É°²È«·ÃÎÊ£¨ÅäÖÃÏîÓë Transform ¶¼ÒÑ¸³Öµ£©
+        /// åˆ¤æ–­æŒ‡å®šç´¢å¼•çš„å…³èŠ‚æ˜¯å¦å¯å®‰å…¨è®¿é—®ï¼ˆé…ç½®é¡¹ä¸ Transform éƒ½å·²èµ‹å€¼ï¼‰
         /// </summary>
         private bool HasJoint(int index)
         {
@@ -412,7 +412,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// Ğ£Ñé»º´æÊı×é³¤¶ÈÓë¹Ø½ÚÊıÁ¿ÊÇ·ñÒ»ÖÂ£¨Ö§³ÖÔËĞĞÊ±µ÷Õû joints ³¤¶È£©
+        /// æ ¡éªŒç¼“å­˜æ•°ç»„é•¿åº¦ä¸å…³èŠ‚æ•°é‡æ˜¯å¦ä¸€è‡´ï¼ˆæ”¯æŒè¿è¡Œæ—¶è°ƒæ•´ joints é•¿åº¦ï¼‰
         /// </summary>
         private void EnsureCacheSize()
         {
@@ -430,7 +430,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// ¼ÇÂ¼¸÷¹Ø½ÚµÄ¸´Î»×ËÌ¬£¨×÷Îª½Ç¶ÈÁãÎ»£©
+        /// è®°å½•å„å…³èŠ‚çš„å¤ä½å§¿æ€ï¼ˆä½œä¸ºè§’åº¦é›¶ä½ï¼‰
         /// </summary>
         private void CaptureResetPose()
         {
@@ -443,10 +443,10 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// Ë¢ĞÂ¹Ø½ÚÊÀ½ç×ø±ê»º´æ
-        /// ¹Ø½ÚĞı×ª»á´ø¶¯ÆäºóËùÓĞ¹Ø½ÚÒÆ¶¯£¬Òò´ËĞı×ªË÷Òı i µÄ¹Ø½ÚºóÖ»Ğè´Ó i ¿ªÊ¼Ë¢ĞÂ
+        /// åˆ·æ–°å…³èŠ‚ä¸–ç•Œåæ ‡ç¼“å­˜
+        /// å…³èŠ‚æ—‹è½¬ä¼šå¸¦åŠ¨å…¶åæ‰€æœ‰å…³èŠ‚ç§»åŠ¨ï¼Œå› æ­¤æ—‹è½¬ç´¢å¼• i çš„å…³èŠ‚ååªéœ€ä» i å¼€å§‹åˆ·æ–°
         /// </summary>
-        /// <param name="startIndex">ÆğÊ¼Ë÷Òı£¬Ä¬ÈÏË¢ĞÂÈ«²¿</param>
+        /// <param name="startIndex">èµ·å§‹ç´¢å¼•ï¼Œé»˜è®¤åˆ·æ–°å…¨éƒ¨</param>
         private void RefreshJointPositions(int startIndex = 0)
         {
             for (int i = startIndex; i < joints.Length; i++)
@@ -458,8 +458,8 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// Î»ÖÃĞŞÕı£ºÈÃÄ©¶ËÔÚ"´¹Ö±ÓÚ¹Ø½ÚÖá"µÄÆ½ÃæÉÏ¸ü¿¿½üÄ¿±ê
-        /// ¼´Çó°Ñ toEnd ×ªµ½ toTarget ËùĞèÈÆ¹Ø½ÚÊÀ½çÖáµÄÓĞ·ûºÅ½Ç¶È£¬ÔÙÊÜÏŞÎ»/²½³¤Ô¼ÊøÊ©¼Ó
+        /// ä½ç½®ä¿®æ­£ï¼šè®©æœ«ç«¯åœ¨"å‚ç›´äºå…³èŠ‚è½´"çš„å¹³é¢ä¸Šæ›´é è¿‘ç›®æ ‡
+        /// å³æ±‚æŠŠ toEnd è½¬åˆ° toTarget æ‰€éœ€ç»•å…³èŠ‚ä¸–ç•Œè½´çš„æœ‰ç¬¦å·è§’åº¦ï¼Œå†å—é™ä½/æ­¥é•¿çº¦æŸæ–½åŠ 
         /// </summary>
         private void UpdateJointForPosition(int jointIndex, Vector3 targetPosition)
         {
@@ -470,28 +470,28 @@ namespace UPandaGF.RunTime.RobotCCDIK
 
             Vector3 toEnd = endEffector.position - jointPos;
             Vector3 toTarget = targetPosition - jointPos;
-            // Ä©¶Ë»òÄ¿±êÓë¹Ø½ÚÖØºÏÊ±ÎŞ·¨È·¶¨Ğı×ªÆ½Ãæ
+            // æœ«ç«¯æˆ–ç›®æ ‡ä¸å…³èŠ‚é‡åˆæ—¶æ— æ³•ç¡®å®šæ—‹è½¬å¹³é¢
             if (toEnd.sqrMagnitude < 1e-6f || toTarget.sqrMagnitude < 1e-6f) return;
 
-            // ¹Ø½ÚÖáÔÚÊÀ½ç¿Õ¼äµÄ·½Ïò
+            // å…³èŠ‚è½´åœ¨ä¸–ç•Œç©ºé—´çš„æ–¹å‘
             Vector3 axisWorld = info.joint.rotation * GetAxisVector(info.rotationAxis);
 
-            // Í¶Ó°µ½´¹Ö±ÓÚ¹Ø½ÚÖáµÄÆ½Ãæ
+            // æŠ•å½±åˆ°å‚ç›´äºå…³èŠ‚è½´çš„å¹³é¢
             Vector3 toEndProj = Vector3.ProjectOnPlane(toEnd, axisWorld);
             Vector3 toTargetProj = Vector3.ProjectOnPlane(toTarget, axisWorld);
 
-            // Í¶Ó°³¤¶È¹ıĞ¡£¨Ä©¶Ë»òÄ¿±ê¼¸ºõÂäÔÚ¹Ø½ÚÖáÉÏ£©ËµÃ÷¸Ã¹Ø½ÚÎŞ·¨¹±Ï×Î»ÖÃµ÷Õû
+            // æŠ•å½±é•¿åº¦è¿‡å°ï¼ˆæœ«ç«¯æˆ–ç›®æ ‡å‡ ä¹è½åœ¨å…³èŠ‚è½´ä¸Šï¼‰è¯´æ˜è¯¥å…³èŠ‚æ— æ³•è´¡çŒ®ä½ç½®è°ƒæ•´
             if (toEndProj.sqrMagnitude < 1e-6f || toTargetProj.sqrMagnitude < 1e-6f) return;
 
             float angle = ApplyStepLimit(Vector3.SignedAngle(toEndProj, toTargetProj, axisWorld));
             if (Mathf.Abs(angle) < 0.01f) return;
 
-            // ÀÛ¼Ó²¢ÏŞÎ»£¬È¡Êµ¼Ê¿ÉĞı×ªÁ¿
+            // ç´¯åŠ å¹¶é™ä½ï¼Œå–å®é™…å¯æ—‹è½¬é‡
             float newAngle = Mathf.Clamp(info.currentAngle + angle, info.minAngle, info.maxAngle);
             float actualRotation = newAngle - info.currentAngle;
             if (Mathf.Abs(actualRotation) < 0.01f) return;
 
-            // ÓÒ³Ë¾Ö²¿ÖáĞı×ª = ÈÆ¹Ø½Ú×ÔÉíÊÀ½çÖáĞı×ª
+            // å³ä¹˜å±€éƒ¨è½´æ—‹è½¬ = ç»•å…³èŠ‚è‡ªèº«ä¸–ç•Œè½´æ—‹è½¬
             info.joint.localRotation *= Quaternion.AngleAxis(actualRotation, GetAxisVector(info.rotationAxis));
             info.currentAngle = newAngle;
 
@@ -499,8 +499,8 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// ×ËÌ¬ĞŞÕı£º°ÑÄ©¶Ëµ±Ç°×ËÌ¬µ½Ä¿±ê×ËÌ¬µÄÔöÁ¿£¬°´¸Ã¹Ø½ÚÖáÉÏµÄÓĞĞ§·ÖÁ¿Ê©¼Ó
-        /// ¹Ø½ÚÖáÓëËùĞèĞı×ªÖáÔ½½Ó½ü´¹Ö±£¬¹±Ï×Ô½Ğ¡£¨Í¶Ó°Ğ¡ÓÚ0.1ÊÓÎªÎŞ·¨¹±Ï×£©
+        /// å§¿æ€ä¿®æ­£ï¼šæŠŠæœ«ç«¯å½“å‰å§¿æ€åˆ°ç›®æ ‡å§¿æ€çš„å¢é‡ï¼ŒæŒ‰è¯¥å…³èŠ‚è½´ä¸Šçš„æœ‰æ•ˆåˆ†é‡æ–½åŠ 
+        /// å…³èŠ‚è½´ä¸æ‰€éœ€æ—‹è½¬è½´è¶Šæ¥è¿‘å‚ç›´ï¼Œè´¡çŒ®è¶Šå°ï¼ˆæŠ•å½±å°äº0.1è§†ä¸ºæ— æ³•è´¡çŒ®ï¼‰
         /// </summary>
         private void UpdateJointForRotation(int jointIndex, Quaternion targetRotation)
         {
@@ -508,15 +508,15 @@ namespace UPandaGF.RunTime.RobotCCDIK
 
             JointInfo info = joints[jointIndex];
 
-            // Ä©¶Ë×ËÌ¬Îó²î£ºtarget * inverse(current)
+            // æœ«ç«¯å§¿æ€è¯¯å·®ï¼štarget * inverse(current)
             Quaternion delta = targetRotation * Quaternion.Inverse(endEffector.rotation);
             delta.ToAngleAxis(out float angle, out Vector3 axisWorld);
-            if (angle > 180f) angle -= 360f; // ¹éÒ»»¯µ½[-180,180]
+            if (angle > 180f) angle -= 360f; // å½’ä¸€åŒ–åˆ°[-180,180]
             if (Mathf.Abs(angle) < 0.01f) return;
 
             Vector3 jointAxisWorld = info.joint.rotation * GetAxisVector(info.rotationAxis);
 
-            // ËùĞèĞı×ªÖáÔÚ¹Ø½ÚÖáÉÏµÄÍ¶Ó°£¨´ø·ûºÅ£©
+            // æ‰€éœ€æ—‹è½¬è½´åœ¨å…³èŠ‚è½´ä¸Šçš„æŠ•å½±ï¼ˆå¸¦ç¬¦å·ï¼‰
             float dot = Vector3.Dot(axisWorld, jointAxisWorld);
             if (Mathf.Abs(dot) < 0.1f) return;
 
@@ -534,7 +534,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// ²½³¤ÏŞÖÆ£ºµ¥´ÎĞı×ª²»³¬¹ı maxStepAngle£¬ÔÙ³Ë stepFactor
+        /// æ­¥é•¿é™åˆ¶ï¼šå•æ¬¡æ—‹è½¬ä¸è¶…è¿‡ maxStepAngleï¼Œå†ä¹˜ stepFactor
         /// </summary>
         private float ApplyStepLimit(float angle)
         {
@@ -543,7 +543,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// »ñÈ¡Ğı×ªÖáÏòÁ¿£¨¹Ø½Ú¾Ö²¿×ø±êÏµ£©
+        /// è·å–æ—‹è½¬è½´å‘é‡ï¼ˆå…³èŠ‚å±€éƒ¨åæ ‡ç³»ï¼‰
         /// </summary>
         private Vector3 GetAxisVector(Axis axis)
         {
@@ -551,8 +551,8 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// °Ñ"Ïà¶Ô¸´Î»×ËÌ¬µÄÔöÁ¿½Ç"Ó¦ÓÃµ½¹Ø½Ú
-        /// ¾Ö²¿Ğı×ª = ¸´Î»Ğı×ª * ÈÆÖáĞı×ª£¬±£Ö¤¹Ø½Ú»ù×¼×ËÌ¬²»±»¶ªÆú£¬ÇÒÓëCCDÊ¹ÓÃµÄ¾Ö²¿ÖáÒ»ÖÂ
+        /// æŠŠ"ç›¸å¯¹å¤ä½å§¿æ€çš„å¢é‡è§’"åº”ç”¨åˆ°å…³èŠ‚
+        /// å±€éƒ¨æ—‹è½¬ = å¤ä½æ—‹è½¬ * ç»•è½´æ—‹è½¬ï¼Œä¿è¯å…³èŠ‚åŸºå‡†å§¿æ€ä¸è¢«ä¸¢å¼ƒï¼Œä¸”ä¸CCDä½¿ç”¨çš„å±€éƒ¨è½´ä¸€è‡´
         /// </summary>
         private void ApplyJointAngle(int index, float angle)
         {
@@ -566,7 +566,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// °´²åÖµÏµÊı t ÅúÁ¿Ó¦ÓÃ¹Ø½ÚÔöÁ¿½Ç£¨t>=1 Ê±¾«È·µÈÓÚÄ¿±êÖµ£©
+        /// æŒ‰æ’å€¼ç³»æ•° t æ‰¹é‡åº”ç”¨å…³èŠ‚å¢é‡è§’ï¼ˆt>=1 æ—¶ç²¾ç¡®ç­‰äºç›®æ ‡å€¼ï¼‰
         /// </summary>
         private void ApplyJointAngles(float[] fromAngles, float[] toAngles, float t)
         {
@@ -581,7 +581,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// °´²åÖµÏµÊı t ÅúÁ¿Ó¦ÓÃ¹Ø½Ú¾Ö²¿Ğı×ª£¨t>=1 Ê±¾«È·µÈÓÚÄ¿±êÖµ£©
+        /// æŒ‰æ’å€¼ç³»æ•° t æ‰¹é‡åº”ç”¨å…³èŠ‚å±€éƒ¨æ—‹è½¬ï¼ˆt>=1 æ—¶ç²¾ç¡®ç­‰äºç›®æ ‡å€¼ï¼‰
         /// </summary>
         private void ApplyJointRotations(Quaternion[] fromRots, Quaternion[] toRots, float t)
         {
@@ -594,7 +594,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// ½Ç¶È¹æ·¶»¯µ½[-180,180]
+        /// è§’åº¦è§„èŒƒåŒ–åˆ°[-180,180]
         /// </summary>
         private float NormalizeAngle(float angle)
         {
@@ -605,7 +605,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// Í£Ö¹µ±Ç°½Ç¶È²åÖµ£¨²»´¥·¢Æä»Øµ÷£©
+        /// åœæ­¢å½“å‰è§’åº¦æ’å€¼ï¼ˆä¸è§¦å‘å…¶å›è°ƒï¼‰
         /// </summary>
         private void StopAngleLerp()
         {
@@ -617,7 +617,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// ÔöÁ¿½Ç²åÖµĞ­³Ì£ºÏßĞÔ²åÖµ£¬ËùÓĞ¹Ø½ÚÍ¬Ê±ÆğÖ¹
+        /// å¢é‡è§’æ’å€¼åç¨‹ï¼šçº¿æ€§æ’å€¼ï¼Œæ‰€æœ‰å…³èŠ‚åŒæ—¶èµ·æ­¢
         /// </summary>
         private IEnumerator AngleLerpRoutine(float[] fromAngles, float[] toAngles, float time, Action callback)
         {
@@ -633,11 +633,11 @@ namespace UPandaGF.RunTime.RobotCCDIK
             }
             else
             {
-                // time<=0 Ê±ÏÂÒ»Ö¡µ½Î»£¬±ÜÃâ»Øµ÷ÔÚµ÷ÓÃÕ»ÄÚÍ¬²½´¥·¢
+                // time<=0 æ—¶ä¸‹ä¸€å¸§åˆ°ä½ï¼Œé¿å…å›è°ƒåœ¨è°ƒç”¨æ ˆå†…åŒæ­¥è§¦å‘
                 yield return null;
             }
 
-            ApplyJointAngles(fromAngles, toAngles, 1f); // ÊÕÎ²¾«È·ÂäÎ»£¬Ïû³ıÀÛ¼ÆÎó²î
+            ApplyJointAngles(fromAngles, toAngles, 1f); // æ”¶å°¾ç²¾ç¡®è½ä½ï¼Œæ¶ˆé™¤ç´¯è®¡è¯¯å·®
             RefreshJointPositions();
 
             angleLerpRoutine = null;
@@ -645,7 +645,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
         }
 
         /// <summary>
-        /// ¾ø¶Ô¾Ö²¿Ğı×ª²åÖµĞ­³Ì£ºËÄÔªÊıÇòÃæ²åÖµ£¨×î¶ÌÂ·¾¶£©
+        /// ç»å¯¹å±€éƒ¨æ—‹è½¬æ’å€¼åç¨‹ï¼šå››å…ƒæ•°çƒé¢æ’å€¼ï¼ˆæœ€çŸ­è·¯å¾„ï¼‰
         /// </summary>
         private IEnumerator AngleLerpEulerRoutine(Quaternion[] fromRots, Quaternion[] toRots, float time, Action callback)
         {
@@ -661,13 +661,13 @@ namespace UPandaGF.RunTime.RobotCCDIK
             }
             else
             {
-                // time<=0 Ê±ÏÂÒ»Ö¡µ½Î»£¬±ÜÃâ»Øµ÷ÔÚµ÷ÓÃÕ»ÄÚÍ¬²½´¥·¢
+                // time<=0 æ—¶ä¸‹ä¸€å¸§åˆ°ä½ï¼Œé¿å…å›è°ƒåœ¨è°ƒç”¨æ ˆå†…åŒæ­¥è§¦å‘
                 yield return null;
             }
 
-            ApplyJointRotations(fromRots, toRots, 1f); // ÊÕÎ²¾«È·ÂäÎ»£¬Ïû³ıÀÛ¼ÆÎó²î
+            ApplyJointRotations(fromRots, toRots, 1f); // æ”¶å°¾ç²¾ç¡®è½ä½ï¼Œæ¶ˆé™¤ç´¯è®¡è¯¯å·®
 
-            // ¾ø¶ÔĞı×ªÈÆ¹ıÁË currentAngle£¬½áÊøºóÖØĞÂ¶ÔÆë
+            // ç»å¯¹æ—‹è½¬ç»•è¿‡äº† currentAngleï¼Œç»“æŸåé‡æ–°å¯¹é½
             SyncCurrentAnglesFromPose();
             RefreshJointPositions();
 
@@ -677,10 +677,10 @@ namespace UPandaGF.RunTime.RobotCCDIK
 
         #endregion
 
-        #region µ÷ÊÔ
+        #region è°ƒè¯•
 
         /// <summary>
-        /// ÔÚ Scene ÊÓÍ¼»­³ö¹Ø½ÚÁ´ÓëÄ©¶ËÁ¬Ïß
+        /// åœ¨ Scene è§†å›¾ç”»å‡ºå…³èŠ‚é“¾ä¸æœ«ç«¯è¿çº¿
         /// </summary>
         private void DrawDebugLines()
         {

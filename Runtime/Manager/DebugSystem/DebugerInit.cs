@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 using System;
 using System.Threading.Tasks;
@@ -11,8 +11,8 @@ namespace UPandaGF
     {
         private string configPath = "Data/";
         private string fileName = "LogConfig.json";
-        [Header("ÏÔÊ¾FPS")]
-        [Tooltip("½ö±à¼­Æ÷Ä£Ê½ÏÂ¿ÉÒÔÏÔÊ¾")]
+        [Header("æ˜¾ç¤ºFPS")]
+        [Tooltip("ä»…ç¼–è¾‘å™¨æ¨¡å¼ä¸‹å¯ä»¥æ˜¾ç¤º")]
         public bool showFPS = false;
 
         public LogConfig logConfig;
@@ -21,7 +21,7 @@ namespace UPandaGF
         GUIStyle mStyle;
         Rect rect = new Rect(0, 0, 500, 300);
         Rect buttonRect = new Rect(0, 0, 200, 50);
-      
+
 
         private void Reset()
         {
@@ -44,7 +44,7 @@ namespace UPandaGF
         void Update()
         {
             UPGameRoot root = UPGameRoot.Instance;
-            if (root == null) return;   // ĞŞ¸´£º¸Ã×é¼ş±»·Åµ½Ã»ÓĞ UPGameRoot µÄ³¡¾°ÀïÊ±¿ÕÒıÓÃ
+            if (root == null) return;   // ä¿®å¤ï¼šè¯¥ç»„ä»¶è¢«æ”¾åˆ°æ²¡æœ‰ UPGameRoot çš„åœºæ™¯é‡Œæ—¶ç©ºå¼•ç”¨
             if (showFPS || root.EnableDebugModel) deltaTime += (Time.deltaTime - deltaTime) * 0.1f;
         }
 
@@ -52,10 +52,10 @@ namespace UPandaGF
         {
             yield return StartCoroutine(StreamingAssetsLoader.LoadTextFileAsync(configPath + fileName, (arg) =>
             {
-                // ĞŞ¸´£ºÅäÖÃ¶Á²»µ½ / ½âÎöÊ§°ÜÊ±²»ÔÙÈÃÕû¸öÈÕÖ¾ÏµÍ³¾²Ä¬Ê§Ğ§£¨PLogger.cfg ÒÑÓĞÄ¬ÈÏÊµÀı£¬ÕâÀïÔÙ²¹Ò»ÌõÃ÷È·¸æ¾¯£©
+                // ä¿®å¤ï¼šé…ç½®è¯»ä¸åˆ° / è§£æå¤±è´¥æ—¶ä¸å†è®©æ•´ä¸ªæ—¥å¿—ç³»ç»Ÿé™é»˜å¤±æ•ˆï¼ˆPLogger.cfg å·²æœ‰é»˜è®¤å®ä¾‹ï¼Œè¿™é‡Œå†è¡¥ä¸€æ¡æ˜ç¡®å‘Šè­¦ï¼‰
                 if (string.IsNullOrEmpty(arg))
                 {
-                    UnityEngine.Debug.LogWarning($"[PLogger] Î´¶Áµ½ÈÕÖ¾ÅäÖÃ£¨{configPath + fileName}£©£¬Ê¹ÓÃÄ¬ÈÏÅäÖÃ¡£ĞèÒªÎÄ¼şÂäÅÌÇëÔÚ StreamingAssets/Data/LogConfig.json ÖĞ´ò¿ª logSave¡£");
+                    UnityEngine.Debug.LogWarning($"[PLogger] æœªè¯»åˆ°æ—¥å¿—é…ç½®ï¼ˆ{configPath + fileName}ï¼‰ï¼Œä½¿ç”¨é»˜è®¤é…ç½®ã€‚éœ€è¦æ–‡ä»¶è½ç›˜è¯·åœ¨ StreamingAssets/Data/LogConfig.json ä¸­æ‰“å¼€ logSaveã€‚");
                     PLogger.InitLog(logConfig);
                     return;
                 }
@@ -63,7 +63,7 @@ namespace UPandaGF
                 LogConfig parsed = JsonUtility.FromJson<LogConfig>(arg);
                 if (parsed == null)
                 {
-                    UnityEngine.Debug.LogWarning($"[PLogger] ÈÕÖ¾ÅäÖÃ½âÎöÊ§°Ü£¨{configPath + fileName}£©£¬Ê¹ÓÃÄ¬ÈÏÅäÖÃ¡£");
+                    UnityEngine.Debug.LogWarning($"[PLogger] æ—¥å¿—é…ç½®è§£æå¤±è´¥ï¼ˆ{configPath + fileName}ï¼‰ï¼Œä½¿ç”¨é»˜è®¤é…ç½®ã€‚");
                     PLogger.InitLog(logConfig);
                     return;
                 }
@@ -96,22 +96,22 @@ namespace UPandaGF
                     logConfig = new LogConfig();
                     string json = JsonUtility.ToJson(logConfig);
                     File.WriteAllText(GetConfigDateFullPath, json);
-                    Debug.Log("ÈÕÖ¾ÅäÖÃÒÑ±£´æ£º" + GetConfigDateFullPath);
+                    Debug.Log("æ—¥å¿—é…ç½®å·²ä¿å­˜ï¼š" + GetConfigDateFullPath);
                 }
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"¼ÓÔØÈÕÖ¾ÅäÖÃÊ§°Ü: {e.Message}");
+                Debug.LogError($"åŠ è½½æ—¥å¿—é…ç½®å¤±è´¥: {e.Message}");
             }
         }
 
         void OnGUI()
         {
             UPGameRoot root = UPGameRoot.Instance;
-            if (root == null) return;   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+            if (root == null) return;   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
             if (!showFPS && !root.EnableDebugModel) return;
 
-            float fps = deltaTime > 0f ? 1.0f / deltaTime : 0f;   // ĞŞ¸´£ºdeltaTime Îª 0 Ê±²»ÔÙ³ıÁã
+            float fps = deltaTime > 0f ? 1.0f / deltaTime : 0f;   // ä¿®å¤ï¼šdeltaTime ä¸º 0 æ—¶ä¸å†é™¤é›¶
             string text = string.Format(" FPS:{0:N0} ", fps);
             if (root.EnableDebugModel)
             {

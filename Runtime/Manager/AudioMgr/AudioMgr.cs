@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,19 +7,19 @@ namespace UPandaGF
 {
     public class AudioMgr : LazySingletonBase<AudioMgr>
     {
-        //Î¨Ò»µÄ±³¾°ÒôÀÖ×é¼ş
+        //å”¯ä¸€çš„èƒŒæ™¯éŸ³ä¹ç»„ä»¶
         private AudioSource bkMusic = null;
-        //Î¨Ò»µÄÒôĞ§²¥·Å×é¼ş
+        //å”¯ä¸€çš„éŸ³æ•ˆæ’­æ”¾ç»„ä»¶
         private AudioSource uniqueSound = null;
 
-        //ÒôÀÖ´óĞ¡
+        //éŸ³ä¹å¤§å°
         private float bkValue = 1;
 
-        //ÒôĞ§ÒÀ¸½¶ÔÏó
+        //éŸ³æ•ˆä¾é™„å¯¹è±¡
         private GameObject soundObj = null;
-        //ÒôĞ§ÁĞ±í
+        //éŸ³æ•ˆåˆ—è¡¨
         private List<AudioSource> soundList = new List<AudioSource>();
-        //ÒôĞ§´óĞ¡
+        //éŸ³æ•ˆå¤§å°
         private float soundValue = 1;
 
         private IAssetsLoader assetsLoader;
@@ -39,9 +39,9 @@ namespace UPandaGF
             }
         }
         /// <summary>
-        /// ²¥·Å±³¾°ÒôÀÖ
+        /// æ’­æ”¾èƒŒæ™¯éŸ³ä¹
         /// </summary>
-        /// <param name="AcPath">ÒôÀÖÂ·¾¶</param>
+        /// <param name="AcPath">éŸ³ä¹è·¯å¾„</param>
         public void PlayBKMusic(string AcPath)
         {
             if (bkMusic == null)
@@ -49,7 +49,7 @@ namespace UPandaGF
                 GameObject obj = new GameObject("BKMusic");
                 bkMusic = obj.AddComponent<AudioSource>();
             }
-            //Òì²½¼ÓÔØ±³¾°ÒôÀÖ ¼ÓÔØÍê³Éºó ²¥·Å
+            //å¼‚æ­¥åŠ è½½èƒŒæ™¯éŸ³ä¹ åŠ è½½å®Œæˆå æ’­æ”¾
             ResourcesLoader.Instance.LoadAsync<AudioClip>(AcPath, (clip) =>
             {
                 bkMusic.clip = clip;
@@ -73,7 +73,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ÔİÍ£±³¾°ÒôÀÖ
+        /// æš‚åœèƒŒæ™¯éŸ³ä¹
         /// </summary>
         public void PauseBKMusic()
         {
@@ -81,7 +81,7 @@ namespace UPandaGF
             bkMusic.Pause();
         }
         /// <summary>
-        /// Í£Ö¹±³¾°ÒôÀÖ
+        /// åœæ­¢èƒŒæ™¯éŸ³ä¹
         /// </summary>
         public void StopBKMusic()
         {
@@ -89,9 +89,9 @@ namespace UPandaGF
             bkMusic.Stop();
         }
         /// <summary>
-        /// ¸Ä±ä±³¾°ÒôÀÖ ÒôÁ¿´óĞ¡
+        /// æ”¹å˜èƒŒæ™¯éŸ³ä¹ éŸ³é‡å¤§å°
         /// </summary>
-        /// <param name="v">ÒôÁ¿´óĞ¡</param>
+        /// <param name="v">éŸ³é‡å¤§å°</param>
         public void ChangeBKValue(float v)
         {
             bkValue = v;
@@ -100,7 +100,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ²¥·ÅÎ¨Ò»ÒôĞ§£¨²¥·ÅÇ°¹Ø±ÕÉÏÒ»¸öÒôÆµ£©
+        /// æ’­æ”¾å”¯ä¸€éŸ³æ•ˆï¼ˆæ’­æ”¾å‰å…³é—­ä¸Šä¸€ä¸ªéŸ³é¢‘ï¼‰
         /// </summary>
         /// <param name="AcPath"></param>
         public void PlayUniqueSound(string AcPath, AssetLoadMethod method = AssetLoadMethod.Resources)
@@ -120,7 +120,7 @@ namespace UPandaGF
             });
         }
         /// <summary>
-        /// ²¥·ÅÎ¨Ò»ÒôĞ§£¨²¥·ÅÇ°¹Ø±ÕÉÏÒ»¸öÒôÆµ£©
+        /// æ’­æ”¾å”¯ä¸€éŸ³æ•ˆï¼ˆæ’­æ”¾å‰å…³é—­ä¸Šä¸€ä¸ªéŸ³é¢‘ï¼‰
         /// </summary>
         /// <param name="AcPath"></param>
         public void PlayUniqueSound(AudioClip clip)
@@ -138,7 +138,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ÔİÍ£Î¨Ò»ÒôĞ§
+        /// æš‚åœå”¯ä¸€éŸ³æ•ˆ
         /// </summary>
         public void PauseUniqueSound(bool isPause = true)
         {
@@ -150,7 +150,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// Í£Ö¹Î¨Ò»ÒôĞ§
+        /// åœæ­¢å”¯ä¸€éŸ³æ•ˆ
         /// </summary>
         public void StopUniqueSound()
         {
@@ -159,12 +159,12 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ¼ÓÔØ²¢²¥·ÅÒôĞ§
+        /// åŠ è½½å¹¶æ’­æ”¾éŸ³æ•ˆ
         /// </summary>
-        /// <param name="AcPath">×ÊÔ´Â·¾¶£»Ê¹ÓÃAssetBundleÊ±£¬Â·¾¶ÓÃ±à¼­Æ÷ÏÂµÄÂ·¾¶(´øºó×º)</param>
-        /// <param name="isLoop">ÊÇ·ñÑ­»·</param>
-        /// <param name="method">×ÊÔ´¼ÓÔØ·½Ê½</param>
-        /// <param name="callBack">¼ÓÔØ½áÊøµÄ»Øµ÷£¬²ÎÊıÊÇÒôĞ§×é¼ş</param>
+        /// <param name="AcPath">èµ„æºè·¯å¾„ï¼›ä½¿ç”¨AssetBundleæ—¶ï¼Œè·¯å¾„ç”¨ç¼–è¾‘å™¨ä¸‹çš„è·¯å¾„(å¸¦åç¼€)</param>
+        /// <param name="isLoop">æ˜¯å¦å¾ªç¯</param>
+        /// <param name="method">èµ„æºåŠ è½½æ–¹å¼</param>
+        /// <param name="callBack">åŠ è½½ç»“æŸçš„å›è°ƒï¼Œå‚æ•°æ˜¯éŸ³æ•ˆç»„ä»¶</param>
         public void LoadSoundAndPlay(string AcPath, bool isLoop = false, AssetLoadMethod method = AssetLoadMethod.Resources, UnityAction<AudioSource> callBack = null)
         {
             if (soundObj == null)
@@ -197,7 +197,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ¸Ä±äÒôĞ§ÉùÒô´óĞ¡
+        /// æ”¹å˜éŸ³æ•ˆå£°éŸ³å¤§å°
         /// </summary>
         /// <param name="value"></param>
         public void ChangeSoundValue(float value)
@@ -207,7 +207,7 @@ namespace UPandaGF
                 soundList[i].volume = value;
         }
         /// <summary>
-        /// Í£Ö¹ÒôĞ§
+        /// åœæ­¢éŸ³æ•ˆ
         /// </summary>
         /// <param name="source"></param>
         public void StopSound(AudioSource source)

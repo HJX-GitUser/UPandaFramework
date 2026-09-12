@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -6,17 +6,17 @@ using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
-/// MonoµÄ¹ÜÀí
-///1.ÀûÓÃÖ¡¸üĞÂ»ò¶¨Ê±¸üĞÂ´¦ÀíÂß¼­
-///2.ÀûÓÃĞ­Í¬³ÌĞò´¦ÀíÂß¼­
-///3.¿ÉÒÔÍ³Ò»Ö´ĞĞ¹ÜÀíÖ¡¸üĞÂ»ò¶¨Ê±¸üĞÂÏà¹ØÂß¼­
+/// Monoçš„ç®¡ç†
+///1.åˆ©ç”¨å¸§æ›´æ–°æˆ–å®šæ—¶æ›´æ–°å¤„ç†é€»è¾‘
+///2.åˆ©ç”¨ååŒç¨‹åºå¤„ç†é€»è¾‘
+///3.å¯ä»¥ç»Ÿä¸€æ‰§è¡Œç®¡ç†å¸§æ›´æ–°æˆ–å®šæ—¶æ›´æ–°ç›¸å…³é€»è¾‘
 /// </summary>
 public class PublicMono : EagerMonoSingletonBase<PublicMono>
 {
     private event UnityAction updateEvent;
     private event UnityAction fixedUpdatteEvent;
     private event UnityAction lateUpdateEvent;
-    
+
 
     // Update is called once per frame
     void Update()
@@ -34,7 +34,7 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
     }
 
     /// <summary>
-    /// Ìí¼ÓÖ¡¸üĞÂÊÂ¼ş
+    /// æ·»åŠ å¸§æ›´æ–°äº‹ä»¶
     /// </summary>
     /// <param name="fun"></param>
     public void AddUpdateListener(UnityAction fun)
@@ -42,7 +42,7 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
         updateEvent += fun;
     }
     /// <summary>
-    /// ÒÆ³ıÖ¡¸üĞÂÊÂ¼ş
+    /// ç§»é™¤å¸§æ›´æ–°äº‹ä»¶
     /// </summary>
     /// <param name="fun"></param>
     public void RemoveUpdateListener(UnityAction fun)
@@ -69,7 +69,7 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
     }
 
     /// <summary>
-    /// Æô¶¯Ğ­³Ì£¬²¢·µ»ØÒ»¸ö¿ÉµÈ´ıµÄ Task
+    /// å¯åŠ¨åç¨‹ï¼Œå¹¶è¿”å›ä¸€ä¸ªå¯ç­‰å¾…çš„ Task
     /// </summary>
     /// <param name="coroutine"></param>
     /// <returns></returns>

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -12,7 +12,7 @@ namespace UPandaGF
     public interface IAssetsLoader
     {
         /// <summary>
-        /// ¼ÓÔØAB°ü×ÊÔ´
+        /// åŠ è½½ABåŒ…èµ„æº
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="path"></param>
@@ -23,16 +23,16 @@ namespace UPandaGF
         void LoadAsync(string path, System.Type type, UnityAction<UnityEngine.Object> callback);
 
         /// <summary>
-        /// ³¡¾°¼ÓÔØ
+        /// åœºæ™¯åŠ è½½
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="assetLoadComplete">³¡¾°×ÊÔ´¼ÓÔØ½áÊø»Øµ÷</param>
-        /// <param name="sceneLoadComplete">³¡¾°¼ÓÔØ½áÊø»Øµ÷</param>
+        /// <param name="assetLoadComplete">åœºæ™¯èµ„æºåŠ è½½ç»“æŸå›è°ƒ</param>
+        /// <param name="sceneLoadComplete">åœºæ™¯åŠ è½½ç»“æŸå›è°ƒ</param>
         void LoadSceneAsync(string path, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null);
         void LoadSceneAsync(string path, LoadSceneMode loadSceneMode, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null);
 
         /// <summary>
-        /// ¼ÓÔØ³ÌĞò¼¯ £¨HybridCLR£©
+        /// åŠ è½½ç¨‹åºé›† ï¼ˆHybridCLRï¼‰
         /// </summary>
         /// <param name="path"></param>
         /// <param name="callback"></param>
@@ -40,14 +40,14 @@ namespace UPandaGF
         Task<Assembly> LoadAssemblyAsync(string path);
 
         /// <summary>
-        /// ×ÊÔ´Ğ¶ÔØ
+        /// èµ„æºå¸è½½
         /// </summary>
-        /// <param name="abName">ab°üµÄ°üÃû</param>
+        /// <param name="abName">abåŒ…çš„åŒ…å</param>
         /// <returns></returns>
         bool UnLoadAB(string abName);
 
         /// <summary>
-        /// Çå¿ÕAB×ÊÔ´
+        /// æ¸…ç©ºABèµ„æº
         /// </summary>
         /// <returns></returns>
         void ClearAB();

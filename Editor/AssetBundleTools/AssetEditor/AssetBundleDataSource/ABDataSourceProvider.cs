@@ -21,7 +21,7 @@ namespace AssetBundleBrowser.AssetBundleDataSource
         private static List<Type> BuildCustomABDataSourceList()
         {
             var properList = new List<Type>();
-            properList.Add(null); //empty spot for "default" 
+            properList.Add(null); //empty spot for "default"
             var x = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var assembly in x)
             {

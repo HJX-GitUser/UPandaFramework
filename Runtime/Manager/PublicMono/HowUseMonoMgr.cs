@@ -1,13 +1,13 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 /// <summary>
-/// Ê¹ÓÃ·½Ê½
+/// ä½¿ç”¨æ–¹å¼
 /// </summary>
 public class HowUseMonoMgr
 {
     /// <summary>
-    /// µ÷ÓÃ¸Ã·½·¨¾Í¿ÉÒÔÈÃMyUpdate()·½·¨ÔÚÃ¿Ö¡µ÷ÓÃ
+    /// è°ƒç”¨è¯¥æ–¹æ³•å°±å¯ä»¥è®©MyUpdate()æ–¹æ³•åœ¨æ¯å¸§è°ƒç”¨
     /// </summary>
     public void EnableMyUpdate()
     {
@@ -20,10 +20,10 @@ public class HowUseMonoMgr
 
     private void MyUpdate()
     {
-        Debug.Log("¸üĞÂ");
+        Debug.Log("æ›´æ–°");
     }
     /// <summary>
-    /// ¿ªÆôĞ­³ÌµÄ·½Ê½
+    /// å¼€å¯åç¨‹çš„æ–¹å¼
     /// </summary>
     public void StartMyIEnumerator()
     {
@@ -32,8 +32,8 @@ public class HowUseMonoMgr
 
     private IEnumerator SelfIEnumerator()
     {
-        Debug.Log("¿ªÆôĞ­³Ì");
+        Debug.Log("å¼€å¯åç¨‹");
         yield return new WaitForSeconds(3f);
-        Debug.Log("Ğ­³Ì½áÊø");
+        Debug.Log("åç¨‹ç»“æŸ");
     }
 }

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -7,12 +7,12 @@ using UnityEngine;
 namespace UPandaGF
 {
     /// <summary>
-    /// ×ÊÔ´¼ÓÔØ·½Ê½
+    /// èµ„æºåŠ è½½æ–¹å¼
     /// </summary>
     public enum AssetLoaddingMethod
     {
-        Editor,//±à¼­Æ÷»·¾³ÏÂ¼ÓÔØ×ÊÔ´
-        Assetbundles,//Ê¹ÓÃAssetBundle¼ÓÔØ×ÊÔ´
+        Editor,//ç¼–è¾‘å™¨ç¯å¢ƒä¸‹åŠ è½½èµ„æº
+        Assetbundles,//ä½¿ç”¨AssetBundleåŠ è½½èµ„æº
     }
     public class GFLoadedEvent : EventArgBase
     {
@@ -23,24 +23,24 @@ namespace UPandaGF
     public class UPGameRoot : EagerMonoSingletonBase<UPGameRoot>
     {
         #region Component
-        private DebugerInit debugerInit;//ÈÕÖ¾ÏµÍ³
-        private Downloader downloader;//ÏÂÔØÆ÷
-        private AssetsLoader sourcesLoadMgr;//×ÊÔ´¼ÓÔØ×é¼ş
-        private BinaryDataMgrInit binaryDataMgr;//Êı¾İ¹ÜÀí
+        private DebugerInit debugerInit;//æ—¥å¿—ç³»ç»Ÿ
+        private Downloader downloader;//ä¸‹è½½å™¨
+        private AssetsLoader sourcesLoadMgr;//èµ„æºåŠ è½½ç»„ä»¶
+        private BinaryDataMgrInit binaryDataMgr;//æ•°æ®ç®¡ç†
         private UIManager _UIManager;//UI
 
         public Downloader Downloader => downloader;
         #endregion
 
         #region Config
-        //[Header("×ÊÔ´¼ÓÔØ·½Ê½")]
+        //[Header("èµ„æºåŠ è½½æ–¹å¼")]
         public AssetLoaddingMethod method;
-        public bool enableAssetUpdate;//Æô¶¯×ÊÔ´¸üĞÂ
-        //[Header("×ÊÔ´Ïà¶ÔÂ·¾¶")]
+        public bool enableAssetUpdate;//å¯åŠ¨èµ„æºæ›´æ–°
+        //[Header("èµ„æºç›¸å¯¹è·¯å¾„")]
         public string LoadAssetPath = "AssetBundles/StandaloneWindows/";
 
         /// <summary>
-        /// Ô¶³Ì¼ÓÔØµØÖ·
+        /// è¿œç¨‹åŠ è½½åœ°å€
         /// </summary>
         public string reomoteURL = "http://127.0.0.1:80/";
 
@@ -75,7 +75,7 @@ namespace UPandaGF
             }
             catch (Exception e)
             {
-                Debug.LogError($"UPGameRoot ³õÊ¼»¯Ê§°Ü£º{e}");
+                Debug.LogError($"UPGameRoot åˆå§‹åŒ–å¤±è´¥ï¼š{e}");
             }
         }
 
@@ -96,11 +96,11 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// Ö´ĞĞ×ÊÔ´ÈÈ¸ü£¬·µ»Ø¸üĞÂºóµÄ×ÊÔ´Çåµ¥£¨Ê§°ÜÊ±½µ¼¶µ½±¾µØÇåµ¥£©
+        /// æ‰§è¡Œèµ„æºçƒ­æ›´ï¼Œè¿”å›æ›´æ–°åçš„èµ„æºæ¸…å•ï¼ˆå¤±è´¥æ—¶é™çº§åˆ°æœ¬åœ°æ¸…å•ï¼‰
         /// </summary>
         private async Task<ABSourcesRelated> UpdateAssets()
         {
-            PLogger.Log("×ÊÔ´¸üĞÂÒÑÆô¶¯");
+            PLogger.Log("èµ„æºæ›´æ–°å·²å¯åŠ¨");
             string remoteListPath = CombineUrl(reomoteURL, "AssetBundles/", assetData);
             string tempFileSavePath = Path.Combine(Application.persistentDataPath, "AssetBundles/", tempAssetData);
             string localFilePath = Path.Combine(Application.persistentDataPath, "AssetBundles/", assetData);
@@ -108,20 +108,20 @@ namespace UPandaGF
             if (File.Exists(tempFileSavePath))
                 File.Delete(tempFileSavePath);
 
-            PLogger.Log($"×ÊÔ´ÅäÖÃÏÂÔØÂ·¾¶£º{remoteListPath}\n±£´æÂ·¾¶£º{tempFileSavePath}");
+            PLogger.Log($"èµ„æºé…ç½®ä¸‹è½½è·¯å¾„ï¼š{remoteListPath}\nä¿å­˜è·¯å¾„ï¼š{tempFileSavePath}");
             bool isDown = await downloader.DownloadAsync(remoteListPath, tempFileSavePath);
             if (!isDown)
             {
-                PLogger.Log_red("×ÊÔ´Ğ£ÑéÄ¿Â¼ÏÂÔØÊ§°Ü£¬Ê¹ÓÃ±¾µØ×ÊÔ´Çåµ¥");
+                PLogger.Log_red("èµ„æºæ ¡éªŒç›®å½•ä¸‹è½½å¤±è´¥ï¼Œä½¿ç”¨æœ¬åœ°èµ„æºæ¸…å•");
                 return LoadLocalSourceRef(localFilePath);
             }
 
-            PLogger.Log_green("Ğ£ÑéÊı¾İÏÂÔØ³É¹¦");
+            PLogger.Log_green("æ ¡éªŒæ•°æ®ä¸‹è½½æˆåŠŸ");
             byte[] tempSourceRefByte = File.ReadAllBytes(tempFileSavePath);
             ABSourcesRelated tempSourceRef = sourcesLoadMgr.LoadABSourcesRelated(tempSourceRefByte);
             if (tempSourceRef == null || tempSourceRef.mainBundleInfo == null)
             {
-                PLogger.LogError("Ô¶¶Ë×ÊÔ´Çåµ¥½âÎöÊ§°Ü£¬Ê¹ÓÃ±¾µØ×ÊÔ´Çåµ¥");
+                PLogger.LogError("è¿œç«¯èµ„æºæ¸…å•è§£æå¤±è´¥ï¼Œä½¿ç”¨æœ¬åœ°èµ„æºæ¸…å•");
                 return LoadLocalSourceRef(localFilePath);
             }
 
@@ -130,17 +130,17 @@ namespace UPandaGF
                 ABSourcesRelated localSourceRef = LoadLocalSourceRef(localFilePath);
                 if (localSourceRef == null || localSourceRef.mainBundleInfo == null)
                 {
-                    PLogger.LogError("±¾µØ×ÊÔ´Çåµ¥Òì³££¬°´Ê×´ÎÏÂÔØ´¦Àí");
+                    PLogger.LogError("æœ¬åœ°èµ„æºæ¸…å•å¼‚å¸¸ï¼ŒæŒ‰é¦–æ¬¡ä¸‹è½½å¤„ç†");
                     if (!await DownloadFirstTime(tempSourceRef))
                     {
-                        PLogger.Log_red("Ê×´Î×ÊÔ´ÏÂÔØÎ´È«²¿Íê³É£¬²¿·Ö×ÊÔ´¿ÉÄÜÈ±Ê§");
+                        PLogger.Log_red("é¦–æ¬¡èµ„æºä¸‹è½½æœªå…¨éƒ¨å®Œæˆï¼Œéƒ¨åˆ†èµ„æºå¯èƒ½ç¼ºå¤±");
                     }
                 }
                 else
                 {
                     if (!await DownloadIncrement(tempSourceRef, localSourceRef))
                     {
-                        PLogger.Log_red("ÔöÁ¿×ÊÔ´ÏÂÔØÎ´È«²¿Íê³É£¬½«Ê¹ÓÃÒÑÏÂÔØ³É¹¦µÄ²¿·Ö");
+                        PLogger.Log_red("å¢é‡èµ„æºä¸‹è½½æœªå…¨éƒ¨å®Œæˆï¼Œå°†ä½¿ç”¨å·²ä¸‹è½½æˆåŠŸçš„éƒ¨åˆ†");
                     }
                 }
             }
@@ -148,7 +148,7 @@ namespace UPandaGF
             {
                 if (!await DownloadFirstTime(tempSourceRef))
                 {
-                    PLogger.Log_red("Ê×´Î×ÊÔ´ÏÂÔØÎ´È«²¿Íê³É£¬²¿·Ö×ÊÔ´¿ÉÄÜÈ±Ê§");
+                    PLogger.Log_red("é¦–æ¬¡èµ„æºä¸‹è½½æœªå…¨éƒ¨å®Œæˆï¼Œéƒ¨åˆ†èµ„æºå¯èƒ½ç¼ºå¤±");
                 }
             }
 
@@ -166,32 +166,32 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// Ê×´ÎÏÂÔØ£ºÖ÷°ü + ËùÓĞ³Ö¾Ã»¯×ÊÔ´
+        /// é¦–æ¬¡ä¸‹è½½ï¼šä¸»åŒ… + æ‰€æœ‰æŒä¹…åŒ–èµ„æº
         /// </summary>
         private async Task<bool> DownloadFirstTime(ABSourcesRelated tempSourceRef)
         {
             List<DownloadItem> downloadList = new List<DownloadItem>();
-            // Ö÷°üÖ»ÓĞÔÚ"¼ÓÔØÎ»ÖÃ¾ÍÊÇ PersistentDataPath"Ê±²ÅĞèÒªÏÂÔØ£º
-            // ÈôÖ÷°ü´Ó StreamingAssets / Ô¶³Ì¼ÓÔØ£¬ÏÂÔØµ½±¾µØ²»»á±»Ê¹ÓÃ£¨ÏÂÔØµØÖ·ĞèÓë¼ÓÔØµØÖ·Ò»ÖÂ£©
+            // ä¸»åŒ…åªæœ‰åœ¨"åŠ è½½ä½ç½®å°±æ˜¯ PersistentDataPath"æ—¶æ‰éœ€è¦ä¸‹è½½ï¼š
+            // è‹¥ä¸»åŒ…ä» StreamingAssets / è¿œç¨‹åŠ è½½ï¼Œä¸‹è½½åˆ°æœ¬åœ°ä¸ä¼šè¢«ä½¿ç”¨ï¼ˆä¸‹è½½åœ°å€éœ€ä¸åŠ è½½åœ°å€ä¸€è‡´ï¼‰
             if (tempSourceRef.mainBundleInfo.loadPath == ABLoadPath.PersistentDataPath)
             {
                 downloadList.Add(GetDownInfo(tempSourceRef.mainBundleInfo.bundleName, tempSourceRef.mainBundleInfo.size));
             }
             else
             {
-                PLogger.LogWarning($"Ö÷°ü¼ÓÔØÎ»ÖÃÎª {tempSourceRef.mainBundleInfo.loadPath}£¬±¾´ÎÈÈ¸ü²»»áÏÂÔØÖ÷°ü");
+                PLogger.LogWarning($"ä¸»åŒ…åŠ è½½ä½ç½®ä¸º {tempSourceRef.mainBundleInfo.loadPath}ï¼Œæœ¬æ¬¡çƒ­æ›´ä¸ä¼šä¸‹è½½ä¸»åŒ…");
             }
             foreach (var item in tempSourceRef.bundleInfo.Values)
             {
                 if (item.loadPath == ABLoadPath.PersistentDataPath)
                     downloadList.Add(GetDownInfo(item.bundleName, item.size));
             }
-            PLogger.Log($"¹²ÓĞ{downloadList.Count}¸ö×ÊÔ´ĞèÒªÏÂÔØ");
+            PLogger.Log($"å…±æœ‰{downloadList.Count}ä¸ªèµ„æºéœ€è¦ä¸‹è½½");
             return await DownloadBatchAndWait(downloadList);
         }
 
         /// <summary>
-        /// ÔöÁ¿¸üĞÂ£º°´ MD5 ¶Ô±ÈÏÂÔØ±ä¸ü×ÊÔ´£¬²¢ÇåÀíÔ¶¶ËÒÑÉ¾³ıµÄ±¾µØ×ÊÔ´
+        /// å¢é‡æ›´æ–°ï¼šæŒ‰ MD5 å¯¹æ¯”ä¸‹è½½å˜æ›´èµ„æºï¼Œå¹¶æ¸…ç†è¿œç«¯å·²åˆ é™¤çš„æœ¬åœ°èµ„æº
         /// </summary>
         private async Task<bool> DownloadIncrement(ABSourcesRelated tempSourceRef, ABSourcesRelated localSourceRef)
         {
@@ -217,14 +217,14 @@ namespace UPandaGF
                 }
             }
 
-            // Ô¶¶ËÒÑÉ¾³ı¡¢±¾µØÈÔ´æÔÚµÄ×ÊÔ´×öÇåÀí
+            // è¿œç«¯å·²åˆ é™¤ã€æœ¬åœ°ä»å­˜åœ¨çš„èµ„æºåšæ¸…ç†
             foreach (var item in localSourceRef.bundleInfo)
             {
                 if (!tempSourceRef.bundleInfo.ContainsKey(item.Key))
                     DeleteLocalAsset(item.Key);
             }
 
-            PLogger.Log($"¹²ÓĞ{downloadList.Count}¸ö×ÊÔ´ĞèÒª¸üĞÂ");
+            PLogger.Log($"å…±æœ‰{downloadList.Count}ä¸ªèµ„æºéœ€è¦æ›´æ–°");
             return await DownloadBatchAndWait(downloadList);
         }
 
@@ -236,33 +236,33 @@ namespace UPandaGF
                 if (File.Exists(delPath))
                 {
                     File.Delete(delPath);
-                    PLogger.Log($"{delPath} ÒÑÉ¾³ı");
+                    PLogger.Log($"{delPath} å·²åˆ é™¤");
                 }
             }
             catch (Exception e)
             {
-                PLogger.LogWarning($"É¾³ı×ÊÔ´Ê§°Ü£º{delPath}£¬{e.Message}");
+                PLogger.LogWarning($"åˆ é™¤èµ„æºå¤±è´¥ï¼š{delPath}ï¼Œ{e.Message}");
             }
         }
 
         /// <summary>
-        /// ÅúÁ¿ÏÂÔØ²¢µÈ´ıÍê³É£»¿ÕÁĞ±íÖ±½Ó·µ»Ø£¬±ÜÃâËÀÑ­»·
+        /// æ‰¹é‡ä¸‹è½½å¹¶ç­‰å¾…å®Œæˆï¼›ç©ºåˆ—è¡¨ç›´æ¥è¿”å›ï¼Œé¿å…æ­»å¾ªç¯
         /// </summary>
         /// <summary>
-        /// ÅúÁ¿ÏÂÔØ²¢µÈ´ıÍê³É£¬·µ»ØÊÇ·ñÈ«²¿³É¹¦£»¿ÕÁĞ±íÖ±½Ó·µ»Ø³É¹¦£¬±ÜÃâËÀÑ­»·
+        /// æ‰¹é‡ä¸‹è½½å¹¶ç­‰å¾…å®Œæˆï¼Œè¿”å›æ˜¯å¦å…¨éƒ¨æˆåŠŸï¼›ç©ºåˆ—è¡¨ç›´æ¥è¿”å›æˆåŠŸï¼Œé¿å…æ­»å¾ªç¯
         /// </summary>
         private async Task<bool> DownloadBatchAndWait(List<DownloadItem> downloadList)
         {
             if (downloadList == null || downloadList.Count == 0)
             {
-                PLogger.Log("Ã»ÓĞĞèÒªÏÂÔØµÄ×ÊÔ´");
+                PLogger.Log("æ²¡æœ‰éœ€è¦ä¸‹è½½çš„èµ„æº");
                 return true;
             }
 
-            // RunContinuationsAsynchronously£º±ÜÃâºóĞøÁ÷³ÌÔÚÏÂÔØÆ÷µÄ"Íê³ÉÊÂ¼ş·Ö·¢"ÖĞÍ¾Í¬²½ĞøÅÜ
+            // RunContinuationsAsynchronouslyï¼šé¿å…åç»­æµç¨‹åœ¨ä¸‹è½½å™¨çš„"å®Œæˆäº‹ä»¶åˆ†å‘"ä¸­é€”åŒæ­¥ç»­è·‘
             TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            // ÓÃ´ø½á¹ûµÄÊÂ¼ş£ºÖ»ÒªÓĞÒ»¸öÈÎÎñÖØÊÔºÄ¾¡£¬allSuccess ¾ÍÊÇ false
+            // ç”¨å¸¦ç»“æœçš„äº‹ä»¶ï¼šåªè¦æœ‰ä¸€ä¸ªä»»åŠ¡é‡è¯•è€—å°½ï¼ŒallSuccess å°±æ˜¯ false
             Action<bool> onFinished = (allSuccess) => tcs.TrySetResult(allSuccess);
             downloader.OnAllDownloadsFinished += onFinished;
             downloader.AddBatchDownloads(downloadList);
@@ -281,12 +281,12 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ´òÓ¡±¾Åú´ÎÏÂÔØÊ§°ÜµÄ×ÊÔ´£¨×î¶àÁĞ³ö 10 ¸ö£©£¬±ãÓÚ¶¨Î»ÊÇÄÄ¸ö×ÊÔ´µ¼ÖÂµÄÊ§°Ü
+        /// æ‰“å°æœ¬æ‰¹æ¬¡ä¸‹è½½å¤±è´¥çš„èµ„æºï¼ˆæœ€å¤šåˆ—å‡º 10 ä¸ªï¼‰ï¼Œä¾¿äºå®šä½æ˜¯å“ªä¸ªèµ„æºå¯¼è‡´çš„å¤±è´¥
         /// </summary>
         private void LogDownloadFailures(List<DownloadItem> downloadList)
         {
             IReadOnlyList<DownloadItem> failed = downloader.FailedItems;
-            PLogger.Log_red($"×ÊÔ´ÏÂÔØÎ´È«²¿³É¹¦£º¹² {downloadList.Count} ¸öÈÎÎñ£¬Ê§°Ü {failed.Count} ¸ö");
+            PLogger.Log_red($"èµ„æºä¸‹è½½æœªå…¨éƒ¨æˆåŠŸï¼šå…± {downloadList.Count} ä¸ªä»»åŠ¡ï¼Œå¤±è´¥ {failed.Count} ä¸ª");
 
             int shown = 0;
             foreach (DownloadItem item in failed)
@@ -294,7 +294,7 @@ namespace UPandaGF
                 if (item == null)
                     continue;
 
-                PLogger.LogError($"ÏÂÔØÊ§°Ü£º{item.fileName}£¨{item.url}£©£º{item.error}");
+                PLogger.LogError($"ä¸‹è½½å¤±è´¥ï¼š{item.fileName}ï¼ˆ{item.url}ï¼‰ï¼š{item.error}");
 
                 shown++;
                 if (shown >= 10)
@@ -315,7 +315,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// Æ´½ÓÔ¶³Ì URL£¬±ÜÃâ Path.Combine ÔÚ¿çÆ½Ì¨ÏÂ²úÉú´íÎóµÄÂ·¾¶·Ö¸ô·û
+        /// æ‹¼æ¥è¿œç¨‹ URLï¼Œé¿å… Path.Combine åœ¨è·¨å¹³å°ä¸‹äº§ç”Ÿé”™è¯¯çš„è·¯å¾„åˆ†éš”ç¬¦
         /// </summary>
         private static string CombineUrl(params string[] segments)
         {
@@ -367,7 +367,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// »ñÈ¡×ÊÔ´¼ÓÔØ½Ó¿Ú
+        /// è·å–èµ„æºåŠ è½½æ¥å£
         /// </summary>
         /// <returns></returns>
         public IAssetsLoader GetAssetsLoader()

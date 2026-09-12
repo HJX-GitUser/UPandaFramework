@@ -1,11 +1,11 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public static class FloatValueExtend
 {
     /// <summary>
-    /// ¸ñÊ½»¯Ê±¼äÎª Ê±:·Ö:Ãë
+    /// æ ¼å¼åŒ–æ—¶é—´ä¸º æ—¶:åˆ†:ç§’
     /// </summary>
     /// <param name="totalSeconds"></param>
     /// <returns></returns>
@@ -15,7 +15,7 @@ public static class FloatValueExtend
         int minutes = Mathf.FloorToInt((totalSeconds % 3600) / 60);
         int seconds = Mathf.FloorToInt(totalSeconds % 60);
         int milliseconds = Mathf.FloorToInt((totalSeconds * 1000) % 1000);
-        // ºÁÃëÏÔÊ¾£¨¿ÉÑ¡£¬°´ĞèÊ¹ÓÃ£©
+        // æ¯«ç§’æ˜¾ç¤ºï¼ˆå¯é€‰ï¼ŒæŒ‰éœ€ä½¿ç”¨ï¼‰
         // return $"{hours:D2}:{minutes:D2}:{seconds:D2}.{milliseconds:D3}";
 
         return $"{hours:D2}:{minutes:D2}:{seconds:D2}";

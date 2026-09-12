@@ -1,4 +1,4 @@
-using Excel;
+ï»¿using Excel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,34 +11,34 @@ using UnityEngine;
 public class ExcelTool : EditorWindow
 {
     /// <summary>
-    /// excelÎÄ¼ş´æ·ÅµÄÂ·¾¶
+    /// excelæ–‡ä»¶å­˜æ”¾çš„è·¯å¾„
     /// </summary>
     public string EXCEL_PATH = "ArtAssets/Excel";// = Application.dataPath + "/ArtAssets/Excel";
     /// <summary>
-    /// Êı¾İ½á¹¹Àà½Å±¾´æ´¢Î»ÖÃÂ·¾¶
+    /// æ•°æ®ç»“æ„ç±»è„šæœ¬å­˜å‚¨ä½ç½®è·¯å¾„
     /// </summary>
     public string DATA_CLASS_PATH = "Scripts/ExcelData/DataClass/";// = Application.dataPath + "/Scripts/ExcelData/DataClass/";
     /// <summary>
-    /// ÈİÆ÷Àà½Å±¾´æ´¢Î»ÖÃÂ·¾¶
+    /// å®¹å™¨ç±»è„šæœ¬å­˜å‚¨ä½ç½®è·¯å¾„
     /// </summary>
     public string DATA_CONTAINER_PATH = "Scripts/ExcelData/Container/";// = Application.dataPath + "/Scripts/ExcelData/Container/";
     /// <summary>
-    /// 2½øÖÆÊı¾İ´æ´¢Î»ÖÃÂ·¾¶
-    /// Õâ¸ö±ØĞëºÍBinaryDataMgrÀïµÄ¶ÁÈ¡Â·¾¶Ò»ÖÂ
+    /// 2è¿›åˆ¶æ•°æ®å­˜å‚¨ä½ç½®è·¯å¾„
+    /// è¿™ä¸ªå¿…é¡»å’ŒBinaryDataMgré‡Œçš„è¯»å–è·¯å¾„ä¸€è‡´
     /// </summary>
     public string DATA_BINARY_PATH = "Data/BinaryData/";// = Application.streamingAssetsPath + "/BinaryData/";
     /// <summary>
-    /// Excel±íÖĞÕæÕıÄÚÈİ¿ªÊ¼µÄĞĞºÅ
+    /// Excelè¡¨ä¸­çœŸæ­£å†…å®¹å¼€å§‹çš„è¡Œå·
     /// </summary>
     public int BEGIN_INDEX = 4;
     /// <summary>
-    /// ¶ş½øÖÆÊı¾İÎÄ¼şºó×º
+    /// äºŒè¿›åˆ¶æ•°æ®æ–‡ä»¶åç¼€
     /// </summary>
     public string SUFFIX = ".binary";
 
     private Vector2 vec2Pos;
 
-    [MenuItem("UPandaGF/Tools/ExcelÅäÖÃ¹¤¾ß")]
+    [MenuItem("UPandaGF/Tools/Excelé…ç½®å·¥å…·")]
     private static void OpenTool()
     {
         ExcelTool excelTool = GetWindow<ExcelTool>();
@@ -53,10 +53,10 @@ public class ExcelTool : EditorWindow
     private void OnGUI()
     {
         vec2Pos = GUILayout.BeginScrollView(vec2Pos);
-        EditorGUILayout.LabelField("ExcelÅäÖÃ¹¤¾ß");
+        EditorGUILayout.LabelField("Excelé…ç½®å·¥å…·");
         GUILayout.Space(5);
 
-        EXCEL_PATH = EditorGUILayout.TextField("excelÎÄ¼ş´æ·ÅÎ»ÖÃ", EXCEL_PATH);
+        EXCEL_PATH = EditorGUILayout.TextField("excelæ–‡ä»¶å­˜æ”¾ä½ç½®", EXCEL_PATH);
         GUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
         if (GUILayout.Button("Browse"))
@@ -66,18 +66,18 @@ public class ExcelTool : EditorWindow
         GUILayout.EndHorizontal();
 
         GUILayout.Space(5);
-        EditorGUILayout.LabelField("Êı¾İÀà´æ´¢Î»ÖÃ", DATA_CLASS_PATH);
-        EditorGUILayout.LabelField("Êı¾İÈİÆ÷Àà´æ´¢Î»ÖÃ", DATA_CONTAINER_PATH);
-        EditorGUILayout.LabelField("Êı¾İ´æ´¢Â·¾¶", DATA_BINARY_PATH);
-        EditorGUILayout.LabelField("Êı¾İÎÄ¼şºó×º", SUFFIX);
-        EditorGUILayout.LabelField("ExcelÅäÖÃ¿ªÊ¼µÄĞĞºÅ", BEGIN_INDEX.ToString());
+        EditorGUILayout.LabelField("æ•°æ®ç±»å­˜å‚¨ä½ç½®", DATA_CLASS_PATH);
+        EditorGUILayout.LabelField("æ•°æ®å®¹å™¨ç±»å­˜å‚¨ä½ç½®", DATA_CONTAINER_PATH);
+        EditorGUILayout.LabelField("æ•°æ®å­˜å‚¨è·¯å¾„", DATA_BINARY_PATH);
+        EditorGUILayout.LabelField("æ•°æ®æ–‡ä»¶åç¼€", SUFFIX);
+        EditorGUILayout.LabelField("Excelé…ç½®å¼€å§‹çš„è¡Œå·", BEGIN_INDEX.ToString());
         GUILayout.Space(5);
 
-        if (GUILayout.Button("´´½¨Êı¾İ"))
+        if (GUILayout.Button("åˆ›å»ºæ•°æ®"))
         {
             GenerateExcelInfo();
         }
-        if (GUILayout.Button("´òÓ¡Êı¾İ"))
+        if (GUILayout.Button("æ‰“å°æ•°æ®"))
         {
             OpenExcel();
         }
@@ -105,24 +105,24 @@ public class ExcelTool : EditorWindow
         return Application.dataPath + "/" + path;
     }
 
-    //[MenuItem("UPandaGF/Tools/ExcelTool/Éú³ÉÊı¾İÀàºÍÊı¾İÈİÆ÷Àà")]
+    //[MenuItem("UPandaGF/Tools/ExcelTool/ç”Ÿæˆæ•°æ®ç±»å’Œæ•°æ®å®¹å™¨ç±»")]
     private void GenerateExcelInfo()
     {
         Debug.Log(PathAddHead(EXCEL_PATH));
-        //¼ÇÏÂÔÚÖ¸¶¨Â·¾¶ÖĞµÄËùÓĞExcelÎÄ¼ş ÓÃÓÚÉú³É¶ÔÓ¦µÄ3¸öÎÄ¼ş
+        //è®°ä¸‹åœ¨æŒ‡å®šè·¯å¾„ä¸­çš„æ‰€æœ‰Excelæ–‡ä»¶ ç”¨äºç”Ÿæˆå¯¹åº”çš„3ä¸ªæ–‡ä»¶
         DirectoryInfo dInfo = Directory.CreateDirectory(PathAddHead(EXCEL_PATH));
-        //µÃµ½Ö¸¶¨Â·¾¶ÖĞµÄËùÓĞÎÄ¼şĞÅÏ¢ Ïàµ±ÓÚ¾ÍÊÇµÃµ½ËùÓĞµÄExcel±í
+        //å¾—åˆ°æŒ‡å®šè·¯å¾„ä¸­çš„æ‰€æœ‰æ–‡ä»¶ä¿¡æ¯ ç›¸å½“äºå°±æ˜¯å¾—åˆ°æ‰€æœ‰çš„Excelè¡¨
         FileInfo[] files = dInfo.GetFiles();
         Debug.Log(files.Length);
-        //Êı¾İ±íÈİÆ÷
+        //æ•°æ®è¡¨å®¹å™¨
         DataTableCollection tableCollection;
         for (int i = 0; i < files.Length; i++)
         {
-            //Èç¹û²»ÊÇExcelÎÄ¼ş¾Í²»´¦ÀíÁË
+            //å¦‚æœä¸æ˜¯Excelæ–‡ä»¶å°±ä¸å¤„ç†äº†
             if (files[i].Extension != ".xlsx" && files[i].Extension != ".xls") continue;
             using (FileStream fs = files[i].Open(FileMode.Open, FileAccess.Read))
             {
-                //IExcelDataReaderÀà£¬´ÓÁ÷ÖĞ¶ÁÈ¡ExcelÊı¾İ
+                //IExcelDataReaderç±»ï¼Œä»æµä¸­è¯»å–Excelæ•°æ®
                 IExcelDataReader excelReader = ExcelReaderFactory.CreateOpenXmlReader(fs);
                 tableCollection = excelReader.AsDataSet().Tables;
                 fs.Close();
@@ -130,33 +130,33 @@ public class ExcelTool : EditorWindow
             foreach (DataTable table in tableCollection)
             {
                 Debug.Log(table.TableName);
-                //Éú³ÉÊı¾İ½á¹¹Àà
+                //ç”Ÿæˆæ•°æ®ç»“æ„ç±»
                 GenerateExcelDataClass(table);
-                //Éú³ÉÈİÆ÷Àà
+                //ç”Ÿæˆå®¹å™¨ç±»
                 GenerateExcelContainerContainer(table);
-                //Éú³É2½øÖÆÊı¾İ
+                //ç”Ÿæˆ2è¿›åˆ¶æ•°æ®
                 GenerateExcelBinary(table);
             }
         }
     }
 
     /// <summary>
-    /// Éú³ÉExcel±í¶ÔÓ¦µÄÊı¾İ½á¹¹Àà
+    /// ç”ŸæˆExcelè¡¨å¯¹åº”çš„æ•°æ®ç»“æ„ç±»
     /// </summary>
     /// <param name="table"></param>
     private void GenerateExcelDataClass(DataTable table)
     {
-        //×Ö¶ÎÃûĞĞ
+        //å­—æ®µåè¡Œ
         DataRow rowName = GetVariableNameRow(table);
-        //×Ö¶ÎÀàĞÍ
+        //å­—æ®µç±»å‹
         DataRow rowType = GetVariableTypeRow(table);
 
-        //ÅĞ¶ÏÂ·¾¶ÊÇ·ñ´æÔÚ Ã»ÓĞµÄ»° ¾Í´´½¨ÎÄ¼ş¼Ğ
+        //åˆ¤æ–­è·¯å¾„æ˜¯å¦å­˜åœ¨ æ²¡æœ‰çš„è¯ å°±åˆ›å»ºæ–‡ä»¶å¤¹
         if (!Directory.Exists(PathAddHead(DATA_CLASS_PATH)))
         {
             Directory.CreateDirectory(PathAddHead(DATA_CLASS_PATH));
         }
-        //Èç¹ûÒªÉú³É¶ÔÓ¦µÄÊı¾İ½á¹¹Àà½Å±¾ ÆäÊµ¾ÍÊÇÍ¨¹ı´úÂë½øĞĞ×Ö·û´®Æ´½Ó È»ºó´æ½øÎÄ¼ş¾ÍĞĞÁË
+        //å¦‚æœè¦ç”Ÿæˆå¯¹åº”çš„æ•°æ®ç»“æ„ç±»è„šæœ¬ å…¶å®å°±æ˜¯é€šè¿‡ä»£ç è¿›è¡Œå­—ç¬¦ä¸²æ‹¼æ¥ ç„¶åå­˜è¿›æ–‡ä»¶å°±è¡Œäº†
         string str = $"public class {table.TableName}\n{{\n";
         for (int i = 0; i < table.Columns.Count; i++)
         {
@@ -164,21 +164,21 @@ public class ExcelTool : EditorWindow
         }
         str += "}";
 
-        //°ÑÆ´½ÓºÃµÄ×Ö·û´®´æµ½Ö¸¶¨ÎÄ¼şÖĞÈ¥
+        //æŠŠæ‹¼æ¥å¥½çš„å­—ç¬¦ä¸²å­˜åˆ°æŒ‡å®šæ–‡ä»¶ä¸­å»
         File.WriteAllText(PathAddHead(DATA_CLASS_PATH) + table.TableName + ".cs", str);
         AssetDatabase.Refresh();
     }
     /// <summary>
-    /// Éú³ÉExcel±í¶ÔÓ¦µÄÊı¾İÈİÆ÷Àà
+    /// ç”ŸæˆExcelè¡¨å¯¹åº”çš„æ•°æ®å®¹å™¨ç±»
     /// </summary>
     /// <param name="table"></param>
     private void GenerateExcelContainerContainer(DataTable table)
     {
-        //µÃµ½Ö÷¼üµÄË÷Òı
+        //å¾—åˆ°ä¸»é”®çš„ç´¢å¼•
         int keyIndex = GetKeyIndex(table);
-        //µÃµ½×Ö¶ÎÀàĞÍĞĞ
+        //å¾—åˆ°å­—æ®µç±»å‹è¡Œ
         DataRow rowType = GetVariableTypeRow(table);
-        //Ã»ÓĞÂ·¾¶´´½¨Â·¾¶
+        //æ²¡æœ‰è·¯å¾„åˆ›å»ºè·¯å¾„
         if (!Directory.Exists(PathAddHead(DATA_CONTAINER_PATH)))
             Directory.CreateDirectory(PathAddHead(DATA_CONTAINER_PATH));
         string str = "using System.Collections.Generic;\n";
@@ -190,40 +190,40 @@ public class ExcelTool : EditorWindow
         AssetDatabase.Refresh();
     }
     /// <summary>
-    /// Éú³ÉexcelµÄ2½øÖÆÊı¾İ
-    /// ÕâÀïÔõÃ´Ğ´µÄ´æ´¢¹æÔò È¡µÄÊ±ºò¾ÍÔõÃ´¶Á
-    /// ÆäËûÀàĞÍÖ±½Ó×ª³É¶ş½øÖÆºó¾Í´æ½øÈ¥£¬×Ö·ûÀàĞÍ¾ÍÏÈ°Ñ¶ş½øÖÆÊı×é³¤¶È´æ½øÈ¥£¬ÔÙ´æ×ª³É¶ş½øÖÆµÄ×Ö·û£©
+    /// ç”Ÿæˆexcelçš„2è¿›åˆ¶æ•°æ®
+    /// è¿™é‡Œæ€ä¹ˆå†™çš„å­˜å‚¨è§„åˆ™ å–çš„æ—¶å€™å°±æ€ä¹ˆè¯»
+    /// å…¶ä»–ç±»å‹ç›´æ¥è½¬æˆäºŒè¿›åˆ¶åå°±å­˜è¿›å»ï¼Œå­—ç¬¦ç±»å‹å°±å…ˆæŠŠäºŒè¿›åˆ¶æ•°ç»„é•¿åº¦å­˜è¿›å»ï¼Œå†å­˜è½¬æˆäºŒè¿›åˆ¶çš„å­—ç¬¦ï¼‰
     /// </summary>
     /// <param name="table"></param>
     private void GenerateExcelBinary(DataTable table)
     {
         string path = Application.streamingAssetsPath + "/" + DATA_BINARY_PATH;
-        //Ã»ÓĞÂ·¾¶´´½¨Â·¾¶
+        //æ²¡æœ‰è·¯å¾„åˆ›å»ºè·¯å¾„
         if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-        //´´½¨Ò»¸ö2½øÖÆÎÄ¼ş½øĞĞĞ´Èë
+        //åˆ›å»ºä¸€ä¸ª2è¿›åˆ¶æ–‡ä»¶è¿›è¡Œå†™å…¥
         using (FileStream fs = new FileStream(path + table.TableName + SUFFIX, FileMode.OpenOrCreate, FileAccess.Write))
         {
-            //´æ´¢¾ßÌåµÄexcel¶ÔÓ¦µÄ2½øÖÆĞÅÏ¢
-            //1.ÏÈÒª´æ´¢ ĞèÒªĞ´¶àÉÙĞĞµÄÊı¾İ ·½±ã¶ÁÈ¡
-            //  -4µÄÔ­ÒòÊÇÒòÎª Ç°Ãæ4ĞĞÊÇÅäÖÃ¹æÔò ²¢²»ÊÇĞèÒª¼ÇÂ¼µÄÊı¾İÄÚÈİ
+            //å­˜å‚¨å…·ä½“çš„excelå¯¹åº”çš„2è¿›åˆ¶ä¿¡æ¯
+            //1.å…ˆè¦å­˜å‚¨ éœ€è¦å†™å¤šå°‘è¡Œçš„æ•°æ® æ–¹ä¾¿è¯»å–
+            //  -4çš„åŸå› æ˜¯å› ä¸º å‰é¢4è¡Œæ˜¯é…ç½®è§„åˆ™ å¹¶ä¸æ˜¯éœ€è¦è®°å½•çš„æ•°æ®å†…å®¹
             fs.Write(BitConverter.GetBytes(table.Rows.Count - 4), 0, 4);
-            //2.´æ´¢Ö÷¼üµÄ±äÁ¿Ãû
+            //2.å­˜å‚¨ä¸»é”®çš„å˜é‡å
             string keyName = GetVariableNameRow(table)[GetKeyIndex(table)].ToString();
             byte[] bytes = Encoding.UTF8.GetBytes(keyName);
-            //´æ´¢×Ö·û´®×Ö½ÚÊı×éµÄ³¤¶È
+            //å­˜å‚¨å­—ç¬¦ä¸²å­—èŠ‚æ•°ç»„çš„é•¿åº¦
             fs.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
-            //´æ´¢×Ö·û´®×Ö½ÚÊı×é
+            //å­˜å‚¨å­—ç¬¦ä¸²å­—èŠ‚æ•°ç»„
             fs.Write(bytes, 0, bytes.Length);
 
-            //±éÀúËùÓĞÄÚÈİµÄĞĞ ½øĞĞ2½øÖÆµÄĞ´Èë
+            //éå†æ‰€æœ‰å†…å®¹çš„è¡Œ è¿›è¡Œ2è¿›åˆ¶çš„å†™å…¥
             DataRow row;
-            //µÃµ½ÀàĞÍĞĞ ¸ù¾İÀàĞÍÀ´¾ö¶¨Ó¦¸ÃÈçºÎĞ´ÈëÊı¾İ
+            //å¾—åˆ°ç±»å‹è¡Œ æ ¹æ®ç±»å‹æ¥å†³å®šåº”è¯¥å¦‚ä½•å†™å…¥æ•°æ®
             DataRow rowType = GetVariableTypeRow(table);
             for (int i = BEGIN_INDEX; i < table.Rows.Count; i++)
             {
-                //µÃµ½Ò»ĞĞµÄÊı¾İ
+                //å¾—åˆ°ä¸€è¡Œçš„æ•°æ®
                 row = table.Rows[i];
-                //±éÀúÁĞ
+                //éå†åˆ—
                 for (int j = 0; j < table.Columns.Count; j++)
                 {
                     switch (rowType[j].ToString())
@@ -238,15 +238,15 @@ public class ExcelTool : EditorWindow
                             fs.Write(BitConverter.GetBytes(bool.Parse(row[j].ToString())), 0, 1);
                             break;
                         case "string":
-                            //bytesÕâ¸ö±äÁ¿Ç°ÃæÉùÃ÷¹ı£¬¶øÇÒÄÚÈİÒ²Ğ´ÈëÄÚ´æÁË£¬ËùÒÔÄÃÀ´¼ÌĞø×°ÆäËûÄÚÈİ
+                            //bytesè¿™ä¸ªå˜é‡å‰é¢å£°æ˜è¿‡ï¼Œè€Œä¸”å†…å®¹ä¹Ÿå†™å…¥å†…å­˜äº†ï¼Œæ‰€ä»¥æ‹¿æ¥ç»§ç»­è£…å…¶ä»–å†…å®¹
                             bytes = Encoding.UTF8.GetBytes(row[j].ToString());
-                            //Ğ´Èë×Ö·û´®×Ö½ÚÊı×éµÄ³¤¶È
+                            //å†™å…¥å­—ç¬¦ä¸²å­—èŠ‚æ•°ç»„çš„é•¿åº¦
                             fs.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
-                            //Ğ´Èë×Ö·û´®×Ö½ÚÊı×é
+                            //å†™å…¥å­—ç¬¦ä¸²å­—èŠ‚æ•°ç»„
                             fs.Write(bytes, 0, bytes.Length);
                             break;
                         default:
-                            Debug.LogError($"Ğ´Èë³ö´í£¡Êı¾İÀàĞÍ³ö´í£¡Ä¿Ç°Ö»Ö§³Öint float bool string\n³ö´í{rowType[j]}£¬ÁĞ£º{j}");
+                            Debug.LogError($"å†™å…¥å‡ºé”™ï¼æ•°æ®ç±»å‹å‡ºé”™ï¼ç›®å‰åªæ”¯æŒint float bool string\nå‡ºé”™{rowType[j]}ï¼Œåˆ—ï¼š{j}");
                             break;
                     }
                 }
@@ -257,7 +257,7 @@ public class ExcelTool : EditorWindow
     }
 
     /// <summary>
-    /// »ñÈ¡Ö÷¼üË÷Òı
+    /// è·å–ä¸»é”®ç´¢å¼•
     /// </summary>
     /// <param name="table"></param>
     /// <returns></returns>
@@ -268,15 +268,15 @@ public class ExcelTool : EditorWindow
         {
             if (row[i].ToString() == "key") return i;
         }
-        //Ä¬ÈÏµÚÒ»ÁĞÊÇÖ÷¼ü
+        //é»˜è®¤ç¬¬ä¸€åˆ—æ˜¯ä¸»é”®
         return 0;
     }
 
 
 
     /// <summary>
-    /// »ñÈ¡±äÁ¿ÃûËùÔÚĞĞ
-    /// ·â×°µÄÄ¿µÄÊÇ£¬±äÁ¿ÃûËùÔÚĞĞ¿ÉÒÔÔÚÕâÀï¸Ä
+    /// è·å–å˜é‡åæ‰€åœ¨è¡Œ
+    /// å°è£…çš„ç›®çš„æ˜¯ï¼Œå˜é‡åæ‰€åœ¨è¡Œå¯ä»¥åœ¨è¿™é‡Œæ”¹
     /// </summary>
     /// <param name="table"></param>
     /// <returns></returns>
@@ -285,7 +285,7 @@ public class ExcelTool : EditorWindow
         return table.Rows[0];
     }
     /// <summary>
-    /// »ñÈ¡±äÁ¿ÀàĞÍËùÔÚĞĞ
+    /// è·å–å˜é‡ç±»å‹æ‰€åœ¨è¡Œ
     /// </summary>
     /// <param name="table"></param>
     /// <returns></returns>
@@ -299,32 +299,32 @@ public class ExcelTool : EditorWindow
     {
         using (FileStream fs = File.Open(excelFile, FileMode.Open, FileAccess.Read))
         {
-            //Í¨¹ıÎÄ¼şÁ÷»ñÈ¡ExcelÊı¾İ
+            //é€šè¿‡æ–‡ä»¶æµè·å–Excelæ•°æ®
             IExcelDataReader excelReader = ExcelReaderFactory.CreateOpenXmlReader(fs);
-            //½«excel±íÖĞµÄÊı¾İ×ª»»ÎªDataSetÊı¾İÀàĞÍ ·½±ãÎÒÃÇ »ñÈ¡ÆäÖĞµÄÄÚÈİ
+            //å°†excelè¡¨ä¸­çš„æ•°æ®è½¬æ¢ä¸ºDataSetæ•°æ®ç±»å‹ æ–¹ä¾¿æˆ‘ä»¬ è·å–å…¶ä¸­çš„å†…å®¹
             DataSet result = excelReader.AsDataSet();
-            //µÃµ½ExcelÎÄ¼şÖĞµÄËùÓĞ±íĞÅÏ¢
+            //å¾—åˆ°Excelæ–‡ä»¶ä¸­çš„æ‰€æœ‰è¡¨ä¿¡æ¯
             for (int i = 0; i < result.Tables.Count; i++)
             {
-                Debug.Log("±íÃû£º" + result.Tables[i].TableName);
-                Debug.Log("ĞĞÊı£º" + result.Tables[i].Rows.Count);
-                Debug.Log("ÁĞÊı£º" + result.Tables[i].Columns.Count);
+                Debug.Log("è¡¨åï¼š" + result.Tables[i].TableName);
+                Debug.Log("è¡Œæ•°ï¼š" + result.Tables[i].Rows.Count);
+                Debug.Log("åˆ—æ•°ï¼š" + result.Tables[i].Columns.Count);
             }
-            Debug.Log("----------------·Ö¸îÏß----------------");
+            Debug.Log("----------------åˆ†å‰²çº¿----------------");
             for (int i = 0; i < result.Tables.Count; i++)
             {
-                //µÃµ½ÆäÖĞÒ»ÕÅ±íµÄ¾ßÌåÊı¾İ
+                //å¾—åˆ°å…¶ä¸­ä¸€å¼ è¡¨çš„å…·ä½“æ•°æ®
                 DataTable table = result.Tables[i];
-                //µÃµ½ÆäÖĞÒ»ĞĞµÄÊı¾İ
+                //å¾—åˆ°å…¶ä¸­ä¸€è¡Œçš„æ•°æ®
                 //DataRow row = table.Rows[0];
-                //µÃµ½ĞĞÖĞÄ³Ò»ÁĞµÄĞÅÏ¢
+                //å¾—åˆ°è¡Œä¸­æŸä¸€åˆ—çš„ä¿¡æ¯
                 //Debug.Log(row[1].ToString());
                 DataRow row;
                 for (int j = 0; j < table.Rows.Count; j++)
                 {
-                    //µÃµ½Ã¿Ò»ĞĞµÄĞÅÏ¢
+                    //å¾—åˆ°æ¯ä¸€è¡Œçš„ä¿¡æ¯
                     row = table.Rows[j];
-                    Debug.Log("*********ĞÂµÄÒ»ĞĞ************");
+                    Debug.Log("*********æ–°çš„ä¸€è¡Œ************");
                     for (int k = 0; k < table.Columns.Count; k++)
                     {
                         Debug.Log(row[k].ToString());

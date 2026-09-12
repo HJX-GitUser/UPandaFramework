@@ -1,9 +1,9 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
 namespace UPandaGF
 {
     /// <summary>
-    /// AB°ü¼ÓÔØÂ·¾¶
+    /// ABåŒ…åŠ è½½è·¯å¾„
     /// </summary>
     [System.Serializable]
     public enum ABLoadPath
@@ -13,18 +13,18 @@ namespace UPandaGF
         RemotePath
     }
     ///// <summary>
-    ///// ×ÊÔ´ĞÅÏ¢
+    ///// èµ„æºä¿¡æ¯
     /// </summary>
     [System.Serializable]
     public class ABSourcesRelated
     {
         public AssetBundleLoadInfo mainBundleInfo;
         /// <summary>
-        /// AssetBundeÊı¾İ keyÊÇ°üÃû
+        /// AssetBundeæ•°æ® keyæ˜¯åŒ…å
         /// </summary>
         public Dictionary<string, AssetBundleLoadInfo> bundleInfo = new Dictionary<string, AssetBundleLoadInfo>();
         /// <summary>
-        /// ×ÊÔ´¼ÓÔØĞÅÏ¢ keyÊÇ±à¼­Æ÷ÀïµÄÂ·¾¶
+        /// èµ„æºåŠ è½½ä¿¡æ¯ keyæ˜¯ç¼–è¾‘å™¨é‡Œçš„è·¯å¾„
         /// </summary>
         public Dictionary<string, AssetRelatedArg> sourcesDic = new Dictionary<string, AssetRelatedArg>();
 
@@ -35,17 +35,17 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// ×ÊÔ´ĞÅÏ¢ ¼ÇÂ¼Ã¿¸ö×ÊÔ´¶ÔÓ¦µÄ¼ÓÔØÊı¾İ
+    /// èµ„æºä¿¡æ¯ è®°å½•æ¯ä¸ªèµ„æºå¯¹åº”çš„åŠ è½½æ•°æ®
     /// </summary>
     [System.Serializable]
     public class AssetRelatedArg
     {
         /// <summary>
-        /// AB°üÃû
+        /// ABåŒ…å
         /// </summary>
         public string bundleName;
         /// <summary>
-        /// ×ÊÔ´Ãû
+        /// èµ„æºå
         /// </summary>
         public string sourceName;
 
@@ -57,15 +57,15 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// AssetBundleĞÅÏ¢
+    /// AssetBundleä¿¡æ¯
     /// </summary>
     [System.Serializable]
     public class AssetBundleLoadInfo
     {
-        public string bundleName;//°üÃû
-        public long size;//´óĞ¡
-        public string md5;//MD5Âë
-        public ABLoadPath loadPath;//¼ÓÔØÂ·¾¶
+        public string bundleName;//åŒ…å
+        public long size;//å¤§å°
+        public string md5;//MD5ç 
+        public ABLoadPath loadPath;//åŠ è½½è·¯å¾„
     }
 }
 

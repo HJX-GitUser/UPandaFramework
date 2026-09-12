@@ -1,4 +1,4 @@
-//
+﻿//
 //  Outline.cs
 //  QuickOutline
 //
@@ -130,7 +130,7 @@ public class OutDrawline : MonoBehaviour
     [Header("Optional")]
 
     //[SerializeField, Tooltip("Precompute enabled: Per-vertex calculations are performed in the editor and serialized with the object."
-    //+ "Precompute disabled: Per-vertex calculations are performed at runtime in Awake(). This may cause a pause for large meshes.")] 
+    //+ "Precompute disabled: Per-vertex calculations are performed at runtime in Awake(). This may cause a pause for large meshes.")]
     [SerializeField, Tooltip("预计算启用：在编辑器中执行逐顶点计算，并与对象序列化。预计算禁用：在运行时在Awake()中执行逐顶点计算。对于大型网格，这可能会导致暂停。")]
     private bool precomputeOutline;                     // 是否把平滑法线预计算并随对象序列化（大网格建议开启）
 

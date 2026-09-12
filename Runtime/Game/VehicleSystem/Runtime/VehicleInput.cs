@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// 车辆输入：统一读取键盘输入，供 VehicleController 和 CameraModeManager 使用。

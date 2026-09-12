@@ -66,15 +66,15 @@ namespace AssetBundleBrowser.AssetBundleDataSource
             AssetDatabase.RemoveUnusedAssetBundleNames ();
         }
 
-        public bool CanSpecifyBuildTarget { 
-            get { return true; } 
+        public bool CanSpecifyBuildTarget {
+            get { return true; }
         }
-        public bool CanSpecifyBuildOutputDirectory { 
-            get { return true; } 
+        public bool CanSpecifyBuildOutputDirectory {
+            get { return true; }
         }
 
-        public bool CanSpecifyBuildOptions { 
-            get { return true; } 
+        public bool CanSpecifyBuildOptions {
+            get { return true; }
         }
 
         public bool BuildAssetBundles (ABBuildInfo info) {

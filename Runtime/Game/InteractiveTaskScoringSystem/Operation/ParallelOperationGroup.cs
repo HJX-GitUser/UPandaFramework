@@ -1,19 +1,19 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.Events;
 
 
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
     /// <summary>
-    /// ²¢Áª²Ù×÷¼àÌı×é
+    /// å¹¶è”æ“ä½œç›‘å¬ç»„
     /// </summary>
     public class ParallelOperationGroup : OperationGroupBase
     {
-        [Header("ĞèÒªÖ´ĞĞµÄ²Ù×÷ÊıÁ¿")]
-        public int completeCount = 0;   // ĞèÒªÍê³ÉµÄ×Ó²Ù×÷ÊıÁ¿£¨<=0 ±íÊ¾¡°È«²¿Íê³É¡±£»ÔËĞĞÊ±²»»á¸ÄĞ´±¾×Ö¶Î£©
+        [Header("éœ€è¦æ‰§è¡Œçš„æ“ä½œæ•°é‡")]
+        public int completeCount = 0;   // éœ€è¦å®Œæˆçš„å­æ“ä½œæ•°é‡ï¼ˆ<=0 è¡¨ç¤ºâ€œå…¨éƒ¨å®Œæˆâ€ï¼›è¿è¡Œæ—¶ä¸ä¼šæ”¹å†™æœ¬å­—æ®µï¼‰
 
-        private int executeCount;           // ÒÑÖ´ĞĞÍê³ÉµÄÊıÁ¿
-        private int runtimeCompleteCount;   // ÔËĞĞÊ±ÉúĞ§µÄÍê³ÉÊıÁ¿£¨ĞŞ¸´£º²»ÔÙ¸ÄĞ´ÅäÖÃ×Ö¶Î completeCount£©
+        private int executeCount;           // å·²æ‰§è¡Œå®Œæˆçš„æ•°é‡
+        private int runtimeCompleteCount;   // è¿è¡Œæ—¶ç”Ÿæ•ˆçš„å®Œæˆæ•°é‡ï¼ˆä¿®å¤ï¼šä¸å†æ”¹å†™é…ç½®å­—æ®µ completeCountï¼‰
         public override void CheckEnable()
         {
             OperationEnable();
@@ -25,7 +25,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             if (OperationCount == 0)
             {
-                Debug.LogWarning($"ÈÎÎñid:{taskStep.taskStepData.stepID} ²¢Áª²Ù×÷×éÈÎÎñ¼ì²é²½ÖèÎ´ÅäÖÃ£¡£¡£¡");
+                Debug.LogWarning($"ä»»åŠ¡id:{taskStep.taskStepData.stepID} å¹¶è”æ“ä½œç»„ä»»åŠ¡æ£€æŸ¥æ­¥éª¤æœªé…ç½®ï¼ï¼ï¼");
                 return;
             }
 
@@ -33,15 +33,15 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             {
                 OpearationExecute(() =>
                 {
-                    Debug.Log($"{taskStep.taskStepData.stepID}²Ù×÷Íê³É£¡£¡£¡");
-                    //EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent($"<color=green>{taskStep.taskStepData.stepID}²Ù×÷Íê³É</color>"));
+                    Debug.Log($"{taskStep.taskStepData.stepID}æ“ä½œå®Œæˆï¼ï¼ï¼");
+                    //EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent($"<color=green>{taskStep.taskStepData.stepID}æ“ä½œå®Œæˆ</color>"));
                 });
             }
             else
             {
-                // ĞŞ¸´£ºÈôÒÑÎŞ´¦ÓÚÄ¿±ê¼ì²é½×¶ÎµÄ×Ó²½Öè£¨¶¼ÔÚ²¥·Å¶¯»­£©£¬±¾´Îµã»÷²»ÅĞÎª²Ù×÷´íÎó
+                // ä¿®å¤ï¼šè‹¥å·²æ— å¤„äºç›®æ ‡æ£€æŸ¥é˜¶æ®µçš„å­æ­¥éª¤ï¼ˆéƒ½åœ¨æ’­æ”¾åŠ¨ç”»ï¼‰ï¼Œæœ¬æ¬¡ç‚¹å‡»ä¸åˆ¤ä¸ºæ“ä½œé”™è¯¯
                 if (!HasTargetCheckStep()) return;
-                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("<color=red>²Ù×÷´íÎó!!!</color>"));
+                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("<color=red>æ“ä½œé”™è¯¯!!!</color>"));
                 taskStep.AddErroTimes();
             }
         }
@@ -53,12 +53,12 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             if (OperationCount == 0) return;
             operationPhase = OperationPhase.TargetCheck;
             executeCount = 0;
-            // ĞŞ¸´£º¸ÄÓÃÔËĞĞÊ±×Ö¶Î£¬²»ÔÙ¸ÄĞ´ÅäÖÃ×Ö¶Î£¨Ô­Ğ´·¨»á°ÑÉè¼ÆÖµ 0 ÔÚÔËĞĞÊ±±ä³É OperationCount£¬²¢¿ÉÄÜ±»ĞòÁĞ»¯»Ø³¡¾°£©
+            // ä¿®å¤ï¼šæ”¹ç”¨è¿è¡Œæ—¶å­—æ®µï¼Œä¸å†æ”¹å†™é…ç½®å­—æ®µï¼ˆåŸå†™æ³•ä¼šæŠŠè®¾è®¡å€¼ 0 åœ¨è¿è¡Œæ—¶å˜æˆ OperationCountï¼Œå¹¶å¯èƒ½è¢«åºåˆ—åŒ–å›åœºæ™¯ï¼‰
             runtimeCompleteCount = completeCount <= 0 ? OperationCount : completeCount;
-            // ĞŞ¸´£ºÔ­ if (completeCount == 0) ·ÖÖ§Îª²»¿É´ï´úÂë£¬ÒÑÉ¾³ı£¨ÏÖ¸ÄÓÃÔËĞĞÊ±×Ö¶Î runtimeCompleteCount£©
+            // ä¿®å¤ï¼šåŸ if (completeCount == 0) åˆ†æ”¯ä¸ºä¸å¯è¾¾ä»£ç ï¼Œå·²åˆ é™¤ï¼ˆç°æ”¹ç”¨è¿è¡Œæ—¶å­—æ®µ runtimeCompleteCountï¼‰
             foreach (var item in ChildStep)
             {
-                if (item != null) item.OperationEnable();   // ĞŞ¸´£ºnull ÔªËØ±£»¤
+                if (item != null) item.OperationEnable();   // ä¿®å¤ï¼šnull å…ƒç´ ä¿æŠ¤
             }
         }
         public override bool CheckOperation(TaskEntityBase arg)
@@ -66,7 +66,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             bool checkRight = false;
             foreach (var item in ChildStep)
             {
-                if (item != null && item.CheckOperation(arg) && item.GetOperationPhase == OperationPhase.TargetCheck)   // ĞŞ¸´£ºnull ÔªËØ±£»¤
+                if (item != null && item.CheckOperation(arg) && item.GetOperationPhase == OperationPhase.TargetCheck)   // ä¿®å¤ï¼šnull å…ƒç´ ä¿æŠ¤
                 {
                     checkRight = true;
                     item.OpearationExecute(null);
@@ -90,11 +90,11 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             foreach (var item in ChildStep)
             {
-                if (item != null) item.OperationInstructions();   // ĞŞ¸´£ºnull ÔªËØ±£»¤
+                if (item != null) item.OperationInstructions();   // ä¿®å¤ï¼šnull å…ƒç´ ä¿æŠ¤
             }
         }
 
-        
+
     }
 }
 

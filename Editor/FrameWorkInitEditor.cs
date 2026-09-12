@@ -1,4 +1,4 @@
-using System.IO;
+ï»¿using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,7 +19,7 @@ namespace UPandaGF
         };
 
 
-        [MenuItem("UPandaGF/Tools/´´½¨³£ÓÃÄ¿Â¼ÎÄ¼ş¼Ğ")]
+        [MenuItem("UPandaGF/Tools/åˆ›å»ºå¸¸ç”¨ç›®å½•æ–‡ä»¶å¤¹")]
         private static void CreatForder()
         {
             foreach (string item in fileName)
@@ -34,22 +34,22 @@ namespace UPandaGF
             if (!Directory.Exists(fullPath))
             {
                 Directory.CreateDirectory(fullPath);
-                Debug.Log($"{fileName}Ä¿Â¼´´½¨Íê³É");
+                Debug.Log($"{fileName}ç›®å½•åˆ›å»ºå®Œæˆ");
             }
             else
             {
-                Debug.Log($"{fileName}Ä¿Â¼ÒÑ´æÔÚ");
+                Debug.Log($"{fileName}ç›®å½•å·²å­˜åœ¨");
             }
 
         }
 
-        [MenuItem("GameObject/UPandaGF/´´½¨UPGameRoot")]
-        [MenuItem("UPandaGF/´´½¨UPGameRoot")]
+        [MenuItem("GameObject/UPandaGF/åˆ›å»ºUPGameRoot")]
+        [MenuItem("UPandaGF/åˆ›å»ºUPGameRoot")]
         private static void CreatUPGameRoot()
         {
             if (GameObject.FindObjectOfType<UPGameRoot>() != null)
             {
-                Debug.Log("³¡¾°ÖĞÒÑ´æÔÚ´øÓĞMyComponent×é¼şµÄ¶ÔÏó£¬È¡Ïû´´½¨");
+                Debug.Log("åœºæ™¯ä¸­å·²å­˜åœ¨å¸¦æœ‰MyComponentç»„ä»¶çš„å¯¹è±¡ï¼Œå–æ¶ˆåˆ›å»º");
                 return;
             }
             GameObject obj = new GameObject("UPGameRoot");
@@ -70,7 +70,7 @@ namespace UPandaGF
             Transform select = Selection.activeTransform;
             if(select == null)
             {
-                Debug.Log("ĞèÒªÑ¡ÖĞÒ»¸öÔ¤ÖÆÌå");
+                Debug.Log("éœ€è¦é€‰ä¸­ä¸€ä¸ªé¢„åˆ¶ä½“");
                 return;
             }
             try
@@ -79,10 +79,10 @@ namespace UPandaGF
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"´¦ÀíÊ§°Ü ´íÎóĞÅÏ¢: {e.Message}");
+                Debug.LogError($"å¤„ç†å¤±è´¥ é”™è¯¯ä¿¡æ¯: {e.Message}");
             }
             AssetDatabase.SaveAssets();
-            Debug.Log("ÇåÀíÍê³É£¡");
+            Debug.Log("æ¸…ç†å®Œæˆï¼");
         }
 
         private static void ProcessPrefab(Transform parent)

@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ public class LogListenerManager : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] public GameObject logPanel;
-    [SerializeField] public Text logText;  // Ê¹ÓÃ±ê×¼Text×é¼ş
+    [SerializeField] public Text logText;  // ä½¿ç”¨æ ‡å‡†Textç»„ä»¶
     [SerializeField] public ScrollRect logScrollRect;
     [SerializeField] public InputField filterInput;
     [SerializeField] public Toggle autoScrollToggle;
@@ -29,7 +29,7 @@ public class LogListenerManager : MonoBehaviour
 
     [Header("Display Settings")]
     [SerializeField] public int maxLogLines = 1000;
-    [SerializeField] public int maxDisplayLines = 500;  // Êµ¼ÊÏÔÊ¾µÄĞĞÊı
+    [SerializeField] public int maxDisplayLines = 500;  // å®é™…æ˜¾ç¤ºçš„è¡Œæ•°
     [SerializeField] public float updateInterval = 0.1f;
     [SerializeField] public bool showOnError = true;
     [SerializeField] public bool autoStart = true;
@@ -62,7 +62,7 @@ public class LogListenerManager : MonoBehaviour
     private bool needsUpdate = false;
     private System.DateTime lastLogTime = System.DateTime.Now;
 
-    // ÈÕÖ¾ÀàĞÍ¹ıÂËÆ÷
+    // æ—¥å¿—ç±»å‹è¿‡æ»¤å™¨
     private bool showInfo = true;
     private bool showWarning = true;
     private bool showError = true;
@@ -79,7 +79,7 @@ public class LogListenerManager : MonoBehaviour
         gameObject.SetActive(isEnable);
     }
 
-    // ÈÕÖ¾½á¹¹
+    // æ—¥å¿—ç»“æ„
     private class LogEntry
     {
         public string text;
@@ -138,13 +138,13 @@ public class LogListenerManager : MonoBehaviour
             }
         }
 
-        // ³õÊ¼»¯ÈÕÖ¾×ÖÌå
+        // åˆå§‹åŒ–æ—¥å¿—å­—ä½“
         if (logFont != null && logText != null)
         {
             logText.font = logFont;
         }
 
-        UpdateStatus("ÈÕÖ¾¼àÌıÆ÷ÒÑ³õÊ¼»¯");
+        UpdateStatus("æ—¥å¿—ç›‘å¬å™¨å·²åˆå§‹åŒ–");
         SetEnable(false);
     }
 
@@ -152,17 +152,17 @@ public class LogListenerManager : MonoBehaviour
     {
         Application.logMessageReceived += HandleUnityLog;
 
-        // »ñÈ¡ÈÕÖ¾ÎÄ¼şÂ·¾¶
+        // è·å–æ—¥å¿—æ–‡ä»¶è·¯å¾„
         logFilePath = GetLogFilePath();
 
-        // È·±£ÈÕÖ¾Ä¿Â¼´æÔÚ
+        // ç¡®ä¿æ—¥å¿—ç›®å½•å­˜åœ¨
         string logDir = Path.GetDirectoryName(logFilePath);
         if (!string.IsNullOrEmpty(logDir) && !Directory.Exists(logDir))
         {
             Directory.CreateDirectory(logDir);
         }
 
-        // Ğ´Èë³õÊ¼»¯ÈÕÖ¾
+        // å†™å…¥åˆå§‹åŒ–æ—¥å¿—
         WriteInitialLog();
     }
 
@@ -250,7 +250,7 @@ public class LogListenerManager : MonoBehaviour
 
     private void Update()
     {
-        // ¿ì½İ¼ü¼àÌı
+        // å¿«æ·é”®ç›‘å¬
         bool togglePressed = false;
 
         if (ctrlRequired)
@@ -268,7 +268,7 @@ public class LogListenerManager : MonoBehaviour
             TogglePanel();
         }
 
-        // ¶¨ÆÚ¸üĞÂUI
+        // å®šæœŸæ›´æ–°UI
         if (Time.time - lastUpdateTime > updateInterval && needsUpdate)
         {
             UpdateLogDisplay();
@@ -276,7 +276,7 @@ public class LogListenerManager : MonoBehaviour
             needsUpdate = false;
         }
 
-        // ¸üĞÂ×´Ì¬ÏÔÊ¾
+        // æ›´æ–°çŠ¶æ€æ˜¾ç¤º
         if (Time.time - lastUpdateTime > 1f)
         {
             UpdateStatusDisplay();
@@ -292,23 +292,23 @@ public class LogListenerManager : MonoBehaviour
         {
             if (!File.Exists(logFilePath))
             {
-                // ´´½¨ÈÕÖ¾ÎÄ¼ş
+                // åˆ›å»ºæ—¥å¿—æ–‡ä»¶
                 File.WriteAllText(logFilePath, $"=== Log Started at {System.DateTime.Now:yyyy-MM-dd HH:mm:ss} ===\n");
             }
 
             isListening = true;
 
-            // Æô¶¯¼àÌıÏß³Ì
+            // å¯åŠ¨ç›‘å¬çº¿ç¨‹
             logThread = new Thread(ReadLogFile);
             logThread.IsBackground = true;
             logThread.Start();
 
-            UpdateStatus("ÕıÔÚ¼àÌıÈÕÖ¾...");
-            AddLog("¿ªÊ¼¼àÌıÈÕÖ¾ÎÄ¼ş: " + logFilePath, LogType.Log);
+            UpdateStatus("æ­£åœ¨ç›‘å¬æ—¥å¿—...");
+            AddLog("å¼€å§‹ç›‘å¬æ—¥å¿—æ–‡ä»¶: " + logFilePath, LogType.Log);
         }
         catch (System.Exception e)
         {
-            AddLog($"Æô¶¯¼àÌıÊ§°Ü: {e.Message}", LogType.Error);
+            AddLog($"å¯åŠ¨ç›‘å¬å¤±è´¥: {e.Message}", LogType.Error);
         }
     }
 
@@ -327,8 +327,8 @@ public class LogListenerManager : MonoBehaviour
             fileStream = null;
         }
 
-        UpdateStatus("ÒÑÍ£Ö¹¼àÌı");
-        AddLog("Í£Ö¹¼àÌıÈÕÖ¾", LogType.Log);
+        UpdateStatus("å·²åœæ­¢ç›‘å¬");
+        AddLog("åœæ­¢ç›‘å¬æ—¥å¿—", LogType.Log);
     }
 
     private void ReadLogFile()
@@ -338,7 +338,7 @@ public class LogListenerManager : MonoBehaviour
             fileStream = new FileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             streamReader = new StreamReader(fileStream, Encoding.UTF8);
 
-            // ¶ÁÈ¡ÏÖÓĞÄÚÈİ
+            // è¯»å–ç°æœ‰å†…å®¹
             string content = streamReader.ReadToEnd();
             if (!string.IsNullOrEmpty(content))
             {
@@ -362,7 +362,7 @@ public class LogListenerManager : MonoBehaviour
                 needsUpdate = true;
             }
 
-            // ÊµÊ±¼àÌıĞÂÄÚÈİ
+            // å®æ—¶ç›‘å¬æ–°å†…å®¹
             while (isListening)
             {
                 Thread.Sleep(50);
@@ -396,7 +396,7 @@ public class LogListenerManager : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            AddLog($"[¼àÌı´íÎó] {e.Message}", LogType.Exception);
+            AddLog($"[ç›‘å¬é”™è¯¯] {e.Message}", LogType.Exception);
         }
     }
 
@@ -431,13 +431,13 @@ public class LogListenerManager : MonoBehaviour
         needsUpdate = true;
         lastLogTime = System.DateTime.Now;
 
-        // ´íÎóÊ±×Ô¶¯ÏÔÊ¾Ãæ°å
+        // é”™è¯¯æ—¶è‡ªåŠ¨æ˜¾ç¤ºé¢æ¿
         if (showOnError && (type == LogType.Error || type == LogType.Exception))
         {
             if (logPanel != null && !logPanel.activeSelf)
             {
                 logPanel.SetActive(true);
-                AddLog($"¼ì²âµ½´íÎó£¬×Ô¶¯ÏÔÊ¾ÈÕÖ¾Ãæ°å", LogType.Warning);
+                AddLog($"æ£€æµ‹åˆ°é”™è¯¯ï¼Œè‡ªåŠ¨æ˜¾ç¤ºæ—¥å¿—é¢æ¿", LogType.Warning);
             }
         }
     }
@@ -467,7 +467,7 @@ public class LogListenerManager : MonoBehaviour
     {
         if (logText == null) return;
 
-        // ´¦Àí¶ÓÁĞÖĞµÄĞÂÈÕÖ¾
+        // å¤„ç†é˜Ÿåˆ—ä¸­çš„æ–°æ—¥å¿—
         List<LogEntry> newEntries = new List<LogEntry>();
         lock (logQueue)
         {
@@ -479,7 +479,7 @@ public class LogListenerManager : MonoBehaviour
 
         if (newEntries.Count > 0)
         {
-            // ¹ıÂË²¢Ìí¼ÓĞÂÈÕÖ¾
+            // è¿‡æ»¤å¹¶æ·»åŠ æ–°æ—¥å¿—
             foreach (var entry in newEntries)
             {
                 if (ShouldDisplayEntry(entry))
@@ -489,14 +489,14 @@ public class LogListenerManager : MonoBehaviour
                 }
             }
 
-            // ÏŞÖÆÈÕÖ¾ÊıÁ¿
+            // é™åˆ¶æ—¥å¿—æ•°é‡
             if (logEntries.Count > maxLogLines)
             {
                 int removeCount = logEntries.Count - maxLogLines;
                 logEntries.RemoveRange(0, removeCount);
             }
 
-            // ¹¹½¨ÏÔÊ¾ÎÄ±¾
+            // æ„å»ºæ˜¾ç¤ºæ–‡æœ¬
             logContent.Clear();
             int displayCount = Mathf.Min(logEntries.Count, maxDisplayLines);
             int startIndex = Mathf.Max(0, logEntries.Count - displayCount);
@@ -507,10 +507,10 @@ public class LogListenerManager : MonoBehaviour
                 logContent.AppendLine(ApplyColor(entry));
             }
 
-            // ¸üĞÂUI
+            // æ›´æ–°UI
             logText.text = logContent.ToString();
 
-            // ×Ô¶¯¹ö¶¯
+            // è‡ªåŠ¨æ»šåŠ¨
             if (autoScrollToggle != null && autoScrollToggle.isOn && logScrollRect != null)
             {
                 Canvas.ForceUpdateCanvases();
@@ -524,7 +524,7 @@ public class LogListenerManager : MonoBehaviour
         if (entry == null || string.IsNullOrEmpty(entry.text))
             return false;
 
-        // ÈÕÖ¾ÀàĞÍ¹ıÂË
+        // æ—¥å¿—ç±»å‹è¿‡æ»¤
         switch (entry.type)
         {
             case LogType.Log: if (!showInfo) return false; break;
@@ -533,7 +533,7 @@ public class LogListenerManager : MonoBehaviour
             case LogType.Exception: if (!showException) return false; break;
         }
 
-        // ¹Ø¼ü´Ê¹ıÂË
+        // å…³é”®è¯è¿‡æ»¤
         if (filterInput != null && !string.IsNullOrEmpty(filterInput.text))
         {
             if (entry.text.IndexOf(filterInput.text, System.StringComparison.OrdinalIgnoreCase) < 0 &&
@@ -541,7 +541,7 @@ public class LogListenerManager : MonoBehaviour
                 return false;
         }
 
-        // ÄÚÖÃ¹Ø¼ü´Ê¹ıÂË
+        // å†…ç½®å…³é”®è¯è¿‡æ»¤
         if (filterKeywords != null && filterKeywords.Length > 0 && !string.IsNullOrEmpty(filterInput.text))
         {
             bool hasKeyword = false;
@@ -621,7 +621,7 @@ public class LogListenerManager : MonoBehaviour
         if (logText != null)
             logText.text = "";
 
-        AddLog("ÈÕÖ¾ÒÑÇå¿Õ", LogType.Log);
+        AddLog("æ—¥å¿—å·²æ¸…ç©º", LogType.Log);
     }
 
     public void SaveLogs()
@@ -649,16 +649,16 @@ public class LogListenerManager : MonoBehaviour
             }
 
             File.WriteAllText(savePath, sb.ToString());
-            AddLog($"ÈÕÖ¾ÒÑ±£´æµ½: {savePath}", LogType.Log);
+            AddLog($"æ—¥å¿—å·²ä¿å­˜åˆ°: {savePath}", LogType.Log);
 
-            // ÔÚ±à¼­Æ÷ÖĞ´ò¿ªÎÄ¼ş¼Ğ
+            // åœ¨ç¼–è¾‘å™¨ä¸­æ‰“å¼€æ–‡ä»¶å¤¹
 #if UNITY_EDITOR
             UnityEditor.EditorUtility.RevealInFinder(savePath);
 #endif
         }
         catch (System.Exception e)
         {
-            AddLog($"±£´æÈÕÖ¾Ê§°Ü: {e.Message}", LogType.Error);
+            AddLog($"ä¿å­˜æ—¥å¿—å¤±è´¥: {e.Message}", LogType.Error);
         }
     }
 
@@ -675,17 +675,17 @@ public class LogListenerManager : MonoBehaviour
             }
 
             GUIUtility.systemCopyBuffer = sb.ToString();
-            AddLog("ÈÕÖ¾ÒÑ¸´ÖÆµ½¼ôÌù°å", LogType.Log);
+            AddLog("æ—¥å¿—å·²å¤åˆ¶åˆ°å‰ªè´´æ¿", LogType.Log);
         }
         catch (System.Exception e)
         {
-            AddLog($"¸´ÖÆÊ§°Ü: {e.Message}", LogType.Error);
+            AddLog($"å¤åˆ¶å¤±è´¥: {e.Message}", LogType.Error);
         }
     }
 
     public void ExportLogs()
     {
-        SaveLogs(); // Ä¿Ç°Óë±£´æ¹¦ÄÜÏàÍ¬
+        SaveLogs(); // ç›®å‰ä¸ä¿å­˜åŠŸèƒ½ç›¸åŒ
     }
 
     public void TogglePanel()
@@ -697,11 +697,11 @@ public class LogListenerManager : MonoBehaviour
             if (newState)
             {
                 needsUpdate = true;
-                AddLog("ÈÕÖ¾Ãæ°åÒÑ´ò¿ª", LogType.Log);
+                AddLog("æ—¥å¿—é¢æ¿å·²æ‰“å¼€", LogType.Log);
             }
             else
             {
-                AddLog("ÈÕÖ¾Ãæ°åÒÑ¹Ø±Õ", LogType.Log);
+                AddLog("æ—¥å¿—é¢æ¿å·²å…³é—­", LogType.Log);
             }
         }
     }
@@ -710,9 +710,9 @@ public class LogListenerManager : MonoBehaviour
     {
         if (statusText != null)
         {
-            string status = isListening ? "¼àÌıÖĞ" : "ÒÑÍ£Ö¹";
+            string status = isListening ? "ç›‘å¬ä¸­" : "å·²åœæ­¢";
             string timeStr = lastLogTime.ToString("HH:mm:ss");
-            statusText.text = $"×´Ì¬: {status} | ÈÕÖ¾: {currentLineCount} | ×îºó: {timeStr}";
+            statusText.text = $"çŠ¶æ€: {status} | æ—¥å¿—: {currentLineCount} | æœ€å: {timeStr}";
         }
     }
 
@@ -738,11 +738,11 @@ public class LogListenerManager : MonoBehaviour
         if (File.Exists(detectedPath))
         {
             logFilePath = detectedPath;
-            UpdateStatus($"ÕÒµ½ÈÕÖ¾ÎÄ¼ş: {Path.GetFileName(detectedPath)}");
+            UpdateStatus($"æ‰¾åˆ°æ—¥å¿—æ–‡ä»¶: {Path.GetFileName(detectedPath)}");
         }
         else
         {
-            // ³¢ÊÔÆäËû¿ÉÄÜµÄÎ»ÖÃ
+            // å°è¯•å…¶ä»–å¯èƒ½çš„ä½ç½®
             string[] possiblePaths =
             {
                 Path.Combine(Application.persistentDataPath, "Player.log"),
@@ -759,12 +759,12 @@ public class LogListenerManager : MonoBehaviour
                 if (File.Exists(path))
                 {
                     logFilePath = path;
-                    UpdateStatus($"ÕÒµ½ÈÕÖ¾ÎÄ¼ş: {Path.GetFileName(path)}");
+                    UpdateStatus($"æ‰¾åˆ°æ—¥å¿—æ–‡ä»¶: {Path.GetFileName(path)}");
                     return;
                 }
             }
 
-            UpdateStatus("Î´ÕÒµ½ÈÕÖ¾ÎÄ¼ş£¬½«Ê¹ÓÃÄ¬ÈÏÎ»ÖÃ");
+            UpdateStatus("æœªæ‰¾åˆ°æ—¥å¿—æ–‡ä»¶ï¼Œå°†ä½¿ç”¨é»˜è®¤ä½ç½®");
         }
     }
 
@@ -815,14 +815,14 @@ public class LogListenerManager : MonoBehaviour
         Application.logMessageReceived -= HandleUnityLog;
     }
 
-    // ¹«¿ª½Ó¿Ú
+    // å…¬å¼€æ¥å£
     public void ShowPanel() => TogglePanel();
     public void HidePanel() { if (logPanel != null) logPanel.SetActive(false); }
     public bool IsPanelVisible => logPanel != null && logPanel.activeSelf;
     public int LogCount => currentLineCount;
     public string CurrentLogPath => logFilePath;
 
-    // ¾²Ì¬·½·¨£¬·½±ã´ÓÆäËûµØ·½µ÷ÓÃ
+    // é™æ€æ–¹æ³•ï¼Œæ–¹ä¾¿ä»å…¶ä»–åœ°æ–¹è°ƒç”¨
     public static void Log(string message) => Instance.AddLog(message, LogType.Log);
     public static void LogWarning(string message) => Instance.AddLog(message, LogType.Warning);
     public static void LogError(string message) => Instance.AddLog(message, LogType.Error);

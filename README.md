@@ -340,7 +340,7 @@ upanda-framework/
 ## 源码约定
 
 - **程序集划分**：`Runtime/` 属于 `UPandaGF.Runtime`，`Editor/` 属于 `UPandaGF.Editor`。Runtime 程序集**在 Player 构建时不引用 `UnityEditor`**，因此 Runtime 代码里任何 `using UnityEditor;` 或 `UnityEditor.*` 调用都必须用 `#if UNITY_EDITOR ... #endif` 包住，否则会出现 `CS0246` 打包阻断。
-- **文本编码**：部分较早的模块源码是 **GBK（无 BOM）**（如 `InteractiveTaskScoringSystem` 的既有 `.cs`），用 UTF-8 工具直接改写会把中文注释写坏（出现 U+FFFD）；批量替换请按原编码读取再写回。新增文件统一使用 **UTF-8（带 BOM）**。
+- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**（147/147 文件），并由根目录 `.editorconfig`、`.gitattributes` 固化。
 - **命名沿袭**：为兼容既有配置与场景，部分历史命名未做改动（如 `OpearationExecute`、`AddErroTimes`、`erroTimes`、部分接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间）。
 - **改动后自检**：涉及交互式任务评分系统时，改完先跑「任务流程校验器」再跑「运行逻辑自检」，可覆盖绝大多数配置错误与逻辑回归。
 

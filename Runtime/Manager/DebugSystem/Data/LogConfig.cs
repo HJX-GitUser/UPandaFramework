@@ -1,45 +1,45 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 
 namespace UPandaGF
 {
     /// <summary>
-    /// ÈÕÖ¾ÏµÍ³ÅäÖÃ£¨¶ÔÓ¦ StreamingAssets/Data/LogConfig.json£¬ÓÉ DebugerInit ¶ÁÈ¡ºó½»¸ø PLogger.InitLog£©¡£
+    /// æ—¥å¿—ç³»ç»Ÿé…ç½®ï¼ˆå¯¹åº” StreamingAssets/Data/LogConfig.jsonï¼Œç”± DebugerInit è¯»å–åäº¤ç»™ PLogger.InitLogï¼‰ã€‚
     ///
-    /// 2026-09 ²¹³ä£ºopenWarning / openError ·Ö¼¶¿ª¹Ø¡¢maxLogLength µ¥Ìõ½Ø¶Ï£»
-    /// ²¢°Ñ GetHashCode Óë Equals ¶ÔÆë£¨Ô­ÊµÏÖ Equals ±È×Ö¶Î¡¢GetHashCode ÓÃÒıÓÃ¹şÏ££¬
-    /// Î¥·´"ÏàµÈ¶ÔÏó¹şÏ£ÏàÍ¬"µÄÆõÔ¼£¬·Å½ø Dictionary/HashSet »áÊ§Ğ§£©¡£
+    /// 2026-09 è¡¥å……ï¼šopenWarning / openError åˆ†çº§å¼€å…³ã€maxLogLength å•æ¡æˆªæ–­ï¼›
+    /// å¹¶æŠŠ GetHashCode ä¸ Equals å¯¹é½ï¼ˆåŸå®ç° Equals æ¯”å­—æ®µã€GetHashCode ç”¨å¼•ç”¨å“ˆå¸Œï¼Œ
+    /// è¿å"ç›¸ç­‰å¯¹è±¡å“ˆå¸Œç›¸åŒ"çš„å¥‘çº¦ï¼Œæ”¾è¿› Dictionary/HashSet ä¼šå¤±æ•ˆï¼‰ã€‚
     /// </summary>
     [Serializable]
     public class LogConfig
     {
-        [Header("ÈÕÖ¾×Ü¿ª¹Ø£¨false Ê±ÏÂÃæ¸÷¼¶Ò²Ò»Æğ¾²Ä¬£©")]
+        [Header("æ—¥å¿—æ€»å¼€å…³ï¼ˆfalse æ—¶ä¸‹é¢å„çº§ä¹Ÿä¸€èµ·é™é»˜ï¼‰")]
         public bool openLog = true;
-        [Header("ÊÇ·ñÊä³ö Warning")]
+        [Header("æ˜¯å¦è¾“å‡º Warning")]
         public bool openWarning = true;
-        [Header("ÊÇ·ñÊä³ö Error / Exception")]
+        [Header("æ˜¯å¦è¾“å‡º Error / Exception")]
         public bool openError = true;
-        [Header("ÊÇ·ñÌí¼ÓÈÕÖ¾Ç°×º")]
+        [Header("æ˜¯å¦æ·»åŠ æ—¥å¿—å‰ç¼€")]
         public bool addHeadFix = true;
-        [Header("ÈÕÖ¾Ç°×º")]
+        [Header("æ—¥å¿—å‰ç¼€")]
         public string logHeadFix = "###";
-        [Header("ÊÇ·ñÏÔÊ¾Ê±¼ä")]
+        [Header("æ˜¯å¦æ˜¾ç¤ºæ—¶é—´")]
         public bool openTime = true;
-        [Header("ÏÔÊ¾Ïß³Ìid")]
+        [Header("æ˜¾ç¤ºçº¿ç¨‹id")]
         public bool showThreadID = true;
-        [Header("µ¥ÌõÈÕÖ¾×î´ó³¤¶È£¨0 = ²»ÏŞ£¬³¬³ö²¿·Ö½Ø¶Ï£©")]
+        [Header("å•æ¡æ—¥å¿—æœ€å¤§é•¿åº¦ï¼ˆ0 = ä¸é™ï¼Œè¶…å‡ºéƒ¨åˆ†æˆªæ–­ï¼‰")]
         public int maxLogLength = 0;
-        [Header("ÈÕÖ¾´¢´æµ½±¾µØ")]
+        [Header("æ—¥å¿—å‚¨å­˜åˆ°æœ¬åœ°")]
         public bool logSave = false;
-        [Header("ÈÕÖ¾´¢´æ¸²¸Ç")]
+        [Header("æ—¥å¿—å‚¨å­˜è¦†ç›–")]
         public bool saveOverwrite = false;
-        [Header("ÎÄ¼ş´¢´æÂ·¾¶")]
+        [Header("æ–‡ä»¶å‚¨å­˜è·¯å¾„")]
         public string logFileSavePath = "Output Log/";
 
-        /// <summary>ÎÄ¼şÂäÅÌÄ¿Â¼£¨ÍêÕûÂ·¾¶£¬Î»ÓÚ persistentDataPath ÏÂ£©</summary>
+        /// <summary>æ–‡ä»¶è½ç›˜ç›®å½•ï¼ˆå®Œæ•´è·¯å¾„ï¼Œä½äº persistentDataPath ä¸‹ï¼‰</summary>
         public string LogFileSavePath { get { return Application.persistentDataPath + "/" + logFileSavePath; } }
 
-        /// <summary>ÈÕÖ¾ÎÄ¼şÃû£¨saveOverwrite Îª false Ê±´øÊ±¼ä´Á£©</summary>
+        /// <summary>æ—¥å¿—æ–‡ä»¶åï¼ˆsaveOverwrite ä¸º false æ—¶å¸¦æ—¶é—´æˆ³ï¼‰</summary>
         public string LogFileName { get { return saveOverwrite ? Application.productName + ".log" : Application.productName + " " + DateTime.Now.ToString("yyyy-MM-dd HH-mm") + ".log"; } }
 
         public LogConfig() { }
@@ -71,12 +71,12 @@ namespace UPandaGF
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(this, obj)) return true;//ÒıÓÃÏàµÈĞÔ¼ì²é
+            if (ReferenceEquals(this, obj)) return true;//å¼•ç”¨ç›¸ç­‰æ€§æ£€æŸ¥
             if (!(obj is LogConfig config)) return false;
             return Equals(config);
         }
 
-        /// <summary>Óë Equals Ê¹ÓÃÍ¬Ò»×é×Ö¶Î£¨Ô­ÊµÏÖ·µ»Ø base.GetHashCode()£¬Óë Equals ²»Ò»ÖÂ£©</summary>
+        /// <summary>ä¸ Equals ä½¿ç”¨åŒä¸€ç»„å­—æ®µï¼ˆåŸå®ç°è¿”å› base.GetHashCode()ï¼Œä¸ Equals ä¸ä¸€è‡´ï¼‰</summary>
         public override int GetHashCode()
         {
             unchecked

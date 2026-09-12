@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,42 +6,42 @@ using UnityEngine;
 namespace UPandaGF.StateMechine
 {
     /// <summary>
-    /// ·Ö²ã×´Ì¬¹ÜÀíÆ÷
+    /// åˆ†å±‚çŠ¶æ€ç®¡ç†å™¨
     /// </summary>
     public class StateMachineManager : MonoBehaviour
     {
         /// <summary>
-        /// ¸ù×´Ì¬
+        /// æ ¹çŠ¶æ€
         /// </summary>
         private IState rootState = null;
 
         /// <summary>
-        /// ×´Ì¬IDµ½×´Ì¬µÄÓ³Éä£¨ÓÃÓÚ¿ìËÙ²éÕÒ£©
+        /// çŠ¶æ€IDåˆ°çŠ¶æ€çš„æ˜ å°„ï¼ˆç”¨äºå¿«é€ŸæŸ¥æ‰¾ï¼‰
         /// </summary>
         private Dictionary<string, IState> stateRegistry = new Dictionary<string, IState>();
 
         /// <summary>
-        /// ×´Ì¬Õ»£¨ÓÃÓÚ·µ»ØÉÏÒ»¼¶×´Ì¬£©
+        /// çŠ¶æ€æ ˆï¼ˆç”¨äºè¿”å›ä¸Šä¸€çº§çŠ¶æ€ï¼‰
         /// </summary>
         private Stack<IState> stateStack = new Stack<IState>();
 
         /// <summary>
-        /// µ±Ç°»îÔ¾×´Ì¬µÄÍêÕûÂ·¾¶
+        /// å½“å‰æ´»è·ƒçŠ¶æ€çš„å®Œæ•´è·¯å¾„
         /// </summary>
         public string ActiveStatePath { get; private set; } = "None";
 
         /// <summary>
-        /// ×´Ì¬¸Ä±äÊÂ¼ş
+        /// çŠ¶æ€æ”¹å˜äº‹ä»¶
         /// </summary>
         public event Action<string, string> OnStateChanged;
 
         /// <summary>
-        /// Â·¾¶ÊÇ·ñÒÑÊ§Ğ§£¨×´Ì¬ÇĞ»»ºóÖÃÎª true£¬ĞèÖØĞÂ¼ÆËã£¬±ÜÃâÃ¿Ö¡µİ¹éÆ´½Ó×Ö·û´®£©
+        /// è·¯å¾„æ˜¯å¦å·²å¤±æ•ˆï¼ˆçŠ¶æ€åˆ‡æ¢åç½®ä¸º trueï¼Œéœ€é‡æ–°è®¡ç®—ï¼Œé¿å…æ¯å¸§é€’å½’æ‹¼æ¥å­—ç¬¦ä¸²ï¼‰
         /// </summary>
         private bool pathDirty = true;
 
         /// <summary>
-        /// ¶à¼¶ÇĞ»»¼ÇÂ¼£º¼ÇÂ¼ÒÑÇĞ»»µÄ¸¸×´Ì¬¼°ÆäÔ­»îÔ¾×Ó×´Ì¬£¨ÓÃÓÚÊ§°Ü»Ø¹ö£©
+        /// å¤šçº§åˆ‡æ¢è®°å½•ï¼šè®°å½•å·²åˆ‡æ¢çš„çˆ¶çŠ¶æ€åŠå…¶åŸæ´»è·ƒå­çŠ¶æ€ï¼ˆç”¨äºå¤±è´¥å›æ»šï¼‰
         /// </summary>
         private struct SwitchRecord
         {
@@ -54,7 +54,7 @@ namespace UPandaGF.StateMechine
             if (rootState != null)
             {
                 rootState.OnUpdate(Time.deltaTime);
-                // ½öµ±Â·¾¶Ê§Ğ§Ê±²ÅÖØĞÂ¼ÆËã
+                // ä»…å½“è·¯å¾„å¤±æ•ˆæ—¶æ‰é‡æ–°è®¡ç®—
                 if (pathDirty)
                 {
                     UpdateActivePath();
@@ -69,23 +69,23 @@ namespace UPandaGF.StateMechine
         }
 
         /// <summary>
-        /// ×¢²á×´Ì¬£¨×Ô¶¯¹¹½¨²ã¼¶¹ØÏµ£©
+        /// æ³¨å†ŒçŠ¶æ€ï¼ˆè‡ªåŠ¨æ„å»ºå±‚çº§å…³ç³»ï¼‰
         /// </summary>
         public void RegisterState(IState state, string parentStateID = "")
         {
             if (state == null) return;
 
-            // ¼ì²éÊÇ·ñÒÑ×¢²á
+            // æ£€æŸ¥æ˜¯å¦å·²æ³¨å†Œ
             if (stateRegistry.ContainsKey(state.StateID))
             {
-                Debug.LogWarning($"×´Ì¬ {state.StateID} ÒÑ×¢²á");
+                Debug.LogWarning($"çŠ¶æ€ {state.StateID} å·²æ³¨å†Œ");
                 return;
             }
 
-            // Ìí¼Óµ½×¢²á±í
+            // æ·»åŠ åˆ°æ³¨å†Œè¡¨
             stateRegistry[state.StateID] = state;
 
-            // ÉèÖÃ¸¸×Ó¹ØÏµ
+            // è®¾ç½®çˆ¶å­å…³ç³»
             if (!string.IsNullOrEmpty(parentStateID))
             {
                 if (stateRegistry.TryGetValue(parentStateID, out var parentState))
@@ -96,21 +96,21 @@ namespace UPandaGF.StateMechine
                     }
                     else
                     {
-                        // ¸¸×´Ì¬²»ÊÇ BaseState£¬ÎŞ·¨¹ÒÔØ×Ó×´Ì¬£¬»Ø¹ö×¢²á
+                        // çˆ¶çŠ¶æ€ä¸æ˜¯ BaseStateï¼Œæ— æ³•æŒ‚è½½å­çŠ¶æ€ï¼Œå›æ»šæ³¨å†Œ
                         stateRegistry.Remove(state.StateID);
-                        Debug.LogError($"¸¸×´Ì¬ {parentStateID} ²»ÊÇ BaseState£¬ÎŞ·¨×¢²á×Ó×´Ì¬ {state.StateID}");
+                        Debug.LogError($"çˆ¶çŠ¶æ€ {parentStateID} ä¸æ˜¯ BaseStateï¼Œæ— æ³•æ³¨å†Œå­çŠ¶æ€ {state.StateID}");
                     }
                 }
                 else
                 {
-                    // ¸¸×´Ì¬Î´ÕÒµ½£¬»Ø¹ö×¢²á
+                    // çˆ¶çŠ¶æ€æœªæ‰¾åˆ°ï¼Œå›æ»šæ³¨å†Œ
                     stateRegistry.Remove(state.StateID);
-                    Debug.LogError($"¸¸×´Ì¬ {parentStateID} Î´ÕÒµ½£¬ÎŞ·¨×¢²á×Ó×´Ì¬ {state.StateID}");
+                    Debug.LogError($"çˆ¶çŠ¶æ€ {parentStateID} æœªæ‰¾åˆ°ï¼Œæ— æ³•æ³¨å†Œå­çŠ¶æ€ {state.StateID}");
                 }
             }
             else
             {
-                // Èç¹ûÃ»ÓĞÖ¸¶¨¸¸×´Ì¬£¬ÉèÖÃÎª¸ù×´Ì¬
+                // å¦‚æœæ²¡æœ‰æŒ‡å®šçˆ¶çŠ¶æ€ï¼Œè®¾ç½®ä¸ºæ ¹çŠ¶æ€
                 if (rootState == null)
                 {
                     rootState = state;
@@ -119,17 +119,17 @@ namespace UPandaGF.StateMechine
                 }
                 else
                 {
-                    // ¸ù×´Ì¬ÒÑ´æÔÚ£¬»Ø¹ö×¢²á
+                    // æ ¹çŠ¶æ€å·²å­˜åœ¨ï¼Œå›æ»šæ³¨å†Œ
                     stateRegistry.Remove(state.StateID);
-                    Debug.LogError($"ÒÑ´æÔÚ¸ù×´Ì¬ {rootState.StateID}£¬ÎŞ·¨ÉèÖÃĞÂ¸ù×´Ì¬ {state.StateID}");
+                    Debug.LogError($"å·²å­˜åœ¨æ ¹çŠ¶æ€ {rootState.StateID}ï¼Œæ— æ³•è®¾ç½®æ–°æ ¹çŠ¶æ€ {state.StateID}");
                 }
             }
         }
 
         /// <summary>
-        /// ÇĞ»»×´Ì¬£¨Ö§³Ö²ã¼¶Â·¾¶£©
+        /// åˆ‡æ¢çŠ¶æ€ï¼ˆæ”¯æŒå±‚çº§è·¯å¾„ï¼‰
         /// </summary>
-        /// <param name="statePath">×´Ì¬Â·¾¶£¨ÀıÈç£º"Movement/Run"£©</param>
+        /// <param name="statePath">çŠ¶æ€è·¯å¾„ï¼ˆä¾‹å¦‚ï¼š"Movement/Run"ï¼‰</param>
         public bool SwitchState(string statePath)
         {
             if (string.IsNullOrEmpty(statePath)) return false;
@@ -138,24 +138,24 @@ namespace UPandaGF.StateMechine
 
             if (pathSegments.Length == 1)
             {
-                // µ¥¼¶Â·¾¶£ºÖ±½ÓÇĞ»»¸ù×´Ì¬»òµ±Ç°ÉÏÏÂÎÄµÄ×Ó×´Ì¬
+                // å•çº§è·¯å¾„ï¼šç›´æ¥åˆ‡æ¢æ ¹çŠ¶æ€æˆ–å½“å‰ä¸Šä¸‹æ–‡çš„å­çŠ¶æ€
                 return SwitchToState(statePath);
             }
 
-            // ¶à¼¶Â·¾¶£ºÖğ¼¶ÇĞ»»£¬Ê§°ÜÊ±»Ø¹ö
+            // å¤šçº§è·¯å¾„ï¼šé€çº§åˆ‡æ¢ï¼Œå¤±è´¥æ—¶å›æ»š
             IState currentState = GetCurrentContext();
             if (currentState == null)
             {
-                Debug.LogWarning("Ã»ÓĞ¿ÉÓÃµÄ×´Ì¬ÉÏÏÂÎÄ£¬ÎŞ·¨ÇĞ»»");
+                Debug.LogWarning("æ²¡æœ‰å¯ç”¨çš„çŠ¶æ€ä¸Šä¸‹æ–‡ï¼Œæ— æ³•åˆ‡æ¢");
                 return false;
             }
 
             string oldPath = ActiveStatePath;
 
-            // °ÑÇĞ»»Ç°µÄÉÏÏÂÎÄÑ¹Õ»£¬±ãÓÚ GoBack ·µ»Ø
+            // æŠŠåˆ‡æ¢å‰çš„ä¸Šä¸‹æ–‡å‹æ ˆï¼Œä¾¿äº GoBack è¿”å›
             stateStack.Push(currentState);
 
-            // ¼ÇÂ¼ÒÑÇĞ»»µÄ¸¸×´Ì¬ÓëÆäÔ­»îÔ¾×Ó×´Ì¬£¨ÓÃÓÚÊ§°Ü»Ø¹ö£©
+            // è®°å½•å·²åˆ‡æ¢çš„çˆ¶çŠ¶æ€ä¸å…¶åŸæ´»è·ƒå­çŠ¶æ€ï¼ˆç”¨äºå¤±è´¥å›æ»šï¼‰
             var switchRecord = new Stack<SwitchRecord>();
 
             for (int i = 0; i < pathSegments.Length; i++)
@@ -178,36 +178,36 @@ namespace UPandaGF.StateMechine
                 currentState = baseState.ActiveChild;
             }
 
-            // ¸üĞÂÂ·¾¶²¢´¥·¢ÊÂ¼ş
+            // æ›´æ–°è·¯å¾„å¹¶è§¦å‘äº‹ä»¶
             RefreshActivePath();
             OnStateChanged?.Invoke(oldPath, ActiveStatePath);
             return true;
         }
 
         /// <summary>
-        /// ÇĞ»»µ½Ö¸¶¨×´Ì¬
+        /// åˆ‡æ¢åˆ°æŒ‡å®šçŠ¶æ€
         /// </summary>
         private bool SwitchToState(string stateID)
         {
             if (!stateRegistry.TryGetValue(stateID, out var targetState)) return false;
 
-            // ¼ì²éÊÇ·ñ¿ÉÒÔÇĞ»»
+            // æ£€æŸ¥æ˜¯å¦å¯ä»¥åˆ‡æ¢
             if (!CanTransitionTo(targetState)) return false;
 
-            // ¼ÇÂ¼¾É×´Ì¬
+            // è®°å½•æ—§çŠ¶æ€
             var oldPath = ActiveStatePath;
 
-            // ´¦Àí×´Ì¬Õ»£¨Èç¹ûĞÂ×´Ì¬ÊÇµ±Ç°×´Ì¬µÄ×Ó×´Ì¬£¬Ñ¹Õ»£©
+            // å¤„ç†çŠ¶æ€æ ˆï¼ˆå¦‚æœæ–°çŠ¶æ€æ˜¯å½“å‰çŠ¶æ€çš„å­çŠ¶æ€ï¼Œå‹æ ˆï¼‰
             var currentState = GetCurrentContext();
             if (currentState != null && targetState.Parent == currentState)
             {
                 stateStack.Push(currentState);
             }
 
-            // ÇĞ»»×´Ì¬
+            // åˆ‡æ¢çŠ¶æ€
             if (targetState.Parent == null)
             {
-                // ÇĞ»»¸ù×´Ì¬£ºÇå¿Õ¾É×´Ì¬Õ»£¨ÒÑÊ§Ğ§£©£¬ÍË³ö¾É¸ù²¢½øÈëĞÂ¸ù
+                // åˆ‡æ¢æ ¹çŠ¶æ€ï¼šæ¸…ç©ºæ—§çŠ¶æ€æ ˆï¼ˆå·²å¤±æ•ˆï¼‰ï¼Œé€€å‡ºæ—§æ ¹å¹¶è¿›å…¥æ–°æ ¹
                 stateStack.Clear();
                 rootState?.OnExit();
                 rootState = targetState;
@@ -215,7 +215,7 @@ namespace UPandaGF.StateMechine
             }
             else
             {
-                // Í¨¹ı¸¸×´Ì¬ÇĞ»»
+                // é€šè¿‡çˆ¶çŠ¶æ€åˆ‡æ¢
                 if (targetState.Parent is BaseState parentBase)
                 {
                     if (!parentBase.SwitchToChild(stateID)) return false;
@@ -226,7 +226,7 @@ namespace UPandaGF.StateMechine
                 }
             }
 
-            // ¸üĞÂÂ·¾¶²¢´¥·¢ÊÂ¼ş
+            // æ›´æ–°è·¯å¾„å¹¶è§¦å‘äº‹ä»¶
             RefreshActivePath();
             OnStateChanged?.Invoke(oldPath, ActiveStatePath);
 
@@ -234,7 +234,7 @@ namespace UPandaGF.StateMechine
         }
 
         /// <summary>
-        /// ·µ»ØÉÏÒ»¼¶×´Ì¬
+        /// è¿”å›ä¸Šä¸€çº§çŠ¶æ€
         /// </summary>
         public bool GoBack()
         {
@@ -245,7 +245,7 @@ namespace UPandaGF.StateMechine
         }
 
         /// <summary>
-        /// »ñÈ¡µ±Ç°ÉÏÏÂÎÄ×´Ì¬£¨×´Ì¬Õ»¶¥»ò¸ù×´Ì¬£©
+        /// è·å–å½“å‰ä¸Šä¸‹æ–‡çŠ¶æ€ï¼ˆçŠ¶æ€æ ˆé¡¶æˆ–æ ¹çŠ¶æ€ï¼‰
         /// </summary>
         private IState GetCurrentContext()
         {
@@ -253,21 +253,21 @@ namespace UPandaGF.StateMechine
         }
 
         /// <summary>
-        /// ¼ì²éÊÇ·ñ¿ÉÒÔÇĞ»»µ½Ä¿±ê×´Ì¬
+        /// æ£€æŸ¥æ˜¯å¦å¯ä»¥åˆ‡æ¢åˆ°ç›®æ ‡çŠ¶æ€
         /// </summary>
         private bool CanTransitionTo(IState targetState)
         {
             var currentState = GetCurrentContext();
             if (currentState == null) return true;
 
-            // ÑØ²ã¼¶Á´ÏòÉÏ£¬Öğ¼¶¼ì²éµ±Ç°×´Ì¬ÊÇ·ñÔÊĞíÇĞ»»µ½Ä¿±ê×´Ì¬
+            // æ²¿å±‚çº§é“¾å‘ä¸Šï¼Œé€çº§æ£€æŸ¥å½“å‰çŠ¶æ€æ˜¯å¦å…è®¸åˆ‡æ¢åˆ°ç›®æ ‡çŠ¶æ€
             var temp = currentState;
             while (temp != null)
             {
                 if (!temp.CanTransitionTo(targetState.StateID))
                     return false;
 
-                // µ½´ïÄ¿±ê×´Ì¬µÄ¸¸²ã¼¶ºóÍ£Ö¹£¨¸ü¸ß²ã¼¶ÎŞĞè¼ì²é£©
+                // åˆ°è¾¾ç›®æ ‡çŠ¶æ€çš„çˆ¶å±‚çº§ååœæ­¢ï¼ˆæ›´é«˜å±‚çº§æ— éœ€æ£€æŸ¥ï¼‰
                 if (temp.Parent == null || temp.Parent == targetState.Parent)
                     break;
 
@@ -278,7 +278,7 @@ namespace UPandaGF.StateMechine
         }
 
         /// <summary>
-        /// ¸üĞÂµ±Ç°»îÔ¾Â·¾¶
+        /// æ›´æ–°å½“å‰æ´»è·ƒè·¯å¾„
         /// </summary>
         private void UpdateActivePath()
         {
@@ -293,7 +293,7 @@ namespace UPandaGF.StateMechine
         }
 
         /// <summary>
-        /// ¸üĞÂ»îÔ¾Â·¾¶²¢±ê¼ÇÎªÒÑË¢ĞÂ
+        /// æ›´æ–°æ´»è·ƒè·¯å¾„å¹¶æ ‡è®°ä¸ºå·²åˆ·æ–°
         /// </summary>
         private void RefreshActivePath()
         {
@@ -302,11 +302,11 @@ namespace UPandaGF.StateMechine
         }
 
         /// <summary>
-        /// »Ø¹ö¶à¼¶ÇĞ»»£ºÖğ¼¶»Ö¸´Ô­»îÔ¾×Ó×´Ì¬£¬²¢µ¯³öÇĞ»»Ç°Ñ¹ÈëµÄ×´Ì¬Õ»
+        /// å›æ»šå¤šçº§åˆ‡æ¢ï¼šé€çº§æ¢å¤åŸæ´»è·ƒå­çŠ¶æ€ï¼Œå¹¶å¼¹å‡ºåˆ‡æ¢å‰å‹å…¥çš„çŠ¶æ€æ ˆ
         /// </summary>
         private void Rollback(Stack<SwitchRecord> record)
         {
-            // ÄæĞò»Ö¸´¸÷¼¶Ô­»îÔ¾×Ó×´Ì¬
+            // é€†åºæ¢å¤å„çº§åŸæ´»è·ƒå­çŠ¶æ€
             while (record.Count > 0)
             {
                 var r = record.Pop();
@@ -320,21 +320,21 @@ namespace UPandaGF.StateMechine
                 }
             }
 
-            // µ¯³ö¶à¼¶ÇĞ»»Ç°Ñ¹ÈëµÄ×´Ì¬Õ»
+            // å¼¹å‡ºå¤šçº§åˆ‡æ¢å‰å‹å…¥çš„çŠ¶æ€æ ˆ
             if (stateStack.Count > 0) stateStack.Pop();
         }
 
         /// <summary>
-        /// »ñÈ¡×´Ì¬ĞÅÏ¢£¨ÓÃÓÚµ÷ÊÔ£©
+        /// è·å–çŠ¶æ€ä¿¡æ¯ï¼ˆç”¨äºè°ƒè¯•ï¼‰
         /// </summary>
         public string GetStateInfo()
         {
-            var info = $"µ±Ç°×´Ì¬Â·¾¶: {ActiveStatePath}\n";
-            info += $"×´Ì¬Õ»Éî¶È: {stateStack.Count}\n";
+            var info = $"å½“å‰çŠ¶æ€è·¯å¾„: {ActiveStatePath}\n";
+            info += $"çŠ¶æ€æ ˆæ·±åº¦: {stateStack.Count}\n";
 
             if (rootState is BaseState baseRoot)
             {
-                info += "×´Ì¬²ã¼¶½á¹¹:\n";
+                info += "çŠ¶æ€å±‚çº§ç»“æ„:\n";
                 info += PrintStateTree(baseRoot, 0);
             }
 

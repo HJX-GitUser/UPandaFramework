@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,7 +9,7 @@ public abstract class EagerSingletonBase<T> where T : class, new()
     private static bool _isDisposed = false;
 
     /// <summary>
-    /// µ¥ÀıÊµÀı
+    /// å•ä¾‹å®ä¾‹
     /// </summary>
     public static T Instance
     {
@@ -17,22 +17,22 @@ public abstract class EagerSingletonBase<T> where T : class, new()
         {
             if (_isDisposed)
             {
-                throw new ObjectDisposedException(typeof(T).Name, "µ¥ÀıÊµÀıÒÑ±»ÊÍ·Å");
+                throw new ObjectDisposedException(typeof(T).Name, "å•ä¾‹å®ä¾‹å·²è¢«é‡Šæ”¾");
             }
             return _instance;
         }
     }
 
     /// <summary>
-    /// ¾²Ì¬¹¹Ôìº¯Êı£¬È·±£Ïß³Ì°²È«µÄÑÓ³Ù³õÊ¼»¯
+    /// é™æ€æ„é€ å‡½æ•°ï¼Œç¡®ä¿çº¿ç¨‹å®‰å…¨çš„å»¶è¿Ÿåˆå§‹åŒ–
     /// </summary>
     static EagerSingletonBase()
     {
-        Debug.Log($"[EagerSingleton] Ô¤´´½¨ {typeof(T).Name} ÊµÀı");
+        Debug.Log($"[EagerSingleton] é¢„åˆ›å»º {typeof(T).Name} å®ä¾‹");
     }
 
     /// <summary>
-    /// ±£»¤¹¹Ôìº¯Êı
+    /// ä¿æŠ¤æ„é€ å‡½æ•°
     /// </summary>
     protected EagerSingletonBase()
     {
@@ -41,7 +41,7 @@ public abstract class EagerSingletonBase<T> where T : class, new()
     protected virtual void OnInit() { }
 
     /// <summary>
-    /// ÊÍ·Åµ¥ÀıÊµÀı
+    /// é‡Šæ”¾å•ä¾‹å®ä¾‹
     /// </summary>
     public static void Release()
     {
@@ -50,6 +50,6 @@ public abstract class EagerSingletonBase<T> where T : class, new()
             disposable.Dispose();
         }
         _isDisposed = true;
-        Console.WriteLine($"[EagerSingleton] ±ê¼ÇÊÍ·Å {typeof(T).Name} ÊµÀı");
+        Console.WriteLine($"[EagerSingleton] æ ‡è®°é‡Šæ”¾ {typeof(T).Name} å®ä¾‹");
     }
 }

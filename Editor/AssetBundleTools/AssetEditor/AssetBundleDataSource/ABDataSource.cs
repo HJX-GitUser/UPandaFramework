@@ -51,10 +51,10 @@ namespace AssetBundleBrowser.AssetBundleDataSource
     ///  Any class deriving from this interface AND implementing CreateDataSources() will be picked up by the browser automatically
     ///  and displayed in an in-tool dropdown.  By default, that dropdown is hidden if the browser detects no external data sources.
     ///  To turn it on, right click on tab header "AssetBundles" and enable "Custom Sources"
-    ///  
+    ///
     /// Must implement CreateDataSources() to be picked up by the browser.
     ///   public static List<ABDataSource> CreateDataSources();
-    /// 
+    ///
     /// </summary>
     public partial interface ABDataSource
     {
@@ -75,11 +75,11 @@ namespace AssetBundleBrowser.AssetBundleDataSource
         /// </summary>
         string[] GetAssetPathsFromAssetBundle (string assetBundleName);
         /// <summary>
-        /// Name of bundle explicitly associated with asset at path.  
+        /// Name of bundle explicitly associated with asset at path.
         /// </summary>
         string GetAssetBundleName(string assetPath);
         /// <summary>
-        /// Name of bundle associated with asset at path.  
+        /// Name of bundle associated with asset at path.
         ///  The difference between this and GetAssetBundleName() is for assets unassigned to a bundle, but
         ///  residing inside a folder that is assigned to a bundle.  Those assets will implicitly associate
         ///  with the bundle associated with the parent folder.
@@ -90,7 +90,7 @@ namespace AssetBundleBrowser.AssetBundleDataSource
         /// </summary>
         string[] GetAllAssetBundleNames();
         /// <summary>
-        /// If this data source is read only. 
+        /// If this data source is read only.
         ///  If this returns true, much of the Browsers's interface will be disabled (drag&drop, etc.)
         /// </summary>
         bool IsReadOnly();

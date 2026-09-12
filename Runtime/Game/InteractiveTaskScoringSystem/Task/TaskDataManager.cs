@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -11,22 +11,22 @@ using UnityEngine.Events;
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
     /// <summary>
-    /// ²Ù×÷¼ÇÂ¼
+    /// æ“ä½œè®°å½•
     /// </summary>
     [System.Serializable]
     public class OperationRecord
     {
-        public DateTime timestamp;  // Ê±¼ä
-        public string stepID;       // ²½Öèid
-        public string action;       // 
-        public bool isCorrect;      // ÊÇ·ñÕıÈ·
-        public string details;      // 
-        public float score;         // ·ÖÊı
-        public int errorCount;      // ´íÎó´ÎÊı
+        public DateTime timestamp;  // æ—¶é—´
+        public string stepID;       // æ­¥éª¤id
+        public string action;       //
+        public bool isCorrect;      // æ˜¯å¦æ­£ç¡®
+        public string details;      //
+        public float score;         // åˆ†æ•°
+        public int errorCount;      // é”™è¯¯æ¬¡æ•°
     }
 
     /// <summary>
-    /// ÈÎÎñ½á¹û
+    /// ä»»åŠ¡ç»“æœ
     /// </summary>
     [System.Serializable]
     public class TaskResult
@@ -41,47 +41,47 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         private static TaskDataManager instance;
         public static TaskDataManager Instance => instance;
 
-        //[Header("ÈÎÎñÉèÖÃ")]
+        //[Header("ä»»åŠ¡è®¾ç½®")]
         public TaskConfig taskSteps;
-        public TaskStepBase[] taskStates;   // ÓÃ¾ßÌåÀàĞÍ£ºITask ²»º¬ Runtime/ScorePolicy£¬ÇÒ Unity ÎŞ·¨ĞòÁĞ»¯½Ó¿ÚÊı×é
+        public TaskStepBase[] taskStates;   // ç”¨å…·ä½“ç±»å‹ï¼šITask ä¸å« Runtime/ScorePolicyï¼Œä¸” Unity æ— æ³•åºåˆ—åŒ–æ¥å£æ•°ç»„
 
-        /// <summary>ÆÀ·Ö²ßÂÔ£¨¿ÉÔÚ´úÂëÀïÌæ»»ÊµÏÖ£¬ÀıÈçÄÑ¶È·Ö¼¶£»Ä¬ÈÏ 0´íÂú·Ö/1´í°ë·Ö/2´í0·Ö£©</summary>
+        /// <summary>è¯„åˆ†ç­–ç•¥ï¼ˆå¯åœ¨ä»£ç é‡Œæ›¿æ¢å®ç°ï¼Œä¾‹å¦‚éš¾åº¦åˆ†çº§ï¼›é»˜è®¤ 0é”™æ»¡åˆ†/1é”™åŠåˆ†/2é”™0åˆ†ï¼‰</summary>
         public IScorePolicy scorePolicy = new DefaultScorePolicy();
 
-        /// <summary>P2£ºÊÇ·ñ¼ÇÂ¼¶¯×÷¼¶»Ø·ÅÈÕÖ¾£¨Ä¬ÈÏ¿ªÆô£»¹Ø±Õºó²»ÔÙ×·¼Ó£¬ÒÑÓĞÈÕÖ¾ÈÔÔÚ£©</summary>
+        /// <summary>P2ï¼šæ˜¯å¦è®°å½•åŠ¨ä½œçº§å›æ”¾æ—¥å¿—ï¼ˆé»˜è®¤å¼€å¯ï¼›å…³é—­åä¸å†è¿½åŠ ï¼Œå·²æœ‰æ—¥å¿—ä»åœ¨ï¼‰</summary>
         public bool enableReplayLog = true;
 
-        /// <summary>P2£º¶¯×÷¼¶»Ø·ÅÈÕÖ¾£¨²Ëµ¥¡¸»Ø·Å¸´ÅÌ²é¿´Æ÷¡¹¿É²é¿´/µ¼³ö£¬SaveReplayLog() ÂäÅÌ£©</summary>
+        /// <summary>P2ï¼šåŠ¨ä½œçº§å›æ”¾æ—¥å¿—ï¼ˆèœå•ã€Œå›æ”¾å¤ç›˜æŸ¥çœ‹å™¨ã€å¯æŸ¥çœ‹/å¯¼å‡ºï¼ŒSaveReplayLog() è½ç›˜ï¼‰</summary>
         public ReplayLog Replay { get; private set; }
 
-        /// <summary>È¡Ö¸¶¨²½ÖèµÄÔËĞĞ×´Ì¬£¨HUD / ´æµµÓÃ£©£»ÏÂ±ê·Ç·¨Ê±·µ»Ø null</summary>
+        /// <summary>å–æŒ‡å®šæ­¥éª¤çš„è¿è¡ŒçŠ¶æ€ï¼ˆHUD / å­˜æ¡£ç”¨ï¼‰ï¼›ä¸‹æ ‡éæ³•æ—¶è¿”å› null</summary>
         public TaskStepRuntime GetRuntime(int index)
         {
             if (taskStates == null || !progress.HasStep(index)) return null;
             return taskStates[index] != null ? taskStates[index].Runtime : null;
         }
 
-        /// <summary>ÈÎÎñ½ø¶È£¨´¿ C#£ºÏÂ±ê/×Ü·Ö/ÍÆ½ø£©£¬Ìæ´úÔ­ÏÈÖ±½ÓÎ¬»¤µÄ currentStepIndex / totalScore ×Ö¶Î</summary>
+        /// <summary>ä»»åŠ¡è¿›åº¦ï¼ˆçº¯ C#ï¼šä¸‹æ ‡/æ€»åˆ†/æ¨è¿›ï¼‰ï¼Œæ›¿ä»£åŸå…ˆç›´æ¥ç»´æŠ¤çš„ currentStepIndex / totalScore å­—æ®µ</summary>
         private readonly TaskProgress progress = new TaskProgress();
 
-        /// <summary>µ±Ç°²½ÖèÏÂ±ê£¨µÈÓÚ²½Öè×ÜÊı±íÊ¾È«²¿Íê³É£©</summary>
+        /// <summary>å½“å‰æ­¥éª¤ä¸‹æ ‡ï¼ˆç­‰äºæ­¥éª¤æ€»æ•°è¡¨ç¤ºå…¨éƒ¨å®Œæˆï¼‰</summary>
         public int currentStepIndex { get { return progress.currentIndex; } }
 
-        /// <summary>ÀÛ¼Æ×Ü·Ö</summary>
+        /// <summary>ç´¯è®¡æ€»åˆ†</summary>
         public float totalScore { get { return progress.totalScore; } }
 
-        /// <summary>ÊÇ·ñÈ«²¿Íê³É</summary>
+        /// <summary>æ˜¯å¦å…¨éƒ¨å®Œæˆ</summary>
         public bool isTaskFinished { get { return progress.isFinished; } }
         public TaskStepData currentTaskStep
         {
             get
             {
                 if (taskStates == null || taskStates.Length == 0) taskStates = GetComponentsInChildren<TaskStepBase>();
-                return taskStates.Length == 0 ? null : taskStates[Mathf.Clamp(currentStepIndex, 0, taskStates.Length - 1)].GetData;   // ĞŞ¸´£ºÎŞ²½ÖèÊ±·µ»Ø null£¨Ô­Ğ´·¨¿ÕÊı×é»áÔ½½ç£©
+                return taskStates.Length == 0 ? null : taskStates[Mathf.Clamp(currentStepIndex, 0, taskStates.Length - 1)].GetData;   // ä¿®å¤ï¼šæ— æ­¥éª¤æ—¶è¿”å› nullï¼ˆåŸå†™æ³•ç©ºæ•°ç»„ä¼šè¶Šç•Œï¼‰
             }
         }
 
-        //[Header("ÆÀ·ÖÏµÍ³")]
+        //[Header("è¯„åˆ†ç³»ç»Ÿ")]
         private Dictionary<string, List<OperationRecord>> operationRecords;
 
         public UnityAction<TaskStepData> OnStepStarted;
@@ -89,7 +89,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public UnityAction OnTaskCompleted;
 
 
-        //[Header("ÆğÊ¼ÈÎÎñ")]
+        //[Header("èµ·å§‹ä»»åŠ¡")]
         //public int startIndex = 0;
 
         //public UnityAction<float> OnScoreUpdated;
@@ -102,147 +102,147 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             InitializeTask();
         }
         /// <summary>
-        /// ÈÎÎñ³õÊ¼»¯
+        /// ä»»åŠ¡åˆå§‹åŒ–
         /// </summary>
         public void InitializeTask()
         {
             if (taskSteps == null)
             {
-                Debug.LogError("ÈÎÎñÅäÖÃÈ±Ê§£¡£¡£¡");
+                Debug.LogError("ä»»åŠ¡é…ç½®ç¼ºå¤±ï¼ï¼ï¼");
                 return;
             }
             operationRecords = new Dictionary<string, List<OperationRecord>>();
-            // ĞŞ¸´£ºÃ¿´Î³õÊ¼»¯¶¼ÊÓÎª¡°ÖØĞÂ¿ªÊ¼¡±£¬½ø¶È¸´Î»¼ûÏÂ·½ progress.Init£¨¸÷²½Öè×´Ì¬ÔÚ TaskStepBase.Init ÄÚ¸´Î»£©
+            // ä¿®å¤ï¼šæ¯æ¬¡åˆå§‹åŒ–éƒ½è§†ä¸ºâ€œé‡æ–°å¼€å§‹â€ï¼Œè¿›åº¦å¤ä½è§ä¸‹æ–¹ progress.Initï¼ˆå„æ­¥éª¤çŠ¶æ€åœ¨ TaskStepBase.Init å†…å¤ä½ï¼‰
             if (taskStates == null || taskStates.Length == 0) taskStates = GetComponentsInChildren<TaskStepBase>();
             if (taskSteps.stepsConfig.Length != taskStates.Length)
             {
-                Debug.LogError("ÈÎÎñÅäÖÃÒì³££¡ÅäÖÃÊıÁ¿²»µÈ");
+                Debug.LogError("ä»»åŠ¡é…ç½®å¼‚å¸¸ï¼é…ç½®æ•°é‡ä¸ç­‰");
                 return;
             }
-            SortStepsByOrder();   // P2£º°´ TaskStepData.order ÎÈ¶¨ÅÅĞò£¨order È«Îª 0 Ê±±£³Ö½Úµã²ã¼¶Ë³Ğò£¬¼æÈİ¾ÉÊı¾İ£©
-            progress.Init(taskStates.Length);   // ½ø¶È¸´Î»£¨Ô­ totalScore / currentStepIndex ÒÑ²¢Èë TaskProgress£©
-            Replay = new ReplayLog(taskSteps.name, Time.time);   // P2£º±¾´ÎÈÎÎñµÄ»Ø·ÅÈÕÖ¾
-            if (enableReplayLog) Replay.Add(Time.time, null, "Task_Start", true, "ÈÎÎñ¿ªÊ¼£¬¹² " + taskStates.Length + " ²½");
+            SortStepsByOrder();   // P2ï¼šæŒ‰ TaskStepData.order ç¨³å®šæ’åºï¼ˆorder å…¨ä¸º 0 æ—¶ä¿æŒèŠ‚ç‚¹å±‚çº§é¡ºåºï¼Œå…¼å®¹æ—§æ•°æ®ï¼‰
+            progress.Init(taskStates.Length);   // è¿›åº¦å¤ä½ï¼ˆåŸ totalScore / currentStepIndex å·²å¹¶å…¥ TaskProgressï¼‰
+            Replay = new ReplayLog(taskSteps.name, Time.time);   // P2ï¼šæœ¬æ¬¡ä»»åŠ¡çš„å›æ”¾æ—¥å¿—
+            if (enableReplayLog) Replay.Add(Time.time, null, "Task_Start", true, "ä»»åŠ¡å¼€å§‹ï¼Œå…± " + taskStates.Length + " æ­¥");
             for (int i = 0; i < taskStates.Length; i++)
             {
                 if (taskStates[i] == null) continue;
-                //²Ù×÷¼ÇÂ¼£º¼üÈ¡²½Öè×ÔÉí°ó¶¨µÄ stepID£¨²½ÖèË³Ğò¸ÄÓÉ order ¾ö¶¨£¬²»ÔÙÒÀÀµÅäÖÃÊı×éÏÂ±ê£©
+                //æ“ä½œè®°å½•ï¼šé”®å–æ­¥éª¤è‡ªèº«ç»‘å®šçš„ stepIDï¼ˆæ­¥éª¤é¡ºåºæ”¹ç”± order å†³å®šï¼Œä¸å†ä¾èµ–é…ç½®æ•°ç»„ä¸‹æ ‡ï¼‰
                 string initStepID = taskStates[i].taskStepData != null ? taskStates[i].taskStepData.stepID : null;
                 if (!string.IsNullOrEmpty(initStepID)) operationRecords[initStepID] = new List<OperationRecord>();
-                //ÈÎÎñ³õÊ¼»¯
-                taskStates[i].ScorePolicy = scorePolicy;   // ×¢ÈëÆÀ·Ö²ßÂÔ
+                //ä»»åŠ¡åˆå§‹åŒ–
+                taskStates[i].ScorePolicy = scorePolicy;   // æ³¨å…¥è¯„åˆ†ç­–ç•¥
                 taskStates[i].Init(this);
             }
 
-            // ĞŞ¸´£ºÖØÖÃºó×ÜÊÇ´ÓµÚ 0 ²½¿ªÊ¼£¨Ô­Ìõ¼ş currentStepIndex == 0 »áÈÃ¡°ÖØÍæ¡±Ê±ÈÎÎñ²»Æô¶¯£©
+            // ä¿®å¤ï¼šé‡ç½®åæ€»æ˜¯ä»ç¬¬ 0 æ­¥å¼€å§‹ï¼ˆåŸæ¡ä»¶ currentStepIndex == 0 ä¼šè®©â€œé‡ç©â€æ—¶ä»»åŠ¡ä¸å¯åŠ¨ï¼‰
             if (taskStates.Length > 0)
             {
                 taskStates[currentStepIndex].OnEnter();
                 OnStepStarted?.Invoke(currentTaskStep);
-                Debug.Log("ÈÎÎñ¿ªÊ¼");
+                Debug.Log("ä»»åŠ¡å¼€å§‹");
             }
         }
 
         /// <summary>
-        /// ÖØĞÂ¿ªÊ¼ÈÎÎñ£º¸´Î»×Ü·Ö¡¢²½ÖèÏÂ±êÒÔ¼°ËùÓĞ²½Öè/²Ù×÷µÄÔËĞĞÊ±×´Ì¬£¬²¢´ÓµÚ 0 ²½ÖØĞÂ¿ªÊ¼¡£
-        /// £¨µÈ¼ÛÓÚÔÙ´Îµ÷ÓÃ InitializeTask£¬Ö»ÊÇÓïÒå¸üÃ÷È·£¬±ãÓÚ°´Å¥»òÁ÷³ÌÂß¼­µ÷ÓÃ£©
+        /// é‡æ–°å¼€å§‹ä»»åŠ¡ï¼šå¤ä½æ€»åˆ†ã€æ­¥éª¤ä¸‹æ ‡ä»¥åŠæ‰€æœ‰æ­¥éª¤/æ“ä½œçš„è¿è¡Œæ—¶çŠ¶æ€ï¼Œå¹¶ä»ç¬¬ 0 æ­¥é‡æ–°å¼€å§‹ã€‚
+        /// ï¼ˆç­‰ä»·äºå†æ¬¡è°ƒç”¨ InitializeTaskï¼Œåªæ˜¯è¯­ä¹‰æ›´æ˜ç¡®ï¼Œä¾¿äºæŒ‰é’®æˆ–æµç¨‹é€»è¾‘è°ƒç”¨ï¼‰
         /// </summary>
         public void RestartTask()
         {
             InitializeTask();
-            if (Replay != null) Replay.Add(Time.time, null, "Task_Restart", true, "ÖØĞÂ¿ªÊ¼ÈÎÎñ");   // P2£º¶¯×÷¼¶ÈÕÖ¾
+            if (Replay != null) Replay.Add(Time.time, null, "Task_Restart", true, "é‡æ–°å¼€å§‹ä»»åŠ¡");   // P2ï¼šåŠ¨ä½œçº§æ—¥å¿—
         }
 
         /// <summary>
-        /// ²Ù×÷¼ì²é
+        /// æ“ä½œæ£€æŸ¥
         /// </summary>
         /// <param name="arg"></param>
         public void OperationCheck(TaskEntityBase arg)
         {
             //Debug.Log($"TaskDataManager_OperationCheck {currentStepIndex}:{taskStates.Length}");
-            if (taskStates == null || taskStates.Length == 0)   // ĞŞ¸´£ºÈÎÎñÎ´³É¹¦³õÊ¼»¯Ê±ºöÂÔ±¾´Î²Ù×÷¼ì²é
+            if (taskStates == null || taskStates.Length == 0)   // ä¿®å¤ï¼šä»»åŠ¡æœªæˆåŠŸåˆå§‹åŒ–æ—¶å¿½ç•¥æœ¬æ¬¡æ“ä½œæ£€æŸ¥
             {
-                Debug.LogWarning("ÈÎÎñÎ´³õÊ¼»¯»òÃ»ÓĞ²½Öè£¬ÒÑºöÂÔ±¾´Î²Ù×÷¼ì²é");
+                Debug.LogWarning("ä»»åŠ¡æœªåˆå§‹åŒ–æˆ–æ²¡æœ‰æ­¥éª¤ï¼Œå·²å¿½ç•¥æœ¬æ¬¡æ“ä½œæ£€æŸ¥");
                 return;
             }
             if (currentStepIndex >= taskStates.Length)
             {
-                Debug.Log("ËùÓĞÈÎÎñ¶¼ÒÑÍê³É");
-                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("ËùÓĞÈÎÎñ¶¼ÒÑÍê³É"));
+                Debug.Log("æ‰€æœ‰ä»»åŠ¡éƒ½å·²å®Œæˆ");
+                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("æ‰€æœ‰ä»»åŠ¡éƒ½å·²å®Œæˆ"));
                 return;
             }
             taskStates[currentStepIndex].OperationCheck(arg);
         }
 
         /// <summary>
-        /// ²Ù×÷Òıµ¼
+        /// æ“ä½œå¼•å¯¼
         /// </summary>
         public void OperationInstructions()
         {
-            if (taskStates != null && currentStepIndex < taskStates.Length)   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+            if (taskStates != null && currentStepIndex < taskStates.Length)   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
                 taskStates[currentStepIndex].OperationInstructions();
             else
             {
-                Debug.Log("²½ÖèÒÑÈ«²¿Íê³É");
-                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("²½ÖèÒÑÈ«²¿Íê³É"));
+                Debug.Log("æ­¥éª¤å·²å…¨éƒ¨å®Œæˆ");
+                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("æ­¥éª¤å·²å…¨éƒ¨å®Œæˆ"));
             }
         }
 
         /// <summary>
-        /// ÈÎÎñÌø¹ı
+        /// ä»»åŠ¡è·³è¿‡
         /// </summary>
         public void SkipTask()
         {
-            if (taskStates != null && currentStepIndex < taskStates.Length)   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+            if (taskStates != null && currentStepIndex < taskStates.Length)   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
             {
                 taskStates[currentStepIndex].SkipTask();
             }
             else
             {
-                Debug.Log("ÈÎÎñÒÑÈ«²¿Íê³É");
-                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("ÈÎÎñÒÑÈ«²¿Íê³É"));
+                Debug.Log("ä»»åŠ¡å·²å…¨éƒ¨å®Œæˆ");
+                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("ä»»åŠ¡å·²å…¨éƒ¨å®Œæˆ"));
             }
         }
 
         /// <summary>
-        /// Íê³ÉÈÎÎñ²½Öè
+        /// å®Œæˆä»»åŠ¡æ­¥éª¤
         /// </summary>
         /// <param name="step"></param>
         public void CompleteStep(TaskStepBase step)
         {
             if (step == null || step.Runtime == null) return;
             TaskStepRuntime rt = step.Runtime;
-            if (!rt.isSkip) progress.AddScore(rt.score);   // Ìø¹ıµÄ²½Öè²»¼ÆÈë×Ü·Ö
-            RecordOperation("Step_Complete", true, $"Íê³É²½Öè {rt.stepID}, µÃ·Ö: {rt.score}");
-            //¹Ø±ÕÉÏÒ»¸öÈÎÎñ
-            if (progress.HasStep(progress.currentIndex))   // ĞŞ¸´£ºË÷ÒıÔ½½ç±£»¤
+            if (!rt.isSkip) progress.AddScore(rt.score);   // è·³è¿‡çš„æ­¥éª¤ä¸è®¡å…¥æ€»åˆ†
+            RecordOperation("Step_Complete", true, $"å®Œæˆæ­¥éª¤ {rt.stepID}, å¾—åˆ†: {rt.score}");
+            //å…³é—­ä¸Šä¸€ä¸ªä»»åŠ¡
+            if (progress.HasStep(progress.currentIndex))   // ä¿®å¤ï¼šç´¢å¼•è¶Šç•Œä¿æŠ¤
                 taskStates[progress.currentIndex].OnExit();
             OnStepCompleted?.Invoke(step.taskStepData);
             MoveToNextStep();
         }
 
         /// <summary>
-        /// ÏÂÒ»¸öÈÎÎñ
+        /// ä¸‹ä¸€ä¸ªä»»åŠ¡
         /// </summary>
         public void MoveToNextStep()
         {
             if (taskStates == null || taskStates.Length == 0) return;
             if (progress.MoveNext())
             {
-                Debug.Log($"{progress.currentIndex}ÏÂÒ»¸öÈÎÎñ");
+                Debug.Log($"{progress.currentIndex}ä¸‹ä¸€ä¸ªä»»åŠ¡");
                 taskStates[progress.currentIndex].OnEnter();
                 OnStepStarted?.Invoke(currentTaskStep);
             }
             else
             {
-                // ÈÎÎñÍê³É£¨progress.currentIndex == stepCount ×÷Îª¡°È«²¿Íê³É¡±ÉÚ±ø£©
-                Debug.Log("ÈÎÎñÈ«²¿Íê³É");
-                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("ÈÎÎñÒÑÈ«²¿Íê³É"));
+                // ä»»åŠ¡å®Œæˆï¼ˆprogress.currentIndex == stepCount ä½œä¸ºâ€œå…¨éƒ¨å®Œæˆâ€å“¨å…µï¼‰
+                Debug.Log("ä»»åŠ¡å…¨éƒ¨å®Œæˆ");
+                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("ä»»åŠ¡å·²å…¨éƒ¨å®Œæˆ"));
                 if (Replay != null)
                 {
                     Replay.totalScore = progress.totalScore;
                     Replay.stepCount = progress.stepCount;
-                    Replay.Add(Time.time, null, "Task_Complete", true, "È«²¿²½ÖèÍê³É£¬×Ü·Ö " + progress.totalScore);
+                    Replay.Add(Time.time, null, "Task_Complete", true, "å…¨éƒ¨æ­¥éª¤å®Œæˆï¼Œæ€»åˆ† " + progress.totalScore);
                 }
                 OnTaskCompleted?.Invoke();
             }
@@ -265,16 +265,16 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 score = rt != null ? rt.score : 0f,
                 errorCount = rt != null ? rt.errors : 0
             };
-            if (operationRecords == null) operationRecords = new Dictionary<string, List<OperationRecord>>();   // ĞŞ¸´£ºÈİ´í
+            if (operationRecords == null) operationRecords = new Dictionary<string, List<OperationRecord>>();   // ä¿®å¤ï¼šå®¹é”™
             if (!operationRecords.ContainsKey(runtimeStepID)) operationRecords[runtimeStepID] = new List<OperationRecord>();
             operationRecords[runtimeStepID].Add(record);
-            if (enableReplayLog && Replay != null)   // P2£ºÍ¬Ò»Ìõ¼ÇÂ¼Ò²Ğ´Èë¶¯×÷¼¶ÈÕÖ¾
+            if (enableReplayLog && Replay != null)   // P2ï¼šåŒä¸€æ¡è®°å½•ä¹Ÿå†™å…¥åŠ¨ä½œçº§æ—¥å¿—
                 Replay.Add(Time.time, runtimeStepID, action, isCorrect, details, record.score, record.errorCount);
         }
 
         /// <summary>
-        /// P2£º¼ÇÂ¼Ò»Ìõ¶¯×÷¼¶ÈÕÖ¾£¨ÓÉ TaskStepBase µ÷ÓÃ£©¡£
-        /// enableReplayLog = false Ê±Ö±½ÓºöÂÔ£»ÈÕÖ¾»áË³´ø´øÉÏ¸Ã²½Öèµ±Ç°µÄµÃ·ÖÓë´íÎó´ÎÊı¡£
+        /// P2ï¼šè®°å½•ä¸€æ¡åŠ¨ä½œçº§æ—¥å¿—ï¼ˆç”± TaskStepBase è°ƒç”¨ï¼‰ã€‚
+        /// enableReplayLog = false æ—¶ç›´æ¥å¿½ç•¥ï¼›æ—¥å¿—ä¼šé¡ºå¸¦å¸¦ä¸Šè¯¥æ­¥éª¤å½“å‰çš„å¾—åˆ†ä¸é”™è¯¯æ¬¡æ•°ã€‚
         /// </summary>
         public void RecordStepAction(string stepID, string action, bool isCorrect, string details)
         {
@@ -284,7 +284,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             Replay.Add(Time.time, stepID, action, isCorrect, details, rt != null ? rt.score : 0f, rt != null ? rt.errors : 0);
         }
 
-        /// <summary>°´ stepID ÕÒ²½ÖèÔËĞĞ×´Ì¬£¨Ğ´ÈÕÖ¾ÓÃ£»ÕÒ²»µ½·µ»Ø null£©</summary>
+        /// <summary>æŒ‰ stepID æ‰¾æ­¥éª¤è¿è¡ŒçŠ¶æ€ï¼ˆå†™æ—¥å¿—ç”¨ï¼›æ‰¾ä¸åˆ°è¿”å› nullï¼‰</summary>
         private TaskStepRuntime FindRuntime(string stepID)
         {
             if (string.IsNullOrEmpty(stepID) || taskStates == null) return null;
@@ -298,8 +298,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         }
 
         /// <summary>
-        /// P2£º°Ñ»Ø·ÅÈÕÖ¾Ğ´³É JSON£¨Ä¬ÈÏÂäµ½ StreamingAssets£¬ÎÄ¼şÃû¿ÉÖ¸¶¨£©¡£
-        /// ·µ»ØĞ´ÈëµÄÍêÕûÂ·¾¶£»Ã»ÓĞÈÕÖ¾»òĞ´Ê§°Ü·µ»Ø null¡£
+        /// P2ï¼šæŠŠå›æ”¾æ—¥å¿—å†™æˆ JSONï¼ˆé»˜è®¤è½åˆ° StreamingAssetsï¼Œæ–‡ä»¶åå¯æŒ‡å®šï¼‰ã€‚
+        /// è¿”å›å†™å…¥çš„å®Œæ•´è·¯å¾„ï¼›æ²¡æœ‰æ—¥å¿—æˆ–å†™å¤±è´¥è¿”å› nullã€‚
         /// </summary>
         public string SaveReplayLog(string fileName = null)
         {
@@ -312,27 +312,27 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             try
             {
                 File.WriteAllText(path, JsonUtility.ToJson(Replay, true));
-                Debug.Log("[½»»¥ÈÎÎñ] »Ø·ÅÈÕÖ¾ÒÑ±£´æ£º" + path);
+                Debug.Log("[äº¤äº’ä»»åŠ¡] å›æ”¾æ—¥å¿—å·²ä¿å­˜ï¼š" + path);
                 return path;
             }
             catch (Exception e)
             {
-                Debug.LogError("[½»»¥ÈÎÎñ] »Ø·ÅÈÕÖ¾±£´æÊ§°Ü£º" + e.Message);
+                Debug.LogError("[äº¤äº’ä»»åŠ¡] å›æ”¾æ—¥å¿—ä¿å­˜å¤±è´¥ï¼š" + e.Message);
                 return null;
             }
         }
 
-        /// <summary>P2£º´Ó JSON ÎÄ¼ş¶ÁÈ¡»Ø·ÅÈÕÖ¾£¨²é¿´Æ÷/¸´ÅÌÓÃ£©</summary>
+        /// <summary>P2ï¼šä» JSON æ–‡ä»¶è¯»å–å›æ”¾æ—¥å¿—ï¼ˆæŸ¥çœ‹å™¨/å¤ç›˜ç”¨ï¼‰</summary>
         public static ReplayLog LoadReplayLog(string path)
         {
             if (string.IsNullOrEmpty(path) || !File.Exists(path)) return null;
             try { return JsonUtility.FromJson<ReplayLog>(File.ReadAllText(path)); }
-            catch (Exception e) { Debug.LogError("[½»»¥ÈÎÎñ] »Ø·ÅÈÕÖ¾¶ÁÈ¡Ê§°Ü£º" + e.Message); return null; }
+            catch (Exception e) { Debug.LogError("[äº¤äº’ä»»åŠ¡] å›æ”¾æ—¥å¿—è¯»å–å¤±è´¥ï¼š" + e.Message); return null; }
         }
 
         /// <summary>
-        /// P2£º°´ TaskStepData.order ×ö¡¸ÎÈ¶¨ÅÅĞò¡¹¡ª¡ªorder Ğ¡ÕßÏÈÖ´ĞĞ£»order ÏàÍ¬£¨º¬È«²¿Îª 0 µÄ¾ÉÊı¾İ£©
-        /// ±£³Ö³¡¾°½Úµã²ã¼¶Ë³Ğò¡£ÕâÑù²½ÖèÖ´ĞĞË³Ğò²»ÔÙ±»×Ó½ÚµãÅÅÁĞË³Ğò°ó¼Ü¡£
+        /// P2ï¼šæŒ‰ TaskStepData.order åšã€Œç¨³å®šæ’åºã€â€”â€”order å°è€…å…ˆæ‰§è¡Œï¼›order ç›¸åŒï¼ˆå«å…¨éƒ¨ä¸º 0 çš„æ—§æ•°æ®ï¼‰
+        /// ä¿æŒåœºæ™¯èŠ‚ç‚¹å±‚çº§é¡ºåºã€‚è¿™æ ·æ­¥éª¤æ‰§è¡Œé¡ºåºä¸å†è¢«å­èŠ‚ç‚¹æ’åˆ—é¡ºåºç»‘æ¶ã€‚
         /// </summary>
         private void SortStepsByOrder()
         {
@@ -343,7 +343,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             {
                 int oa = StepOrderOf(taskStates[a]);
                 int ob = StepOrderOf(taskStates[b]);
-                return oa != ob ? oa.CompareTo(ob) : a.CompareTo(b);   // order ÏàÍ¬ÔòÓÃÔ­ÏÂ±ê¶µµ× ¡ú ÎÈ¶¨ÅÅĞò
+                return oa != ob ? oa.CompareTo(ob) : a.CompareTo(b);   // order ç›¸åŒåˆ™ç”¨åŸä¸‹æ ‡å…œåº• â†’ ç¨³å®šæ’åº
             });
             TaskStepBase[] sorted = new TaskStepBase[taskStates.Length];
             for (int i = 0; i < sorted.Length; i++) sorted[i] = taskStates[indexs[i]];
@@ -367,7 +367,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         private void OnDestroy()
         {
-            // ĞŞ¸´£º½öÔÚÈ·Êµ×¢²á¹ıÊµÌåÊ±²ÅÇå¿Õ£¬±ÜÃâÏú»Ù½×¶ÎÎŞÎ½´´½¨µ¥Àı
+            // ä¿®å¤ï¼šä»…åœ¨ç¡®å®æ³¨å†Œè¿‡å®ä½“æ—¶æ‰æ¸…ç©ºï¼Œé¿å…é”€æ¯é˜¶æ®µæ— è°“åˆ›å»ºå•ä¾‹
             if (TaskEntityManager.HasRegistered) TaskEntityManager.Instance.Clear();
         }
 

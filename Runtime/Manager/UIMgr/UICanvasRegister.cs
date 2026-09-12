@@ -1,4 +1,4 @@
-using System.Collections;
+锘縰sing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,7 +13,7 @@ namespace UPandaGF
             canvas = GetComponent<Canvas>();
             if (canvas == null)
             {
-                Debug.LogError("canvas 组件不存在！！！");
+                Debug.LogError("canvas 缁勪欢涓嶅瓨鍦紒锛侊紒");
                 return;
             }
             RectTransform canvasRect = canvas.GetComponent<RectTransform>();
@@ -30,7 +30,7 @@ namespace UPandaGF
         {
             canvas = GetComponent<Canvas>();
             if (canvas == null)
-                Debug.LogError("canvas 组件不存在！！！");
+                Debug.LogError("canvas 缁勪欢涓嶅瓨鍦紒锛侊紒");
         }
 
         private void Start()

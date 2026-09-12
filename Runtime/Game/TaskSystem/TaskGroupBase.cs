@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,9 +6,9 @@ namespace UPandaGF.RunTime.TaskSystem
 {
     public enum TaskGroupType
     {
-        Chain,//ÈÎÎñÁ´
-        Parallel,//²¢ĞĞÈÎÎñ
-        PreTask//Ç°ÖÃ
+        Chain,//ä»»åŠ¡é“¾
+        Parallel,//å¹¶è¡Œä»»åŠ¡
+        PreTask//å‰ç½®
     }
     public abstract class TaskGroupBase
     {

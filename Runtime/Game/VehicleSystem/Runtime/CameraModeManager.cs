@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// 视角管理器：支持第三人称、第一人称、环绕三种视角。

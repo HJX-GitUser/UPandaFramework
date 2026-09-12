@@ -1,10 +1,10 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UPandaGF.RunTime.InteractiveTaskScoringSystem;
 
 /// <summary>
-/// ½»»¥´¥·¢°¸Àı£¬»ñÈ¡interactiveTrigger½Ó¿Ú£¬¸ù¾İĞèÇó´¥·¢
+/// äº¤äº’è§¦å‘æ¡ˆä¾‹ï¼Œè·å–interactiveTriggeræ¥å£ï¼Œæ ¹æ®éœ€æ±‚è§¦å‘
 /// </summary>
 public class TaskTriggerExample : MonoBehaviour
 {
@@ -12,32 +12,32 @@ public class TaskTriggerExample : MonoBehaviour
     protected virtual void Awake()
     {
         interactiveTrigger = GetComponent<InteractiveTrigger>();
-        if (interactiveTrigger == null) Debug.LogError($"{name} ÉÏÎ´ÕÒµ½ InteractiveTrigger ÊµÏÖ£¬Êó±êÊÂ¼ş½«ÎŞ·¨×ª·¢");   // ĞŞ¸´£º¸ø³öÃ÷È·ÌáÊ¾
+        if (interactiveTrigger == null) Debug.LogError($"{name} ä¸Šæœªæ‰¾åˆ° InteractiveTrigger å®ç°ï¼Œé¼ æ ‡äº‹ä»¶å°†æ— æ³•è½¬å‘");   // ä¿®å¤ï¼šç»™å‡ºæ˜ç¡®æç¤º
     }
     void OnMouseDown()
     {
-        if (interactiveTrigger != null) interactiveTrigger.OnSelect();   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+        if (interactiveTrigger != null) interactiveTrigger.OnSelect();   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
     }
 
     void OnMouseUp()
     {
-        if (interactiveTrigger != null) interactiveTrigger.OnSelectExit();   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+        if (interactiveTrigger != null) interactiveTrigger.OnSelectExit();   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
     }
 
     private void OnMouseOver()
     {
-        if (interactiveTrigger != null) interactiveTrigger.OnStay();   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+        if (interactiveTrigger != null) interactiveTrigger.OnStay();   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
     }
 
     void OnMouseEnter()
     {
 
-        if (interactiveTrigger != null) interactiveTrigger.OnEnter();   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+        if (interactiveTrigger != null) interactiveTrigger.OnEnter();   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
     }
 
     void OnMouseExit()
     {
 
-        if (interactiveTrigger != null) interactiveTrigger.OnExit();   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+        if (interactiveTrigger != null) interactiveTrigger.OnExit();   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
     }
 }

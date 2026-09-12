@@ -1,11 +1,11 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace UPandaGF.RunTime.TaskSystem
 {
-    // ÈÎÎñ×´Ì¬Ã¶¾Ù
+    // ä»»åŠ¡çŠ¶æ€æšä¸¾
     public enum TaskStatus
     {
         Inactive,
@@ -15,13 +15,13 @@ namespace UPandaGF.RunTime.TaskSystem
     }
 
     /// <summary>
-    /// ÈÎÎñÀà
+    /// ä»»åŠ¡ç±»
     /// </summary>
     public class Task
     {
         public TaskData taskData;
         /// <summary>
-        /// ÈÎÎñÀàĞÍ
+        /// ä»»åŠ¡ç±»å‹
         /// </summary>
         public string taskType;
         public TaskStatus status;

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -6,18 +6,18 @@ using UnityEngine.Networking;
 using UPandaGF;
 
 /// <summary>
-/// HTTP ¹ÜÀíÀà£º¶ÔÍâÌá¹© GET / POST / PUT / DELETE ±ã½İ½Ó¿Ú£¬
-/// ÄÚ²¿³ÖÓĞÒ»¸ö HttpClient ¸ºÔğÇëÇóÅÅ¶ÓÓë·¢ËÍ¡£
+/// HTTP ç®¡ç†ç±»ï¼šå¯¹å¤–æä¾› GET / POST / PUT / DELETE ä¾¿æ·æ¥å£ï¼Œ
+/// å†…éƒ¨æŒæœ‰ä¸€ä¸ª HttpClient è´Ÿè´£è¯·æ±‚æ’é˜Ÿä¸å‘é€ã€‚
 ///
-/// ÌØĞÔ£º
-///   - ÀÁ¼ÓÔØµ¥Àı£ºÊ×´Î·ÃÎÊ Instance Ê±´´½¨²¢ DontDestroyOnLoad£¬¿ç³¡¾°³£×¤
-///   - È«¾ÖÇëÇóÍ·£ºSetGlobalHeader ÉèÖÃµÄÍ·²¿»á×Ô¶¯ºÏ²¢½øÖ®ºó·¢³öµÄÃ¿¸öÇëÇó
-///   - ·ºĞÍ·´ĞòÁĞ»¯£ºJsonUtility ×Ô¶¯°ÑÏìÓ¦Ìå×ª³É T£¨T Îª string Ê±·µ»ØÔ­ÎÄ£©
-///   - Ê§°ÜÖØÊÔ£ºÄ¬ÈÏÊ§°ÜÖØÊÔ 3 ´Î£¬ÖØÊÔ¹ı³Ì»Øµ÷ OnRetry£¬³¹µ×Ê§°Ü²Å»Øµ÷ OnFailure
-///   - ¿ÉÈ¡Ïû£º·µ»ØµÄÊı¾İ°ü¿É Cancel()£¬Ò²¿É CancelAll() Ò»´ÎĞÔÈ¡Ïû
-///   - ½ø¶È»Øµ÷£ºÎªÊı¾İ°üÉèÖÃ OnProgress ¼´¿ÉÄÃµ½ 0~1 µÄÏÂÔØ½ø¶È
+/// ç‰¹æ€§ï¼š
+///   - æ‡’åŠ è½½å•ä¾‹ï¼šé¦–æ¬¡è®¿é—® Instance æ—¶åˆ›å»ºå¹¶ DontDestroyOnLoadï¼Œè·¨åœºæ™¯å¸¸é©»
+///   - å…¨å±€è¯·æ±‚å¤´ï¼šSetGlobalHeader è®¾ç½®çš„å¤´éƒ¨ä¼šè‡ªåŠ¨åˆå¹¶è¿›ä¹‹åå‘å‡ºçš„æ¯ä¸ªè¯·æ±‚
+///   - æ³›å‹ååºåˆ—åŒ–ï¼šJsonUtility è‡ªåŠ¨æŠŠå“åº”ä½“è½¬æˆ Tï¼ˆT ä¸º string æ—¶è¿”å›åŸæ–‡ï¼‰
+///   - å¤±è´¥é‡è¯•ï¼šé»˜è®¤å¤±è´¥é‡è¯• 3 æ¬¡ï¼Œé‡è¯•è¿‡ç¨‹å›è°ƒ OnRetryï¼Œå½»åº•å¤±è´¥æ‰å›è°ƒ OnFailure
+///   - å¯å–æ¶ˆï¼šè¿”å›çš„æ•°æ®åŒ…å¯ Cancel()ï¼Œä¹Ÿå¯ CancelAll() ä¸€æ¬¡æ€§å–æ¶ˆ
+///   - è¿›åº¦å›è°ƒï¼šä¸ºæ•°æ®åŒ…è®¾ç½® OnProgress å³å¯æ‹¿åˆ° 0~1 çš„ä¸‹è½½è¿›åº¦
 ///
-/// ËùÓĞ»Øµ÷¶¼ÔÚÖ÷Ïß³Ì´¥·¢£¬Òò´Ë¿ÉÒÔÖ±½ÓÔÚÆäÖĞ²Ù×÷ Unity ¶ÔÏó¡£
+/// æ‰€æœ‰å›è°ƒéƒ½åœ¨ä¸»çº¿ç¨‹è§¦å‘ï¼Œå› æ­¤å¯ä»¥ç›´æ¥åœ¨å…¶ä¸­æ“ä½œ Unity å¯¹è±¡ã€‚
 /// </summary>
 public class HttpManager : LazyMonoSingletonBase<HttpManager>
 {
@@ -29,7 +29,7 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
         EnsureClient();
     }
 
-    /// <summary>ÄÚ²¿¿Í»§¶Ë£º¿ÉÓÃÓÚÉèÖÃ²¢·¢ÉÏÏŞ¡¢È¡ÏûÈ«²¿ÇëÇóµÈ¸ß¼¶²Ù×÷</summary>
+    /// <summary>å†…éƒ¨å®¢æˆ·ç«¯ï¼šå¯ç”¨äºè®¾ç½®å¹¶å‘ä¸Šé™ã€å–æ¶ˆå…¨éƒ¨è¯·æ±‚ç­‰é«˜çº§æ“ä½œ</summary>
     public HttpClient Client
     {
         get
@@ -39,18 +39,18 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
         }
     }
 
-    /// <summary>²¢·¢ÉÏÏŞ£º1 = ´®ĞĞ£¨Ä¬ÈÏ£¬°´Èë¶ÓË³ĞòÖğ¸ö·¢ËÍ£©£»´óÓÚ 1 Ê±Í¬Ê±·¢ËÍ¶à¸öÇëÇó</summary>
+    /// <summary>å¹¶å‘ä¸Šé™ï¼š1 = ä¸²è¡Œï¼ˆé»˜è®¤ï¼ŒæŒ‰å…¥é˜Ÿé¡ºåºé€ä¸ªå‘é€ï¼‰ï¼›å¤§äº 1 æ—¶åŒæ—¶å‘é€å¤šä¸ªè¯·æ±‚</summary>
     public int MaxConcurrentRequests
     {
         get { return Client.MaxConcurrentRequests; }
         set { Client.MaxConcurrentRequests = Mathf.Max(1, value); }
     }
 
-    // ==================== È«¾ÖÇëÇóÍ· ====================
+    // ==================== å…¨å±€è¯·æ±‚å¤´ ====================
 
     /// <summary>
-    /// ÉèÖÃ£¨»ò¸²¸Ç£©È«¾ÖÇëÇóÍ·£¬ÀıÈç Token¡£
-    /// »áÓëÃ¿¸öÇëÇó×ÔÉíµÄ Headers ºÏ²¢£¬Í¬ÃûµÄÒÔÇëÇó×ÔÉíÎª×¼¡£
+    /// è®¾ç½®ï¼ˆæˆ–è¦†ç›–ï¼‰å…¨å±€è¯·æ±‚å¤´ï¼Œä¾‹å¦‚ Tokenã€‚
+    /// ä¼šä¸æ¯ä¸ªè¯·æ±‚è‡ªèº«çš„ Headers åˆå¹¶ï¼ŒåŒåçš„ä»¥è¯·æ±‚è‡ªèº«ä¸ºå‡†ã€‚
     /// </summary>
     public void SetGlobalHeader(string key, string value)
     {
@@ -59,29 +59,29 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
         _globalHeaders[key] = value ?? string.Empty;
     }
 
-    /// <summary>ÒÆ³ıÄ³¸öÈ«¾ÖÇëÇóÍ·£¬·µ»ØÊÇ·ñÒÆ³ı³É¹¦</summary>
+    /// <summary>ç§»é™¤æŸä¸ªå…¨å±€è¯·æ±‚å¤´ï¼Œè¿”å›æ˜¯å¦ç§»é™¤æˆåŠŸ</summary>
     public bool RemoveGlobalHeader(string key)
     {
         return !string.IsNullOrEmpty(key) && _globalHeaders.Remove(key);
     }
 
-    /// <summary>Çå¿ÕËùÓĞÈ«¾ÖÇëÇóÍ·</summary>
+    /// <summary>æ¸…ç©ºæ‰€æœ‰å…¨å±€è¯·æ±‚å¤´</summary>
     public void ClearGlobalHeaders()
     {
         _globalHeaders.Clear();
     }
 
-    /// <summary>È«¾ÖÇëÇóÍ·£¨Ö»¶Á£¬±ãÓÚµ÷ÊÔ²é¿´£©</summary>
+    /// <summary>å…¨å±€è¯·æ±‚å¤´ï¼ˆåªè¯»ï¼Œä¾¿äºè°ƒè¯•æŸ¥çœ‹ï¼‰</summary>
     public IReadOnlyDictionary<string, string> GlobalHeaders
     {
         get { return _globalHeaders; }
     }
 
-    // ==================== ±ã½İ½Ó¿Ú ====================
+    // ==================== ä¾¿æ·æ¥å£ ====================
 
     /// <summary>
-    /// GET ÇëÇó£ºparameters »á URL ±àÂëºóÆ´µ½²éÑ¯´®£¨¿ÉÎª null£©¡£
-    /// ·µ»ØµÄÊı¾İ°ü¿ÉÓÃÓÚ Cancel() »ò²éÑ¯×´Ì¬£»²»ĞèÒªÊ±ºöÂÔ·µ»ØÖµ¼´¿É¡£
+    /// GET è¯·æ±‚ï¼šparameters ä¼š URL ç¼–ç åæ‹¼åˆ°æŸ¥è¯¢ä¸²ï¼ˆå¯ä¸º nullï¼‰ã€‚
+    /// è¿”å›çš„æ•°æ®åŒ…å¯ç”¨äº Cancel() æˆ–æŸ¥è¯¢çŠ¶æ€ï¼›ä¸éœ€è¦æ—¶å¿½ç•¥è¿”å›å€¼å³å¯ã€‚
     /// </summary>
     public GenericHttpPack<T> Get<T>(string url, Dictionary<string, string> parameters,
         Action<T> onSuccess, Action<string> onFailure = null) where T : class
@@ -89,7 +89,7 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
         return Get<T>(url, parameters, (data, code) => onSuccess?.Invoke(data), onFailure);
     }
 
-    /// <summary>GET ÇëÇó£¨³É¹¦»Øµ÷¶îÍâ´ø HTTP ×´Ì¬Âë£©</summary>
+    /// <summary>GET è¯·æ±‚ï¼ˆæˆåŠŸå›è°ƒé¢å¤–å¸¦ HTTP çŠ¶æ€ç ï¼‰</summary>
     public GenericHttpPack<T> Get<T>(string url, Dictionary<string, string> parameters,
         Action<T, int> onSuccess, Action<string> onFailure = null) where T : class
     {
@@ -97,8 +97,8 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
     }
 
     /// <summary>
-    /// POST ÇëÇó£ºdata Îª string Ê±ÊÓÎªÒÑĞ´ºÃµÄ JSON Ô­ÎÄÖ±½ÓÌá½»£¬
-    /// Îª null ±íÊ¾ÎŞÇëÇóÌå£¬ÆäËüÀàĞÍÓÉ JsonUtility.ToJson ĞòÁĞ»¯¡£
+    /// POST è¯·æ±‚ï¼šdata ä¸º string æ—¶è§†ä¸ºå·²å†™å¥½çš„ JSON åŸæ–‡ç›´æ¥æäº¤ï¼Œ
+    /// ä¸º null è¡¨ç¤ºæ— è¯·æ±‚ä½“ï¼Œå…¶å®ƒç±»å‹ç”± JsonUtility.ToJson åºåˆ—åŒ–ã€‚
     /// </summary>
     public GenericHttpPack<T> Post<T>(string url, object data,
         Action<T> onSuccess, Action<string> onFailure = null) where T : class
@@ -106,48 +106,48 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
         return Post<T>(url, data, (result, code) => onSuccess?.Invoke(result), onFailure);
     }
 
-    /// <summary>POST ÇëÇó£¨³É¹¦»Øµ÷¶îÍâ´ø HTTP ×´Ì¬Âë£©</summary>
+    /// <summary>POST è¯·æ±‚ï¼ˆæˆåŠŸå›è°ƒé¢å¤–å¸¦ HTTP çŠ¶æ€ç ï¼‰</summary>
     public GenericHttpPack<T> Post<T>(string url, object data,
         Action<T, int> onSuccess, Action<string> onFailure = null) where T : class
     {
         return SendInternal(HttpRequestType.Post, url, BuildBody(data), null, onSuccess, onFailure);
     }
 
-    /// <summary>PUT ÇëÇó£¨ÇëÇóÌå¹æÔòÍ¬ Post£©</summary>
+    /// <summary>PUT è¯·æ±‚ï¼ˆè¯·æ±‚ä½“è§„åˆ™åŒ Postï¼‰</summary>
     public GenericHttpPack<T> Put<T>(string url, object data,
         Action<T> onSuccess, Action<string> onFailure = null) where T : class
     {
         return Put<T>(url, data, (result, code) => onSuccess?.Invoke(result), onFailure);
     }
 
-    /// <summary>PUT ÇëÇó£¨³É¹¦»Øµ÷¶îÍâ´ø HTTP ×´Ì¬Âë£©</summary>
+    /// <summary>PUT è¯·æ±‚ï¼ˆæˆåŠŸå›è°ƒé¢å¤–å¸¦ HTTP çŠ¶æ€ç ï¼‰</summary>
     public GenericHttpPack<T> Put<T>(string url, object data,
         Action<T, int> onSuccess, Action<string> onFailure = null) where T : class
     {
         return SendInternal(HttpRequestType.Put, url, BuildBody(data), null, onSuccess, onFailure);
     }
 
-    /// <summary>DELETE ÇëÇó£¨parameters ¿ÉÆ´µ½²éÑ¯´®£©</summary>
+    /// <summary>DELETE è¯·æ±‚ï¼ˆparameters å¯æ‹¼åˆ°æŸ¥è¯¢ä¸²ï¼‰</summary>
     public GenericHttpPack<T> Delete<T>(string url, Dictionary<string, string> parameters = null,
         Action<T> onSuccess = null, Action<string> onFailure = null) where T : class
     {
         return Delete<T>(url, parameters, (result, code) => onSuccess?.Invoke(result), onFailure);
     }
 
-    /// <summary>DELETE ÇëÇó£¨³É¹¦»Øµ÷¶îÍâ´ø HTTP ×´Ì¬Âë£©</summary>
+    /// <summary>DELETE è¯·æ±‚ï¼ˆæˆåŠŸå›è°ƒé¢å¤–å¸¦ HTTP çŠ¶æ€ç ï¼‰</summary>
     public GenericHttpPack<T> Delete<T>(string url, Dictionary<string, string> parameters,
         Action<T, int> onSuccess, Action<string> onFailure = null) where T : class
     {
         return SendInternal(HttpRequestType.Delete, BuildUrlWithParams(url, parameters), null, null, onSuccess, onFailure);
     }
 
-    // ==================== ¸ß¼¶½Ó¿Ú ====================
+    // ==================== é«˜çº§æ¥å£ ====================
 
     /// <summary>
-    /// ´´½¨µ«**²»·¢ËÍ**µÄÊı¾İ°ü£ºÊÊºÏĞèÒª×Ô¶¨ÒåÇëÇóÍ· / ³¬Ê± / ÖØÊÔ´ÎÊı /
-    /// ½ø¶È»Øµ÷ / ÖØÊÔ»Øµ÷µÄ³¡¾°£¬ÅäÖÃÍê³Éºóµ÷ÓÃ Send(pack) Èë¶Ó¡£
+    /// åˆ›å»ºä½†**ä¸å‘é€**çš„æ•°æ®åŒ…ï¼šé€‚åˆéœ€è¦è‡ªå®šä¹‰è¯·æ±‚å¤´ / è¶…æ—¶ / é‡è¯•æ¬¡æ•° /
+    /// è¿›åº¦å›è°ƒ / é‡è¯•å›è°ƒçš„åœºæ™¯ï¼Œé…ç½®å®Œæˆåè°ƒç”¨ Send(pack) å…¥é˜Ÿã€‚
     ///
-    /// Ê¾Àı£º
+    /// ç¤ºä¾‹ï¼š
     ///   var pack = HttpManager.Instance.CreateRequest&lt;MyData&gt;(HttpRequestType.Post, url, json);
     ///   pack.Headers["Authorization"] = "Bearer xxx";
     ///   pack.Timeout = 30;
@@ -164,21 +164,21 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
         };
     }
 
-    /// <summary>·¢ËÍÒ»¸öÒÑÅäÖÃºÃµÄÊı¾İ°ü£¨»á×Ô¶¯ºÏ²¢È«¾ÖÇëÇóÍ·£©£»·µ»ØÊÇ·ñ³É¹¦Èë¶Ó</summary>
+    /// <summary>å‘é€ä¸€ä¸ªå·²é…ç½®å¥½çš„æ•°æ®åŒ…ï¼ˆä¼šè‡ªåŠ¨åˆå¹¶å…¨å±€è¯·æ±‚å¤´ï¼‰ï¼›è¿”å›æ˜¯å¦æˆåŠŸå…¥é˜Ÿ</summary>
     public bool Send<T>(GenericHttpPack<T> pack) where T : class
     {
         return SendInternal(pack, null);
     }
 
-    /// <summary>È¡ÏûÈ«²¿ÇëÇó£ºÇå¿ÕµÈ´ı¶ÓÁĞ£¬²¢ÖĞ¶ÏÕıÔÚ·¢ËÍµÄÇëÇó£¨²»»á´¥·¢ÈÎºÎ»Øµ÷£©</summary>
+    /// <summary>å–æ¶ˆå…¨éƒ¨è¯·æ±‚ï¼šæ¸…ç©ºç­‰å¾…é˜Ÿåˆ—ï¼Œå¹¶ä¸­æ–­æ­£åœ¨å‘é€çš„è¯·æ±‚ï¼ˆä¸ä¼šè§¦å‘ä»»ä½•å›è°ƒï¼‰</summary>
     public void CancelAll()
     {
         if (_client != null) _client.CancelAll();
     }
 
-    // ==================== ÄÚ²¿ÊµÏÖ ====================
+    // ==================== å†…éƒ¨å®ç° ====================
 
-    /// <summary>È·±£ HttpClient ÒÑ¹ÒÔØÔÚµ¥ÀıÎïÌåÉÏ</summary>
+    /// <summary>ç¡®ä¿ HttpClient å·²æŒ‚è½½åœ¨å•ä¾‹ç‰©ä½“ä¸Š</summary>
     private void EnsureClient()
     {
         if (_client != null) return;
@@ -190,7 +190,7 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
         }
     }
 
-    /// <summary>±ã½İ½Ó¿ÚµÄÍ³Ò»³ö¿Ú£º×é×°Êı¾İ°ü¡¢ºÏ²¢ÇëÇóÍ·²¢Èë¶Ó</summary>
+    /// <summary>ä¾¿æ·æ¥å£çš„ç»Ÿä¸€å‡ºå£ï¼šç»„è£…æ•°æ®åŒ…ã€åˆå¹¶è¯·æ±‚å¤´å¹¶å…¥é˜Ÿ</summary>
     private GenericHttpPack<T> SendInternal<T>(HttpRequestType type, string url, string body,
         Dictionary<string, string> headers, Action<T, int> onSuccess, Action<string> onFailure) where T : class
     {
@@ -207,8 +207,8 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
     }
 
     /// <summary>
-    /// Ğ£Ñé + ºÏ²¢ÇëÇóÍ· + Èë¶Ó¡£
-    /// ÇëÇóÍ·ÓÅÏÈ¼¶£ºÈ«¾Ö &lt; ²ÎÊı´«Èë &lt; Êı¾İ°ü×ÔÉíÒÑÉèÖÃµÄ£¨ºóĞ´¸²¸ÇÏÈĞ´£©¡£
+    /// æ ¡éªŒ + åˆå¹¶è¯·æ±‚å¤´ + å…¥é˜Ÿã€‚
+    /// è¯·æ±‚å¤´ä¼˜å…ˆçº§ï¼šå…¨å±€ &lt; å‚æ•°ä¼ å…¥ &lt; æ•°æ®åŒ…è‡ªèº«å·²è®¾ç½®çš„ï¼ˆåå†™è¦†ç›–å…ˆå†™ï¼‰ã€‚
     /// </summary>
     private bool SendInternal<T>(GenericHttpPack<T> pack, Dictionary<string, string> headers) where T : class
     {
@@ -216,7 +216,7 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
 
         if (string.IsNullOrEmpty(pack.Url))
         {
-            const string message = "HTTP ÇëÇóÎ´·¢ËÍ£ºURL Îª¿Õ";
+            const string message = "HTTP è¯·æ±‚æœªå‘é€ï¼šURL ä¸ºç©º";
             PLogger.LogError($"[HttpManager] {message}");
             pack.OnFailure?.Invoke(message);
             return false;
@@ -241,7 +241,7 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
     }
 
     /// <summary>
-    /// ¹¹ÔìÇëÇóÌå£ºnull ±íÊ¾Ã»ÓĞÇëÇóÌå£»string ÊÓÎªÒÑĞ´ºÃµÄ JSON Ô­ÎÄ£»ÆäËüÀàĞÍ×ß JsonUtility¡£
+    /// æ„é€ è¯·æ±‚ä½“ï¼šnull è¡¨ç¤ºæ²¡æœ‰è¯·æ±‚ä½“ï¼›string è§†ä¸ºå·²å†™å¥½çš„ JSON åŸæ–‡ï¼›å…¶å®ƒç±»å‹èµ° JsonUtilityã€‚
     /// </summary>
     private static string BuildBody(object data)
     {
@@ -254,14 +254,14 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
     }
 
     /// <summary>
-    /// °Ñ²ÎÊı×ÖµäÆ´µ½ URL£º¼üÖµ¶¼×ö URL ±àÂë£»
-    /// ÒÑ´ø²éÑ¯´®Ê±ÓÃ &amp; ×·¼Ó£¨²»»áÔÙÆ´Ò»¸ö ?£©£¬# Æ¬¶Î»á±»±£Áôµ½×îÄ©Î²¡£
+    /// æŠŠå‚æ•°å­—å…¸æ‹¼åˆ° URLï¼šé”®å€¼éƒ½åš URL ç¼–ç ï¼›
+    /// å·²å¸¦æŸ¥è¯¢ä¸²æ—¶ç”¨ &amp; è¿½åŠ ï¼ˆä¸ä¼šå†æ‹¼ä¸€ä¸ª ?ï¼‰ï¼Œ# ç‰‡æ®µä¼šè¢«ä¿ç•™åˆ°æœ€æœ«å°¾ã€‚
     /// </summary>
     private static string BuildUrlWithParams(string url, Dictionary<string, string> parameters)
     {
         if (string.IsNullOrEmpty(url) || parameters == null || parameters.Count == 0) return url;
 
-        // Õªµô # Æ¬¶Î£º²ÎÊıÒª²åÔÚËüÇ°Ãæ
+        // æ‘˜æ‰ # ç‰‡æ®µï¼šå‚æ•°è¦æ’åœ¨å®ƒå‰é¢
         string fragment = string.Empty;
         int hashIndex = url.IndexOf('#');
         if (hashIndex >= 0)
@@ -281,7 +281,7 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
             query.Append(UnityWebRequest.EscapeURL(parameter.Value ?? string.Empty));
         }
 
-        // ËùÓĞ²ÎÊıµÄ¼ü¶¼Îª¿ÕÊ±²»×öÈÎºÎÆ´½Ó
+        // æ‰€æœ‰å‚æ•°çš„é”®éƒ½ä¸ºç©ºæ—¶ä¸åšä»»ä½•æ‹¼æ¥
         if (query.Length == 0) return url + fragment;
 
         var sb = new StringBuilder(url);

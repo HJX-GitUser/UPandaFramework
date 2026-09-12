@@ -11,12 +11,12 @@ using AssetBundleBrowser.AssetBundleDataSource;
 namespace AssetBundleBrowser.AssetBundleModel
 {
     /// <summary>
-    /// Static class holding model data for Asset Bundle Browser tool. Data in Model is read from DataSource, but is not pushed.  
-    /// 
-    /// If not using a custom DataSource, then the data comes from the AssetDatabase.  If you wish to alter the data from code, 
+    /// Static class holding model data for Asset Bundle Browser tool. Data in Model is read from DataSource, but is not pushed.
+    ///
+    /// If not using a custom DataSource, then the data comes from the AssetDatabase.  If you wish to alter the data from code,
     ///  you should just push changes to the AssetDatabase then tell the Model to Rebuild(). If needed, you can also loop over
     ///  Update() until it returns true to force all sub-items to refresh.
-    ///  
+    ///
     /// </summary>
     public static class Model
     {
@@ -43,10 +43,10 @@ namespace AssetBundleBrowser.AssetBundleModel
         /// <summary>
         /// If using a custom source of asset bundles, you can implement your own ABDataSource and set it here as the active
         ///  DataSource.  This will allow you to use the Browser with data that you provide.
-        ///  
-        /// If no custom DataSource is provided, then the Browser will create one that feeds off of and into the 
+        ///
+        /// If no custom DataSource is provided, then the Browser will create one that feeds off of and into the
         ///  AssetDatabase.
-        ///  
+        ///
         /// </summary>
         public static ABDataSource DataSource
         {
@@ -72,7 +72,7 @@ namespace AssetBundleBrowser.AssetBundleModel
             ExecuteAssetMove(false);     //this should never do anything. just a safety check.
 
             //TODO - look into EditorApplication callback functions.
-            
+
             int size = s_BundlesToUpdate.Count;
             if (size > 0)
             {
@@ -107,9 +107,9 @@ namespace AssetBundleBrowser.AssetBundleModel
             }
             EditorUtility.ClearProgressBar();
         }
-        
+
         /// <summary>
-        /// Clears and rebuilds model data.  
+        /// Clears and rebuilds model data.
         /// </summary>
         public static void Rebuild()
         {
@@ -275,7 +275,7 @@ namespace AssetBundleBrowser.AssetBundleModel
         {
             if (name == null)
                 return null;
-            
+
             BundleNameData nameData = new BundleNameData(name);
 
             BundleFolderInfo folder = AddFoldersToBundle(s_RootLevelBundles, nameData);
@@ -339,19 +339,19 @@ namespace AssetBundleBrowser.AssetBundleModel
                     message += " exists both as a standard bundle, and a bundle with variants.  ";
                     message += "This message is not supported for display or actual bundle building.  ";
                     message += "You must manually fix bundle naming in the inspector.";
-                    
+
                     LogError(message);
                     return null;
                 }
-                
-                
+
+
                 currInfo = folder.GetChild(nameData.variant);
                 if (currInfo == null)
                 {
                     currInfo = new BundleVariantDataInfo(nameData.fullNativeName, folder);
                     folder.AddChild(currInfo);
                 }
-                
+
             }
             else
             {
@@ -434,7 +434,7 @@ namespace AssetBundleBrowser.AssetBundleModel
                 Debug.LogError(message);
             }
 
-            return result;  
+            return result;
         }
 
         internal static void HandleBundleReparent(IEnumerable<BundleInfo> bundles, BundleFolderInfo parent)
@@ -542,7 +542,7 @@ namespace AssetBundleBrowser.AssetBundleModel
 
             if (dupeAssets.Count == 0)
                 return null;
-            
+
             MoveAssetToBundle(dupeAssets, newBundle.m_Name.bundleName, string.Empty);
             ExecuteAssetMove();
             return newBundle;
@@ -633,13 +633,13 @@ namespace AssetBundleBrowser.AssetBundleModel
                 Refresh();
             }
         }
-        
-        //this version of CreateAsset is only used for dependent assets. 
+
+        //this version of CreateAsset is only used for dependent assets.
         internal static AssetInfo CreateAsset(string name, AssetInfo parent)
         {
             if (ValidateAsset(name))
             {
-                var bundleName = GetBundleName(name); 
+                var bundleName = GetBundleName(name);
                 return CreateAsset(name, bundleName, parent);
             }
             return null;
@@ -704,7 +704,7 @@ namespace AssetBundleBrowser.AssetBundleModel
             var bundles = new HashSet<string>();
             bundles.Add(bundle);
             s_DependencyTracker.Add(asset.fullAssetName, bundles);
-            return 1;            
+            return 1;
         }
 
         internal static void UnRegisterAsset(AssetInfo asset, string bundle)
@@ -738,7 +738,7 @@ namespace AssetBundleBrowser.AssetBundleModel
             }
             return new HashSet<string>();
         }
-        
+
         //TODO - switch local cache server on and utilize this method to stay up to date.
         //static List<string> m_importedAssets = new List<string>();
         //static List<string> m_deletedAssets = new List<string>();

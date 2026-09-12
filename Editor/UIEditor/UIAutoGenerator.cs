@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor;
 using System.IO;
@@ -11,17 +11,17 @@ using System.Reflection;
 namespace UPandaGF
 {
     /// <summary>
-    /// UGUI½çÃæ½Å±¾×Ô¶¯Éú³ÉÆ÷
+    /// UGUIç•Œé¢è„šæœ¬è‡ªåŠ¨ç”Ÿæˆå™¨
     /// </summary>
     public class UIAutoGenerator : EditorWindow
     {
-        [MenuItem("UPandaGF/Tools/UI/×Ô¶¯Éú³ÉUI½Å±¾(²âÊÔ¿ª·¢ÖĞ)")]
+        [MenuItem("UPandaGF/Tools/UI/è‡ªåŠ¨ç”ŸæˆUIè„šæœ¬(æµ‹è¯•å¼€å‘ä¸­)")]
         public static void ShowWindow()
         {
-            GetWindow<UIAutoGenerator>("UI½Å±¾Éú³ÉÆ÷");
+            GetWindow<UIAutoGenerator>("UIè„šæœ¬ç”Ÿæˆå™¨");
         }
 
-        [MenuItem("GameObject/UPandaGF/UI/Éú³ÉUI¿ØÖÆ½Å±¾", false, 49)]
+        [MenuItem("GameObject/UPandaGF/UI/ç”ŸæˆUIæ§åˆ¶è„šæœ¬", false, 49)]
         private static void GenerateUIScriptForSelection()
         {
             if (Selection.activeGameObject != null)
@@ -64,22 +64,22 @@ namespace UPandaGF
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("UI½Å±¾Éú³ÉÆ÷", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("UIè„šæœ¬ç”Ÿæˆå™¨", EditorStyles.boldLabel);
             EditorGUILayout.Space(5);
 
-            EditorGUILayout.HelpBox("Ñ¡ÔñUI¸ù½Úµãºó£¬µã»÷Éú³É°´Å¥×Ô¶¯Éú³ÉUI¿ØÖÆ½Å±¾", MessageType.Info);
+            EditorGUILayout.HelpBox("é€‰æ‹©UIæ ¹èŠ‚ç‚¹åï¼Œç‚¹å‡»ç”ŸæˆæŒ‰é’®è‡ªåŠ¨ç”ŸæˆUIæ§åˆ¶è„šæœ¬", MessageType.Info);
 
             EditorGUILayout.Space(10);
-            scriptName = EditorGUILayout.TextField("½Å±¾Ãû³Æ", scriptName);
-            namespaceName = EditorGUILayout.TextField("ÃüÃû¿Õ¼ä", namespaceName);
-            baseClassName = EditorGUILayout.TextField("»ùÀàÃû³Æ", baseClassName);
+            scriptName = EditorGUILayout.TextField("è„šæœ¬åç§°", scriptName);
+            namespaceName = EditorGUILayout.TextField("å‘½åç©ºé—´", namespaceName);
+            baseClassName = EditorGUILayout.TextField("åŸºç±»åç§°", baseClassName);
 
-            generateAutoBindCode = EditorGUILayout.Toggle("Éú³É×Ô¶¯°ó¶¨´úÂë", generateAutoBindCode);
-            inheritMonoBehaviour = EditorGUILayout.Toggle("¼Ì³ĞMonoBehaviour", inheritMonoBehaviour);
+            generateAutoBindCode = EditorGUILayout.Toggle("ç”Ÿæˆè‡ªåŠ¨ç»‘å®šä»£ç ", generateAutoBindCode);
+            inheritMonoBehaviour = EditorGUILayout.Toggle("ç»§æ‰¿MonoBehaviour", inheritMonoBehaviour);
 
             EditorGUILayout.Space(20);
 
-            if (GUILayout.Button("Éú³ÉUI½Å±¾", GUILayout.Height(40)))
+            if (GUILayout.Button("ç”ŸæˆUIè„šæœ¬", GUILayout.Height(40)))
             {
                 if (Selection.activeGameObject != null)
                 {
@@ -87,7 +87,7 @@ namespace UPandaGF
                 }
                 else
                 {
-                    EditorUtility.DisplayDialog("ÌáÊ¾", "ÇëÏÈÑ¡ÔñÒ»¸öUI GameObject", "È·¶¨");
+                    EditorUtility.DisplayDialog("æç¤º", "è¯·å…ˆé€‰æ‹©ä¸€ä¸ªUI GameObject", "ç¡®å®š");
                 }
             }
 
@@ -98,29 +98,29 @@ namespace UPandaGF
         {
             if (uiRoot == null)
             {
-                Debug.LogError("UI¸ù½ÚµãÎª¿Õ");
+                Debug.LogError("UIæ ¹èŠ‚ç‚¹ä¸ºç©º");
                 return;
             }
 
-            // ÊÕ¼¯ËùÓĞUI×é¼ş
+            // æ”¶é›†æ‰€æœ‰UIç»„ä»¶
             Dictionary<string, List<ComponentInfo>> components = CollectComponents(uiRoot);
 
-            // Éú³É½Å±¾ÄÚÈİ
+            // ç”Ÿæˆè„šæœ¬å†…å®¹
             string scriptContent = GenerateScriptContent(uiRoot.name, components);
 
-            // ±£´æ½Å±¾ÎÄ¼ş
+            // ä¿å­˜è„šæœ¬æ–‡ä»¶
             string path = SaveScriptFile(scriptName, scriptContent);
 
             if (!string.IsNullOrEmpty(path))
             {
-                // ×Ô¶¯Ìí¼Ó×é¼şµ½GameObject
+                // è‡ªåŠ¨æ·»åŠ ç»„ä»¶åˆ°GameObject
                 AddComponentToGameObject(uiRoot, scriptName, path);
 
-                // ±àÒëºó×Ô¶¯°ó¶¨
+                // ç¼–è¯‘åè‡ªåŠ¨ç»‘å®š
                 EditorApplication.update += () => AutoBindAfterCompile(uiRoot, path);
 
                 AssetDatabase.Refresh();
-                EditorUtility.DisplayDialog("³É¹¦", $"UI½Å±¾ÒÑÉú³É: {path}", "È·¶¨");
+                EditorUtility.DisplayDialog("æˆåŠŸ", $"UIè„šæœ¬å·²ç”Ÿæˆ: {path}", "ç¡®å®š");
             }
         }
 
@@ -128,14 +128,14 @@ namespace UPandaGF
         {
             Dictionary<string, List<ComponentInfo>> components = new Dictionary<string, List<ComponentInfo>>();
 
-            // ±éÀúËùÓĞ×ÓÎïÌå
+            // éå†æ‰€æœ‰å­ç‰©ä½“
             Transform[] allChildren = root.GetComponentsInChildren<Transform>(true);
 
             foreach (Transform child in allChildren)
             {
                 if (child == root.transform) continue;
 
-                // ¼ì²éÖ§³ÖµÄ×é¼şÀàĞÍ
+                // æ£€æŸ¥æ”¯æŒçš„ç»„ä»¶ç±»å‹
                 Component[] allComponents = child.GetComponents<Component>();
 
                 foreach (Component component in allComponents)
@@ -163,8 +163,8 @@ namespace UPandaGF
                     }
                 }
 
-                // Èç¹ûGameObjectÃ»ÓĞÌØÊâ×é¼ş£¬Ò²¼ÇÂ¼ÎªGameObjectÀàĞÍ
-                if (allComponents.Length <= 1) // Ö»ÓĞTransform×é¼ş
+                // å¦‚æœGameObjectæ²¡æœ‰ç‰¹æ®Šç»„ä»¶ï¼Œä¹Ÿè®°å½•ä¸ºGameObjectç±»å‹
+                if (allComponents.Length <= 1) // åªæœ‰Transformç»„ä»¶
                 {
                     if (!components.ContainsKey("GameObject"))
                     {
@@ -190,7 +190,7 @@ namespace UPandaGF
         {
             StringBuilder sb = new StringBuilder();
 
-            // Ìí¼ÓusingÓï¾ä
+            // æ·»åŠ usingè¯­å¥
             sb.AppendLine("using UnityEngine;");
             sb.AppendLine("using UnityEngine.UI;");
             sb.AppendLine("using TMPro;");
@@ -198,23 +198,23 @@ namespace UPandaGF
             sb.AppendLine("using System.Collections.Generic;");
             sb.AppendLine();
 
-            // Ìí¼ÓÃüÃû¿Õ¼ä
+            // æ·»åŠ å‘½åç©ºé—´
             if (!string.IsNullOrEmpty(namespaceName))
             {
                 sb.AppendLine($"namespace {namespaceName}");
                 sb.AppendLine("{");
             }
 
-            // Àà¶¨Òå
+            // ç±»å®šä¹‰
             string inheritance = inheritMonoBehaviour ? $" : {baseClassName}" : "";
             sb.AppendLine($"    /// <summary>");
-            sb.AppendLine($"    /// {uiName} UI¿ØÖÆ½Å±¾");
-            sb.AppendLine($"    /// ×Ô¶¯Éú³ÉÓÚ: {System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}");
+            sb.AppendLine($"    /// {uiName} UIæ§åˆ¶è„šæœ¬");
+            sb.AppendLine($"    /// è‡ªåŠ¨ç”Ÿæˆäº: {System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}");
             sb.AppendLine($"    /// </summary>");
             sb.AppendLine($"    public class {scriptName}{inheritance}");
             sb.AppendLine("    {");
 
-            // Éú³É×Ö¶Î
+            // ç”Ÿæˆå­—æ®µ
             sb.AppendLine("        #region UI Components");
             foreach (var kvp in components)
             {
@@ -227,7 +227,7 @@ namespace UPandaGF
             sb.AppendLine("        #endregion");
             sb.AppendLine();
 
-            // Éú³ÉÊôĞÔ
+            // ç”Ÿæˆå±æ€§
             sb.AppendLine("        #region UI Properties");
             foreach (var kvp in components)
             {
@@ -241,10 +241,10 @@ namespace UPandaGF
             sb.AppendLine("        #endregion");
             sb.AppendLine();
 
-            // Éú³É³õÊ¼»¯·½·¨
+            // ç”Ÿæˆåˆå§‹åŒ–æ–¹æ³•
             sb.AppendLine("        #region Initialization");
             sb.AppendLine("        /// <summary>");
-            sb.AppendLine("        /// ×Ô¶¯°ó¶¨UI×é¼ş");
+            sb.AppendLine("        /// è‡ªåŠ¨ç»‘å®šUIç»„ä»¶");
             sb.AppendLine("        /// </summary>");
             sb.AppendLine("        private void AutoBindComponents()");
             sb.AppendLine("        {");
@@ -269,7 +269,7 @@ namespace UPandaGF
                     }
 
                     sb.AppendLine($"            if ({compInfo.fieldName} == null)");
-                    sb.AppendLine($"                Debug.LogError($\"ÕÒ²»µ½×é¼ş: {compInfo.gameObjectName} ({type})\");");
+                    sb.AppendLine($"                Debug.LogError($\"æ‰¾ä¸åˆ°ç»„ä»¶: {compInfo.gameObjectName} ({type})\");");
                     sb.AppendLine();
                 }
             }
@@ -278,7 +278,7 @@ namespace UPandaGF
             sb.AppendLine();
 
             sb.AppendLine("        /// <summary>");
-            sb.AppendLine("        /// ³õÊ¼»¯UI");
+            sb.AppendLine("        /// åˆå§‹åŒ–UI");
             sb.AppendLine("        /// </summary>");
             sb.AppendLine("        public virtual void Initialize()");
             sb.AppendLine("        {");
@@ -291,10 +291,10 @@ namespace UPandaGF
             sb.AppendLine("        #endregion");
             sb.AppendLine();
 
-            // Éú³ÉÊÂ¼ş¼àÌıÉèÖÃ
+            // ç”Ÿæˆäº‹ä»¶ç›‘å¬è®¾ç½®
             sb.AppendLine("        #region Event Listeners");
             sb.AppendLine("        /// <summary>");
-            sb.AppendLine("        /// ÉèÖÃÊÂ¼ş¼àÌı");
+            sb.AppendLine("        /// è®¾ç½®äº‹ä»¶ç›‘å¬");
             sb.AppendLine("        /// </summary>");
             sb.AppendLine("        private void SetupEventListeners()");
             sb.AppendLine("        {");
@@ -333,7 +333,7 @@ namespace UPandaGF
             sb.AppendLine("        }");
             sb.AppendLine();
 
-            // Éú³ÉÊÂ¼ş·½·¨Ä£°å
+            // ç”Ÿæˆäº‹ä»¶æ–¹æ³•æ¨¡æ¿
             sb.AppendLine("        #region Event Methods");
 
             foreach (var kvp in components)
@@ -344,12 +344,12 @@ namespace UPandaGF
                     {
                         string methodName = $"On{char.ToUpper(compInfo.fieldName[0])}{compInfo.fieldName.Substring(1)}Click";
                         sb.AppendLine($"        /// <summary>");
-                        sb.AppendLine($"        /// {compInfo.gameObjectName} µã»÷ÊÂ¼ş");
+                        sb.AppendLine($"        /// {compInfo.gameObjectName} ç‚¹å‡»äº‹ä»¶");
                         sb.AppendLine($"        /// </summary>");
                         sb.AppendLine($"        private void {methodName}()");
                         sb.AppendLine($"        {{");
-                        sb.AppendLine($"            // TODO: ÊµÏÖµã»÷Âß¼­");
-                        sb.AppendLine($"            Debug.Log($\"{compInfo.fieldName} ±»µã»÷\");");
+                        sb.AppendLine($"            // TODO: å®ç°ç‚¹å‡»é€»è¾‘");
+                        sb.AppendLine($"            Debug.Log($\"{compInfo.fieldName} è¢«ç‚¹å‡»\");");
                         sb.AppendLine($"        }}");
                         sb.AppendLine();
                     }
@@ -360,12 +360,12 @@ namespace UPandaGF
                     {
                         string methodName = $"On{char.ToUpper(compInfo.fieldName[0])}{compInfo.fieldName.Substring(1)}ValueChanged";
                         sb.AppendLine($"        /// <summary>");
-                        sb.AppendLine($"        /// {compInfo.gameObjectName} Öµ¸Ä±äÊÂ¼ş");
+                        sb.AppendLine($"        /// {compInfo.gameObjectName} å€¼æ”¹å˜äº‹ä»¶");
                         sb.AppendLine($"        /// </summary>");
                         sb.AppendLine($"        private void {methodName}(bool value)");
                         sb.AppendLine($"        {{");
-                        sb.AppendLine($"            // TODO: ÊµÏÖÖµ¸Ä±äÂß¼­");
-                        sb.AppendLine($"            Debug.Log($\"{compInfo.fieldName} Öµ¸Ä±ä: {{value}}\");");
+                        sb.AppendLine($"            // TODO: å®ç°å€¼æ”¹å˜é€»è¾‘");
+                        sb.AppendLine($"            Debug.Log($\"{compInfo.fieldName} å€¼æ”¹å˜: {{value}}\");");
                         sb.AppendLine($"        }}");
                         sb.AppendLine();
                     }
@@ -375,10 +375,10 @@ namespace UPandaGF
             sb.AppendLine("        #endregion");
             sb.AppendLine("        ");
 
-            // Éú³ÉÇåÀí·½·¨
+            // ç”Ÿæˆæ¸…ç†æ–¹æ³•
             sb.AppendLine("        #region Cleanup");
             sb.AppendLine("        /// <summary>");
-            sb.AppendLine("        /// ÇåÀíÊÂ¼ş¼àÌı");
+            sb.AppendLine("        /// æ¸…ç†äº‹ä»¶ç›‘å¬");
             sb.AppendLine("        /// </summary>");
             sb.AppendLine("        private void OnDestroy()");
             sb.AppendLine("        {");
@@ -387,7 +387,7 @@ namespace UPandaGF
             sb.AppendLine();
 
             sb.AppendLine("        /// <summary>");
-            sb.AppendLine("        /// ÒÆ³ıÊÂ¼ş¼àÌı");
+            sb.AppendLine("        /// ç§»é™¤äº‹ä»¶ç›‘å¬");
             sb.AppendLine("        /// </summary>");
             sb.AppendLine("        private void RemoveEventListeners()");
             sb.AppendLine("        {");
@@ -420,18 +420,18 @@ namespace UPandaGF
 
         private string SaveScriptFile(string fileName, string content)
         {
-            string path = EditorUtility.SaveFilePanel("±£´æUI½Å±¾", "Assets/Scripts/UI", fileName, "cs");
+            string path = EditorUtility.SaveFilePanel("ä¿å­˜UIè„šæœ¬", "Assets/Scripts/UI", fileName, "cs");
 
             if (!string.IsNullOrEmpty(path))
             {
-                // È·±£Â·¾¶ÔÚAssetsÄ¿Â¼ÏÂ
+                // ç¡®ä¿è·¯å¾„åœ¨Assetsç›®å½•ä¸‹
                 if (!path.StartsWith(Application.dataPath))
                 {
-                    Debug.LogError("Çë½«½Å±¾±£´æÔÚAssetsÄ¿Â¼ÄÚ");
+                    Debug.LogError("è¯·å°†è„šæœ¬ä¿å­˜åœ¨Assetsç›®å½•å†…");
                     return null;
                 }
 
-                // ´´½¨Ä¿Â¼
+                // åˆ›å»ºç›®å½•
                 string directory = Path.GetDirectoryName(path);
                 if (!Directory.Exists(directory))
                 {
@@ -447,8 +447,8 @@ namespace UPandaGF
 
         private void AddComponentToGameObject(GameObject target, string componentName, string scriptPath)
         {
-            // ½Å±¾±àÒëºó»á×Ô¶¯Ìí¼Ó×é¼ş
-            // ÕâÀïÖ»ĞèÒªÈ·±£½Å±¾´æÔÚ
+            // è„šæœ¬ç¼–è¯‘åä¼šè‡ªåŠ¨æ·»åŠ ç»„ä»¶
+            // è¿™é‡Œåªéœ€è¦ç¡®ä¿è„šæœ¬å­˜åœ¨
         }
 
         private void AutoBindAfterCompile(GameObject uiRoot, string scriptPath)
@@ -457,12 +457,12 @@ namespace UPandaGF
 
             EditorApplication.update -= () => AutoBindAfterCompile(uiRoot, scriptPath);
 
-            // µÈ´ıÒ»Ö¡È·±£±àÒëÍê³É
+            // ç­‰å¾…ä¸€å¸§ç¡®ä¿ç¼–è¯‘å®Œæˆ
             EditorApplication.delayCall += () =>
             {
                 if (uiRoot == null) return;
 
-                // »ñÈ¡½Å±¾ÀàĞÍ
+                // è·å–è„šæœ¬ç±»å‹
                 string relativePath = "Assets" + scriptPath.Replace(Application.dataPath, "");
                 MonoScript script = AssetDatabase.LoadAssetAtPath<MonoScript>(relativePath);
 
@@ -472,17 +472,17 @@ namespace UPandaGF
 
                     if (scriptType != null)
                     {
-                        // Ìí¼Ó»ò»ñÈ¡×é¼ş
+                        // æ·»åŠ æˆ–è·å–ç»„ä»¶
                         Component component = uiRoot.GetComponent(scriptType);
                         if (component == null)
                         {
                             component = uiRoot.AddComponent(scriptType);
                         }
 
-                        // Èç¹ûÆôÓÃÁË×Ô¶¯°ó¶¨£¬µ÷ÓÃ³õÊ¼»¯·½·¨
+                        // å¦‚æœå¯ç”¨äº†è‡ªåŠ¨ç»‘å®šï¼Œè°ƒç”¨åˆå§‹åŒ–æ–¹æ³•
                         if (generateAutoBindCode)
                         {
-                            // Í¨¹ı·´Éäµ÷ÓÃInitialize·½·¨
+                            // é€šè¿‡åå°„è°ƒç”¨Initializeæ–¹æ³•
                             MethodInfo initMethod = scriptType.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Instance);
                             if (initMethod != null)
                             {
@@ -504,19 +504,19 @@ namespace UPandaGF
 
         private string GenerateFieldName(string gameObjectName, string componentType)
         {
-            // ÇåÀíÃû³Æ£¬ÒÆ³ıÌØÊâ×Ö·û
+            // æ¸…ç†åç§°ï¼Œç§»é™¤ç‰¹æ®Šå­—ç¬¦
             string cleanName = Regex.Replace(gameObjectName, @"[^a-zA-Z0-9_]", "");
 
-            // Èç¹ûÃû³ÆÒÔÊı×Ö¿ªÍ·£¬Ìí¼ÓÇ°×º
+            // å¦‚æœåç§°ä»¥æ•°å­—å¼€å¤´ï¼Œæ·»åŠ å‰ç¼€
             if (char.IsDigit(cleanName[0]))
             {
                 cleanName = "_" + cleanName;
             }
 
-            // ×ª»»ÎªÍÕ·åÃüÃû
+            // è½¬æ¢ä¸ºé©¼å³°å‘½å
             cleanName = char.ToLower(cleanName[0]) + cleanName.Substring(1);
 
-            // Ìí¼ÓÀàĞÍºó×º±ÜÃâÖØ¸´
+            // æ·»åŠ ç±»å‹åç¼€é¿å…é‡å¤
             string suffix = componentType;
             if (componentType.EndsWith("TMP"))
                 suffix = "TMP";
@@ -550,7 +550,7 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// ×Ô¶¨ÒåÊôĞÔ£¬ÓÃÓÚ±ê¼Ç×Ô¶¯°ó¶¨µÄUIÔªËØ
+    /// è‡ªå®šä¹‰å±æ€§ï¼Œç”¨äºæ ‡è®°è‡ªåŠ¨ç»‘å®šçš„UIå…ƒç´ 
     /// </summary>
     public class AutoBindAttribute : PropertyAttribute
     {

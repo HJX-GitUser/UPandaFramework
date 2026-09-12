@@ -1,14 +1,14 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
-    // ÈÎÎñ×´Ì¬
+    // ä»»åŠ¡çŠ¶æ€
     public enum TaskState
     {
-        Ready,          // ×¼±¸×´Ì¬
-        InProgress,     // ½øĞĞÖĞ
-        TaskComplete,   // ÈÎÎñÍê³É
+        Ready,          // å‡†å¤‡çŠ¶æ€
+        InProgress,     // è¿›è¡Œä¸­
+        TaskComplete,   // ä»»åŠ¡å®Œæˆ
     }
 
     public interface ITask
@@ -17,11 +17,11 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         void OnEnter();
         void OnExit();
 
-        void OperationCheck(TaskEntityBase arg);//²Ù×÷¼ì²é
+        void OperationCheck(TaskEntityBase arg);//æ“ä½œæ£€æŸ¥
 
-        void OperationInstructions(); //²Ù×÷Òıµ¼
+        void OperationInstructions(); //æ“ä½œå¼•å¯¼
 
-        void SkipTask();//²½ÖèÌø¹ı
+        void SkipTask();//æ­¥éª¤è·³è¿‡
 
         TaskStepData GetData { get; }
     }
@@ -33,7 +33,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
 
     /// <summary>
-    /// ÈÎÎñ²½Öè
+    /// ä»»åŠ¡æ­¥éª¤
     /// </summary>
     public class TaskStepBase : MonoBehaviour, ITask, GetUniTaskID
     {
@@ -41,13 +41,13 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public TaskStepData taskStepData;
         public TaskState taskState;
 
-        /// <summary>±¾²½ÖèµÄÔËĞĞÊ±×´Ì¬£¨´¿ C#£¬Ìæ´úÔ­ÏÈĞ´ÔÚ TaskStepData ÉÏµÄ×Ö¶Î£©</summary>
+        /// <summary>æœ¬æ­¥éª¤çš„è¿è¡Œæ—¶çŠ¶æ€ï¼ˆçº¯ C#ï¼Œæ›¿ä»£åŸå…ˆå†™åœ¨ TaskStepData ä¸Šçš„å­—æ®µï¼‰</summary>
         public TaskStepRuntime Runtime { get; private set; }
 
-        /// <summary>ÆÀ·Ö²ßÂÔ£¨ÓÉ TaskDataManager ×¢Èë£»Ä¬ÈÏ 0´íÂú·Ö/1´í°ë·Ö/2´í0·Ö£©</summary>
+        /// <summary>è¯„åˆ†ç­–ç•¥ï¼ˆç”± TaskDataManager æ³¨å…¥ï¼›é»˜è®¤ 0é”™æ»¡åˆ†/1é”™åŠåˆ†/2é”™0åˆ†ï¼‰</summary>
         public IScorePolicy ScorePolicy { get; set; } = new DefaultScorePolicy();
 
-        // ¼æÈİ¾É¶ÁÈ¡·½Ê½µÄÖ»¶ÁÊôĞÔ£¨Ô­Îª public ×Ö¶Î£¬ÏÖÒÑ²¢Èë Runtime£©
+        // å…¼å®¹æ—§è¯»å–æ–¹å¼çš„åªè¯»å±æ€§ï¼ˆåŸä¸º public å­—æ®µï¼Œç°å·²å¹¶å…¥ Runtimeï¼‰
         public float currentScore { get { return Runtime != null ? Runtime.score : 0f; } }
         public int erroTimes { get { return Runtime != null ? Runtime.errors : 0; } }
 
@@ -55,11 +55,11 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
 
         /// <summary>
-        /// Òª¼¤»îµÄÊµÌå
+        /// è¦æ¿€æ´»çš„å®ä½“
         /// </summary>
         public string[] EnableEntity;
         private List<TaskEntityBase> entitys;
-        /// <summary>P2£ºÏÔÊ½Ö¸¶¨µÄ²Ù×÷¼ì²é×é£¨Áô¿ÕÊ±×Ô¶¯È¡×Ó½ÚµãÀïµÄµÚÒ»¸ö£¬±£³Ö¾ÉĞĞÎª£©</summary>
+        /// <summary>P2ï¼šæ˜¾å¼æŒ‡å®šçš„æ“ä½œæ£€æŸ¥ç»„ï¼ˆç•™ç©ºæ—¶è‡ªåŠ¨å–å­èŠ‚ç‚¹é‡Œçš„ç¬¬ä¸€ä¸ªï¼Œä¿æŒæ—§è¡Œä¸ºï¼‰</summary>
         public OperationGroupBase operationGroupRef;
         public OperationGroupBase operationGroup;
 
@@ -71,16 +71,16 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             taskDataManager = arg;
             taskState = TaskState.Ready;
-            operationGroup = operationGroupRef != null ? operationGroupRef : GetComponentInChildren<OperationGroupBase>();   // P2£ºÓÅÏÈÓÃÏÔÊ½ÒıÓÃ
+            operationGroup = operationGroupRef != null ? operationGroupRef : GetComponentInChildren<OperationGroupBase>();   // P2ï¼šä¼˜å…ˆç”¨æ˜¾å¼å¼•ç”¨
             if (operationGroup == null)
             {
-                Debug.LogWarning($"{taskStepData.stepID} Î´ÅäÖÃ²Ù×÷¼ì²é×é£¬¸Ã²½Öè½øÈëºó½«Ö±½ÓÍê³É");
-                // ĞŞ¸´£ºÔ­´Ë´¦Ö±½Ó return »áÈÃÏÂÃæµÄ´ı¼¤»îÊµÌå½âÎö²»µ½£¬¸ÄÎª½ö¸æ¾¯
+                Debug.LogWarning($"{taskStepData.stepID} æœªé…ç½®æ“ä½œæ£€æŸ¥ç»„ï¼Œè¯¥æ­¥éª¤è¿›å…¥åå°†ç›´æ¥å®Œæˆ");
+                // ä¿®å¤ï¼šåŸæ­¤å¤„ç›´æ¥ return ä¼šè®©ä¸‹é¢çš„å¾…æ¿€æ´»å®ä½“è§£æä¸åˆ°ï¼Œæ”¹ä¸ºä»…å‘Šè­¦
             }
-            if (operationGroup != null) operationGroup.Init(Submit);   // ĞŞ¸´£ºÎ´ÅäÖÃ¼ì²é×éÊ±Ìø¹ı³õÊ¼»¯£¬´ı¼¤»îÊµÌåÈÔ»á½âÎö
-            ResetStepState();   // ĞŞ¸´£ºÖØÍæÍ¬Ò»ÈÎÎñÊ±¸´Î»±¾²½ÖèÓëËùÓĞ×Ó²Ù×÷µÄÔËĞĞÊ±×´Ì¬
+            if (operationGroup != null) operationGroup.Init(Submit);   // ä¿®å¤ï¼šæœªé…ç½®æ£€æŸ¥ç»„æ—¶è·³è¿‡åˆå§‹åŒ–ï¼Œå¾…æ¿€æ´»å®ä½“ä»ä¼šè§£æ
+            ResetStepState();   // ä¿®å¤ï¼šé‡ç©åŒä¸€ä»»åŠ¡æ—¶å¤ä½æœ¬æ­¥éª¤ä¸æ‰€æœ‰å­æ“ä½œçš„è¿è¡Œæ—¶çŠ¶æ€
             entitys = new List<TaskEntityBase>();
-            if (EnableEntity != null) foreach (string item in EnableEntity)   // ĞŞ¸´£ºÎ´ÅäÖÃ´ı¼¤»îÊµÌåÊ±²»¿ÕÒıÓÃ
+            if (EnableEntity != null) foreach (string item in EnableEntity)   // ä¿®å¤ï¼šæœªé…ç½®å¾…æ¿€æ´»å®ä½“æ—¶ä¸ç©ºå¼•ç”¨
             {
                 TaskEntityBase taskEntity = TaskEntityManager.Instance.FindEntity(item);
                 if (taskEntity != null) entitys.Add(taskEntity);
@@ -88,17 +88,17 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         }
 
-        /// <summary>²½ÖèID£¨ÅäÖÃÈ±Ê§Ê±ÍË»¯Îª½ÚµãÃû£¬±£Ö¤ Runtime Àï×ÜÓĞ¿É¶Á±êÊ¶£©</summary>
+        /// <summary>æ­¥éª¤IDï¼ˆé…ç½®ç¼ºå¤±æ—¶é€€åŒ–ä¸ºèŠ‚ç‚¹åï¼Œä¿è¯ Runtime é‡Œæ€»æœ‰å¯è¯»æ ‡è¯†ï¼‰</summary>
         public string GetStepID()
         {
             return taskStepData != null ? taskStepData.stepID : name;
         }
 
         /// <summary>
-        /// ¸´Î»±¾²½ÖèÓëËùÓĞ×Ó²Ù×÷µÄÔËĞĞÊ±×´Ì¬¡£
-        /// ĞŞ¸´Ô­Òò£ºÔËĞĞÊ±×´Ì¬¼ÄÉúÔÚ TaskStepData£¨ScriptableObject£©ÉÏ£¬
-        /// ÖØÍæÍ¬Ò»ÈÎÎñÊ±Èô²»ÇåÀí£¬»á³öÏÖ´íÎó´ÎÊıÀÛ¼Óµ¼ÖÂ·ÖÊıÆ«µÍ¡¢
-        /// isSkip ²ĞÁôÈÃ±¾²½·ÖÊıÓÀÔ¶²»¼ÆÈë×Ü·Ö¡¢²Ù×÷Í£ÁôÔÚ Complete ½×¶ÎÊ¹µã»÷±»ºöÂÔ¡£
+        /// å¤ä½æœ¬æ­¥éª¤ä¸æ‰€æœ‰å­æ“ä½œçš„è¿è¡Œæ—¶çŠ¶æ€ã€‚
+        /// ä¿®å¤åŸå› ï¼šè¿è¡Œæ—¶çŠ¶æ€å¯„ç”Ÿåœ¨ TaskStepDataï¼ˆScriptableObjectï¼‰ä¸Šï¼Œ
+        /// é‡ç©åŒä¸€ä»»åŠ¡æ—¶è‹¥ä¸æ¸…ç†ï¼Œä¼šå‡ºç°é”™è¯¯æ¬¡æ•°ç´¯åŠ å¯¼è‡´åˆ†æ•°åä½ã€
+        /// isSkip æ®‹ç•™è®©æœ¬æ­¥åˆ†æ•°æ°¸è¿œä¸è®¡å…¥æ€»åˆ†ã€æ“ä½œåœç•™åœ¨ Complete é˜¶æ®µä½¿ç‚¹å‡»è¢«å¿½ç•¥ã€‚
         /// </summary>
         private void ResetStepState()
         {
@@ -106,16 +106,16 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             string id = GetStepID();
             if (Runtime == null) Runtime = new TaskStepRuntime(id, baseScore);
             else Runtime.Reset(id, baseScore);
-            Runtime.beginTime = 0f;   // P2£ºÕæÕıµÄ¡°½øÈë²½ÖèÊ±¼ä¡±ÔÚ OnEnter ÀïÂä£¬·ñÔò»á°ÑÈÎÎñ¿ªÊ¼Ê±¼äµ±³É²½ÖèºÄÊ±Æğµã
+            Runtime.beginTime = 0f;   // P2ï¼šçœŸæ­£çš„â€œè¿›å…¥æ­¥éª¤æ—¶é—´â€åœ¨ OnEnter é‡Œè½ï¼Œå¦åˆ™ä¼šæŠŠä»»åŠ¡å¼€å§‹æ—¶é—´å½“æˆæ­¥éª¤è€—æ—¶èµ·ç‚¹
             if (operationGroup != null) operationGroup.ResetOperation();
         }
 
         public virtual void OnEnter()
         {
             taskState = TaskState.InProgress;
-            if (taskDataManager != null) taskDataManager.RecordStepAction(GetStepID(), "Step_Enter", true, "½øÈë²½Öè");   // P2£º¶¯×÷¼¶ÈÕÖ¾
-            if (Runtime != null) Runtime.beginTime = Time.time;   // P2£º²½ÖèºÄÊ±´ÓÕâ¸öµã¿ªÊ¼Ëã£¨³¬Ê±¿Û·ÖÒÀÀµËü£©
-            //Debug.Log("¼¤»îÊµÌå×é");
+            if (taskDataManager != null) taskDataManager.RecordStepAction(GetStepID(), "Step_Enter", true, "è¿›å…¥æ­¥éª¤");   // P2ï¼šåŠ¨ä½œçº§æ—¥å¿—
+            if (Runtime != null) Runtime.beginTime = Time.time;   // P2ï¼šæ­¥éª¤è€—æ—¶ä»è¿™ä¸ªç‚¹å¼€å§‹ç®—ï¼ˆè¶…æ—¶æ‰£åˆ†ä¾èµ–å®ƒï¼‰
+            //Debug.Log("æ¿€æ´»å®ä½“ç»„");
             if (entitys != null)
             {
                 foreach (var item in entitys)
@@ -136,7 +136,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public virtual void OnExit()
         {
             taskState = TaskState.TaskComplete;
-            //Debug.Log("¹Ø±ÕÊµÌå×é");
+            //Debug.Log("å…³é—­å®ä½“ç»„");
             //foreach (var item in entitys)
             //{
             //    item.DisableInteractive();
@@ -144,26 +144,26 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         }
 
         /// <summary>
-        /// ²Ù×÷²½ÖèÍê³É»Øµ÷
+        /// æ“ä½œæ­¥éª¤å®Œæˆå›è°ƒ
         /// </summary>
         public virtual void Submit()
         {
-            // ËµÃ÷£ºSubmit »áÏÈ°Ñ×´Ì¬ÖÃÎª TaskComplete ÔÙµ÷ÓÃ±¾·½·¨£¨±£ÁôÅĞ¶ÏÒÔ¼æÈİÍâ²¿Ö±½Óµ÷ÓÃ£©
-            if (taskState == TaskState.TaskComplete) return;   // ĞŞ¸´£º·ÀÖ¹ÖØ¸´Ìá½»£¨Ìø¹ıÓëÖ´ĞĞ»Øµ÷µş¼Ó£©µ¼ÖÂ²½ÖèÖØ¸´ÍÆ½ø¡¢ÖØ¸´¼Æ·Ö
+            // è¯´æ˜ï¼šSubmit ä¼šå…ˆæŠŠçŠ¶æ€ç½®ä¸º TaskComplete å†è°ƒç”¨æœ¬æ–¹æ³•ï¼ˆä¿ç•™åˆ¤æ–­ä»¥å…¼å®¹å¤–éƒ¨ç›´æ¥è°ƒç”¨ï¼‰
+            if (taskState == TaskState.TaskComplete) return;   // ä¿®å¤ï¼šé˜²æ­¢é‡å¤æäº¤ï¼ˆè·³è¿‡ä¸æ‰§è¡Œå›è°ƒå åŠ ï¼‰å¯¼è‡´æ­¥éª¤é‡å¤æ¨è¿›ã€é‡å¤è®¡åˆ†
             taskState = TaskState.TaskComplete;
-            //Íê³É
+            //å®Œæˆ
             if (Runtime == null) Runtime = new TaskStepRuntime(GetStepID(), taskStepData != null ? taskStepData.baseScore : 0f);
-            Runtime.endTime = Time.time;   // P2£ºÏÈÂä½áÊøÊ±¼ä£¬ÆÀ·Ö²ßÂÔ²ÅÄÜÄÃµ½±¾´ÎºÄÊ±£¨³¬Ê±¿Û·Ö£©
+            Runtime.endTime = Time.time;   // P2ï¼šå…ˆè½ç»“æŸæ—¶é—´ï¼Œè¯„åˆ†ç­–ç•¥æ‰èƒ½æ‹¿åˆ°æœ¬æ¬¡è€—æ—¶ï¼ˆè¶…æ—¶æ‰£åˆ†ï¼‰
             Runtime.score = HandleScore();
             Runtime.isCompleted = true;
             if (taskDataManager != null) taskDataManager.CompleteStep(this);
-            else Debug.LogError($"{GetStepID()} È±ÉÙ TaskDataManager£¬ÎŞ·¨ÍÆ½øÁ÷³Ì");
+            else Debug.LogError($"{GetStepID()} ç¼ºå°‘ TaskDataManagerï¼Œæ— æ³•æ¨è¿›æµç¨‹");
         }
 
         /// <summary>
-        /// P2£º°´ÆÀ·Ö²ßÂÔ¼ÆËãµÃ·Ö¡£
-        /// ÊµÏÖÁË IScorePolicyEx µÄ²ßÂÔ¿ÉÒÔ¶îÍâÄÃµ½±¾²½ºÄÊ±£¨ÄÑ¶È·Ö¼¶/³¬Ê±¿Û·Ö£©£»
-        /// Ö»ÊµÏÖÁË IScorePolicy µÄ¾É²ßÂÔĞĞÎªÍêÈ«²»±ä¡£
+        /// P2ï¼šæŒ‰è¯„åˆ†ç­–ç•¥è®¡ç®—å¾—åˆ†ã€‚
+        /// å®ç°äº† IScorePolicyEx çš„ç­–ç•¥å¯ä»¥é¢å¤–æ‹¿åˆ°æœ¬æ­¥è€—æ—¶ï¼ˆéš¾åº¦åˆ†çº§/è¶…æ—¶æ‰£åˆ†ï¼‰ï¼›
+        /// åªå®ç°äº† IScorePolicy çš„æ—§ç­–ç•¥è¡Œä¸ºå®Œå…¨ä¸å˜ã€‚
         /// </summary>
         private float EvaluateScore()
         {
@@ -184,14 +184,14 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             if (Runtime == null) Runtime = new TaskStepRuntime(GetStepID(), taskStepData != null ? taskStepData.baseScore : 0f);
             Runtime.errors++;
-            if (taskDataManager != null) taskDataManager.RecordStepAction(GetStepID(), "Step_Error", false, "µÚ " + Runtime.errors + " ´Î´íÎó");   // P2£º¶¯×÷¼¶ÈÕÖ¾
+            if (taskDataManager != null) taskDataManager.RecordStepAction(GetStepID(), "Step_Error", false, "ç¬¬ " + Runtime.errors + " æ¬¡é”™è¯¯");   // P2ï¼šåŠ¨ä½œçº§æ—¥å¿—
         }
 
         public virtual float HandleScore()
         {
-            // ËµÃ÷£ºSubmit »áÏÈ°Ñ×´Ì¬ÖÃÎª TaskComplete ÔÙµ÷ÓÃ±¾·½·¨£¨±£ÁôÅĞ¶ÏÒÔ¼æÈİÍâ²¿Ö±½Óµ÷ÓÃ£©
+            // è¯´æ˜ï¼šSubmit ä¼šå…ˆæŠŠçŠ¶æ€ç½®ä¸º TaskComplete å†è°ƒç”¨æœ¬æ–¹æ³•ï¼ˆä¿ç•™åˆ¤æ–­ä»¥å…¼å®¹å¤–éƒ¨ç›´æ¥è°ƒç”¨ï¼‰
             if (taskState == TaskState.TaskComplete)
-                // ÆÀ·Ö¹æÔòÓÉ ScorePolicy ¾ö¶¨£¨Ä¬ÈÏ£º0 ´íÂú·Ö / 1 ´í°ë·Ö / 2 ´í¼°ÒÔÉÏ 0 ·Ö£»isSkip µÄ²½Öè²»¼ÆÈë×Ü·Ö£©
+                // è¯„åˆ†è§„åˆ™ç”± ScorePolicy å†³å®šï¼ˆé»˜è®¤ï¼š0 é”™æ»¡åˆ† / 1 é”™åŠåˆ† / 2 é”™åŠä»¥ä¸Š 0 åˆ†ï¼›isSkip çš„æ­¥éª¤ä¸è®¡å…¥æ€»åˆ†ï¼‰
             return EvaluateScore();
             else return 0;
         }
@@ -200,7 +200,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         {
             if (operationGroup == null)
             {
-                Debug.Log($"ÈÎÎñid:{taskStepData.stepID} Ã»ÓĞÈÎÎñ¼ì²é×é");
+                Debug.Log($"ä»»åŠ¡id:{taskStepData.stepID} æ²¡æœ‰ä»»åŠ¡æ£€æŸ¥ç»„");
                 return;
             }
             operationGroup.OperationCheck(arg, this);
@@ -208,22 +208,22 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         public void OperationInstructions()
         {
-            if (operationGroup == null) { Debug.LogWarning($"{taskStepData.stepID} Î´ÅäÖÃ²Ù×÷¼ì²é×é£¬ÎŞ·¨Ö´ĞĞÒıµ¼"); return; }   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+            if (operationGroup == null) { Debug.LogWarning($"{taskStepData.stepID} æœªé…ç½®æ“ä½œæ£€æŸ¥ç»„ï¼Œæ— æ³•æ‰§è¡Œå¼•å¯¼"); return; }   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
             operationGroup.OperationInstructions();
         }
 
         public void SkipTask()
         {
-            if (operationGroup != null && operationGroup.operationPhase == OperationPhase.Execute)   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+            if (operationGroup != null && operationGroup.operationPhase == OperationPhase.Execute)   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
             {
-                Debug.Log("²½ÖèÖ´ĞĞÖĞ£¬½ûÖ¹Ìø¹ı");
-                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("²½ÖèÖ´ĞĞÖĞ£¬½ûÖ¹Ìø¹ı!!!"));
+                Debug.Log("æ­¥éª¤æ‰§è¡Œä¸­ï¼Œç¦æ­¢è·³è¿‡");
+                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("æ­¥éª¤æ‰§è¡Œä¸­ï¼Œç¦æ­¢è·³è¿‡!!!"));
                 return;
             }
             else
-                if (operationGroup != null) operationGroup.OperationSkip();   // ĞŞ¸´£º¿ÕÒıÓÃ±£»¤
+                if (operationGroup != null) operationGroup.OperationSkip();   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
             if (Runtime != null) Runtime.isSkip = true;
-            if (taskDataManager != null) taskDataManager.RecordStepAction(GetStepID(), "Step_Skip", true, "Ìø¹ı²½Öè");   // P2£º¶¯×÷¼¶ÈÕÖ¾
+            if (taskDataManager != null) taskDataManager.RecordStepAction(GetStepID(), "Step_Skip", true, "è·³è¿‡æ­¥éª¤");   // P2ï¼šåŠ¨ä½œçº§æ—¥å¿—
             Submit();
         }
 

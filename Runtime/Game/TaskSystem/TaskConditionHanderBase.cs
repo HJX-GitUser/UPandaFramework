@@ -1,28 +1,28 @@
-using System.Collections;
+锘縰sing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UPandaGF.RunTime.TaskSystem
 {
     /// <summary>
-    /// 任务完成条件处理
+    /// 浠诲姟瀹屾垚鏉′欢澶勭悊
     /// </summary>
     public abstract class TaskConditionHanderBase<T> where T : TaskConditionDataBase
     {
         /// <summary>
-        /// 条件配置
+        /// 鏉′欢閰嶇疆
         /// </summary>
         public T configData;
         /// <summary>
-        /// 条件判断
+        /// 鏉′欢鍒ゆ柇
         /// </summary>
-        /// <param name="data">执行数据</param>
+        /// <param name="data">鎵ц鏁版嵁</param>
         /// <returns></returns>
         public abstract bool IsConditionMet(T data);
     }
 
     /// <summary>
-    /// 任务条件数据
+    /// 浠诲姟鏉′欢鏁版嵁
     /// </summary>
     [System.Serializable]
     public class TaskConditionDataBase

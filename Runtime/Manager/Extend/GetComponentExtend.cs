@@ -1,14 +1,14 @@
-using System;
+ï»¿using System;
 using System.Reflection;
 using UnityEngine;
 
 /// <summary>
-/// ×é¼ş»ñÈ¡·½Ê½À©Õ¹
+/// ç»„ä»¶è·å–æ–¹å¼æ‰©å±•
 /// </summary>
 public static class GetComponentExtend
 {
     /// <summary>
-    /// »ñÈ¡×é¼şµÄÀ©Õ¹·½·¨
+    /// è·å–ç»„ä»¶çš„æ‰©å±•æ–¹æ³•
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="obj"></param>
@@ -36,42 +36,42 @@ public static class GetComponentExtend
     }
 
     /// <summary>
-    /// Í¨¹ı·´ÉäÌí¼ÓÈÈ¸ü×é¼ş
+    /// é€šè¿‡åå°„æ·»åŠ çƒ­æ›´ç»„ä»¶
     /// </summary>
-    /// <param name="gameObject">ÒªÌí¼Ó×é¼şµÄGameObject</param>
-    /// <param name="hotfixTypeName">ÈÈ¸üÀàĞÍÈ«Ãû£¨°üº¬ÃüÃû¿Õ¼ä£©</param>
-    /// <returns>Ìí¼ÓµÄ×é¼ş</returns>
+    /// <param name="gameObject">è¦æ·»åŠ ç»„ä»¶çš„GameObject</param>
+    /// <param name="hotfixTypeName">çƒ­æ›´ç±»å‹å…¨åï¼ˆåŒ…å«å‘½åç©ºé—´ï¼‰</param>
+    /// <returns>æ·»åŠ çš„ç»„ä»¶</returns>
     public static Component AddHotFixComponent(this GameObject gameObject, Assembly hotfixAssembly, string hotfixTypeName)
     {
         if (gameObject == null)
         {
-            Debug.LogError("GameObject²»ÄÜÎª¿Õ");
+            Debug.LogError("GameObjectä¸èƒ½ä¸ºç©º");
             return null;
         }
 
-        // 1. ²éÕÒÈÈ¸ü³ÌĞò¼¯
+        // 1. æŸ¥æ‰¾çƒ­æ›´ç¨‹åºé›†
         if (hotfixAssembly == null)
         {
-            Debug.LogError("Î´ÕÒµ½ÈÈ¸ü³ÌĞò¼¯");
+            Debug.LogError("æœªæ‰¾åˆ°çƒ­æ›´ç¨‹åºé›†");
             return null;
         }
 
-        // 2. »ñÈ¡ÈÈ¸üÀàĞÍ
+        // 2. è·å–çƒ­æ›´ç±»å‹
         Type hotfixType = hotfixAssembly.GetType(hotfixTypeName);
         if (hotfixType == null)
         {
-            Debug.LogError($"Î´ÕÒµ½ÈÈ¸üÀàĞÍ: {hotfixTypeName}");
+            Debug.LogError($"æœªæ‰¾åˆ°çƒ­æ›´ç±»å‹: {hotfixTypeName}");
             return null;
         }
 
-        // 3. ¼ì²éÊÇ·ñÊÇComponentÀàĞÍ
+        // 3. æ£€æŸ¥æ˜¯å¦æ˜¯Componentç±»å‹
         if (!typeof(Component).IsAssignableFrom(hotfixType))
         {
-            Debug.LogError($"{hotfixTypeName} ²»ÊÇComponentÀàĞÍ");
+            Debug.LogError($"{hotfixTypeName} ä¸æ˜¯Componentç±»å‹");
             return null;
         }
 
-        // 4. Í¨¹ı·´Éäµ÷ÓÃAddComponent
+        // 4. é€šè¿‡åå°„è°ƒç”¨AddComponent
         MethodInfo addComponentMethod = typeof(GameObject).GetMethod("AddComponent",
             BindingFlags.Public | BindingFlags.Instance,
             null,
@@ -80,15 +80,15 @@ public static class GetComponentExtend
 
         if (addComponentMethod == null)
         {
-            Debug.LogError("ÕÒ²»µ½AddComponent·½·¨");
+            Debug.LogError("æ‰¾ä¸åˆ°AddComponentæ–¹æ³•");
             return null;
         }
 
-        // 5. µ÷ÓÃ·ºĞÍ·½·¨
+        // 5. è°ƒç”¨æ³›å‹æ–¹æ³•
         MethodInfo genericAddComponent = addComponentMethod.MakeGenericMethod(hotfixType);
         Component component = genericAddComponent.Invoke(gameObject, null) as Component;
 
-        Debug.Log($"³É¹¦Ìí¼ÓÈÈ¸ü×é¼ş: {hotfixTypeName}");
+        Debug.Log($"æˆåŠŸæ·»åŠ çƒ­æ›´ç»„ä»¶: {hotfixTypeName}");
         return component;
     }
 }

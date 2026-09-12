@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -8,36 +8,36 @@ using UnityEngine;
 namespace UPandaGF
 {
     /// <summary>
-    /// ¿ò¼ÜÈÕÖ¾ÃÅÃæ¡£
+    /// æ¡†æ¶æ—¥å¿—é—¨é¢ã€‚
     ///
-    /// ±àÒëÆÚÌŞ³ı£ºËùÓĞ¹«¿ª API ¶¼´ø [Conditional("OPEN_PLOG")]£¬Î´¶¨Òå¸ÃºêÊ±**µ÷ÓÃµã»á±»±àÒëÆ÷ÕûÌåÒÆ³ı**
-    /// £¨Á¬Êµ²Î±í´ïÊ½¶¼²»ÇóÖµ£©£¬Òò´Ë¹Ø±ÕÈÕÖ¾ÊÇÁãÔËĞĞÊ±¿ªÏúµÄ¡£
-    /// ºê¿ª¹Ø£º²Ëµ¥ UPandaGF -> ÈÕÖ¾ÏµÍ³ -> Æô¶¯ÈÕÖ¾ / ÌŞ³ıÈÕÖ¾£¨¶Ô Standalone/iOS/Android/WebGL ËÄ¸öÆ½Ì¨×éÉúĞ§£©¡£
+    /// ç¼–è¯‘æœŸå‰”é™¤ï¼šæ‰€æœ‰å…¬å¼€ API éƒ½å¸¦ [Conditional("OPEN_PLOG")]ï¼Œæœªå®šä¹‰è¯¥å®æ—¶**è°ƒç”¨ç‚¹ä¼šè¢«ç¼–è¯‘å™¨æ•´ä½“ç§»é™¤**
+    /// ï¼ˆè¿å®å‚è¡¨è¾¾å¼éƒ½ä¸æ±‚å€¼ï¼‰ï¼Œå› æ­¤å…³é—­æ—¥å¿—æ˜¯é›¶è¿è¡Œæ—¶å¼€é”€çš„ã€‚
+    /// å®å¼€å…³ï¼šèœå• UPandaGF -> æ—¥å¿—ç³»ç»Ÿ -> å¯åŠ¨æ—¥å¿— / å‰”é™¤æ—¥å¿—ï¼ˆå¯¹ Standalone/iOS/Android/WebGL å››ä¸ªå¹³å°ç»„ç”Ÿæ•ˆï¼‰ã€‚
     ///
-    /// ÔËĞĞÊ±¿ª¹Ø£º<see cref="cfg"/> ÀïµÄ openLog / openWarning / openError / maxLogLength µÈ×Ö¶Î£¬
-    /// ÅäÖÃÀ´×Ô StreamingAssets/Data/LogConfig.json£¨ÓÉ DebugerInit ¶ÁÈ¡ºóµ÷ÓÃ InitLog ¸²¸Ç£©¡£
+    /// è¿è¡Œæ—¶å¼€å…³ï¼š<see cref="cfg"/> é‡Œçš„ openLog / openWarning / openError / maxLogLength ç­‰å­—æ®µï¼Œ
+    /// é…ç½®æ¥è‡ª StreamingAssets/Data/LogConfig.jsonï¼ˆç”± DebugerInit è¯»å–åè°ƒç”¨ InitLog è¦†ç›–ï¼‰ã€‚
     ///
-    /// ×¢Òâ£ºÊÂ¼ş²ÎÊıÊÇ object£¬ÖµÀàĞÍ»á×°Ïä£»¸ßÆµÂ·¾¶ÇëÏÈÅĞ¶ÏÔÙÆ´×Ö·û´®£¬»ò¸ÄÓÃ Reporter Ãæ°å¹Û²ì¡£
+    /// æ³¨æ„ï¼šäº‹ä»¶å‚æ•°æ˜¯ objectï¼Œå€¼ç±»å‹ä¼šè£…ç®±ï¼›é«˜é¢‘è·¯å¾„è¯·å…ˆåˆ¤æ–­å†æ‹¼å­—ç¬¦ä¸²ï¼Œæˆ–æ”¹ç”¨ Reporter é¢æ¿è§‚å¯Ÿã€‚
     /// </summary>
     public static class PLogger
     {
         /// <summary>
-        /// ÔËĞĞÅäÖÃ¡£**Ä¬ÈÏ¸øÒ»¸öÊµÀı**£¬±£Ö¤"ÅäÖÃÃ»¼ÓÔØ / ¼ÓÔØÊ§°Ü"Ê±²»»áÈÃÕû¸öÈÕÖ¾ÏµÍ³¾²Ä¬Ê§Ğ§
-        /// £¨Ô­ÊµÏÖ cfg Îª null Ê±ËùÓĞ API Ö±½Ó return ÇÒÃ»ÓĞÈÎºÎÌáÊ¾ ¡ª¡ª ³ö°üºó"Ò»ÌõÈÕÖ¾¶¼Ã»ÓĞ"¶à°ëÔ´ÓÚ´Ë£©¡£
-        /// ÓÉ DebugerInit ³É¹¦¶Áµ½ LogConfig.json ºóÍ¨¹ı <see cref="InitLog"/> ¸²¸Ç¡£
+        /// è¿è¡Œé…ç½®ã€‚**é»˜è®¤ç»™ä¸€ä¸ªå®ä¾‹**ï¼Œä¿è¯"é…ç½®æ²¡åŠ è½½ / åŠ è½½å¤±è´¥"æ—¶ä¸ä¼šè®©æ•´ä¸ªæ—¥å¿—ç³»ç»Ÿé™é»˜å¤±æ•ˆ
+        /// ï¼ˆåŸå®ç° cfg ä¸º null æ—¶æ‰€æœ‰ API ç›´æ¥ return ä¸”æ²¡æœ‰ä»»ä½•æç¤º â€”â€” å‡ºåŒ…å"ä¸€æ¡æ—¥å¿—éƒ½æ²¡æœ‰"å¤šåŠæºäºæ­¤ï¼‰ã€‚
+        /// ç”± DebugerInit æˆåŠŸè¯»åˆ° LogConfig.json åé€šè¿‡ <see cref="InitLog"/> è¦†ç›–ã€‚
         /// </summary>
         public static LogConfig cfg = new LogConfig();
 
-        /// <summary>ÊÇ·ñÒÑÓÉÍâ²¿£¨DebugerInit£©³É¹¦¼ÓÔØ¹ıÅäÖÃ¡£Î´¶¨Òå OPEN_PLOG Ê±ºãÎª false£¨´ËÊ±ÈÕÖ¾µ÷ÓÃ±¾ÉíÒÑ±»ÌŞ³ı£©</summary>
+        /// <summary>æ˜¯å¦å·²ç”±å¤–éƒ¨ï¼ˆDebugerInitï¼‰æˆåŠŸåŠ è½½è¿‡é…ç½®ã€‚æœªå®šä¹‰ OPEN_PLOG æ—¶æ’ä¸º falseï¼ˆæ­¤æ—¶æ—¥å¿—è°ƒç”¨æœ¬èº«å·²è¢«å‰”é™¤ï¼‰</summary>
         public static bool IsInitialized { get; private set; }
 
         private const string NullText = "null";
 
-        /// <summary>[ThreadStatic] ¸´ÓÃ StringBuilder£ºÈÕÖ¾¿ÉÄÜÀ´×ÔÈÎÒâÏß³Ì£¬±ÜÃâÃ¿ÌõÈÕÖ¾¶¼·ÖÅäÒ»¸ö StringBuilder</summary>
+        /// <summary>[ThreadStatic] å¤ç”¨ StringBuilderï¼šæ—¥å¿—å¯èƒ½æ¥è‡ªä»»æ„çº¿ç¨‹ï¼Œé¿å…æ¯æ¡æ—¥å¿—éƒ½åˆ†é…ä¸€ä¸ª StringBuilder</summary>
         [ThreadStatic]
         private static StringBuilder s_builder;
 
-        #region ³õÊ¼»¯
+        #region åˆå§‹åŒ–
 
         [Conditional("OPEN_PLOG")]
         public static void InitLog(LogConfig _cfg = null)
@@ -45,13 +45,13 @@ namespace UPandaGF
             cfg = _cfg == null ? new LogConfig() : _cfg;
             IsInitialized = true;
 
-            Log("ÈÕÖ¾ÏµÍ³³õÊ¼»¯...");
+            Log("æ—¥å¿—ç³»ç»Ÿåˆå§‹åŒ–...");
             if (!cfg.logSave) return;
 
-            if (cfg.saveOverwrite) Log($"<color=yellow>ÈÕÖ¾¸²¸Ç:</color>{cfg.logFileSavePath}{cfg.LogFileName}");
-            else Log($"<color=yellow>ÈÕÖ¾Êä³öÂ·¾¶:</color>{cfg.logFileSavePath}{cfg.LogFileName}");
+            if (cfg.saveOverwrite) Log($"<color=yellow>æ—¥å¿—è¦†ç›–:</color>{cfg.logFileSavePath}{cfg.LogFileName}");
+            else Log($"<color=yellow>æ—¥å¿—è¾“å‡ºè·¯å¾„:</color>{cfg.logFileSavePath}{cfg.LogFileName}");
 
-            // ĞŞ¸´£ºÔ­ÊµÏÖÕâÀïÃ»ÓĞÈÎºÎÒì³£±£»¤£¬Ä¿Â¼²»¿ÉĞ´/ÎÄ¼ş±»Õ¼ÓÃ»áÈÃ InitLog Ö±½ÓÖĞ¶Ï
+            // ä¿®å¤ï¼šåŸå®ç°è¿™é‡Œæ²¡æœ‰ä»»ä½•å¼‚å¸¸ä¿æŠ¤ï¼Œç›®å½•ä¸å¯å†™/æ–‡ä»¶è¢«å ç”¨ä¼šè®© InitLog ç›´æ¥ä¸­æ–­
             try
             {
                 GameObject logObj = new GameObject("LogHelper");
@@ -61,13 +61,13 @@ namespace UPandaGF
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogError($"[PLogger] ÈÕÖ¾ÎÄ¼şÄ£¿é³õÊ¼»¯Ê§°Ü£¬ÒÑÌø¹ıÎÄ¼şÂäÅÌ£º{e}");
+                UnityEngine.Debug.LogError($"[PLogger] æ—¥å¿—æ–‡ä»¶æ¨¡å—åˆå§‹åŒ–å¤±è´¥ï¼Œå·²è·³è¿‡æ–‡ä»¶è½ç›˜ï¼š{e}");
             }
         }
 
         #endregion
 
-        #region ¼¶±ğ¿ª¹Ø
+        #region çº§åˆ«å¼€å…³
 
         private static bool CanLog { get { return cfg != null && cfg.openLog; } }
         private static bool CanWarning { get { return CanLog && cfg.openWarning; } }
@@ -75,7 +75,7 @@ namespace UPandaGF
 
         #endregion
 
-        #region ÆÕÍ¨ÈÕÖ¾
+        #region æ™®é€šæ—¥å¿—
 
         [Conditional("OPEN_PLOG")]
         public static void Log(object obj)
@@ -120,8 +120,8 @@ namespace UPandaGF
             UnityEngine.Debug.Log(GenerateLog($"<color=cyan>{Safe(obj)}</color>"));
         }
 
-        /// <summary>´ø¸ñÊ½»¯µÄÈÕÖ¾¡£×¢Òâ£ºÏÈ¸ñÊ½»¯ÔÙÆ´Ç°×º£¨Ô­ÊµÏÖ°ÑÇ°×ºÆ´½ø¸ñÊ½´®ÔÙ½»¸ø Debug.LogFormat£¬
-        /// Ç°×ºÀïÈôº¬ { } »ò {0} »áÅ× FormatException / ±»²ÎÊıÌæ»»£©¡£</summary>
+        /// <summary>å¸¦æ ¼å¼åŒ–çš„æ—¥å¿—ã€‚æ³¨æ„ï¼šå…ˆæ ¼å¼åŒ–å†æ‹¼å‰ç¼€ï¼ˆåŸå®ç°æŠŠå‰ç¼€æ‹¼è¿›æ ¼å¼ä¸²å†äº¤ç»™ Debug.LogFormatï¼Œ
+        /// å‰ç¼€é‡Œè‹¥å« { } æˆ– {0} ä¼šæŠ› FormatException / è¢«å‚æ•°æ›¿æ¢ï¼‰ã€‚</summary>
         [Conditional("OPEN_PLOG")]
         public static void LogFormat(object obj, params object[] args)
         {
@@ -157,7 +157,7 @@ namespace UPandaGF
             UnityEngine.Debug.LogError(GenerateLog(Format(Safe(obj), args)));
         }
 
-        /// <summary>Òì³£ÈÕÖ¾£¨×Ö·û´®ĞÎÊ½£©£¬Óë Reporter µÄ LogType.Exception ¶ÔÓ¦</summary>
+        /// <summary>å¼‚å¸¸æ—¥å¿—ï¼ˆå­—ç¬¦ä¸²å½¢å¼ï¼‰ï¼Œä¸ Reporter çš„ LogType.Exception å¯¹åº”</summary>
         [Conditional("OPEN_PLOG")]
         public static void LogException(object obj)
         {
@@ -165,7 +165,7 @@ namespace UPandaGF
             UnityEngine.Debug.LogError(GenerateLog($"<color=orange>[Exception]</color> {Safe(obj)}"));
         }
 
-        /// <summary>Òì³£ÈÕÖ¾£¨Exception ¶ÔÏó£¬Unity »á¸½´øÍêÕû¶ÑÕ»£©</summary>
+        /// <summary>å¼‚å¸¸æ—¥å¿—ï¼ˆException å¯¹è±¡ï¼ŒUnity ä¼šé™„å¸¦å®Œæ•´å †æ ˆï¼‰</summary>
         [Conditional("OPEN_PLOG")]
         public static void LogException(Exception ex)
         {
@@ -180,7 +180,7 @@ namespace UPandaGF
 
         #endregion
 
-        #region ÄÚ²¿
+        #region å†…éƒ¨
 
         private static string Safe(object obj)
         {
@@ -189,7 +189,7 @@ namespace UPandaGF
             return text ?? NullText;
         }
 
-        /// <summary>¸ñÊ½»¯£ºÊ§°Ü²»Å×Òì³££¨ÈÕÖ¾ÏµÍ³²»Ó¦¸ÃÒòÎªÒ»ÌõĞ´´íµÄ¸ñÊ½´®°ÑÒµÎñ´ò¶Ï£©</summary>
+        /// <summary>æ ¼å¼åŒ–ï¼šå¤±è´¥ä¸æŠ›å¼‚å¸¸ï¼ˆæ—¥å¿—ç³»ç»Ÿä¸åº”è¯¥å› ä¸ºä¸€æ¡å†™é”™çš„æ ¼å¼ä¸²æŠŠä¸šåŠ¡æ‰“æ–­ï¼‰</summary>
         private static string Format(string format, object[] args)
         {
             if (args == null || args.Length == 0) return format;
@@ -199,17 +199,17 @@ namespace UPandaGF
             }
             catch (FormatException)
             {
-                return format + "  [PLogger] ¸ñÊ½»¯Ê§°Ü£º¸ñÊ½´®Óë²ÎÊı²»Æ¥Åä";
+                return format + "  [PLogger] æ ¼å¼åŒ–å¤±è´¥ï¼šæ ¼å¼ä¸²ä¸å‚æ•°ä¸åŒ¹é…";
             }
         }
 
-        /// <summary>°´ cfg.maxLogLength ½Ø¶Ï³¬³¤ÈÕÖ¾£¨0 = ²»ÏŞ£©</summary>
+        /// <summary>æŒ‰ cfg.maxLogLength æˆªæ–­è¶…é•¿æ—¥å¿—ï¼ˆ0 = ä¸é™ï¼‰</summary>
         private static string Clip(string log)
         {
             if (log == null) return NullText;
             int max = cfg != null ? cfg.maxLogLength : 0;
             if (max <= 0 || log.Length <= max) return log;
-            return log.Substring(0, max) + $"...[ÒÑ½Ø¶Ï£¬Ô­³¤ {log.Length}]";
+            return log.Substring(0, max) + $"...[å·²æˆªæ–­ï¼ŒåŸé•¿ {log.Length}]";
         }
 
         private static string GenerateLog(string log)
@@ -228,7 +228,7 @@ namespace UPandaGF
             if (cfg != null)
             {
                 if (cfg.addHeadFix) sb.Append('<').Append(cfg.logHeadFix).Append(">  ");
-                // ĞŞ¸´£ºÔ­ÊµÏÖÓÃ hh£¨12 Ğ¡Ê±ÖÆ£¬ÇÒÃ»ÓĞ AM/PM£©¡ª¡ª 13:20 »áÏÔÊ¾³É 01:20£¬ÅÅ²éÊ±¼äÏß±ØÈ»²È¿Ó
+                // ä¿®å¤ï¼šåŸå®ç°ç”¨ hhï¼ˆ12 å°æ—¶åˆ¶ï¼Œä¸”æ²¡æœ‰ AM/PMï¼‰â€”â€” 13:20 ä¼šæ˜¾ç¤ºæˆ 01:20ï¼Œæ’æŸ¥æ—¶é—´çº¿å¿…ç„¶è¸©å‘
                 if (cfg.openTime) sb.Append(DateTime.Now.ToString("HH:mm:ss.fff")).Append("  ");
                 if (cfg.showThreadID) sb.Append("ThreadID:").Append(Thread.CurrentThread.ManagedThreadId).Append('\n');
             }

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 using UPandaGF;
 
 /// <summary>
-/// HTTP ÇëÇó·½·¨
+/// HTTP è¯·æ±‚æ–¹æ³•
 /// </summary>
 public enum HttpRequestType
 {
@@ -17,57 +17,57 @@ public enum HttpRequestType
 }
 
 /// <summary>
-/// µ¥¸ö HTTP ÇëÇóµÄÊı¾İ°ü£¨³éÏó»ùÀà£©¡£
-/// Ö°Ôğ£º±£´æÇëÇó²ÎÊı¡¢´´½¨/Ïú»Ùµ×²ã UnityWebRequest¡¢¶ÔÍâ±©Â¶¸÷Àà»Øµ÷¡£
-/// ¾ßÌåÏìÓ¦ÀàĞÍµÄ½âÎöÓÉ×ÓÀàÊµÏÖ£¨¼û GenericHttpPack&lt;T&gt;£©¡£
+/// å•ä¸ª HTTP è¯·æ±‚çš„æ•°æ®åŒ…ï¼ˆæŠ½è±¡åŸºç±»ï¼‰ã€‚
+/// èŒè´£ï¼šä¿å­˜è¯·æ±‚å‚æ•°ã€åˆ›å»º/é”€æ¯åº•å±‚ UnityWebRequestã€å¯¹å¤–æš´éœ²å„ç±»å›è°ƒã€‚
+/// å…·ä½“å“åº”ç±»å‹çš„è§£æç”±å­ç±»å®ç°ï¼ˆè§ GenericHttpPack&lt;T&gt;ï¼‰ã€‚
 /// </summary>
 public abstract class HttpPack
 {
-    /// <summary>ÇëÇóµØÖ·</summary>
+    /// <summary>è¯·æ±‚åœ°å€</summary>
     public string Url { get; set; }
 
-    /// <summary>ÇëÇó·½·¨</summary>
+    /// <summary>è¯·æ±‚æ–¹æ³•</summary>
     public HttpRequestType Type { get; set; }
 
-    /// <summary>ÇëÇóÌå£¨JSON ×Ö·û´®£»GET »áºöÂÔ£¬POST / PUT / DELETE ÓĞĞ§£©</summary>
+    /// <summary>è¯·æ±‚ä½“ï¼ˆJSON å­—ç¬¦ä¸²ï¼›GET ä¼šå¿½ç•¥ï¼ŒPOST / PUT / DELETE æœ‰æ•ˆï¼‰</summary>
     public string Parameters { get; set; }
 
-    /// <summary>ÇëÇóÌåÔ­Ê¼×Ö½Ú£»ÉèÖÃºóÓÅÏÈÓÚ Parameters£¨ÓÃÓÚÉÏ´«¶ş½øÖÆÊı¾İ£©</summary>
+    /// <summary>è¯·æ±‚ä½“åŸå§‹å­—èŠ‚ï¼›è®¾ç½®åä¼˜å…ˆäº Parametersï¼ˆç”¨äºä¸Šä¼ äºŒè¿›åˆ¶æ•°æ®ï¼‰</summary>
     public byte[] BodyRaw { get; set; }
 
-    /// <summary>Ê§°ÜºóµÄÖØÊÔ´ÎÊı£¨²»º¬Ê×´ÎÇëÇó£©£¬Ä¬ÈÏ 3£¬¼´×î¶àÇëÇó 1+3 ´Î</summary>
+    /// <summary>å¤±è´¥åçš„é‡è¯•æ¬¡æ•°ï¼ˆä¸å«é¦–æ¬¡è¯·æ±‚ï¼‰ï¼Œé»˜è®¤ 3ï¼Œå³æœ€å¤šè¯·æ±‚ 1+3 æ¬¡</summary>
     public int RetryCount { get; set; } = 3;
 
-    /// <summary>³¬Ê±Ê±¼ä£¨Ãë£©£¬Ä¬ÈÏ 15</summary>
+    /// <summary>è¶…æ—¶æ—¶é—´ï¼ˆç§’ï¼‰ï¼Œé»˜è®¤ 15</summary>
     public int Timeout { get; set; } = 15;
 
-    /// <summary>ÖØÊÔÇ°µÄµÈ´ıÊ±¼ä£¨Ãë£©£¬Ä¬ÈÏ 0.5£»ÉèÎª 0 ±íÊ¾Á¢¼´ÖØÊÔ</summary>
+    /// <summary>é‡è¯•å‰çš„ç­‰å¾…æ—¶é—´ï¼ˆç§’ï¼‰ï¼Œé»˜è®¤ 0.5ï¼›è®¾ä¸º 0 è¡¨ç¤ºç«‹å³é‡è¯•</summary>
     public float RetryDelay { get; set; } = 0.5f;
 
-    /// <summary>ÒÑ·¢ÆğµÄ³¢ÊÔ´ÎÊı£¨0 = ÉĞÎ´·¢ËÍ£»ÓÉ HttpClient Î¬»¤£¬¿ÉÔÚ OnRetry ÖĞ¶ÁÈ¡£©</summary>
+    /// <summary>å·²å‘èµ·çš„å°è¯•æ¬¡æ•°ï¼ˆ0 = å°šæœªå‘é€ï¼›ç”± HttpClient ç»´æŠ¤ï¼Œå¯åœ¨ OnRetry ä¸­è¯»å–ï¼‰</summary>
     public int AttemptCount { get; set; }
 
-    /// <summary>±¾´ÎÇëÇóµÄÇëÇóÍ·£¨·¢ËÍÊ±»áÓëÈ«¾ÖÇëÇóÍ·ºÏ²¢£¬Í¬Ãûµ¥´ÎÓÅÏÈ£©</summary>
+    /// <summary>æœ¬æ¬¡è¯·æ±‚çš„è¯·æ±‚å¤´ï¼ˆå‘é€æ—¶ä¼šä¸å…¨å±€è¯·æ±‚å¤´åˆå¹¶ï¼ŒåŒåå•æ¬¡ä¼˜å…ˆï¼‰</summary>
     public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
-    /// <summary>µ×²ãÇëÇó¶ÔÏó£ºÓÉ CreateWebRequest ´´½¨£¬ÖØÊÔÊ±»áÖØ½¨£¬ÇëÇó½áÊøºóÖÃ¿Õ</summary>
+    /// <summary>åº•å±‚è¯·æ±‚å¯¹è±¡ï¼šç”± CreateWebRequest åˆ›å»ºï¼Œé‡è¯•æ—¶ä¼šé‡å»ºï¼Œè¯·æ±‚ç»“æŸåç½®ç©º</summary>
     public UnityWebRequest WebRequest { get; set; }
 
-    /// <summary>ÊÇ·ñÒÑ±»È¡Ïû£»È¡Ïûºó²»ÔÙ»Øµ÷¡¢²»ÔÙÖØÊÔ</summary>
+    /// <summary>æ˜¯å¦å·²è¢«å–æ¶ˆï¼›å–æ¶ˆåä¸å†å›è°ƒã€ä¸å†é‡è¯•</summary>
     public bool IsCanceled { get; private set; }
 
-    /// <summary>Ê§°Ü»Øµ÷£¨½öÔÚÖØÊÔ´ÎÊıºÄ¾¡ºó´¥·¢Ò»´Î£¬²ÎÊıÎª´íÎóĞÅÏ¢£©</summary>
+    /// <summary>å¤±è´¥å›è°ƒï¼ˆä»…åœ¨é‡è¯•æ¬¡æ•°è€—å°½åè§¦å‘ä¸€æ¬¡ï¼Œå‚æ•°ä¸ºé”™è¯¯ä¿¡æ¯ï¼‰</summary>
     public Action<string> OnFailure { get; set; }
 
-    /// <summary>ÏÂÔØ½ø¶È»Øµ÷£¨0~1£©£»½öµ±ÉèÖÃÁË¸Ã»Øµ÷Ê±²Å»áÖğÖ¡ÂÖÑ¯£¬²»Ó°ÏìÎŞ»Øµ÷Ê±µÄĞÔÄÜ</summary>
+    /// <summary>ä¸‹è½½è¿›åº¦å›è°ƒï¼ˆ0~1ï¼‰ï¼›ä»…å½“è®¾ç½®äº†è¯¥å›è°ƒæ—¶æ‰ä¼šé€å¸§è½®è¯¢ï¼Œä¸å½±å“æ— å›è°ƒæ—¶çš„æ€§èƒ½</summary>
     public Action<float> OnProgress { get; set; }
 
-    /// <summary>ÖØÊÔ»Øµ÷£¨Ê£ÓàÖØÊÔ´ÎÊı, ÉÏÒ»´ÎµÄ´íÎóĞÅÏ¢£©</summary>
+    /// <summary>é‡è¯•å›è°ƒï¼ˆå‰©ä½™é‡è¯•æ¬¡æ•°, ä¸Šä¸€æ¬¡çš„é”™è¯¯ä¿¡æ¯ï¼‰</summary>
     public Action<int, string> OnRetry { get; set; }
 
     /// <summary>
-    /// ´´½¨£¨»òÖØ½¨£©µ×²ã UnityWebRequest¡£
-    /// Ê×´Î·¢ËÍÓëÃ¿´ÎÖØÊÔ¶¼»áµ÷ÓÃ£¬Òò´ËÕâÀï±ØĞë¿ÉÖØ¸´Ö´ĞĞ£¨ÄÚ²¿»áÏÈÊÍ·Å¾ÉÇëÇó£©¡£
+    /// åˆ›å»ºï¼ˆæˆ–é‡å»ºï¼‰åº•å±‚ UnityWebRequestã€‚
+    /// é¦–æ¬¡å‘é€ä¸æ¯æ¬¡é‡è¯•éƒ½ä¼šè°ƒç”¨ï¼Œå› æ­¤è¿™é‡Œå¿…é¡»å¯é‡å¤æ‰§è¡Œï¼ˆå†…éƒ¨ä¼šå…ˆé‡Šæ”¾æ—§è¯·æ±‚ï¼‰ã€‚
     /// </summary>
     public virtual void CreateWebRequest()
     {
@@ -83,7 +83,7 @@ public abstract class HttpPack
         }
         WebRequest.downloadHandler = new DownloadHandlerBuffer();
 
-        // Ğ´ÈëÇëÇóÍ·£¨È«¾ÖÍ·ÒÑÓÉ HttpManager ºÏ²¢½ø Headers£©
+        // å†™å…¥è¯·æ±‚å¤´ï¼ˆå…¨å±€å¤´å·²ç”± HttpManager åˆå¹¶è¿› Headersï¼‰
         foreach (var header in Headers)
         {
             if (string.IsNullOrEmpty(header.Key)) continue;
@@ -91,7 +91,7 @@ public abstract class HttpPack
             WebRequest.SetRequestHeader(header.Key, header.Value ?? string.Empty);
         }
 
-        // ÓĞÇëÇóÌåÇÒÎ´ÏÔÊ½Ö¸¶¨ Content-Type Ê±£¬¸øÒ»¸ö JSON Ä¬ÈÏÖµ
+        // æœ‰è¯·æ±‚ä½“ä¸”æœªæ˜¾å¼æŒ‡å®š Content-Type æ—¶ï¼Œç»™ä¸€ä¸ª JSON é»˜è®¤å€¼
         if (body != null && body.Length > 0 && !Headers.ContainsKey("Content-Type"))
         {
             WebRequest.SetRequestHeader("Content-Type", "application/json;charset=utf-8");
@@ -99,8 +99,8 @@ public abstract class HttpPack
     }
 
     /// <summary>
-    /// ÊÍ·Åµ×²ãÇëÇó£¨Á¬Í¬ÉÏ´«/ÏÂÔØ¾ä±ú£©¡£
-    /// ÖØÊÔÇ°¡¢ÇëÇó½áÊø¡¢È¡Ïû¡¢Òì³£Â·¾¶¶¼»á×ßµ½ÕâÀï£¬Òò´ËÄÚ²¿×ö¿ÕÖµ±£»¤¡£
+    /// é‡Šæ”¾åº•å±‚è¯·æ±‚ï¼ˆè¿åŒä¸Šä¼ /ä¸‹è½½å¥æŸ„ï¼‰ã€‚
+    /// é‡è¯•å‰ã€è¯·æ±‚ç»“æŸã€å–æ¶ˆã€å¼‚å¸¸è·¯å¾„éƒ½ä¼šèµ°åˆ°è¿™é‡Œï¼Œå› æ­¤å†…éƒ¨åšç©ºå€¼ä¿æŠ¤ã€‚
     /// </summary>
     public virtual void DisposeWebRequest()
     {
@@ -112,14 +112,14 @@ public abstract class HttpPack
         }
         catch (Exception e)
         {
-            PLogger.LogWarning($"[HttpPack] ÊÍ·ÅÇëÇóÊ§°Ü£º{e.Message}");
+            PLogger.LogWarning($"[HttpPack] é‡Šæ”¾è¯·æ±‚å¤±è´¥ï¼š{e.Message}");
         }
         WebRequest = null;
     }
 
     /// <summary>
-    /// È¡ÏûÇëÇó£º½øĞĞÖĞµÄÇëÇó»á±» Abort£¬ÈÔÔÚ¶ÓÁĞÀïµÄ»á±»Ìø¹ı¡£
-    /// È¡Ïûºó²»»á´¥·¢ OnSuccess / OnFailure / OnRetry¡£
+    /// å–æ¶ˆè¯·æ±‚ï¼šè¿›è¡Œä¸­çš„è¯·æ±‚ä¼šè¢« Abortï¼Œä»åœ¨é˜Ÿåˆ—é‡Œçš„ä¼šè¢«è·³è¿‡ã€‚
+    /// å–æ¶ˆåä¸ä¼šè§¦å‘ OnSuccess / OnFailure / OnRetryã€‚
     /// </summary>
     public void Cancel()
     {
@@ -135,11 +135,11 @@ public abstract class HttpPack
         }
         catch (Exception e)
         {
-            PLogger.LogWarning($"[HttpPack] È¡ÏûÇëÇóÊ§°Ü£º{e.Message}");
+            PLogger.LogWarning($"[HttpPack] å–æ¶ˆè¯·æ±‚å¤±è´¥ï¼š{e.Message}");
         }
     }
 
-    /// <summary>ÉÏ±¨µ±Ç°ÏÂÔØ½ø¶È£¨0~1£©£»»Øµ÷ÄÚÅ×Òì³£²»»áÓ°ÏìÇëÇóÁ÷³Ì</summary>
+    /// <summary>ä¸ŠæŠ¥å½“å‰ä¸‹è½½è¿›åº¦ï¼ˆ0~1ï¼‰ï¼›å›è°ƒå†…æŠ›å¼‚å¸¸ä¸ä¼šå½±å“è¯·æ±‚æµç¨‹</summary>
     public void ReportProgress()
     {
         if (OnProgress == null || WebRequest == null) return;
@@ -150,14 +150,14 @@ public abstract class HttpPack
         }
         catch (Exception e)
         {
-            PLogger.LogError($"[HttpPack] ½ø¶È»Øµ÷Òì³££º{e.Message}");
+            PLogger.LogError($"[HttpPack] è¿›åº¦å›è°ƒå¼‚å¸¸ï¼š{e.Message}");
         }
     }
 
-    /// <summary>´¦Àí·şÎñÆ÷ÏìÓ¦£¨×ÓÀàÊµÏÖ£º½âÎöÏìÓ¦Ìå²¢»Øµ÷£©</summary>
+    /// <summary>å¤„ç†æœåŠ¡å™¨å“åº”ï¼ˆå­ç±»å®ç°ï¼šè§£æå“åº”ä½“å¹¶å›è°ƒï¼‰</summary>
     public abstract void HandleResponse();
 
-    /// <summary>È¡ÇëÇóÌå×Ö½Ú£ºBodyRaw ÓÅÏÈ£¬Æä´Î UTF-8 ±àÂëµÄ Parameters£»GET ÎŞÇëÇóÌå</summary>
+    /// <summary>å–è¯·æ±‚ä½“å­—èŠ‚ï¼šBodyRaw ä¼˜å…ˆï¼Œå…¶æ¬¡ UTF-8 ç¼–ç çš„ Parametersï¼›GET æ— è¯·æ±‚ä½“</summary>
     private byte[] GetBodyBytes()
     {
         if (BodyRaw != null && BodyRaw.Length > 0) return BodyRaw;
@@ -167,7 +167,7 @@ public abstract class HttpPack
         return Encoding.UTF8.GetBytes(Parameters);
     }
 
-    /// <summary>Ã¶¾Ù×ª UnityWebRequest µÄ HTTP ·½·¨³£Á¿£¨±ÜÃâ ToString().ToUpper() µÄ×Ö·û´®·ÖÅä£©</summary>
+    /// <summary>æšä¸¾è½¬ UnityWebRequest çš„ HTTP æ–¹æ³•å¸¸é‡ï¼ˆé¿å… ToString().ToUpper() çš„å­—ç¬¦ä¸²åˆ†é…ï¼‰</summary>
     private static string GetHttpVerb(HttpRequestType type)
     {
         switch (type)
@@ -181,19 +181,19 @@ public abstract class HttpPack
 }
 
 /// <summary>
-/// ·ºĞÍÏìÓ¦Êı¾İ°ü£º°ÑÏìÓ¦ÎÄ±¾·´ĞòÁĞ»¯Îª T ºó»Øµ÷¡£
-/// T Îª string Ê±Ö±½Ó·µ»ØÏìÓ¦Ô­ÎÄ£¨²»×ö JSON ½âÎö£©¡£
+/// æ³›å‹å“åº”æ•°æ®åŒ…ï¼šæŠŠå“åº”æ–‡æœ¬ååºåˆ—åŒ–ä¸º T åå›è°ƒã€‚
+/// T ä¸º string æ—¶ç›´æ¥è¿”å›å“åº”åŸæ–‡ï¼ˆä¸åš JSON è§£æï¼‰ã€‚
 /// </summary>
 public class GenericHttpPack<T> : HttpPack where T : class
 {
-    /// <summary>³É¹¦»Øµ÷£¨·´ĞòÁĞ»¯½á¹û, HTTP ×´Ì¬Âë£©</summary>
+    /// <summary>æˆåŠŸå›è°ƒï¼ˆååºåˆ—åŒ–ç»“æœ, HTTP çŠ¶æ€ç ï¼‰</summary>
     public Action<T, int> OnSuccess { get; set; }
 
     /// <summary>
-    /// ½âÎöÏìÓ¦²¢»Øµ÷£º
-    /// 1) T Îª string -> Ö±½Ó·µ»ØÏìÓ¦Ô­ÎÄ£»
-    /// 2) ÏìÓ¦ÌåÎª¿Õ -> ×ßÊ§°Ü»Øµ÷²¢¸ø³öÃ÷È·Ô­Òò£»
-    /// 3) ·ñÔò JsonUtility.FromJson&lt;T&gt;£¬½âÎöÒì³£Í¬Ñù×ßÊ§°Ü»Øµ÷£¨²»»áÅ×¸øµ÷ÓÃ·½£©¡£
+    /// è§£æå“åº”å¹¶å›è°ƒï¼š
+    /// 1) T ä¸º string -> ç›´æ¥è¿”å›å“åº”åŸæ–‡ï¼›
+    /// 2) å“åº”ä½“ä¸ºç©º -> èµ°å¤±è´¥å›è°ƒå¹¶ç»™å‡ºæ˜ç¡®åŸå› ï¼›
+    /// 3) å¦åˆ™ JsonUtility.FromJson&lt;T&gt;ï¼Œè§£æå¼‚å¸¸åŒæ ·èµ°å¤±è´¥å›è°ƒï¼ˆä¸ä¼šæŠ›ç»™è°ƒç”¨æ–¹ï¼‰ã€‚
     /// </summary>
     public override void HandleResponse()
     {
@@ -208,7 +208,7 @@ public class GenericHttpPack<T> : HttpPack where T : class
 
         if (string.IsNullOrEmpty(text))
         {
-            OnFailure?.Invoke($"HTTP Response Empty. URL: {Url}, Code: {code}, ÎŞ·¨·´ĞòÁĞ»¯Îª {typeof(T).Name}");
+            OnFailure?.Invoke($"HTTP Response Empty. URL: {Url}, Code: {code}, æ— æ³•ååºåˆ—åŒ–ä¸º {typeof(T).Name}");
             return;
         }
 

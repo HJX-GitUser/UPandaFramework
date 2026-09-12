@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using UnityEngine;
@@ -81,7 +81,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
                 case RobotAngleCtrModel.None:
                     break;
                 case RobotAngleCtrModel.RealTime:
-                    // ÷±Ω”«ÛΩ‚
+                    // Áõ¥Êé•Ê±ÇËß£
                     bool arg = optimizedCCDIK.SolveIK(Target.transform.position, Target.transform.rotation);
                     break;
                 case RobotAngleCtrModel.Click:
@@ -133,16 +133,16 @@ namespace UPandaGF.RunTime.RobotCCDIK
             isEditorPlaying = EditorApplication.isPlaying;
             if (isEditorPlaying)
             {
-                if (GUILayout.Button("ªÒ»°÷· ˝æ›"))
+                if (GUILayout.Button("Ëé∑ÂèñËΩ¥Êï∞ÊçÆ"))
                 {
                     component.currentPos.angles = component.OptimizedCCDIK.GetJointAngles();
                     component.currentPos.localEulerAngle = component.OptimizedCCDIK.GetJointEulerAngles();
                 }
-                if (GUILayout.Button("÷· ˝æ›ÃÌº”µΩAnglePos"))
+                if (GUILayout.Button("ËΩ¥Êï∞ÊçÆÊ∑ªÂä†Âà∞AnglePos"))
                 {
                     if (string.IsNullOrEmpty(component.currentPos.description))
                     {
-                        Debug.LogError("description ≤ªƒ‹Œ™null!");
+                        Debug.LogError("description ‰∏çËÉΩ‰∏∫null!");
                     }
                     else
                     {
@@ -151,7 +151,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
                     }
                 }
 
-                ctrMode = (RobotAngleCtrModel)EditorGUILayout.EnumPopup("øÿ÷∆ƒ£ Ω", ctrMode);
+                ctrMode = (RobotAngleCtrModel)EditorGUILayout.EnumPopup("ÊéßÂà∂Ê®°Âºè", ctrMode);
                 if (component.CtrModel != ctrMode)
                 {
                     component.CtrModel = ctrMode;
@@ -161,15 +161,15 @@ namespace UPandaGF.RunTime.RobotCCDIK
                     case RobotAngleCtrModel.None:
                         break;
                     case RobotAngleCtrModel.RealTime:
-                        EditorGUILayout.HelpBox("Õœ∂ØTargetøÿ÷∆ª˙∆˜»À", MessageType.Info);
+                        EditorGUILayout.HelpBox("ÊãñÂä®TargetÊéßÂà∂Êú∫Âô®‰∫∫", MessageType.Info);
                         break;
                     case RobotAngleCtrModel.Click:
-                        if (GUILayout.Button("◊ÀÃ¨“∆∂ØµΩTarget"))
+                        if (GUILayout.Button("ÂßøÊÄÅÁßªÂä®Âà∞Target"))
                         {
                             component.OptimizedCCDIK.MoveTo(component.Target.transform.position, component.Target.transform.rotation);
                         }
                         GUILayout.BeginHorizontal();
-                        if (GUILayout.Button("…œ“ª∏ˆAnglePos"))
+                        if (GUILayout.Button("‰∏ä‰∏Ä‰∏™AnglePos"))
                         {
                             component.anglePosIndex--;
                             component.anglePosIndex = Mathf.Clamp(component.anglePosIndex, 0, component.anglePos.Count - 1);
@@ -178,7 +178,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
                                 component.ResetRobotTarget();
                             });
                         }
-                        if (GUILayout.Button("œ¬“ª∏ˆAnglePos"))
+                        if (GUILayout.Button("‰∏ã‰∏Ä‰∏™AnglePos"))
                         {
                             component.anglePosIndex++;
                             component.anglePosIndex = Mathf.Clamp(component.anglePosIndex, 0, component.anglePos.Count - 1);
@@ -188,7 +188,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
                             });
                         }
                         GUILayout.EndHorizontal();
-                        if (GUILayout.Button("÷¥––»´≤ø"))
+                        if (GUILayout.Button("ÊâßË°åÂÖ®ÈÉ®"))
                         {
 
                         }
@@ -197,7 +197,7 @@ namespace UPandaGF.RunTime.RobotCCDIK
             }
             else
             {
-                EditorGUILayout.HelpBox("±‡º≠∆˜‘À––ø™ º±‡º≠ ˝æ›", MessageType.Info);
+                EditorGUILayout.HelpBox("ÁºñËæëÂô®ËøêË°åÂºÄÂßãÁºñËæëÊï∞ÊçÆ", MessageType.Info);
             }
         }
     }
