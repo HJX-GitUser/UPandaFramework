@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace UPandaGF
 {
@@ -58,35 +57,38 @@ namespace UPandaGF
         #endregion
 
         #region Config
-        //[Header("资源加载方式")]
-        public AssetLoaddingMethod method;
-        public bool enableAssetUpdate;//启动资源更新
-        //[Header("资源相对路径")]
-        public string LoadAssetPath = "AssetBundles/StandaloneWindows/";
-
         /// <summary>
-        /// 远程加载地址
+        /// 面板 / Json 配置（唯一真源）。
+        /// <para>启动时 <see cref="Init"/> 的第一步先读 StreamingAssets/Data/GameRootConfig.json：
+        /// 读到就以它为准，读不到 / 解析失败才用面板上的值；面板改完点 Inspector 的「保存到 Json」写回。</para>
         /// </summary>
-        // FormerlySerializedAs：字段名拼写修正前的场景 / Prefab 数据继续有效
-        [FormerlySerializedAs("reomoteURL")]
-        public string remoteURL = "http://127.0.0.1:80/";
+        [SerializeField] private UPGameRootConfig config = new UPGameRootConfig();
 
-        public bool EnableDebugModel = false;
+        /// <summary>当前配置（外部读用；要改就改这个对象上的字段）</summary>
+        public UPGameRootConfig Config { get { return config; } }
 
-        /// <summary>
-        /// 等待一批下载完成的超时（秒）。&lt;= 0 表示不超时。
-        /// <para>下载器要求"无排队、无下载中、无暂停"才算批次结束：一旦有任务被暂停，
-        /// 完成事件永远不会触发，没有超时就会把整个启动链挂在 await 上（无日志）。</para>
-        /// </summary>
-        public float downloadBatchTimeout = 300f;
+        /// <summary>整体替换配置（读 Json / 工具回填用），并做空值兜底</summary>
+        public void SetConfig(UPGameRootConfig newConfig)
+        {
+            config = newConfig ?? new UPGameRootConfig();
+            EnsureConfigValid();
+        }
+
+        /// <summary>配置项兜底：Json 缺字段 / 手改 Json 漏项 / 旧数据升级时用</summary>
+        private void EnsureConfigValid()
+        {
+            if (config == null) config = new UPGameRootConfig();
+            if (config.AssetAESConfig == null)
+                config.AssetAESConfig = new AssetBundleClassificationWindowConfig { enable = false };
+            if (string.IsNullOrEmpty(config.LoadAssetPath))
+                config.LoadAssetPath = "AssetBundles/StandaloneWindows/";
+        }
 
         public const string assetData = "assetData.assetref";
         public const string tempAssetData = "TempAssetData.assetref";
         #endregion
 
         public Reporter reporter;
-
-        public AssetBundleClassificationWindowConfig AssetAESConfig;
 
         private ABSourcesRelated sourceRef = null;
         public ABSourcesRelated SourceRef { get => sourceRef; }
@@ -137,24 +139,75 @@ namespace UPandaGF
 
         private async Task Init()
         {
+            // ① 配置优先：读 StreamingAssets/Data/GameRootConfig.json（读到就以它为准）
+            await LoadConfigAsync();
+
             await PublicMono.Instance.RunCoroutine(debugerInit.Init());
             binaryDataMgr.Init();
-            sourcesLoadMgr.AssetAESConfig = AssetAESConfig;
+            sourcesLoadMgr.AssetAESConfig = config.AssetAESConfig;
 
-            if (AssetAESConfig != null && AssetAESConfig.enable)
+            if (config.AssetAESConfig != null && config.AssetAESConfig.enable)
             {
                 PLogger.LogWarning("[UPGameRoot] 已开启资源清单 AES 解密：请确认打包端（AB 工具窗口）确实对清单加密，"
                                    + "否则清单会因解密失败而整体不可用（随包清单 assetData.assetref 当前是明文，应保持 enable=false）");
             }
 
-            if (enableAssetUpdate)
+            if (config.enableAssetUpdate)
             {
                 sourceRef = await UpdateAssets();
             }
 
-            await sourcesLoadMgr.Init(method, remoteURL, LoadAssetPath, sourceRef);
+            await sourcesLoadMgr.Init(config.method, config.remoteURL, config.LoadAssetPath, sourceRef);
             _UIManager.SetResourcesLoader(sourcesLoadMgr, ResourcesLoader.Instance);
             OnInited();
+        }
+
+        /// <summary>
+        /// 读配置文件（StreamingAssets/Data/GameRootConfig.json）并覆盖当前配置。
+        /// <para>用 StreamingAssetsLoader 的异步接口：Android / WebGL 上 StreamingAssets 在包内，
+        /// 不能用 File 直读；桌面平台它内部走 Task.Run，不会卡主线程。</para>
+        /// <para>任何异常都只降级（用面板 / 代码里的值），不能影响启动链。</para>
+        /// </summary>
+        private async Task LoadConfigAsync()
+        {
+            EnsureConfigValid();
+
+            // 桌面 / 编辑器：文件不存在就直接跳过，避免 StreamingAssetsLoader 打一条"加载失败"的错误日志
+            bool canCheckFile = Application.platform != RuntimePlatform.Android
+                                && Application.platform != RuntimePlatform.WebGLPlayer;
+            if (canCheckFile && !File.Exists(UPGameRootConfigFile.AbsolutePath))
+            {
+                PLogger.Log($"[UPGameRoot] 未找到配置文件 {UPGameRootConfigFile.AssetPath}，使用面板 / 代码里的配置"
+                            + "（可在 UPGameRoot 的 Inspector 上点「保存到 Json」生成）");
+                return;
+            }
+
+            string json = await StreamingAssetsLoader.LoadTextFileAsync(UPGameRootConfigFile.RelativePath);
+            if (string.IsNullOrEmpty(json))
+            {
+                PLogger.LogWarning($"[UPGameRoot] 配置文件读取失败或内容为空：{UPGameRootConfigFile.AssetPath}，使用面板 / 代码里的配置");
+                return;
+            }
+
+            UPGameRootConfig loaded;
+            try
+            {
+                loaded = UPGameRootConfigFile.FromJson(json);
+            }
+            catch (Exception e)
+            {
+                PLogger.LogError($"[UPGameRoot] 配置解析失败，使用面板 / 代码里的配置：{UPGameRootConfigFile.AssetPath}\n{e.Message}");
+                return;
+            }
+
+            if (loaded == null)
+            {
+                PLogger.LogError($"[UPGameRoot] 配置解析结果为空，使用面板 / 代码里的配置：{UPGameRootConfigFile.AssetPath}");
+                return;
+            }
+
+            SetConfig(loaded);
+            PLogger.Log($"[UPGameRoot] 配置已加载：{UPGameRootConfigFile.AssetPath}（加载方式={config.method}，热更={config.enableAssetUpdate}，URL={config.remoteURL}）");
         }
 
         /// <summary>
@@ -165,7 +218,7 @@ namespace UPandaGF
         private async Task<ABSourcesRelated> UpdateAssets()
         {
             PLogger.Log("资源更新已启动");
-            string remoteListPath = CombineUrl(remoteURL, "AssetBundles/", assetData);
+            string remoteListPath = CombineUrl(config.remoteURL, "AssetBundles/", assetData);
             string tempFileSavePath = Path.Combine(Application.persistentDataPath, "AssetBundles/", tempAssetData);
             string localFilePath = Path.Combine(Application.persistentDataPath, "AssetBundles/", assetData);
 
@@ -324,7 +377,7 @@ namespace UPandaGF
 
         private void DeleteLocalAsset(string fileName)
         {
-            string delPath = Path.Combine(Application.persistentDataPath, LoadAssetPath, fileName);
+            string delPath = Path.Combine(Application.persistentDataPath, config.LoadAssetPath, fileName);
             try
             {
                 if (File.Exists(delPath))
@@ -368,10 +421,10 @@ namespace UPandaGF
             downloader.AddBatchDownloads(downloadList);
             try
             {
-                bool? allSuccessByEvent = await WaitWithTimeout(tcs.Task, downloadBatchTimeout);
+                bool? allSuccessByEvent = await WaitWithTimeout(tcs.Task, config.downloadBatchTimeout);
                 if (allSuccessByEvent == null)
                 {
-                    PLogger.LogError($"[UPGameRoot] 等待下载完成超时（{downloadBatchTimeout} 秒）：可能有任务被暂停或下载器异常。"
+                    PLogger.LogError($"[UPGameRoot] 等待下载完成超时（{config.downloadBatchTimeout} 秒）：可能有任务被暂停或下载器异常。"
                                      + "本次按失败处理，下载器仍可能在后台继续");
                     return false;
                 }
@@ -446,10 +499,10 @@ namespace UPandaGF
 
         private DownloadItem GetDownInfo(string fileName, long size)
         {
-            string assetsavePath = Path.Combine(Application.persistentDataPath, LoadAssetPath);
+            string assetsavePath = Path.Combine(Application.persistentDataPath, config.LoadAssetPath);
             return new DownloadItem()
             {
-                url = CombineUrl(remoteURL, LoadAssetPath, fileName),
+                url = CombineUrl(config.remoteURL, config.LoadAssetPath, fileName),
                 savePath = Path.Combine(assetsavePath, fileName),
                 fileName = fileName,
                 fileSize = size
@@ -475,9 +528,10 @@ namespace UPandaGF
 
         private void SetComponent()
         {
-            // AES 配置默认关闭：随包清单（assetData.assetref）是明文，误开会让清单解密失败、AB 模式整体不可用。
-            // 需要加密时必须"打包端加密 + 这里开启"成对配置。
-            if (AssetAESConfig == null) AssetAESConfig = new AssetBundleClassificationWindowConfig { enable = false };
+            // 配置项兜底（AES 默认关闭：随包清单 assetData.assetref 是明文，误开会让清单解密失败、AB 模式整体不可用；
+            // 需要加密时必须"打包端加密 + 这里开启"成对配置）
+            EnsureConfigValid();
+
             if (debugerInit == null) debugerInit = InitComponent<DebugerInit>();
             if (downloader == null) downloader = InitComponent<Downloader>();
             if (sourcesLoadMgr == null) sourcesLoadMgr = InitComponent<AssetsLoader>();

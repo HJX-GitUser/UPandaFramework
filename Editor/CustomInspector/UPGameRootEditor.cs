@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,27 +22,30 @@ namespace UPandaGF.GFEditor
         }
 
         /// <summary>
-        /// 把 AB 工具窗口的配置同步到组件的清单 AES 开关上。
-        /// <para>只在实际有差异时才写 + SetDirty：旧实现在每次 OnEnable 都无条件覆盖，
-        /// 既会白脏场景，也会把场景里手改的值静默冲掉；配置文件损坏（FromJson 返回 null）时也不动。 </para>
+        /// 把 AB 工具窗口的 AES 配置同步到组件的 config.AssetAESConfig 上。
+        /// <para>只在实际有差异时才写 + SetDirty：避免白脏场景，也避免把面板上刚改的值静默冲掉；
+        /// 这份值会被「保存到 Json」写进 GameRootConfig.json，启动时以 Json 为准。</para>
         /// </summary>
         private void SyncAesConfigFromJson()
         {
-            AssetBundleClassificationWindowConfig config =
+            AssetBundleClassificationWindowConfig fromWindow =
                 UPandaGFConfig.LoadJsonConfig<AssetBundleClassificationWindowConfig>("AssetBundleBuildConfig");
-            if (config == null) return;
+            if (fromWindow == null) return;
 
-            AssetBundleClassificationWindowConfig current = component.AssetAESConfig;
+            UPGameRootConfig rootConfig = component.Config;
+            if (rootConfig == null) return;
+
+            AssetBundleClassificationWindowConfig current = rootConfig.AssetAESConfig;
             if (current != null
-                && current.enable == config.enable
-                && current.AESKEY == config.AESKEY
-                && current.AESIV == config.AESIV
-                && current.mainBundleLoadPath == config.mainBundleLoadPath)
+                && current.enable == fromWindow.enable
+                && current.AESKEY == fromWindow.AESKEY
+                && current.AESIV == fromWindow.AESIV
+                && current.mainBundleLoadPath == fromWindow.mainBundleLoadPath)
             {
                 return;
             }
 
-            component.AssetAESConfig = config;
+            rootConfig.AssetAESConfig = fromWindow;
             EditorUtility.SetDirty(component);   // 否则这次改动可能不会写进场景
         }
 
@@ -52,11 +57,11 @@ namespace UPandaGF.GFEditor
             EditorGUILayout.Space();
 
             // 用 SerializedProperty.enumValueIndex 来选分支：SerializedProperty 改的是"待应用的值"，
-            // 直接读 component.method 会慢一帧（切换后要再点一下才会显示对应区域）
-            SerializedProperty methodProperty = ShowArg("method", "资源加载方式");
+            // 直接读 component.Config.method 会慢一帧（切换后要再点一下才会显示对应区域）
+            SerializedProperty methodProperty = ShowArg("config.method", "资源加载方式");
             AssetLoaddingMethod currentMethod = methodProperty != null
                 ? (AssetLoaddingMethod)methodProperty.enumValueIndex
-                : component.method;
+                : component.Config.method;
 
             switch (currentMethod)
             {
@@ -71,12 +76,88 @@ namespace UPandaGF.GFEditor
 
             EditorGUILayout.Space(10);
             SyncReporter();
+            DrawConfigFileBar();
             serializedObject.ApplyModifiedProperties();
+        }
+
+        /// <summary>配置文件的路径提示与 保存 / 读取 按钮</summary>
+        private void DrawConfigFileBar()
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("配置文件（启动时优先读取）", EditorStyles.boldLabel);
+
+            bool exists = File.Exists(UPGameRootConfigFile.AbsolutePath);
+            EditorGUILayout.LabelField($"{UPGameRootConfigFile.AssetPath}　{(exists ? "（已存在）" : "（尚未生成）")}", EditorStyles.miniLabel);
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("保存到 Json")) SaveConfigToJson();
+            if (GUILayout.Button("从 Json 读取")) LoadConfigFromJson();
+            if (GUILayout.Button("定位文件", GUILayout.Width(80f)))
+            {
+                if (exists) EditorUtility.RevealInFinder(UPGameRootConfigFile.AbsolutePath);
+                else Debug.LogWarning($"[UPGameRootEditor] 配置文件尚未生成：{UPGameRootConfigFile.AssetPath}");
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.HelpBox("启动流程：UPGameRoot.Init() 的第一步读这个 Json（读到就以它为准，读不到才用面板上的值），然后再初始化资源系统。"
+                                    + "面板上改完记得点「保存到 Json」。", MessageType.None);
+        }
+
+        /// <summary>把当前 config 写成 Json（StreamingAssets/Data/GameRootConfig.json）</summary>
+        private void SaveConfigToJson()
+        {
+            try
+            {
+                string path = UPGameRootConfigFile.AbsolutePath;
+                string dir = Path.GetDirectoryName(path);
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
+                string json = UPGameRootConfigFile.ToJson(component.Config);
+                File.WriteAllText(path, json, new UTF8Encoding(false));   // 不带 BOM：方便版本管理与手改
+                AssetDatabase.Refresh();
+                Debug.Log($"[UPGameRootEditor] 配置已保存到 {UPGameRootConfigFile.AssetPath}\n{json}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[UPGameRootEditor] 保存配置失败：{e}");
+            }
+        }
+
+        /// <summary>从 Json 读回配置覆盖面板上的值</summary>
+        private void LoadConfigFromJson()
+        {
+            try
+            {
+                string path = UPGameRootConfigFile.AbsolutePath;
+                if (!File.Exists(path))
+                {
+                    Debug.LogWarning($"[UPGameRootEditor] 配置文件不存在：{UPGameRootConfigFile.AssetPath}，先点「保存到 Json」生成");
+                    return;
+                }
+
+                UPGameRootConfig loaded = UPGameRootConfigFile.FromJson(File.ReadAllText(path, Encoding.UTF8));
+                if (loaded == null)
+                {
+                    Debug.LogError($"[UPGameRootEditor] 配置解析失败：{UPGameRootConfigFile.AssetPath}");
+                    return;
+                }
+
+                Undo.RecordObject(component, "读取 GameRoot 配置");
+                component.SetConfig(loaded);
+                EditorUtility.SetDirty(component);
+                serializedObject.Update();      // 让面板立刻显示新值
+                Debug.Log($"[UPGameRootEditor] 配置已从 Json 读取：{UPGameRootConfigFile.AssetPath}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[UPGameRootEditor] 读取配置失败：{e}");
+            }
         }
 
         private void AssetbundlesEditorGUI()
         {
-            AssetBundleClassificationWindowConfig aesConfig = component.AssetAESConfig;
+            AssetBundleClassificationWindowConfig aesConfig = component.Config.AssetAESConfig;
             if (aesConfig != null && aesConfig.enable)
             {
                 EditorGUILayout.HelpBox($"AES加密配置：\nkey:{aesConfig.AESKEY}\niv:{aesConfig.AESIV}", MessageType.Info);
@@ -86,15 +167,16 @@ namespace UPandaGF.GFEditor
                 EditorGUILayout.LabelField("清单 AES 加密：未启用（默认）", EditorStyles.miniLabel);
             }
 
-            ShowArg("enableAssetUpdate", "启动资源更新");
+            ShowArg("config.enableAssetUpdate", "启动资源更新");
             EditorGUILayout.Space();
-            EditorGUILayout.Space();
-            ShowArg("remoteURL", "远程加载URL");
-            ShowArg("LoadAssetPath", "相对路径");
-            ShowArg("downloadBatchTimeout", "下载等待超时（秒）");
-            if (GUILayout.Button("重置"))
+            ShowArg("config.remoteURL", "远程加载URL");
+            ShowArg("config.LoadAssetPath", "相对路径");
+            ShowArg("config.downloadBatchTimeout", "下载等待超时（秒）");
+            ShowArg("config.AssetAESConfig", "清单 AES 配置", true);
+
+            if (GUILayout.Button("重置相对路径"))
             {
-                component.LoadAssetPath = "AssetBundles/StandaloneWindows/";
+                component.Config.LoadAssetPath = "AssetBundles/StandaloneWindows/";
                 EditorUtility.SetDirty(component);
             }
         }
@@ -106,20 +188,20 @@ namespace UPandaGF.GFEditor
         /// （Inspector 直接报错、面板画不出来）。这里统一兜住，并给出能直接定位的提示。</para>
         /// </summary>
         /// <returns>找到的 SerializedProperty；没找到返回 null</returns>
-        private SerializedProperty ShowArg(string argName, string inspectName)
+        private SerializedProperty ShowArg(string argName, string inspectName, bool includeChildren = false)
         {
             SerializedProperty arg = serializedObject.FindProperty(argName);
             if (arg == null)
             {
                 if (reportedMissingFields.Add(argName))
                 {
-                    Debug.LogError($"[UPGameRootEditor] 找不到序列化字段「{argName}」：UPGameRoot 里的字段可能被改名或删掉了，请同步更新本工具");
+                    Debug.LogError($"[UPGameRootEditor] 找不到序列化字段「{argName}」：UPGameRoot / UPGameRootConfig 里的字段可能被改名或删掉了，请同步更新本工具");
                 }
                 EditorGUILayout.HelpBox($"字段「{argName}」不存在（已改名 / 删除？），请检查 UPGameRootEditor", MessageType.Error);
                 return null;
             }
 
-            EditorGUILayout.PropertyField(arg, new GUIContent(inspectName));
+            EditorGUILayout.PropertyField(arg, new GUIContent(inspectName), includeChildren);
             return arg;
         }
 
@@ -129,8 +211,8 @@ namespace UPandaGF.GFEditor
 #if OPEN_PLOG
             if (EditorApplication.isPlaying) return;   // 运行时不改场景
 
-            ShowArg("EnableDebugModel", "启动日志窗口");
-            if (component.EnableDebugModel)
+            ShowArg("config.EnableDebugModel", "启动日志窗口");
+            if (component.Config.EnableDebugModel)
             {
                 if (component.reporter == null)
                 {
@@ -152,7 +234,7 @@ namespace UPandaGF.GFEditor
                 DestroyReporterIfExists();
             }
 #else
-            if (component.EnableDebugModel) DestroyReporterIfExists();
+            if (component.Config.EnableDebugModel) DestroyReporterIfExists();
 #endif
         }
 

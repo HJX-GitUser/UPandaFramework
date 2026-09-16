@@ -50,7 +50,7 @@ public class GameLaunchExample : MonoBehaviour
 }
 ```
 
-> `UPGameRoot` 的 Inspector 面板可配置：资源加载方式（Editor / Assetbundles）、是否启用资源热更、远程地址、AES 加密配置等。
+> `UPGameRoot` 的 Inspector 面板可配置：资源加载方式（Editor / Assetbundles）、是否启用资源热更、远程地址、AES 加密配置等；面板底部有「保存到 Json」/「从 Json 读取」，配置落地在 `Assets/StreamingAssets/Data/GameRootConfig.json`，**启动时优先读这个 Json**（读不到才用面板值）。
 
 ## 示例场景
 
@@ -90,7 +90,7 @@ upanda-framework/
 │   └── UPandaGF.Editor.asmdef   编辑器程序集定义
 ├── Runtime/                     运行时（UPandaGF.Runtime 程序集）
 │   ├── Manager/                 核心管理器层
-│   │   ├── GameRoot/            UPGameRoot 启动入口 + SourcesLoadMgr 资源抽象
+│   │   ├── GameRoot/            UPGameRoot 启动入口 + UPGameRootConfig（Json 配置）+ SourcesLoadMgr 资源抽象
 │   │   ├── Singleton/           单例基类
 │   │   ├── DebugSystem/         日志系统（含本目录 README.md）
 │   │   ├── EventCenterModule/   事件系统（含本目录 README.md）
@@ -133,7 +133,7 @@ upanda-framework/
 
 ### 启动入口（Manager/GameRoot）
 
-- **UPGameRoot**：框架根节点，`Awake` 时自动挂载并初始化 `DebugerInit`（日志）、`Downloader`（下载）、`AssetsLoader`（资源）、`BinaryDataMgrInit`（存储）、`UIManager`（UI）五个子系统；开启热更时下载远程清单 / 按 MD5 增量下载，**只有全部下载成功才提交新清单**（否则降级：上一次成功的本地清单 → 随包清单），完成后广播 `GFLoadedEvent`；失败则广播 `GFLoadedFailedEvent`（并提供 `IsInited` / `IsInitFailed` / `GetAssetsLoader()` 就绪约定），不会静默卡在加载界面。清单 AES 默认关闭（`AssetAESConfig.enable = false`）。详见 `Runtime/Manager/GameRoot/README.md`。
+- **UPGameRoot**：框架根节点，`Awake` 时自动挂载并初始化 `DebugerInit`（日志）、`Downloader`（下载）、`AssetsLoader`（资源）、`BinaryDataMgrInit`（存储）、`UIManager`（UI）五个子系统；开启热更时下载远程清单 / 按 MD5 增量下载，**只有全部下载成功才提交新清单**（否则降级：上一次成功的本地清单 → 随包清单），完成后广播 `GFLoadedEvent`；失败则广播 `GFLoadedFailedEvent`（并提供 `IsInited` / `IsInitFailed` / `GetAssetsLoader()` 就绪约定），不会静默卡在加载界面。清单 AES 默认关闭（`config.AssetAESConfig.enable = false`）。配置集中在可序列化对象 `UPGameRootConfig`（`UPGameRoot.Config`）里，**启动第一步先读 `StreamingAssets/Data/GameRootConfig.json`**（面板改完点「保存到 Json」写回；Json 缺失 / 解析失败才降级用面板值）。详见 `Runtime/Manager/GameRoot/README.md`。
 - **GameLaunchExample**：进入游戏的示例入口，演示"热更程序集加载 → 场景加载"的完整流程，并内置完整的失败兜底。
 - **SourcesLoadMgr**：资源加载抽象层，编辑器下用 `EditorSourcesMgr` 直读资源，出包后切换为 `AssetsLoader` 走 AssetBundle。
 
@@ -222,7 +222,7 @@ upanda-framework/
 
 5. **AssetBundleMgr**
    - `ABLoadMgr` 负责 AB 的本地 / 远程加载（主包 / manifest / 依赖递归 / 卸载）。
-   - 资源热更已由 `UPGameRoot.enableAssetUpdate` + `Downloader` 按清单 MD5 增量完成（详见 AB 工具文档）；`AssetBundelUpdataMgr` 是**已废弃**的旧方案（文本对比文件 + FTP），勿再使用。
+   - 资源热更已由 `UPGameRoot.Config.enableAssetUpdate` + `Downloader` 按清单 MD5 增量完成（详见 AB 工具文档）；`AssetBundelUpdataMgr` 是**已废弃**的旧方案（文本对比文件 + FTP），勿再使用。
 
 6. **FileUtility**
    - 文件工具：另存 / 移动（先复制后删除，可指定是否覆盖）等常用文件操作。
@@ -317,7 +317,7 @@ upanda-framework/
 - **UIAutoGenerator**：UI 自动生成。
 - **HyBridCLREditor**：HybridCLR 热更程序集拷贝配置（`DLLCopyConfigWindow`）。
 - **CustomInspector**：
-  - `UPGameRootEditor`：启动根节点面板（资源加载方式、热更开关、远程地址、AES 配置等）。
+  - `UPGameRootEditor`：启动根节点面板（资源加载方式、热更开关、远程地址、AES 配置等 + 配置文件的「保存到 Json」/「从 Json 读取」）。
   - `EventCenterModule/`：事件调试窗口 + 事件模块自检（菜单 `UPandaGF/Runtime/事件系统/…`），用法见事件模块文档。
   - `InteractiveTaskScoringSystem/`：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 演示场景生成器 + 各组件自定义 Inspector（菜单 `UPandaGF/Runtime/交互任务评分系统/…`），用法见评分系统文档。
 - **模块示例场景生成器**（菜单 `UPandaGF/Runtime/<模块>/…`，每个都是「新建场景」+「在当前场景追加」两个入口，按原型场景逐项重建位置 / 参数 / 引用）：
@@ -350,13 +350,13 @@ upanda-framework/
 | `Runtime/Manager/HTTPTool/README.md` | 基于 UnityWebRequest 的 HTTP 请求模块 |
 | `Runtime/Manager/AudioMgr/README.md` | 音频管理器：双路 BGM 交叉淡入淡出、唯一 / 叠加音效、引用计数归还、请求序号防竞态、已知限制与维护提示 |
 | `Runtime/Manager/PublicMono/README.md` | 帧调度中心：帧监听（owner 自动注销 / 异常隔离 / 幂等注册）、协程托管（Task 保证结束 + 超时与取消）、已知限制与维护提示 |
-| `Runtime/Manager/GameRoot/README.md` | 启动入口：启动时序图、三种 `loadPath` 的热更语义、清单提交与降级规则、事件与就绪状态、配置项、已知限制 |
+| `Runtime/Manager/GameRoot/README.md` | 启动入口：启动时序图、三种 `loadPath` 的热更语义、清单提交与降级规则、事件与就绪状态、配置项（`UPGameRootConfig` + `StreamingAssets/Data/GameRootConfig.json`）、已知限制 |
 | `Editor/AssetBundleTools/README.md` | AssetBundle 打包与热更系统：页签用法、清单格式、三种加载位置、热更语义、已知限制、FAQ |
 
 ## 源码约定
 
 - **程序集划分**：`Runtime/` 属于 `UPandaGF.Runtime`，`Editor/` 属于 `UPandaGF.Editor`。Runtime 程序集**在 Player 构建时不引用 `UnityEditor`**，因此 Runtime 代码里任何 `using UnityEditor;` 或 `UnityEditor.*` 调用都必须用 `#if UNITY_EDITOR ... #endif` 包住，否则会出现 `CS0246` 打包阻断。
-- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**（154/154 文件），并由根目录 `.editorconfig`、`.gitattributes` 固化。
+- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**（155/155 文件），并由根目录 `.editorconfig`、`.gitattributes` 固化。
 - **命名沿袭**：为兼容既有配置与场景，部分历史命名未做改动（如 `OpearationExecute`、`AddErroTimes`、`erroTimes`、部分接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间）。
 - **改动后自检**：涉及交互式任务评分系统时，改完先跑「任务流程校验器」再跑「运行逻辑自检」，可覆盖绝大多数配置错误与逻辑回归。
 

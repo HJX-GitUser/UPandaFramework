@@ -110,7 +110,7 @@ flowchart LR
 
 | 面板 | 类型 | 打开方式 | 上限 |
 | --- | --- | --- | --- |
-| **Reporter**（第三方 LogView） | IMGUI | `UPGameRoot.EnableDebugModel = true` 时点左上角 FPS 角标，或代码 `UPGameRoot.Instance.reporter.ShowLogWindows()` | `maxSize = 20`(MB，超限整体清空) + `maxLogCount = 3000`(条，超限**按批丢弃最旧**) |
+| **Reporter**（第三方 LogView） | IMGUI | `UPGameRoot.Config.EnableDebugModel = true` 时点左上角 FPS 角标，或代码 `UPGameRoot.Instance.reporter.ShowLogWindows()` | `maxSize = 20`(MB，超限整体清空) + `maxLogCount = 3000`(条，超限**按批丢弃最旧**) |
 | **LogListenerManager** | UGUI | 默认 `Ctrl + F12`（可配 `toggleKey`/`ctrlRequired`）；静态入口 `LogListenerManager.Log(...)` | `maxLogLines = 1000`（显示 `maxDisplayLines = 500`） |
 
 - 两者的 UI 偏好都存在 `PlayerPrefs`；

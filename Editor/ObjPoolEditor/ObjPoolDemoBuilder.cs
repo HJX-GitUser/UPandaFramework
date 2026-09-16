@@ -219,15 +219,15 @@ namespace UPandaGF.GFEditor
             //    所以下面每个 Create* 都是「已存在就复用」（见文件头说明）。
             UPGameRoot gameRoot = go.AddComponent<UPGameRoot>();
 
-            gameRoot.method = RootLoadMethod;
-            gameRoot.enableAssetUpdate = false;                             // 原型：不启动资源更新
-            gameRoot.LoadAssetPath = "AssetBundles/StandaloneWindows/";
-            gameRoot.remoteURL = "http://127.0.0.1:80/";
-            gameRoot.EnableDebugModel = false;
+            gameRoot.Config.method = RootLoadMethod;
+            gameRoot.Config.enableAssetUpdate = false;                       // 原型：不启动资源更新
+            gameRoot.Config.LoadAssetPath = "AssetBundles/StandaloneWindows/";
+            gameRoot.Config.remoteURL = "http://127.0.0.1:80/";
+            gameRoot.Config.EnableDebugModel = false;
 
             // AES 配置：UPGameRoot 与 AssetsLoader 各有一份，运行时 Root 会覆盖 Loader 那份，
             // 所以这里统一写成同一份（原型两处不一致：enable 0 / 1）
-            gameRoot.AssetAESConfig = CreateAesConfig();
+            gameRoot.Config.AssetAESConfig = CreateAesConfig();
 
             Transform parent = go.transform;
 

@@ -45,7 +45,7 @@ namespace UPandaGF
         {
             UPGameRoot root = UPGameRoot.Instance;
             if (root == null) return;   // 修复：该组件被放到没有 UPGameRoot 的场景里时空引用
-            if (showFPS || root.EnableDebugModel) deltaTime += (Time.deltaTime - deltaTime) * 0.1f;
+            if (showFPS || root.Config.EnableDebugModel) deltaTime += (Time.deltaTime - deltaTime) * 0.1f;
         }
 
         public IEnumerator Init()
@@ -109,11 +109,11 @@ namespace UPandaGF
         {
             UPGameRoot root = UPGameRoot.Instance;
             if (root == null) return;   // 修复：空引用保护
-            if (!showFPS && !root.EnableDebugModel) return;
+            if (!showFPS && !root.Config.EnableDebugModel) return;
 
             float fps = deltaTime > 0f ? 1.0f / deltaTime : 0f;   // 修复：deltaTime 为 0 时不再除零
             string text = string.Format(" FPS:{0:N0} ", fps);
-            if (root.EnableDebugModel)
+            if (root.Config.EnableDebugModel)
             {
                 if (root.reporter != null && !root.reporter.show)
                 {

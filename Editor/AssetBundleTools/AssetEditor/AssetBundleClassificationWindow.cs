@@ -161,7 +161,9 @@ namespace AssetBundleBrowser
             }
             else
             {
-                AssetBundleClassificationWindowConfig sceneConfig = aesSyncGameRoot.AssetAESConfig;
+                AssetBundleClassificationWindowConfig sceneConfig = aesSyncGameRoot.Config != null
+                    ? aesSyncGameRoot.Config.AssetAESConfig
+                    : null;
                 bool same = sceneConfig != null
                     && sceneConfig.enable == config.enable
                     && string.Equals(sceneConfig.AESKEY, config.AESKEY)
@@ -179,11 +181,11 @@ namespace AssetBundleBrowser
                 if (GUILayout.Button("同步到场景中的 UPGameRoot", GUILayout.Width(220)))
                 {
                     Undo.RecordObject(aesSyncGameRoot, "Sync AssetBundle AES Config");
-                    if (aesSyncGameRoot.AssetAESConfig == null)
-                        aesSyncGameRoot.AssetAESConfig = new AssetBundleClassificationWindowConfig();
-                    aesSyncGameRoot.AssetAESConfig.enable = config.enable;
-                    aesSyncGameRoot.AssetAESConfig.AESKEY = config.AESKEY;
-                    aesSyncGameRoot.AssetAESConfig.AESIV = config.AESIV;
+                    if (aesSyncGameRoot.Config.AssetAESConfig == null)
+                        aesSyncGameRoot.Config.AssetAESConfig = new AssetBundleClassificationWindowConfig();
+                    aesSyncGameRoot.Config.AssetAESConfig.enable = config.enable;
+                    aesSyncGameRoot.Config.AssetAESConfig.AESKEY = config.AESKEY;
+                    aesSyncGameRoot.Config.AssetAESConfig.AESIV = config.AESIV;
                     EditorUtility.SetDirty(aesSyncGameRoot);
                     UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(aesSyncGameRoot.gameObject.scene);
                     Debug.Log("AES 配置已同步到场景中的 UPGameRoot（记得保存场景）");
