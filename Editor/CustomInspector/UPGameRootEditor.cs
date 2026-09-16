@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -9,99 +9,171 @@ namespace UPandaGF.GFEditor
     public class UPGameRootEditor : UnityEditor.Editor
     {
         UPGameRoot component;
+
+        /// <summary>已经报过错的字段名（避免 OnGUI 每帧刷错误日志）</summary>
+        private static readonly HashSet<string> reportedMissingFields = new HashSet<string>();
+
         private void OnEnable()
         {
             component = (UPGameRoot)target;
-            component.AssetAESConfig = UPandaGFConfig.LoadJsonConfig<AssetBundleClassificationWindowConfig>("AssetBundleBuildConfig");
+            SyncAesConfigFromJson();
         }
+
+        /// <summary>
+        /// 把 AB 工具窗口的配置同步到组件的清单 AES 开关上。
+        /// <para>只在实际有差异时才写 + SetDirty：旧实现在每次 OnEnable 都无条件覆盖，
+        /// 既会白脏场景，也会把场景里手改的值静默冲掉；配置文件损坏（FromJson 返回 null）时也不动。 </para>
+        /// </summary>
+        private void SyncAesConfigFromJson()
+        {
+            AssetBundleClassificationWindowConfig config =
+                UPandaGFConfig.LoadJsonConfig<AssetBundleClassificationWindowConfig>("AssetBundleBuildConfig");
+            if (config == null) return;
+
+            AssetBundleClassificationWindowConfig current = component.AssetAESConfig;
+            if (current != null
+                && current.enable == config.enable
+                && current.AESKEY == config.AESKEY
+                && current.AESIV == config.AESIV
+                && current.mainBundleLoadPath == config.mainBundleLoadPath)
+            {
+                return;
+            }
+
+            component.AssetAESConfig = config;
+            EditorUtility.SetDirty(component);   // 否则这次改动可能不会写进场景
+        }
+
         public override void OnInspectorGUI()
         {
             //base.OnInspectorGUI();
             serializedObject.Update();
             EditorGUILayout.LabelField("UPGameRoot", EditorStyles.boldLabel);
             EditorGUILayout.Space();
-            ShowArg("method", "资源加载方式");
-            switch (component.method)
+
+            // 用 SerializedProperty.enumValueIndex 来选分支：SerializedProperty 改的是"待应用的值"，
+            // 直接读 component.method 会慢一帧（切换后要再点一下才会显示对应区域）
+            SerializedProperty methodProperty = ShowArg("method", "资源加载方式");
+            AssetLoaddingMethod currentMethod = methodProperty != null
+                ? (AssetLoaddingMethod)methodProperty.enumValueIndex
+                : component.method;
+
+            switch (currentMethod)
             {
                 case AssetLoaddingMethod.Editor:
-                    //AssetEditorGUI();
                     EditorGUILayout.Space();
                     break;
+
                 case AssetLoaddingMethod.Assetbundles:
                     AssetbundlesEditorGUI();
                     break;
             }
-            EditorGUILayout.Space(10);
-#if OPEN_PLOG
-            if (!EditorApplication.isPlaying)
-            {
-                ShowArg("EnableDebugModel", "启动日志窗口");
-                if (component.EnableDebugModel)
-                {
-                    if (component.reporter == null)
-                    {
-                        UnityEngine.Transform arg = component.GetComponentInChildren<DebugerInit>().transform;
-                        CreateReporter(arg);
-                        component.reporter = component.GetComponentInChildren<Reporter>();
-                    }
-                    EditorGUILayout.HelpBox("启动该选项，在运行时可以点击左上角按钮启动日志面板，用于打包项目时调试，正式包取消勾选", MessageType.Info);
-                }
-                else
-                {
-                    if (component.reporter != null)
-                    {
-                        DestroyImmediate(component.reporter.gameObject);
-                        component.reporter = null;
-                    }
-                }
-            }
-#else
-            if (component.EnableDebugModel)
-            {
-                if (component.reporter != null)
-                {
-                    DestroyImmediate(component.reporter.gameObject);
-                    component.reporter = null;
-                    Debug.Log("reporter剔除");
-                }
-            }
-#endif
-            serializedObject.ApplyModifiedProperties();
-        }
 
-        private void AssetEditorGUI()
-        {
-            EditorGUILayout.Space();
-            EditorGUILayout.HelpBox("把资源添加到AssetBundle后，需要更新资源关联数据才能加载", MessageType.Info);
-            if (GUILayout.Button("更新资源关联数据"))
-            {
-                //AssetBundleBuildTab.GenerateAssetBundleInfo();
-            }
-            EditorGUILayout.Space();
+            EditorGUILayout.Space(10);
+            SyncReporter();
+            serializedObject.ApplyModifiedProperties();
         }
 
         private void AssetbundlesEditorGUI()
         {
-            if (component.AssetAESConfig.enable)
+            AssetBundleClassificationWindowConfig aesConfig = component.AssetAESConfig;
+            if (aesConfig != null && aesConfig.enable)
             {
-                EditorGUILayout.HelpBox($"AES加密配置：\nkey:{component.AssetAESConfig.AESKEY}\niv:{component.AssetAESConfig.AESIV}", MessageType.Info);
+                EditorGUILayout.HelpBox($"AES加密配置：\nkey:{aesConfig.AESKEY}\niv:{aesConfig.AESIV}", MessageType.Info);
             }
+            else
+            {
+                EditorGUILayout.LabelField("清单 AES 加密：未启用（默认）", EditorStyles.miniLabel);
+            }
+
             ShowArg("enableAssetUpdate", "启动资源更新");
             EditorGUILayout.Space();
             EditorGUILayout.Space();
-            ShowArg("reomoteURL", "远程加载URL");
+            ShowArg("remoteURL", "远程加载URL");
             ShowArg("LoadAssetPath", "相对路径");
+            ShowArg("downloadBatchTimeout", "下载等待超时（秒）");
             if (GUILayout.Button("重置"))
             {
                 component.LoadAssetPath = "AssetBundles/StandaloneWindows/";
+                EditorUtility.SetDirty(component);
             }
         }
 
-
-        private void ShowArg(string argName, string inspectName)
+        /// <summary>
+        /// 画一个序列化字段。
+        /// <para>⚠ 字段名是字符串：UPGameRoot 里的字段改名 / 删除后 FindProperty 会返回 null，
+        /// 而把 null 丢给 EditorGUILayout.PropertyField 会在 Unity 内部抛 NullReferenceException
+        /// （Inspector 直接报错、面板画不出来）。这里统一兜住，并给出能直接定位的提示。</para>
+        /// </summary>
+        /// <returns>找到的 SerializedProperty；没找到返回 null</returns>
+        private SerializedProperty ShowArg(string argName, string inspectName)
         {
             SerializedProperty arg = serializedObject.FindProperty(argName);
+            if (arg == null)
+            {
+                if (reportedMissingFields.Add(argName))
+                {
+                    Debug.LogError($"[UPGameRootEditor] 找不到序列化字段「{argName}」：UPGameRoot 里的字段可能被改名或删掉了，请同步更新本工具");
+                }
+                EditorGUILayout.HelpBox($"字段「{argName}」不存在（已改名 / 删除？），请检查 UPGameRootEditor", MessageType.Error);
+                return null;
+            }
+
             EditorGUILayout.PropertyField(arg, new GUIContent(inspectName));
+            return arg;
+        }
+
+        /// <summary>按 EnableDebugModel 开关同步场景里的 Reporter（创建 / 销毁）</summary>
+        private void SyncReporter()
+        {
+#if OPEN_PLOG
+            if (EditorApplication.isPlaying) return;   // 运行时不改场景
+
+            ShowArg("EnableDebugModel", "启动日志窗口");
+            if (component.EnableDebugModel)
+            {
+                if (component.reporter == null)
+                {
+                    DebugerInit debugerInit = component.GetComponentInChildren<DebugerInit>(true);
+                    if (debugerInit == null)
+                    {
+                        EditorGUILayout.HelpBox("找不到 DebugerInit 子物体，无法创建 Reporter", MessageType.Warning);
+                        return;
+                    }
+
+                    CreateReporter(debugerInit.transform);
+                    component.reporter = component.GetComponentInChildren<Reporter>(true);
+                    EditorUtility.SetDirty(component);
+                }
+                EditorGUILayout.HelpBox("启动该选项，在运行时可以点击左上角按钮启动日志面板，用于打包项目时调试，正式包取消勾选", MessageType.Info);
+            }
+            else
+            {
+                DestroyReporterIfExists();
+            }
+#else
+            if (component.EnableDebugModel) DestroyReporterIfExists();
+#endif
+        }
+
+        /// <summary>
+        /// 删除场景里的 Reporter。
+        /// <para>不用 DestroyImmediate：在 OnInspectorGUI 绘制期间直接销毁对象容易和正在绘制的界面打架，
+        /// 延后到本次 GUI 事件处理完再销毁，并走 Undo 以便反悔。</para>
+        /// </summary>
+        private void DestroyReporterIfExists()
+        {
+            Reporter reporter = component.reporter;
+            if (reporter == null) return;
+
+            component.reporter = null;
+            EditorUtility.SetDirty(component);
+
+            EditorApplication.delayCall += () =>
+            {
+                if (reporter != null)
+                    Undo.DestroyObjectImmediate(reporter.gameObject);
+            };
         }
 
 

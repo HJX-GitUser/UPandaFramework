@@ -36,7 +36,7 @@ namespace UPandaGF
         [HideInInspector]
         public AssetBundleClassificationWindowConfig AssetAESConfig;
 
-        public async Task Init(AssetLoaddingMethod arg0, string reomoteURL, string LoadAssetPath, ABSourcesRelated sourceRefArgBytes)
+        public async Task Init(AssetLoaddingMethod arg0, string remoteURL, string LoadAssetPath, ABSourcesRelated sourceRefArgBytes)
         {
             PLogger.Log("AssetsLoader Init");
             method = arg0;
@@ -68,7 +68,7 @@ namespace UPandaGF
                     return;
                 }
                 abLoadMgr = ABLoadMgr.Instance;
-                abLoadMgr.remoteURL = reomoteURL;
+                abLoadMgr.remoteURL = remoteURL;
                 PLogger.Log($"主包：{sourceRef.mainBundleInfo.bundleName}，加载方式：{sourceRef.mainBundleInfo.loadPath}");
                 await abLoadMgr.Init(LoadAssetPath, sourceRef.mainBundleInfo.bundleName, sourceRef.mainBundleInfo.loadPath);
                 abLoadMgr.SetABSourcesRelated(sourceRef);

@@ -222,7 +222,7 @@ namespace UPandaGF.GFEditor
             gameRoot.method = RootLoadMethod;
             gameRoot.enableAssetUpdate = false;                             // 原型：不启动资源更新
             gameRoot.LoadAssetPath = "AssetBundles/StandaloneWindows/";
-            gameRoot.reomoteURL = "http://127.0.0.1:80/";
+            gameRoot.remoteURL = "http://127.0.0.1:80/";
             gameRoot.EnableDebugModel = false;
 
             // AES 配置：UPGameRoot 与 AssetsLoader 各有一份，运行时 Root 会覆盖 Loader 那份，

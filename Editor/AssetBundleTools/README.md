@@ -171,8 +171,8 @@ public enum ABLoadPath { StreamingAssetsPath, PersistentDataPath, RemotePath }
 |---|---|
 | 打包输出 | `AssetBundles/<BuildTarget>/`（工程根） |
 | 编辑器生成的清单 | `Assets/StreamingAssets/Data/assetData.assetref` |
-| 远端清单 | `{reomoteURL}/AssetBundles/assetData.assetref` |
-| 远端的 AB 包 | `{reomoteURL}/{LoadAssetPath}/<包名>`（`LoadAssetPath` 默认 `AssetBundles/StandaloneWindows/`） |
+| 远端清单 | `{remoteURL}/AssetBundles/assetData.assetref` |
+| 远端的 AB 包 | `{remoteURL}/{LoadAssetPath}/<包名>`（`LoadAssetPath` 默认 `AssetBundles/StandaloneWindows/`）|
 | 本地清单副本 | `{persistentDataPath}/AssetBundles/assetData.assetref` |
 | 本地 AB 包 | `{persistentDataPath}/{LoadAssetPath}/<包名>` |
 | 加密 / 上传配置 | `Assets/Editor/EditorConfig/AssetBundleBuildConfig.json`、`UpLoadABEditorConfig.json` |
@@ -189,7 +189,7 @@ public enum ABLoadPath { StreamingAssetsPath, PersistentDataPath, RemotePath }
 | `method` | `Editor`（AssetDatabase 直读）/ `Assetbundles`（走 AB） |
 | `enableAssetUpdate` | 启动时执行资源热更（仅 `Assetbundles` 模式有意义） |
 | `LoadAssetPath` | 资源相对路径，默认 `AssetBundles/StandaloneWindows/` |
-| `reomoteURL` | 远端根地址，默认 `http://127.0.0.1:80/` |
+| `remoteURL` | 远端根地址，默认 `http://127.0.0.1:80/`（旧名 `reomoteURL`，已用 `FormerlySerializedAs` 兼容旧场景数据） |
 | `AssetAESConfig` | 清单 AES 配置（由 `UPGameRootEditor` 从 JSON 灌入） |
 
 ### 5.2 调用方式
@@ -344,7 +344,7 @@ AssetBundles/StandaloneWindows/<其它包名>
 因为你还没打包：输出目录里找不到对应文件的包会被跳过，控制台会打印 `有 N 个 AssetBundle 尚未构建…` 的告警。先 `Build All`（或右键单个包构建）再点「更新配置」。若**主包**也没构建，本次根本不会写清单文件（报错并保留上一份可用的清单）。
 
 **Q9：远端明明上传了新 AB 包，热更却没下载？**
-热更的第一步是下载远端 `AssetBundles/assetData.assetref` 并按 MD5 比对，清单没更新就不会触发下载。用 `UpLoadAB` 页签的「上传AB包和清单」（或「只上传清单」），「清单上传地址」应对应 `{reomoteURL}/AssetBundles/`。
+热更的第一步是下载远端 `AssetBundles/assetData.assetref` 并按 MD5 比对，清单没更新就不会触发下载。用 `UpLoadAB` 页签的「上传AB包和清单」（或「只上传清单」），「清单上传地址」应对应 `{remoteURL}/AssetBundles/`。
 
 **Q10：运行时报清单解密失败 / AB 模式没起来？**
 打包窗口的「使用加密 / Key / IV」必须与场景中 `UPGameRoot.AssetAESConfig` 一致。展开「加密设置」看提示：不一致会显示黄色警告，点「同步到场景中的 UPGameRoot」并保存场景即可。

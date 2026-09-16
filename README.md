@@ -133,7 +133,7 @@ upanda-framework/
 
 ### 启动入口（Manager/GameRoot）
 
-- **UPGameRoot**：框架根节点，`Awake` 时自动挂载并初始化 `DebugerInit`（日志）、`Downloader`（下载）、`AssetsLoader`（资源）、`BinaryDataMgrInit`（存储）、`UIManager`（UI）五个子系统；开启热更时会下载远程资源清单、做 MD5 对比并增量下载，全部完成后广播 `GFLoadedEvent`。
+- **UPGameRoot**：框架根节点，`Awake` 时自动挂载并初始化 `DebugerInit`（日志）、`Downloader`（下载）、`AssetsLoader`（资源）、`BinaryDataMgrInit`（存储）、`UIManager`（UI）五个子系统；开启热更时下载远程清单 / 按 MD5 增量下载，**只有全部下载成功才提交新清单**（否则降级：上一次成功的本地清单 → 随包清单），完成后广播 `GFLoadedEvent`；失败则广播 `GFLoadedFailedEvent`（并提供 `IsInited` / `IsInitFailed` / `GetAssetsLoader()` 就绪约定），不会静默卡在加载界面。清单 AES 默认关闭（`AssetAESConfig.enable = false`）。详见 `Runtime/Manager/GameRoot/README.md`。
 - **GameLaunchExample**：进入游戏的示例入口，演示"热更程序集加载 → 场景加载"的完整流程，并内置完整的失败兜底。
 - **SourcesLoadMgr**：资源加载抽象层，编辑器下用 `EditorSourcesMgr` 直读资源，出包后切换为 `AssetsLoader` 走 AssetBundle。
 
@@ -145,6 +145,8 @@ upanda-framework/
 4. 校验 `firstScene` 非空后调用 `LoadSceneAsync`，同时监听 `ABLoadProgressEvent` 刷新"加载 / 下载"进度，进入场景后关闭加载界面。
 
 整个流程包在 `try/catch` 中：`UIManager` / `SimpleLoadUI` / `UPGameRoot` / 资源加载器 / 热更列表 / `firstScene` 任一缺失都会打印明确的 `PLogger.LogError` 并中止，不会抛空引用异常。
+
+若框架初始化失败，会收到 `GFLoadedFailedEvent`（而不是一直等 `GFLoadedEvent`）：`GameLaunchExample` 会打错误日志并在加载界面上给出提示。
 
 ### 单例系统（Manager/Singleton）
 
@@ -348,6 +350,7 @@ upanda-framework/
 | `Runtime/Manager/HTTPTool/README.md` | 基于 UnityWebRequest 的 HTTP 请求模块 |
 | `Runtime/Manager/AudioMgr/README.md` | 音频管理器：双路 BGM 交叉淡入淡出、唯一 / 叠加音效、引用计数归还、请求序号防竞态、已知限制与维护提示 |
 | `Runtime/Manager/PublicMono/README.md` | 帧调度中心：帧监听（owner 自动注销 / 异常隔离 / 幂等注册）、协程托管（Task 保证结束 + 超时与取消）、已知限制与维护提示 |
+| `Runtime/Manager/GameRoot/README.md` | 启动入口：启动时序图、三种 `loadPath` 的热更语义、清单提交与降级规则、事件与就绪状态、配置项、已知限制 |
 | `Editor/AssetBundleTools/README.md` | AssetBundle 打包与热更系统：页签用法、清单格式、三种加载位置、热更语义、已知限制、FAQ |
 
 ## 源码约定

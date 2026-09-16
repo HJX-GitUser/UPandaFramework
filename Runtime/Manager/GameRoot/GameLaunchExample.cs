@@ -28,13 +28,26 @@ public class GameLaunchExample : MonoBehaviour
     private void Awake()
     {
         EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnGFLoadedEvent);//框架加载结束事件
+        EventCenter.Instance.AddEventListener<GFLoadedFailedEvent>(OnGFLoadedFailed);//框架初始化失败事件
         EventCenter.Instance.AddEventListener<SceneMgr_SceneAsynLoadProgress>(SceneAsynLoadProgress);//场景加载进度
     }
 
     private void OnDestroy()
     {
         EventCenter.Instance.RemoveEventListener<GFLoadedEvent>(OnGFLoadedEvent);
+        EventCenter.Instance.RemoveEventListener<GFLoadedFailedEvent>(OnGFLoadedFailed);
         EventCenter.Instance.RemoveEventListener<SceneMgr_SceneAsynLoadProgress>(SceneAsynLoadProgress);
+    }
+
+    /// <summary>
+    /// 框架初始化失败：给出明确提示。
+    /// 失败时 GFLoadedEvent 不会再来，若不处理会表现为"卡在加载界面 / 黑屏且没有任何反馈"。
+    /// </summary>
+    private void OnGFLoadedFailed(GFLoadedFailedEvent arg0)
+    {
+        PLogger.LogError($"框架初始化失败，后续启动流程已中止：{arg0?.message}");
+        if (simpleLoadUI != null)
+            simpleLoadUI.SetMessage(1f, "框架初始化失败，请查看日志");
     }
 
     private void SceneAsynLoadProgress(SceneMgr_SceneAsynLoadProgress arg0)

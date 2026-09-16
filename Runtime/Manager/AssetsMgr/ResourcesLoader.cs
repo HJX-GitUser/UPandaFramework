@@ -8,7 +8,12 @@ using UPandaGF;
 [Serializable]
 public class AssetBundleClassificationWindowConfig
 {
-    public bool enable = true;
+    /// <summary>
+    /// 是否对资源清单做 AES 加密。
+    /// <para>⚠ 默认 <c>false</c>：随包清单 assetData.assetref 是明文，运行端误开会让清单解密失败、
+    /// AssetBundle 模式整体不可用。需要加密时必须"打包端加密 + 运行端开启"成对配置。</para>
+    /// </summary>
+    public bool enable = false;
     public string AESKEY = "111a222aaabbbccc";
     public string AESIV = "111b222aaabbbccc";
     public ABLoadPath mainBundleLoadPath = ABLoadPath.StreamingAssetsPath;
