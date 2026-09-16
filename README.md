@@ -17,7 +17,7 @@ Unity 的前端（客户端）框架，提供统一的启动入口、单例、�
 - 分层 UI 管理与 Canvas 自动生成
 - 玩法系统：任务系统、交互式任务评分（含校验器 / 逻辑自检 / 回放复盘工具）、回放、分层状态机、机械臂 CCD 逆运动学、载具控制
 - 内置 Shader 学习文档与效果案例库（流光、描边、卡通、消融、水波等）
-- 编辑器工具链：AB 打包、Excel 数据表、UI 自动生成、HybridCLR 热更、事件调试窗口、常用路径快捷打开
+- 编辑器工具链：AB 打包、Excel 数据表、UI 自动生成、HybridCLR 热更、事件调试窗口、常用路径快捷打开、模块示例场景一键生成（描边 / 回放 / 对象池 / 载具驾驶 / 评分）与描边材质 Shader 修复
 
 ## 快速开始
 
@@ -59,9 +59,10 @@ public class GameLaunchExample : MonoBehaviour
 | 模块 | 场景 | 说明 |
 |---|---|---|
 | 机械臂 IK | `Runtime/Game/RobotCCDIK/Sample/Sample.unity` | 6 轴机械臂，编辑器内拖动 Target 实时求解，可录制 / 回放姿态 |
-| 载具控制 | `Runtime/Game/VehicleSystem/Sample/VerticalScene.unity` | Rigidbody + WheelCollider 车辆，`W/S/A/D` 驾驶、`空格` 手刹漂移、`C` 切视角 |
-| 高亮描边 | `Runtime/Game/QuickOutline/Samples/Scenes/QuickOutline.unity` | 描边效果演示（`OutlineMask` / `OutlineFill`） |
-| 回放系统 | `Runtime/Game/ReplaySystem/Sample/HFScene.unity` | 录制 / 回放演示场景 |
+| 载具控制 | `Runtime/Game/VehicleSystem/Sample/VerticalScene.unity` | Rigidbody + WheelCollider 车辆，`W/S/A/D` 驾驶、`空格` 手刹漂移、`C` 切视角；也可用菜单 `UPandaGF -> Runtime -> VehicleSystem -> 创建驾驶示例场景（新建场景）` 一键重建 |
+| 高亮描边 | `Runtime/Game/QuickOutline/Samples/Scenes/QuickOutline.unity` | 描边效果演示（`OutlineMask` / `OutlineFill`）；也可用菜单 `UPandaGF -> Runtime -> QuickOutline -> 创建描边示例场景（新建场景）` 一键重建 |
+| 回放系统 | `Runtime/Game/ReplaySystem/Sample/HFScene.unity` | 录制 / 回放演示场景；也可用菜单 `UPandaGF -> Runtime -> ReplaySystem -> 创建回放示例场景（新建场景）` 一键重建 |
+| 对象池 | 菜单 `UPandaGF -> Runtime -> ObjPool -> 创建对象池示例场景（新建场景）` 一键生成 | 重建 `ObjPool/Example/PoolUseScene.unity`：`UPGameRoot` 启动设施 + 演示地面 + `TestPoolMgr` 取 / 回收对象 |
 | 交互式任务评分 | 菜单 `UPandaGF -> Runtime -> 交互任务评分系统 -> 创建演示场景` 一键生成 | 生成配置资产 + 实体预制体 + 可运行场景（落 `Example/Demo/`）；演示内容见模块文档 |
 
 ## 目录结构
@@ -79,6 +80,10 @@ upanda-framework/
 │   │   ├── UPGameRootEditor.cs            启动根节点面板
 │   │   ├── EventCenterModule/              事件系统工具：事件调试窗口 / 事件模块自检
 │   │   └── InteractiveTaskScoringSystem/   评分系统工具：校验器 / 逻辑自检 / 回放复盘 / 演示生成 / 组件 Inspector
+│   ├── ObjPoolEditor/           对象池工具：示例场景一键生成
+│   ├── QuickOutlineEditor/      高亮描边工具：示例场景一键生成、描边材质 Shader 修复
+│   ├── ReplaySystemEditor/      回放系统工具：示例场景一键生成
+│   ├── VerticalSceneEditor/     载具驾驶工具：示例场景一键生成
 │   ├── EditorTools/             编辑器小工具（资源路径复制、自动碰撞体、常用路径快捷打开）
 │   ├── EditorConfig/            编辑器配置
 │   ├── EditorStu/               编辑器学习示例
@@ -250,7 +255,7 @@ upanda-framework/
 ### 对象池（Manager/ObjPool）
 
 - **GameObjectPoolMgr**：GameObject 对象池，按资源路径分容器缓存（LIFO），池空时自动加载并实例化；支持 Resources / AssetBundle 两种加载方式、Task 与回调两种异步形式、层级收纳、单容器容量上限、预热（`Prewarm`）与 `IPoolable` 出池 / 回池回调；同步接口仅支持 Resources（已标记过时）。
-- 用法、配置项与注意事项见 `Runtime/Manager/ObjPool/README.md`。
+- 用法、配置项与注意事项见 `Runtime/Manager/ObjPool/README.md`；示例场景（`Example/PoolUseScene.unity`）可用菜单 `UPandaGF -> Runtime -> ObjPool -> 创建对象池示例场景（新建场景）` 一键重建（默认以 `Editor` 加载方式生成，便于直接在编辑器里运行）。
 
 ### 数据存储（Manager/StorageDataMgr）
 
@@ -302,7 +307,7 @@ upanda-framework/
 
 ### 编辑器工具链（Editor）
 
-> 菜单分组约定：**模块级工具**统一放在 `UPandaGF -> Runtime -> <模块名>`（交互任务评分系统 / 事件系统）；**框架级工具**在 `UPandaGF -> Tools / 日志系统 / AB包工具` 以及 `UPandaGF -> 创建UPGameRoot`。
+> 菜单分组约定：**模块级工具**统一放在 `UPandaGF -> Runtime -> <模块名>`（交互任务评分系统 / 事件系统 / QuickOutline / ReplaySystem / ObjPool / VehicleSystem）；**框架级工具**在 `UPandaGF -> Tools / 日志系统 / AB包工具` 以及 `UPandaGF -> 创建UPGameRoot`。
 
 - **FrameWorkInitEditor**：一键初始化目录结构、创建 `UPGameRoot`、清理 Prefab 缺失脚本。
 - **AssetBundleTools**：AB 打包、管理与上传（FTP / Nginx），详见 `Editor/AssetBundleTools/README.md`。
@@ -313,6 +318,11 @@ upanda-framework/
   - `UPGameRootEditor`：启动根节点面板（资源加载方式、热更开关、远程地址、AES 配置等）。
   - `EventCenterModule/`：事件调试窗口 + 事件模块自检（菜单 `UPandaGF/Runtime/事件系统/…`），用法见事件模块文档。
   - `InteractiveTaskScoringSystem/`：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 演示场景生成器 + 各组件自定义 Inspector（菜单 `UPandaGF/Runtime/交互任务评分系统/…`），用法见评分系统文档。
+- **模块示例场景生成器**（菜单 `UPandaGF/Runtime/<模块>/…`，每个都是「新建场景」+「在当前场景追加」两个入口，按原型场景逐项重建位置 / 参数 / 引用）：
+  - `QuickOutlineEditor/`：描边示例场景（5 种描边模式各一个物体）；另含**描边材质 Shader 丢失修复**（菜单 `UPandaGF/Tools/QuictOutLine材质修复`）—— Unity 版本升级 / Samples 重建后 `Materials/OutlineMask|OutlineFill` 的 Shader 引用断链变玫红时，一键重挂并保存。
+  - `ReplaySystemEditor/`：录制 / 回放示例场景（掉落 / 弹跳的物理物体 + 时间轴、进度、暂停、速度、存 / 取档等 UI 全部自动连线）。
+  - `ObjPoolEditor/`：对象池示例场景（含 `UPGameRoot` 启动设施、UI 相机与 Canvas 层级、演示地面与 `TestPoolMgr`）。
+  - `VerticalSceneEditor/`：载具驾驶示例场景（内建图元搭的赛道 + 车辆 + 三种视角管理器；`VehicleController` / `CameraModeManager` 的私有序列化字段由脚本自动连线）。
 - **EditorTools**：编辑器小工具
   - `ResourcePathCopy`：复制资源路径。
   - `AutoColliderGenerator`：自动生成碰撞体。
@@ -340,7 +350,7 @@ upanda-framework/
 ## 源码约定
 
 - **程序集划分**：`Runtime/` 属于 `UPandaGF.Runtime`，`Editor/` 属于 `UPandaGF.Editor`。Runtime 程序集**在 Player 构建时不引用 `UnityEditor`**，因此 Runtime 代码里任何 `using UnityEditor;` 或 `UnityEditor.*` 调用都必须用 `#if UNITY_EDITOR ... #endif` 包住，否则会出现 `CS0246` 打包阻断。
-- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**（147/147 文件），并由根目录 `.editorconfig`、`.gitattributes` 固化。
+- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**（152/152 文件），并由根目录 `.editorconfig`、`.gitattributes` 固化。
 - **命名沿袭**：为兼容既有配置与场景，部分历史命名未做改动（如 `OpearationExecute`、`AddErroTimes`、`erroTimes`、部分接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间）。
 - **改动后自检**：涉及交互式任务评分系统时，改完先跑「任务流程校验器」再跑「运行逻辑自检」，可覆盖绝大多数配置错误与逻辑回归。
 
