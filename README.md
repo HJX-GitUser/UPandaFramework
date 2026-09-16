@@ -264,7 +264,7 @@ upanda-framework/
 
 ### 公共 Mono（Manager/PublicMono）
 
-- **PublicMono**：非 MonoBehaviour 对象可借此托管协程与 Update 监听。
+- **PublicMono**：帧调度中心 —— 非 MonoBehaviour 对象可借此托管 `Update / FixedUpdate / LateUpdate` 与协程（`RunCoroutine` 返回可 `await` 的 `Task`）。帧回调逐个异常隔离（一个监听器出错不会连累其它模块）；监听器支持**带 owner 注册**（Unity 对象销毁后自动注销，杜绝僵尸监听者）、重复注册拦截、`ClearAllListeners()` 批量清理；`RunCoroutine` 的 `Task` 保证会结束（完成 / 异常 / 取消 / 超时）。详见 `Runtime/Manager/PublicMono/README.md`。
 
 ### 玩法系统（Runtime/Game）
 
@@ -347,6 +347,7 @@ upanda-framework/
 | `Runtime/Manager/DownloadMgr/README.md` | 下载器：队列 / 并发 / 断点续传 / 超时重试 |
 | `Runtime/Manager/HTTPTool/README.md` | 基于 UnityWebRequest 的 HTTP 请求模块 |
 | `Runtime/Manager/AudioMgr/README.md` | 音频管理器：双路 BGM 交叉淡入淡出、唯一 / 叠加音效、引用计数归还、请求序号防竞态、已知限制与维护提示 |
+| `Runtime/Manager/PublicMono/README.md` | 帧调度中心：帧监听（owner 自动注销 / 异常隔离 / 幂等注册）、协程托管（Task 保证结束 + 超时与取消）、已知限制与维护提示 |
 | `Editor/AssetBundleTools/README.md` | AssetBundle 打包与热更系统：页签用法、清单格式、三种加载位置、热更语义、已知限制、FAQ |
 
 ## 源码约定
