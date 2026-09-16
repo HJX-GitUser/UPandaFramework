@@ -241,7 +241,7 @@ upanda-framework/
 
 ### 音频（Manager/AudioMgr）
 
-- 背景音乐播放 / 暂停 / 停止 / 音量调节；唯一音效（播放前自动关闭上一个）；多音效列表播放与自动回收；支持 Resources 与 AssetBundle 两种加载方式。
+- 背景音乐支持**双路交叉淡入淡出**（切歌不硬切）、暂停 / 恢复 / 淡出停止与音量调节；唯一音效（新音效加载完成后才顶掉上一个，失败不打断）；叠加音效播完自动回收；支持 Resources 与 AssetBundle 两种加载方式，并在换曲 / 回收时**归还 `ResourcesLoader` 的引用计数**（避免 `AudioClip` 常驻内存）。用法与限制见 `Runtime/Manager/AudioMgr/README.md`。
 
 ### 场景管理（Manager/SceneMgr）
 
@@ -346,6 +346,7 @@ upanda-framework/
 | `Runtime/Manager/ObjPool/README.md` | GameObject 对象池 |
 | `Runtime/Manager/DownloadMgr/README.md` | 下载器：队列 / 并发 / 断点续传 / 超时重试 |
 | `Runtime/Manager/HTTPTool/README.md` | 基于 UnityWebRequest 的 HTTP 请求模块 |
+| `Runtime/Manager/AudioMgr/README.md` | 音频管理器：双路 BGM 交叉淡入淡出、唯一 / 叠加音效、引用计数归还、请求序号防竞态、已知限制与维护提示 |
 | `Editor/AssetBundleTools/README.md` | AssetBundle 打包与热更系统：页签用法、清单格式、三种加载位置、热更语义、已知限制、FAQ |
 
 ## 源码约定
