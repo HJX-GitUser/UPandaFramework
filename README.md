@@ -17,7 +17,7 @@ Unity 的前端（客户端）框架，提供统一的启动入口、单例、�
 - 分层 UI 管理与 Canvas 自动生成
 - 玩法系统：任务系统、交互式任务评分（含校验器 / 逻辑自检 / 回放复盘工具）、回放、分层状态机、机械臂 CCD 逆运动学、载具控制
 - 内置 Shader 学习文档与效果案例库（流光、描边、卡通、消融、水波等）
-- 编辑器工具链：AB 打包、Excel 数据表、UI 自动生成、HybridCLR 热更、事件调试窗口、常用路径快捷打开、模块示例场景一键生成（描边 / 回放 / 对象池 / 载具驾驶 / 评分）与描边材质 Shader 修复
+- 编辑器工具链：AB 打包、Excel 数据表、UI 自动生成、HybridCLR 热更、事件调试窗口、常用路径快捷打开、模块示例场景一键生成（描边 / 回放 / 对象池 / 载具驾驶 / 评分）、描边材质 Shader 修复，以及编辑器控件速查 / 开发案例窗口
 
 ## 快速开始
 
@@ -86,7 +86,7 @@ upanda-framework/
 │   ├── VerticalSceneEditor/     载具驾驶工具：示例场景一键生成
 │   ├── EditorTools/             编辑器小工具（资源路径复制、自动碰撞体、常用路径快捷打开）
 │   ├── EditorConfig/            编辑器配置
-│   ├── EditorStu/               编辑器学习示例
+│   ├── EditorStu/               编辑器学习示例（控件速查窗口、开发案例窗口、示例资产与自定义 Inspector）
 │   └── UPandaGF.Editor.asmdef   编辑器程序集定义
 ├── Runtime/                     运行时（UPandaGF.Runtime 程序集）
 │   ├── Manager/                 核心管理器层
@@ -327,7 +327,8 @@ upanda-framework/
   - `ResourcePathCopy`：复制资源路径。
   - `AutoColliderGenerator`：自动生成碰撞体。
   - `FolderQuickOpen`：菜单 `UPandaGF/Tools/打开常用路径/`，一键打开项目根目录、`Assets`、`StreamingAssets`、`persistentDataPath`、`temporaryCachePath`、AB 打包输出目录等常用路径（Windows 下用资源管理器打开，其他平台回退 `RevealInFinder`），同时把路径复制到剪贴板。
-- **EditorStu / EditorConfig**：编辑器学习示例与框架配置（`UPandaGFConfig`）。
+- **EditorStu**：编辑器学习示例（都能直接从菜单打开，源码每段都有中文说明）—— `EditorGUIExample`（控件速查窗口，菜单 `UPandaGF/Tools/EditorGUI控件备忘录`：12 个章节覆盖文本 / 数值 / 开关 / 向量 / 颜色曲线 / 枚举下拉 / 资源对象 / 布局与 `GUILayoutOption` / `GUIStyle` / 进度条 / `SerializedProperty` / 事件，带关键字搜索）、`EditorDevelopmentExample`（开发案例窗口，菜单 `UPandaGF/Tools/编辑器开发案例`，快捷键 `Ctrl+Shift+E`：`MenuItem` 写法与 validate、窗口生命周期、`SerializedObject` 与 `Undo`、资产与 `AssetDatabase`、拖拽 / 剪贴板 / JSON、`EditorPrefs`、`EditorApplication` 回调与场景视图 `Handles`、弹窗通知）、`EditorExampleAssets`（示例资产 + 自定义 `PropertyDrawer` / `CustomEditor`）。
+- **EditorConfig**：框架配置（`UPandaGFConfig`）。
 
 ## 模块文档索引
 
@@ -350,7 +351,7 @@ upanda-framework/
 ## 源码约定
 
 - **程序集划分**：`Runtime/` 属于 `UPandaGF.Runtime`，`Editor/` 属于 `UPandaGF.Editor`。Runtime 程序集**在 Player 构建时不引用 `UnityEditor`**，因此 Runtime 代码里任何 `using UnityEditor;` 或 `UnityEditor.*` 调用都必须用 `#if UNITY_EDITOR ... #endif` 包住，否则会出现 `CS0246` 打包阻断。
-- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**（152/152 文件），并由根目录 `.editorconfig`、`.gitattributes` 固化。
+- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**（154/154 文件），并由根目录 `.editorconfig`、`.gitattributes` 固化。
 - **命名沿袭**：为兼容既有配置与场景，部分历史命名未做改动（如 `OpearationExecute`、`AddErroTimes`、`erroTimes`、部分接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间）。
 - **改动后自检**：涉及交互式任务评分系统时，改完先跑「任务流程校验器」再跑「运行逻辑自检」，可覆盖绝大多数配置错误与逻辑回归。
 
