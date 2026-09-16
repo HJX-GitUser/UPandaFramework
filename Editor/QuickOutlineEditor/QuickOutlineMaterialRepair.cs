@@ -50,7 +50,7 @@ namespace UPandaGF.GFEditor
     {
         // ---------------- 配置：与运行时脚本、Shader 声明保持一致 ----------------
 
-        private const string MenuPath = "UPandaGF/Tools/QuictOutLine材质修复";
+        private const string MenuPath = "UPandaGF/Runtime/QuickOutline/QuictOutLine材质修复";
 
         // 与 OutDrawline.cs 中 Resources.Load<Material>(@"Materials/...") 的路径一致
         private const string MaskResourcesPath = "Materials/OutlineMask";
