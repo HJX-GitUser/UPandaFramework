@@ -1,6 +1,6 @@
 ﻿//
 //  VerticalSceneDemoBuilder.cs
-//  路径：Assets/Scripts/upanda-framework/Editor/VerticalSceneEditor/
+//  路径：Assets/upanda-framework/Editor/VerticalSceneEditor/
 //
 // =============================================================================
 //  作用：一键重建 VehicleSystem 的驾驶示例场景
@@ -71,7 +71,7 @@ namespace UPandaGF.GFEditor
 
         private const string MenuRoot = "UPandaGF/Runtime/VehicleSystem/";
 
-        private const string DefaultSceneFolder = "Assets/Scripts/upanda-framework/Runtime/Game/VehicleSystem/Demo";
+        private const string DefaultSceneFolder = "Assets/upanda-framework/Runtime/Game/VehicleSystem/Demo";
         private const string DefaultSceneName   = "VerticalSceneDemo.unity";
         private const string MaterialsFolder    = DefaultSceneFolder + "/Materials";
 
@@ -517,7 +517,8 @@ namespace UPandaGF.GFEditor
 
         private static Material GetOrCreateMaterial(string name, Color color)
         {
-            string path = MaterialsFolder + "/" + name + ".mat";
+            // 兜底：目录被手动删掉时，落盘前再确认一次（AssetDatabase.CreateAsset 不会建目录）
+            string path = EditorAssetPathUtility.EnsureFolderForAsset(MaterialsFolder + "/" + name + ".mat");
 
             Material existing = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (existing != null)
@@ -607,26 +608,10 @@ namespace UPandaGF.GFEditor
             if (renderer != null) renderer.sharedMaterial = material;
         }
 
-        /// <summary>确保工程内目录存在（形如 Assets/A/B，逐级创建）</summary>
+        /// <summary>确保工程内目录存在（形如 Assets/A/B，逐级创建）。实现见 EditorAssetPathUtility。</summary>
         private static void EnsureFolder(string projectRelativeFolder)
         {
-            string full = projectRelativeFolder.Replace('\\', '/').TrimEnd('/');
-            if (AssetDatabase.IsValidFolder(full))
-            {
-                return;
-            }
-
-            string[] parts = full.Split('/');
-            string current = parts[0];   // "Assets"
-            for (int i = 1; i < parts.Length; i++)
-            {
-                string next = current + "/" + parts[i];
-                if (!AssetDatabase.IsValidFolder(next))
-                {
-                    AssetDatabase.CreateFolder(current, parts[i]);
-                }
-                current = next;
-            }
+            EditorAssetPathUtility.EnsureFolder(projectRelativeFolder);
         }
     }
 }

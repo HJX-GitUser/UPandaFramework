@@ -1,8 +1,8 @@
-﻿using System.IO;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UPandaGF.GFEditor;
 
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
@@ -17,7 +17,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     /// </summary>
     public static class InteractiveTaskDemoBuilder
     {
-        private const string ModuleRoot = "Assets/Scripts/upanda-framework/Runtime/Game/InteractiveTaskScoringSystem";
+        private const string ModuleRoot = "Assets/upanda-framework/Runtime/Game/InteractiveTaskScoringSystem";
         private const string DemoFolder = ModuleRoot + "/Example/Demo";
         private const string ConfigPath = DemoFolder + "/TaskConfig_Demo.asset";
         private const string PrefabPath = DemoFolder + "/DemoInteractiveEntity.prefab";
@@ -87,7 +87,12 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
             // ---- 保存场景 ----
             EditorSceneManager.MarkSceneDirty(scene);
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorAssetPathUtility.EnsureFolderForAsset(ScenePath);   // 兜底：目录不存在就建出来
+            if (!EditorSceneManager.SaveScene(scene, ScenePath))
+            {
+                Debug.LogError($"[交互任务评分系统] 场景保存失败：{ScenePath}，请检查目录是否可写。");
+                return;
+            }
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
@@ -148,6 +153,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// </summary>
         private static TaskConfig CreateOrUpdateConfig()
         {
+            EnsureFolder();   // 目录可能被手动删掉，落盘前再确认一次
             TaskConfig config = AssetDatabase.LoadAssetAtPath<TaskConfig>(ConfigPath);
             if (config == null)
             {
@@ -181,7 +187,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         /// 注意：TaskTriggerExample 必须显式挂载（TaskEntityBase 已不再自动添加）。
         /// </summary>
         private static GameObject CreateEntityPrefab()
-        {
+        {EnsureFolder();   // 目录可能被手动删掉，落盘前再确认一次
+
             GameObject temp = GameObject.CreatePrimitive(PrimitiveType.Cube);
             temp.name = "DemoInteractiveEntity";
             temp.AddComponent<TaskTriggerExample>();
@@ -192,13 +199,14 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             return prefab;
         }
 
+        /// <summary>
+        /// 确保演示目录存在（含所有缺失的父目录）。
+        /// 旧实现用 Directory.Exists(相对路径)，依赖 Editor 的当前工作目录，且只建一层；
+        /// 这里统一走 EditorAssetPathUtility，逐级创建并生成 .meta。
+        /// </summary>
         private static void EnsureFolder()
         {
-            if (!Directory.Exists(DemoFolder))
-            {
-                Directory.CreateDirectory(DemoFolder);
-                AssetDatabase.Refresh();
-            }
+            EditorAssetPathUtility.EnsureFolder(DemoFolder);
         }
     }
 }

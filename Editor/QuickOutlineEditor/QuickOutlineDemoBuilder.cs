@@ -1,6 +1,6 @@
 ﻿//
 //  QuickOutlineDemoBuilder.cs
-//  路径：Assets/Scripts/upanda-framework/Editor/QuickOutlineEditor/
+//  路径：Assets/upanda-framework/Editor/QuickOutlineEditor/
 //
 // =============================================================================
 //  作用：一键重建 QuickOutline 的官方示例场景
@@ -51,12 +51,12 @@ namespace UPandaGF.GFEditor
         // ---------------- 路径与常量 ----------------
 
         // 新建场景的默认落盘位置（模块自己的 Demo 目录，不动 Samples/ 里导入进来的资源）
-        private const string DefaultSceneFolder = "Assets/Scripts/upanda-framework/Runtime/Game/QuickOutline/Demo";
+        private const string DefaultSceneFolder = "Assets/upanda-framework/Runtime/Game/QuickOutline/Demo";
         private const string DefaultSceneName   = "QuickOutlineDemo.unity";
 
         // 地面材质（原型 Plane 的 MeshRenderer 用的就是它）
         private const string PlaneMaterialPath =
-            "Assets/Scripts/upanda-framework/Runtime/Game/QuickOutline/Samples/Resources/Materials/Plane.mat";
+            "Assets/upanda-framework/Runtime/Game/QuickOutline/Samples/Resources/Materials/Plane.mat";
 
         // 原型里 5 个物体的共用描边参数
         private static readonly Color OutlineColor = new Color(0.08675194f, 1f, 0f, 1f);
@@ -251,26 +251,10 @@ namespace UPandaGF.GFEditor
             }
         }
 
-        /// <summary>确保工程内的目录存在（形如 Assets/A/B，逐级创建）</summary>
+        /// <summary>确保工程内的目录存在（形如 Assets/A/B，逐级创建）。实现见 EditorAssetPathUtility。</summary>
         private static void EnsureFolder(string projectRelativeFolder)
         {
-            string full = projectRelativeFolder.Replace('\\', '/').TrimEnd('/');
-            if (AssetDatabase.IsValidFolder(full))
-            {
-                return;
-            }
-
-            string[] parts = full.Split('/');
-            string current = parts[0];                       // 一定是 "Assets"
-            for (int i = 1; i < parts.Length; i++)
-            {
-                string next = current + "/" + parts[i];
-                if (!AssetDatabase.IsValidFolder(next))
-                {
-                    AssetDatabase.CreateFolder(current, parts[i]);
-                }
-                current = next;
-            }
+            EditorAssetPathUtility.EnsureFolder(projectRelativeFolder);
         }
     }
 }

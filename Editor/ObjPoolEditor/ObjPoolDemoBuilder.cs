@@ -1,6 +1,6 @@
 ﻿//
 //  ObjPoolDemoBuilder.cs
-//  路径：Assets/Scripts/upanda-framework/Editor/ObjPoolEditor/
+//  路径：Assets/upanda-framework/Editor/ObjPoolEditor/
 //
 // =============================================================================
 //  作用：一键重建 ObjPool（对象池）的示例场景
@@ -71,7 +71,7 @@ namespace UPandaGF.GFEditor
 
         private const string MenuRoot = "UPandaGF/Runtime/ObjPool/";
 
-        private const string DefaultSceneFolder = "Assets/Scripts/upanda-framework/Runtime/Manager/ObjPool/Demo";
+        private const string DefaultSceneFolder = "Assets/upanda-framework/Runtime/Manager/ObjPool/Demo";
         private const string DefaultSceneName   = "PoolUseSceneDemo.unity";
 
         /// <summary>
@@ -376,26 +376,10 @@ namespace UPandaGF.GFEditor
             return go;
         }
 
-        /// <summary>确保工程内目录存在（形如 Assets/A/B，逐级创建）</summary>
+        /// <summary>确保工程内目录存在（形如 Assets/A/B，逐级创建）。实现见 EditorAssetPathUtility。</summary>
         private static void EnsureFolder(string projectRelativeFolder)
         {
-            string full = projectRelativeFolder.Replace('\\', '/').TrimEnd('/');
-            if (AssetDatabase.IsValidFolder(full))
-            {
-                return;
-            }
-
-            string[] parts = full.Split('/');
-            string current = parts[0];   // "Assets"
-            for (int i = 1; i < parts.Length; i++)
-            {
-                string next = current + "/" + parts[i];
-                if (!AssetDatabase.IsValidFolder(next))
-                {
-                    AssetDatabase.CreateFolder(current, parts[i]);
-                }
-                current = next;
-            }
+            EditorAssetPathUtility.EnsureFolder(projectRelativeFolder);
         }
     }
 }

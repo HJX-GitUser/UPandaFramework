@@ -1,6 +1,6 @@
 ﻿//
 //  QuickOutlineMaterialRepair.cs
-//  路径：Assets/Scripts/upanda-framework/Editor/QuickOutlineEditor/
+//  路径：Assets/upanda-framework/Editor/QuickOutlineEditor/
 //
 // =============================================================================
 //  一、这个工具解决什么问题

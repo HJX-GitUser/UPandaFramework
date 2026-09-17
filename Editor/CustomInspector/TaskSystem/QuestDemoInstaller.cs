@@ -4,6 +4,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UPandaGF.GFEditor;
 using UPandaGF.RunTime.TaskSystem;
 
 namespace UPandaGF.EditorTools
@@ -18,7 +19,7 @@ namespace UPandaGF.EditorTools
     /// </summary>
     public static class QuestDemoInstaller
     {
-        private const string ModuleFolder = "Assets/Scripts/upanda-framework/Runtime/Game/TaskSystem";
+        private const string ModuleFolder = "Assets/upanda-framework/Runtime/Game/TaskSystem";
         private const string ResourcesFolder = ModuleFolder + "/Resources";
         private const string QuestFolder = ResourcesFolder + "/Quests";
 
@@ -319,25 +320,20 @@ namespace UPandaGF.EditorTools
 
         // ============================== 任务资产辅助 ==============================
 
+        /// <summary>
+        /// 确保 ModuleFolder → Resources → Quests 逐级存在。
+        /// 用 EditorAssetPathUtility 逐级创建：即使 ModuleFolder 的父目录
+        /// （Assets/upanda-framework/Runtime/Game）整套都还不存在，也能一次建出来。
+        /// </summary>
         private static void EnsureQuestFolder()
         {
-            if (!AssetDatabase.IsValidFolder(ModuleFolder))
-            {
-                AssetDatabase.CreateFolder("Assets/Scripts/upanda-framework/Runtime/Game", "TaskSystem");
-            }
-            if (!AssetDatabase.IsValidFolder(ResourcesFolder))
-            {
-                AssetDatabase.CreateFolder(ModuleFolder, "Resources");
-            }
-            if (!AssetDatabase.IsValidFolder(QuestFolder))
-            {
-                AssetDatabase.CreateFolder(ResourcesFolder, "Quests");
-            }
+            EditorAssetPathUtility.EnsureFolder(QuestFolder);
         }
 
         private static QuestDefinition CreateOrLoadDefinition(string assetName)
         {
-            string path = QuestFolder + "/" + assetName + ".asset";
+            // 兜底：目录被手动删掉时，这里再确认一次，避免 CreateAsset 直接失败
+            string path = EditorAssetPathUtility.EnsureFolderForAsset(QuestFolder + "/" + assetName + ".asset");
             QuestDefinition definition = AssetDatabase.LoadAssetAtPath<QuestDefinition>(path);
 
             if (definition == null)

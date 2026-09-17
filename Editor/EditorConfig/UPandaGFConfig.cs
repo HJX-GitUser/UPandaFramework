@@ -15,11 +15,10 @@ namespace UPandaGF.GFEditor
             try
             {
                 string json = JsonUtility.ToJson(config, true);
-                if (!Directory.Exists(configPath))
-                {
-                    Directory.CreateDirectory(configPath);
-                    AssetDatabase.Refresh();  // 重要：刷新 AssetDatabase
-                }
+
+                // 目录不存在就逐级建出来（configPath 支持 "Assets/xx" 或绝对路径）
+                configPath = EditorAssetPathUtility.EnsureFolder(configPath) + "/";
+
                 string fullPath = Path.Combine(configPath, fileName + ".json");
                 File.WriteAllText(fullPath, json, Encoding.UTF8);
                 AssetDatabase.Refresh();

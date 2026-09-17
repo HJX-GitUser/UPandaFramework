@@ -52,7 +52,7 @@ namespace UPandaGF.GFEditor
     public class DemoConfigSO : ScriptableObject
     {
         /// <summary>存放示例资产的目录（相对项目根目录）。</summary>
-        public const string AssetFolder = "Assets/Scripts/upanda-framework/Editor/EditorStu/Demo";
+        public const string AssetFolder = "Assets/upanda-framework/Editor/EditorStu/Demo";
 
         /// <summary>示例资产的完整路径。</summary>
         public const string AssetPath = AssetFolder + "/DemoConfig.asset";
@@ -88,7 +88,8 @@ namespace UPandaGF.GFEditor
 
         /// <summary>
         /// 创建（不存在时）或读取示例资产。
-        /// <para>注意：AssetDatabase.CreateFolder 不会自动创建父目录，所以这里先用 Directory.CreateDirectory 建好目录再 Refresh。</para>
+        /// <para>注意：AssetDatabase.CreateAsset 不会建目录，所以这里先用
+        /// <see cref="EditorAssetPathUtility.EnsureFolder"/> 逐级建好（父目录缺失也能补上）。</para>
         /// </summary>
         public static DemoConfigSO CreateOrLoadExample()
         {
@@ -96,11 +97,7 @@ namespace UPandaGF.GFEditor
             if (asset != null)
                 return asset;
 
-            if (!Directory.Exists(AssetFolder))
-            {
-                Directory.CreateDirectory(AssetFolder);
-                AssetDatabase.Refresh();   // 让 Unity 立刻看到这个新目录
-            }
+            EditorAssetPathUtility.EnsureFolder(AssetFolder);
 
             asset = CreateInstance<DemoConfigSO>();
             AssetDatabase.CreateAsset(asset, AssetPath);

@@ -323,7 +323,7 @@ namespace UPandaGF.GFEditor
                     AssetDatabase.Refresh();
                 if (GUILayout.Button("统计框架里的 ScriptableObject", GUILayout.Width(220f)))
                 {
-                    string[] guids = AssetDatabase.FindAssets("t:ScriptableObject", new[] { "Assets/Scripts/upanda-framework" });
+                    string[] guids = AssetDatabase.FindAssets("t:ScriptableObject", new[] { "Assets/upanda-framework" });
                     Debug.Log($"[编辑器案例] upanda-framework 下有 {guids.Length} 个 ScriptableObject");
                 }
                 EditorGUILayout.EndHorizontal();

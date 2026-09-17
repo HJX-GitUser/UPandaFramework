@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UPandaGF.GFEditor;
 
 namespace UPandaGF
 {
@@ -30,17 +31,18 @@ namespace UPandaGF
         }
         private static void CreatForderPacking(string fileName)
         {
-            string fullPath = Application.dataPath + $"/{fileName}";
-            if (!Directory.Exists(fullPath))
+            // 走统一工具：逐级创建 + 生成 .meta，父目录缺失也能建出来
+            string folder = "Assets/" + fileName;
+            EditorAssetPathUtility.EnsureFolder(folder);
+
+            if (AssetDatabase.IsValidFolder(folder))
             {
-                Directory.CreateDirectory(fullPath);
-                Debug.Log($"{fileName}目录创建完成");
+                Debug.Log($"{fileName}目录创建完成（{folder}）");
             }
             else
             {
-                Debug.Log($"{fileName}目录已存在");
+                Debug.LogError($"{fileName}目录创建失败（{folder}）");
             }
-
         }
 
         [MenuItem("GameObject/UPandaGF/创建UPGameRoot")]

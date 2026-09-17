@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEditor.Compilation;
 using System.Reflection;
+using UPandaGF.GFEditor;
 
 namespace UPandaGF
 {
@@ -431,12 +432,8 @@ namespace UPandaGF
                     return null;
                 }
 
-                // 创建目录
-                string directory = Path.GetDirectoryName(path);
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
+                // 创建目录（逐级创建，父目录缺失也能补上；同时兼容绝对路径）
+                EditorAssetPathUtility.EnsureAbsoluteDirectoryForFile(path);
 
                 File.WriteAllText(path, content, Encoding.UTF8);
                 return path;

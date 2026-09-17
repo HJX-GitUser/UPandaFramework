@@ -2,11 +2,15 @@
 using UnityEditor;
 using UnityEngine.UI;
 using System.IO;
+using UPandaGF.GFEditor;
 
 public class LogListenerUIPrefabCreator : EditorWindow
 {
     private string prefabName = "LogListenerPanel";
     private string savePath = "Assets/";
+
+    /// <summary>最近一次成功落盘的预制体路径（CreateScenePrefab 复用它，避免重名序号导致找不到文件）。</summary>
+    private string lastSavedPrefabPath;
     private Font logFont;
     private int fontSize = 14;
     private Color panelColor = new Color(0.1f, 0.1f, 0.1f, 0.95f);
@@ -103,11 +107,11 @@ public class LogListenerUIPrefabCreator : EditorWindow
 
         DestroyImmediate(canvasObj);
 
-        Debug.Log($"✅ 日志监听面板创建成功: {savePath}/{prefabName}.prefab");
+        Debug.Log($"✅ 日志监听面板创建成功: {lastSavedPrefabPath}");
 
         AssetDatabase.Refresh();
 
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{savePath}/{prefabName}.prefab");
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(lastSavedPrefabPath);
         Selection.activeObject = prefab;
 
         EditorGUIUtility.PingObject(prefab);
@@ -431,30 +435,41 @@ public class LogListenerUIPrefabCreator : EditorWindow
         manager.exceptionToggle = toggleGroup.Find("ExceptionToggle").GetComponent<Toggle>();
     }
 
-    private void SavePrefab(GameObject panel)
+    /// <summary>
+    /// 保存预制体，返回实际落盘的资产路径。
+    /// 面板上填的路径可能是 "Assets/xx"、绝对路径或随手写的相对路径，这里统一收敛成
+    /// Assets 下的工程路径；目录不存在时逐级创建（CreateAsset / SaveAsPrefabAsset 都不会建目录）。
+    /// </summary>
+    private string SavePrefab(GameObject panel)
     {
-        if (!savePath.EndsWith("/"))
+        // 1) 把输入路径规范化成 "Assets/..."；不在 Assets 内就回退到 Assets 根目录
+        string folder = EditorAssetPathUtility.ToAssetFolder(savePath);
+        if (string.IsNullOrEmpty(folder))
         {
-            savePath += "/";
+            Debug.LogWarning($"[LogListener] 保存路径不在 Assets 内（当前：\"{savePath}\"），已回退到 Assets 根目录。");
+            folder = "Assets";
         }
 
-        if (!Directory.Exists(savePath))
-        {
-            Directory.CreateDirectory(savePath);
-        }
+        // 2) 目录不存在就逐级建出来，并回写面板（下次沿用规范化结果）
+        folder = EditorAssetPathUtility.EnsureFolder(folder);
+        savePath = folder + "/";
 
-        string fullPath = $"{savePath}{prefabName}.prefab";
-        fullPath = AssetDatabase.GenerateUniqueAssetPath(fullPath);
-
+        // 3) 同名文件自动加序号，然后落盘
+        string fullPath = AssetDatabase.GenerateUniqueAssetPath(folder + "/" + prefabName + ".prefab");
         PrefabUtility.SaveAsPrefabAsset(panel, fullPath);
+
+        lastSavedPrefabPath = fullPath;
+        return fullPath;
     }
 
     private void CreateScenePrefab()
     {
-        savePath = "Assets/";
         CreatePanelWithSettings();
 
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{savePath}{prefabName}.prefab");
+        GameObject prefab = string.IsNullOrEmpty(lastSavedPrefabPath)
+            ? null
+            : AssetDatabase.LoadAssetAtPath<GameObject>(lastSavedPrefabPath);
+
         if (prefab != null)
         {
             GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
@@ -464,6 +479,10 @@ public class LogListenerUIPrefabCreator : EditorWindow
             Selection.activeGameObject = instance;
 
             Debug.Log("✅ 日志监听系统已创建到当前场景！");
+        }
+        else
+        {
+            Debug.LogError("[LogListener] 预制体创建失败，请检查保存路径：" + savePath);
         }
     }
 

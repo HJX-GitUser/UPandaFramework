@@ -1,6 +1,6 @@
 ﻿﻿//
 //  ReplaySystemDemoBuilder.cs
-//  路径：Assets/Scripts/upanda-framework/Editor/ReplaySystemEditor/
+//  路径：Assets/upanda-framework/Editor/ReplaySystemEditor/
 //
 // =============================================================================
 //  作用：一键重建 ReplaySystem 的示例场景
@@ -74,12 +74,12 @@ namespace UPandaGF.GFEditor
 
         private const string MenuRoot = "UPandaGF/Runtime/ReplaySystem/";
 
-        private const string DefaultSceneFolder = "Assets/Scripts/upanda-framework/Runtime/Game/ReplaySystem/Demo";
+        private const string DefaultSceneFolder = "Assets/upanda-framework/Runtime/Game/ReplaySystem/Demo";
         private const string DefaultSceneName   = "ReplaySystemDemo.unity";
 
         // 弹性物理材质（原型里 DemoBouncyBall 的 SphereCollider 用的就是它）
         private const string PhysicsMaterialPath =
-            "Assets/Scripts/upanda-framework/Runtime/Game/ReplaySystem/Sample/sphere.physicMaterial";
+            "Assets/upanda-framework/Runtime/Game/ReplaySystem/Sample/sphere.physicMaterial";
 
         // 内置 UI 资源路径（AssetDatabase.GetBuiltinExtraResource）
         private const string UISpritePath    = "UI/Skin/UISprite.psd";    // 按钮/进度填充
@@ -518,26 +518,10 @@ namespace UPandaGF.GFEditor
             return go;
         }
 
-        /// <summary>确保工程内目录存在（形如 Assets/A/B，逐级创建）</summary>
+        /// <summary>确保工程内目录存在（形如 Assets/A/B，逐级创建）。实现见 EditorAssetPathUtility。</summary>
         private static void EnsureFolder(string projectRelativeFolder)
         {
-            string full = projectRelativeFolder.Replace('\\', '/').TrimEnd('/');
-            if (AssetDatabase.IsValidFolder(full))
-            {
-                return;
-            }
-
-            string[] parts = full.Split('/');
-            string current = parts[0];   // "Assets"
-            for (int i = 1; i < parts.Length; i++)
-            {
-                string next = current + "/" + parts[i];
-                if (!AssetDatabase.IsValidFolder(next))
-                {
-                    AssetDatabase.CreateFolder(current, parts[i]);
-                }
-                current = next;
-            }
+            EditorAssetPathUtility.EnsureFolder(projectRelativeFolder);
         }
     }
 }
