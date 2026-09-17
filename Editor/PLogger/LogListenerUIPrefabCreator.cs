@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿﻿using UnityEngine;
 using UnityEditor;
 using UnityEngine.UI;
 using System.IO;
@@ -351,7 +351,7 @@ public class LogListenerUIPrefabCreator : EditorWindow
         }
         else
         {
-            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.font = UPandaGF.UnityBuiltinFont.Get();
         }
 
         ContentSizeFitter sizeFitter = logText.AddComponent<ContentSizeFitter>();
@@ -503,7 +503,7 @@ public class LogListenerUIPrefabCreator : EditorWindow
         textComp.fontSize = fontSize;
         textComp.color = Color.white;
         textComp.alignment = TextAnchor.MiddleCenter;
-        textComp.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        textComp.font = UPandaGF.UnityBuiltinFont.Get();
 
         return btn;
     }
@@ -534,7 +534,7 @@ public class LogListenerUIPrefabCreator : EditorWindow
         text.alignment = TextAnchor.MiddleLeft;
         text.horizontalOverflow = HorizontalWrapMode.Overflow;
         text.verticalOverflow = VerticalWrapMode.Truncate;
-        text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        text.font = UPandaGF.UnityBuiltinFont.Get();
 
         RectTransform textRT = textObj.GetComponent<RectTransform>();
         textRT.anchorMin = Vector2.zero;
@@ -550,7 +550,7 @@ public class LogListenerUIPrefabCreator : EditorWindow
         placeholderText.alignment = TextAnchor.MiddleLeft;
         placeholderText.horizontalOverflow = HorizontalWrapMode.Overflow;
         placeholderText.verticalOverflow = VerticalWrapMode.Truncate;
-        placeholderText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        placeholderText.font = UPandaGF.UnityBuiltinFont.Get();
         placeholderText.fontStyle = FontStyle.Italic;
 
         RectTransform placeholderRT = placeholderObj.GetComponent<RectTransform>();
@@ -613,7 +613,7 @@ public class LogListenerUIPrefabCreator : EditorWindow
         labelText.alignment = TextAnchor.MiddleLeft;
         labelText.horizontalOverflow = HorizontalWrapMode.Overflow;
         labelText.verticalOverflow = VerticalWrapMode.Truncate;
-        labelText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        labelText.font = UPandaGF.UnityBuiltinFont.Get();
 
         RectTransform labelRT = labelObj.GetComponent<RectTransform>();
         labelRT.anchorMin = new Vector2(0, 0.5f);

@@ -1,4 +1,4 @@
-﻿//
+﻿﻿//
 //  ReplaySystemDemoBuilder.cs
 //  路径：Assets/Scripts/upanda-framework/Editor/ReplaySystemEditor/
 //
@@ -475,37 +475,13 @@ namespace UPandaGF.GFEditor
             return text;
         }
 
-        // 内置默认字体的解析结果缓存：整个工具只解析一次，避免每个 Text 都去查一遍
-        private static Font cachedDefaultFont;
-        private static bool defaultFontResolved;
-
         /// <summary>
         /// 取 Unity 的内置默认字体 —— 等价于在 Hierarchy 里新建一个 Text 时 Unity 自动给的那个字体。
-        /// 命名随版本变化：2021.2 起为 LegacyRuntime.ttf，更早版本为 Arial.ttf，这里按新→旧依次尝试。
-        /// 中文不需要额外字体：Unity 的内置字体在缺字形时会回退到操作系统字体来渲染。
+        /// 字体名随版本变化、取不到时的告警口径都在 UPandaGF.UnityBuiltinFont 里统一处理。
         /// </summary>
         private static Font GetBuiltinFont()
         {
-            if (defaultFontResolved)
-            {
-                return cachedDefaultFont;
-            }
-            defaultFontResolved = true;
-
-            cachedDefaultFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");   // 2021.2+
-            if (cachedDefaultFont == null)
-            {
-                cachedDefaultFont = Resources.GetBuiltinResource<Font>("Arial.ttf");       // 更早版本的内置字体名
-            }
-
-            // 明确报错，避免 font == null 时 UI 文本静默不显示、排查不到原因
-            if (cachedDefaultFont == null)
-            {
-                Debug.LogError("[ReplaySystem] 取不到 Unity 内置默认字体（LegacyRuntime.ttf / Arial.ttf），" +
-                               "生成的 UI 文本将不显示；请在 Canvas 上手动给各 Text 指定一个 Font。");
-            }
-
-            return cachedDefaultFont;
+            return UnityBuiltinFont.Get();
         }
 
         private static Sprite GetBuiltinSprite(string builtinPath)

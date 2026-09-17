@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71498195fb76b6143a35a82da080e396, type: 3}
+  m_Name: Quest_KillWolves
+  m_EditorClassIdentifier: 
+  questId: Quest_KillWolves
+  title: "\u91CE\u72FC\u5A01\u80C1"
+  description: "\u6751\u5916\u7684\u91CE\u72FC\u8D8A\u6765\u8D8A\u591A\uFF0C\u53BB\u6E05\u6389
+    5 \u53EA\u5427\u3002"
+  questType: 0
+  autoStart: 0
+  isRepeatable: 0
+  prerequisites: []
+  objectives:
+  - objectiveId: Kill_wolf
+    type: 0
+    targetId: wolf
+    requiredAmount: 5
+    description: "\u51FB\u6740 5 \u53EA\u91CE\u72FC"
+  reward:
+    experience: 100
+    gold: 50
+    items:
+    - itemId: wolf_pelt
+      amount: 2

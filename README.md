@@ -105,7 +105,7 @@ upanda-framework/
 │   │   ├── PublicMono/          公共 Mono（协程 / Update 托管）
 │   │   └── Extend/              扩展方法
 │   ├── Game/                    玩法系统层
-│   │   ├── TaskSystem/          任务系统
+│   │   ├── TaskSystem/          任务系统（含本目录 README.md）
 │   │   ├── InteractiveTaskScoringSystem/  交互式任务评分系统（含 ReadMe.md）
 │   │   │   ├── Core/            纯逻辑层：运行状态 / 进度 / 评分策略 / 难度分级 / 回放日志 / 宿主接口
 │   │   │   ├── Data/            任务与步骤配置（ScriptableObject）
@@ -272,7 +272,7 @@ upanda-framework/
 
 | 模块 | 说明 |
 |---|---|
-| `TaskSystem` | 通用任务 / 条件 / 奖励 / 分组框架 |
+| `TaskSystem` | 通用任务系统：ScriptableObject 模板 + 运行时实例、四类目标（击杀 / 收集 / 到达 / 对话）、事件驱动进度（无轮询）、任务链前置、可重复任务、JSON 存档、UGUI 任务日志与 HUD、编辑器一键搭建；详见该目录 `README.md` |
 | `InteractiveTaskScoringSystem` | 交互式任务评分系统：步骤 / 操作组 / 评分 / 回放，面向教学实训场景；详见该目录 `ReadMe.md` |
 | `ReplaySystem` | 回放系统：按帧录制 Transform（可扩展），序列化 + 压缩存储到本地；`ReplayUI` 提供回放界面；详见该目录 `README.md` |
 | `StateMachine` | 分层状态机：状态注册、状态栈、路径切换（如 `Movement/Run`）；详见该目录 `README.md` |
@@ -341,6 +341,7 @@ upanda-framework/
 | `Runtime/Manager/DebugSystem/README.md` | 日志系统：两级开关（编译期剔除 / 运行期过滤）、日志链路、落盘机制、两套真机面板、编辑器工具、FAQ、已知限制与变更记录 |
 | `Runtime/Manager/EventCenterModule/README.md` | 事件系统：两套实现的内部结构、执行语义、选型建议、编辑器工具、FAQ、已知限制与变更记录 |
 | `Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md` | 交互式任务评分系统：架构与调用链、评分规则与难度分级、回放、编辑器工具链、扩展指南、已知限制、FAQ |
+| `Runtime/Game/TaskSystem/README.md` | 任务系统：核心概念与状态机、事件驱动接入方式、JSON 存档、UGUI 面板与 HUD 用法、一键搭建菜单、常见问题与扩展点 |
 | `Runtime/Game/RobotCCDIK/README.md` | 机械臂 CCD 逆运动学：原理、参数调优、姿态录制回放 |
 | `Runtime/Game/ReplaySystem/README.md` | 回放系统：录制、存储与播放 |
 | `Runtime/Game/StateMachine/README.md` | 分层状态机 |
@@ -356,7 +357,7 @@ upanda-framework/
 ## 源码约定
 
 - **程序集划分**：`Runtime/` 属于 `UPandaGF.Runtime`，`Editor/` 属于 `UPandaGF.Editor`。Runtime 程序集**在 Player 构建时不引用 `UnityEditor`**，因此 Runtime 代码里任何 `using UnityEditor;` 或 `UnityEditor.*` 调用都必须用 `#if UNITY_EDITOR ... #endif` 包住，否则会出现 `CS0246` 打包阻断。
-- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**（155/155 文件），并由根目录 `.editorconfig`、`.gitattributes` 固化。
+- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**（172/172 文件：Runtime 114 + Editor 58），并由根目录 `.editorconfig`、`.gitattributes` 固化。
 - **命名沿袭**：为兼容既有配置与场景，部分历史命名未做改动（如 `OpearationExecute`、`AddErroTimes`、`erroTimes`、部分接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间）。
 - **改动后自检**：涉及交互式任务评分系统时，改完先跑「任务流程校验器」再跑「运行逻辑自检」，可覆盖绝大多数配置错误与逻辑回归。
 
