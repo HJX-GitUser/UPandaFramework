@@ -56,9 +56,9 @@ Material:
     - _NormalScale: 0.24
     - _NormalTiling: 0.05
     - _NormalTiling2: 1.7
-    - _ReflectionBlur: 0.15
+    - _ReflectionBlur: 0.041
     - _ReflectionIntensity: 0.75
-    - _RefractionStrength: 0.02
+    - _RefractionStrength: 0.091
     - _SpecIntensity: 0.6
     - _SpecPower: 128
     - _UseCustomCube: 0

@@ -92,7 +92,7 @@ Shader "Custom/Water Surface (Built-in)"
 
         LOD 200
         ZWrite Off                                  // 透明水面不写深度
-        Cull Back                                   // 需要从水下看到水面时改成 Cull Off
+        Cull Off                                   // 需要从水下看到水面时改成 Cull Off
 
         //------------------------------------------------------------------
         // 抓屏：把当前帧缓冲拷贝到 _WaterGrabTexture，供折射使用

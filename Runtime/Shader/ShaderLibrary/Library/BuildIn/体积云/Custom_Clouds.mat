@@ -31,7 +31,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Coverage: 0.3
+    - _Coverage: 0.387
     - _Noise01Power: 1
     - _Noise02Power: 0.3
     - _ScatteringPower: 10
@@ -41,8 +41,8 @@ Material:
     - _UseFog: 1
     - _ViewDistance: 5000
     - __dirty: 1
-    - _cloudsHeight: 1000
-    - _cloudsPosition: 500
+    - _cloudsHeight: 500
+    - _cloudsPosition: 10
     m_Colors:
     - _CloudsColor: {r: 0.18431365, g: 0.35686278, b: 0.462745, a: 1}
     - _DirectionSpeed: {r: 20, g: 5, b: 10, a: -5}
