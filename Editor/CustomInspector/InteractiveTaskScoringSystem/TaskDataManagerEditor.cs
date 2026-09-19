@@ -1,4 +1,4 @@
-using UnityEditor;
+ï»¿using UnityEditor;
 using UnityEngine;
 
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
@@ -18,7 +18,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
             if (component.taskSteps != null && !EditorApplication.isPlaying)
             {
-                if (GUILayout.Button("´´½¨ÈÎÎñ½Úµã"))
+                if (GUILayout.Button("åˆ›å»ºä»»åŠ¡èŠ‚ç‚¹"))
                 {
                     TaskConfig arg = component.taskSteps;
                     Transform node = component.transform;
@@ -51,14 +51,19 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             }
             if (EditorApplication.isPlaying)
             {
-                if (GUILayout.Button("²½ÖèÌáÊ¾"))
+                if (GUILayout.Button("æ­¥éª¤æç¤º"))
                 {
                     component.OperationInstructions();
                 }
 
-                if (GUILayout.Button("²½ÖèÌø¹ı"))
+                if (GUILayout.Button("æ­¥éª¤è·³è¿‡"))
                 {
                     component.SkipTask();
+                }
+
+                if (GUILayout.Button("é‡æ–°å¼€å§‹ä»»åŠ¡"))
+                {
+                    component.RestartTask();
                 }
             }
         }

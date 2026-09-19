@@ -81,4 +81,6 @@ Shader "UI/AlwaysOnTopText"
             ENDCG
         }
     }
+
+    Fallback "UI/Default"
 }

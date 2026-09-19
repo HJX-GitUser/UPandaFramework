@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -9,22 +9,22 @@ using UnityEngine.UI;
 namespace UPandaGF
 {
     /// <summary>
-    /// Ãæ°å»ùÀà
-    /// Í¨¹ı´úÂë¿ìËÙµÄÕÒµ½ËùÓĞµÄ×Ó¿Ø¼ş£¬½ÚÔ¼ÕÒ¿Ø¼şµÄ¹¤×÷Á¿
-    /// ÔÚ×ÓÀàÖĞ´¦ÀíÂß¼­ 
-    /// ±ØĞë¼ÓÉÏ[UILoadInfo]ÌØĞÔ
+    /// é¢æ¿åŸºç±»
+    /// é€šè¿‡ä»£ç å¿«é€Ÿçš„æ‰¾åˆ°æ‰€æœ‰çš„å­æ§ä»¶ï¼ŒèŠ‚çº¦æ‰¾æ§ä»¶çš„å·¥ä½œé‡
+    /// åœ¨å­ç±»ä¸­å¤„ç†é€»è¾‘
+    /// å¿…é¡»åŠ ä¸Š[UILoadInfo]ç‰¹æ€§
     /// </summary>
     public abstract class BasePanel : MonoBehaviour
     {
         protected UIManager uiManager => UIManager.Instance;
         /// <summary>
-        /// UI×é¼şÈİÆ÷
-        /// UIBehaviourÊÇËùÓĞUI×é¼şµÄ»ùÀà£¬UI×é¼ş¶¼ÊÇÖ±½Ó»òÕß¼ä½Ó¼Ì³ĞUIBehaviourÕâ¸ö³éÏóÀàµÄ£¬
-        /// Ëü¼Ì³Ğ×ÔMonoBehavior£¬ËùÒÔÓµÓĞºÍUnityÏàÍ¬µÄÉúÃüÖÜÆÚ
+        /// UIç»„ä»¶å®¹å™¨
+        /// UIBehaviouræ˜¯æ‰€æœ‰UIç»„ä»¶çš„åŸºç±»ï¼ŒUIç»„ä»¶éƒ½æ˜¯ç›´æ¥æˆ–è€…é—´æ¥ç»§æ‰¿UIBehaviourè¿™ä¸ªæŠ½è±¡ç±»çš„ï¼Œ
+        /// å®ƒç»§æ‰¿è‡ªMonoBehaviorï¼Œæ‰€ä»¥æ‹¥æœ‰å’ŒUnityç›¸åŒçš„ç”Ÿå‘½å‘¨æœŸ
         /// </summary>
         protected Dictionary<string, List<UIBehaviour>> controlDic = new Dictionary<string, List<UIBehaviour>>();
         /// <summary>
-        ///Èç¹ûUI¿Ø¼şµÄÃû×Ö´æÔÚ¸ÃÈİÆ÷£¬¾Í²»¼ÇÂ¼
+        ///å¦‚æœUIæ§ä»¶çš„åå­—å­˜åœ¨è¯¥å®¹å™¨ï¼Œå°±ä¸è®°å½•
         /// </summary>
         private static List<string> defaultNameList = new List<string>() {"Image",
                                                                        "Text (TMP)",
@@ -60,52 +60,52 @@ namespace UPandaGF
         protected virtual void OnAwake() { }
 
         /// <summary>
-        /// ÔÚ×ÓÀàÖØĞ´ÏÔÊ¾Âß¼­
+        /// åœ¨å­ç±»é‡å†™æ˜¾ç¤ºé€»è¾‘
         /// </summary>
         public abstract void OnOpen(object panelArg = null);
         /// <summary>
-        /// Òş²Ø
+        /// éšè—
         /// </summary>
         public abstract void OnClose();
         /// <summary>
-        /// °´Å¥¼àÌıÊÂ¼ş£¬ÖØĞ´Ê±×Ô¼º¸ù¾İ´«ÈëµÄ°´Å¥Ãû×Ö´¦Àí¶ÔÓ¦°´Å¥µÄÂß¼­
+        /// æŒ‰é’®ç›‘å¬äº‹ä»¶ï¼Œé‡å†™æ—¶è‡ªå·±æ ¹æ®ä¼ å…¥çš„æŒ‰é’®åå­—å¤„ç†å¯¹åº”æŒ‰é’®çš„é€»è¾‘
         /// </summary>
-        /// <param name="btnName">°´Å¥Ãû×Ö</param>
+        /// <param name="btnName">æŒ‰é’®åå­—</param>
         protected virtual void Button_OnClick(string btnName) { }
         /// <summary>
-        /// Toggle×é¼ş¼àÌıÊÂ¼ş£¬Ò²ÊÇ¸ù¾İ´«ÈëµÄÃû×Ö´¦Àí¶ÔÓ¦µÄÊÂ¼ş
+        /// Toggleç»„ä»¶ç›‘å¬äº‹ä»¶ï¼Œä¹Ÿæ˜¯æ ¹æ®ä¼ å…¥çš„åå­—å¤„ç†å¯¹åº”çš„äº‹ä»¶
         /// </summary>
-        /// <param name="toggleName">ToggleÃû×Ö</param>
-        /// <param name="value">ToggleµÄÖµ</param>
+        /// <param name="toggleName">Toggleåå­—</param>
+        /// <param name="value">Toggleçš„å€¼</param>
         protected virtual void Toggle_OnValueChanged(string toggleName, bool value) { }
         /// <summary>
-        /// Slider×é¼ş¼àÌıÊÂ¼ş
+        /// Sliderç»„ä»¶ç›‘å¬äº‹ä»¶
         /// </summary>
         /// <param name="SliderName"></param>
         /// <param name="value"></param>
         protected virtual void Slider_OnValueChanged(string SliderName, float value) { }
 
         /// <summary>
-        /// InputField×é¼ş¼àÌıÊäÈëÖµ¸Ä±äÊÂ¼ş
+        /// InputFieldç»„ä»¶ç›‘å¬è¾“å…¥å€¼æ”¹å˜äº‹ä»¶
         /// </summary>
         /// <param name="InputFieldName"></param>
         /// <param name="value"></param>
         protected virtual void InputField_OnValueChanged(string InputFieldName, string value) { }
         /// <summary>
-        /// InputField×é¼ş¼àÌıÊäÈëÌá½»ÊÂ¼ş
+        /// InputFieldç»„ä»¶ç›‘å¬è¾“å…¥æäº¤äº‹ä»¶
         /// </summary>
         /// <param name="InputFieldName"></param>
         /// <param name="value"></param>
         protected virtual void InputField_onSubmit(string InputFieldName, string value) { }
         /// <summary>
-        /// InputField×é¼ş¼àÌıÊäÈë½áÊøÊÂ¼ş
+        /// InputFieldç»„ä»¶ç›‘å¬è¾“å…¥ç»“æŸäº‹ä»¶
         /// </summary>
         /// <param name="InputFieldName"></param>
         /// <param name="value"></param>
         protected virtual void InputField_onEndEdit(string InputFieldName, string value) { }
 
         /// <summary>
-        /// ÕÒµ½¶ÔÓ¦µÄUI×é¼ş²¢·ÅÈëÈİÆ÷ÖĞ
+        /// æ‰¾åˆ°å¯¹åº”çš„UIç»„ä»¶å¹¶æ”¾å…¥å®¹å™¨ä¸­
         /// </summary>
         /// <typeparam name="T"></typeparam>
         private void FindChildrenUIComponent<T>() where T : UIBehaviour
@@ -125,7 +125,7 @@ namespace UPandaGF
                 {
                     controlDic.Add(objName, new List<UIBehaviour>() { controls[i] });
                 }
-                //ÈÃButton¡¢Toggle¡¢Slider×é¼ş¼àÌıÉÏÊÂ¼ş
+                //è®©Buttonã€Toggleã€Sliderç»„ä»¶ç›‘å¬ä¸Šäº‹ä»¶
                 if (controls[i] is Button)
                 {
                     (controls[i] as Button).onClick.AddListener(() =>
@@ -159,9 +159,9 @@ namespace UPandaGF
             }
         }
         /// <summary>
-        /// ¸ù¾İ×é¼ş¹ÒÔØ¶ÔÏóµÄÃû×Ö»ñµÃ¶ÔÓ¦UI×é¼ş
+        /// æ ¹æ®ç»„ä»¶æŒ‚è½½å¯¹è±¡çš„åå­—è·å¾—å¯¹åº”UIç»„ä»¶
         /// </summary>
-        /// <param name="controlName">¶ÔÓ¦UI×é¼ş</param>
+        /// <param name="controlName">å¯¹åº”UIç»„ä»¶</param>
         /// <returns></returns>
         protected T GetControl<T>(string controlName) where T : UIBehaviour
         {
@@ -175,7 +175,7 @@ namespace UPandaGF
                     }
                 }
             }
-            Debug.LogError($"¡°{controlName}¡±²»´æÔÚ!");
+            Debug.LogError($"â€œ{controlName}â€ä¸å­˜åœ¨!");
             return null;
         }
 

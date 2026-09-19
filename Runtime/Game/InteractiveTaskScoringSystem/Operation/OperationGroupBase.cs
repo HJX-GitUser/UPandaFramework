@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,21 +7,21 @@ using UnityEngine.Events;
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
     /// <summary>
-    /// ²Ù×÷¼àÌı×é
+    /// æ“ä½œç›‘å¬ç»„
     /// </summary>
-    public abstract class OperationGroupBase : MonoBehaviour, OperationStepCheck, GetUniTaskID
+    public abstract class OperationGroupBase : MonoBehaviour, OperationStepCheck, GetUniTaskID, OperationResettable
     {
         public string OperatingStepID;
         /// <summary>
-        /// ÈÎÎñ×´Ì¬
+        /// ä»»åŠ¡çŠ¶æ€
         /// </summary>
         public OperationPhase operationPhase;
         /// <summary>
-        /// ²Ù×÷¼¯ºÏ
+        /// æ“ä½œé›†åˆ
         /// </summary>
         public OperationStepCheck[] ChildStep;
         /// <summary>
-        /// ²Ù×÷ÊıÁ¿
+        /// æ“ä½œæ•°é‡
         /// </summary>
         public int OperationCount => ChildStep == null ? 0 : ChildStep.Length;
 
@@ -30,7 +30,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public string GetID => OperatingStepID;
 
         /// <summary>
-        /// ²Ù×÷Íê³ÉÊÂ¼ş
+        /// æ“ä½œå®Œæˆäº‹ä»¶
         /// </summary>
         public UnityAction OperationComplete;
 
@@ -43,18 +43,18 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         }
 
         /// <summary>
-        /// ²Ù×÷×é³õÊ¼»¯
+        /// æ“ä½œç»„åˆå§‹åŒ–
         /// </summary>
-        /// <param name="completeEvent">²Ù×÷×é½áÊøÍê³É»Øµ÷</param>
+        /// <param name="completeEvent">æ“ä½œç»„ç»“æŸå®Œæˆå›è°ƒ</param>
         public virtual void Init(UnityAction completeEvent)
         {
-            //Debug.Log("²Ù×÷×é³õÊ¼»¯");
+            //Debug.Log("æ“ä½œç»„åˆå§‹åŒ–");
             OperationComplete = completeEvent;
         }
 
         private void InitChildStep()
         {
-            //Ö»»ñÈ¡µÚÒ»²ã¼¶×Ó¶ÔÏóµÄ²½Öè
+            //åªè·å–ç¬¬ä¸€å±‚çº§å­å¯¹è±¡çš„æ­¥éª¤
             List<OperationStepCheck> tempSteps = new List<OperationStepCheck>();
             for (int i = 0; i < transform.childCount; i++)
             {
@@ -65,19 +65,19 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         }
 
         /// <summary>
-        /// ²Ù×÷¼ì²é
+        /// æ“ä½œæ£€æŸ¥
         /// </summary>
         /// <param name="arg"></param>
         /// <param name="taskStep"></param>
         public abstract void OperationCheck(TaskEntityBase arg, TaskStepBase taskStep);
 
         /// <summary>
-        /// ²Ù×÷¼ì²éÆô¶¯
+        /// æ“ä½œæ£€æŸ¥å¯åŠ¨
         /// </summary>
         public abstract void CheckEnable();
 
         /// <summary>
-        /// ²Ù×÷Òıµ¼
+        /// æ“ä½œå¼•å¯¼
         /// </summary>
         public abstract void OperationInstructions();
 
@@ -88,9 +88,36 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             {
                 operationPhase = OperationPhase.Complete;
                 OperationComplete?.Invoke();
-                TaskStepData parentData = transform.GetComponentInParent<TaskStepBase>().taskStepData;
-                Debug.LogWarning($"²Ù×÷×éÈÎÎñ¼ì²é²½ÖèÎ´ÅäÖÃ,¸Ã²Ù×÷Ö±½ÓÍê³É,²Ù×÷×éÎ»ÓÚ£º{parentData.stepID}ÏÂ");
+                TaskStepData parentData = GetComponentInParent<TaskStepBase>()?.taskStepData;
+                Debug.LogWarning($"æ“ä½œç»„ä»»åŠ¡æ£€æŸ¥æ­¥éª¤æœªé…ç½®,è¯¥æ“ä½œç›´æ¥å®Œæˆ,æ“ä½œç»„ä½äºï¼š{parentData?.stepID}ä¸‹");
                 return;
+            }
+        }
+
+        /// <summary>
+        /// æ˜¯å¦è¿˜æœ‰å¤„äºç›®æ ‡æ£€æŸ¥é˜¶æ®µçš„å­æ­¥éª¤ï¼ˆä¿®å¤ï¼šé¿å…åŠ¨ç”»æ‰§è¡Œä¸­å†æ¬¡ç‚¹å‡»è¢«è¯¯åˆ¤ä¸ºæ“ä½œé”™è¯¯ï¼‰
+        /// </summary>
+        protected bool HasTargetCheckStep()
+        {
+            if (ChildStep == null) return false;
+            for (int i = 0; i < ChildStep.Length; i++)
+            {
+                if (ChildStep[i] != null && ChildStep[i].GetOperationPhase == OperationPhase.TargetCheck) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// å¤ä½æœ¬æ“ä½œç»„ä¸æ‰€æœ‰å­æ“ä½œçš„çŠ¶æ€ï¼ˆé‡æ–°å¼€å§‹ä»»åŠ¡æ—¶è°ƒç”¨ï¼‰
+        /// </summary>
+        public virtual void ResetOperation()
+        {
+            operationPhase = OperationPhase.Prepare;
+            if (ChildStep == null) return;
+            for (int i = 0; i < ChildStep.Length; i++)
+            {
+                OperationResettable resettable = ChildStep[i] as OperationResettable;
+                if (resettable != null) resettable.ResetOperation();
             }
         }
 
@@ -100,9 +127,10 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         public virtual void OperationSkip()
         {
+            if (ChildStep == null) return;   // ä¿®å¤ï¼šå­æ­¥éª¤ä¸ºç©ºæ—¶ä¸å†ç©ºå¼•ç”¨
             foreach (var item in ChildStep)
             {
-                if (item.GetOperationPhase != OperationPhase.Complete)
+                if (item != null && item.GetOperationPhase != OperationPhase.Complete)   // ä¿®å¤ï¼šnull å…ƒç´ ä¿æŠ¤
                     item.OperationSkip();
             }
         }

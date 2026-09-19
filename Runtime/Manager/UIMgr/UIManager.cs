@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace UPandaGF
 {
     /// <summary>
-    /// UI²ã¼¶
+    /// UIå±‚çº§
     /// </summary>
     public enum E_UI_Layer
     {
@@ -21,9 +21,9 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// UI¹ÜÀíÆ÷
-    /// 1.¹ÜÀíËùÓĞÏÔÊ¾µÄÃæ°å
-    /// 2.Ìá¹©¸øÍâ²¿ ÏÔÊ¾ºÍÒş²ØµÈµÈ½Ó¿Ú
+    /// UIç®¡ç†å™¨
+    /// 1.ç®¡ç†æ‰€æœ‰æ˜¾ç¤ºçš„é¢æ¿
+    /// 2.æä¾›ç»™å¤–éƒ¨ æ˜¾ç¤ºå’Œéšè—ç­‰ç­‰æ¥å£
     /// </summary>
     public class UIManager : LazyMonoSingletonBase<UIManager>
     {
@@ -43,7 +43,7 @@ namespace UPandaGF
         private IAssetsLoader assetsLoader;
 
         /// <summary>
-        /// ÖØÖÃCanvas
+        /// é‡ç½®Canvas
         /// </summary>
         /// <param name="arg"></param>
         public void ResetCanvas(Canvas arg)
@@ -51,7 +51,7 @@ namespace UPandaGF
             if (uiCanvas != null) uiCanvas.gameObject.SetActive(false);
             uiCanvas = arg;
             canvasRectTransform = uiCanvas.transform as RectTransform;
-            //ÕÒµ½¸÷²ã
+            //æ‰¾åˆ°å„å±‚
             bot = canvasRectTransform.Find("Bot");
             mid = canvasRectTransform.Find("Mid");
             top = canvasRectTransform.Find("Top");
@@ -59,7 +59,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ÖØÖÃÏà»ú
+        /// é‡ç½®ç›¸æœº
         /// </summary>
         /// <param name="arg"></param>
         public void ResetCamera(Camera arg)
@@ -79,7 +79,7 @@ namespace UPandaGF
                 uiCanvas = InitUICanvas(uiCamera);
             }
             canvasRectTransform = uiCanvas.transform as RectTransform;
-            //ÕÒµ½¸÷²ã
+            //æ‰¾åˆ°å„å±‚
             bot = canvasRectTransform.Find("Bot");
             mid = canvasRectTransform.Find("Mid");
             top = canvasRectTransform.Find("Top");
@@ -153,7 +153,7 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// Í¨¹ı²ã¼¶Ã¶¾Ù µÃµ½¶ÔÓ¦²ã¼¶µÄ¸¸¶ÔÏó
+        /// é€šè¿‡å±‚çº§æšä¸¾ å¾—åˆ°å¯¹åº”å±‚çº§çš„çˆ¶å¯¹è±¡
         /// </summary>
         /// <param name="layer"></param>
         /// <returns></returns>
@@ -175,25 +175,25 @@ namespace UPandaGF
 
 
         /// <summary>
-        /// ÏÔÊ¾Ãæ°åµÄ·½·¨
+        /// æ˜¾ç¤ºé¢æ¿çš„æ–¹æ³•
         /// </summary>
-        /// <param name="callBack">UIÃæ°åÏÔÊ¾ºóµÄ»Øµ÷</param>
+        /// <param name="callBack">UIé¢æ¿æ˜¾ç¤ºåçš„å›è°ƒ</param>
         public void ShowPanel<T>(object panelArg = null, UnityAction<T> callBack = null) where T : BasePanel
         {
             UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
-            // ¼ì²éµ±Ç°ÀàÊÇ·ñ°üº¬ÌØĞÔ
+            // æ£€æŸ¥å½“å‰ç±»æ˜¯å¦åŒ…å«ç‰¹æ€§
             if (uiLoadInfo == null)
             {
-                Debug.LogError($"¼Ì³Ğ×ÔBasePanelµÄÀà:({GetType().Name})±ØĞë±ê¼ÇUILoadInfoÌØĞÔ£¡£¡£¡");
+                Debug.LogError($"ç»§æ‰¿è‡ªBasePanelçš„ç±»:({GetType().Name})å¿…é¡»æ ‡è®°UILoadInfoç‰¹æ€§ï¼ï¼ï¼");
                 callBack?.Invoke(null);
                 return;
             }
             if (panelDic.ContainsKey(uiLoadInfo.loadPath))
             {
                 panelDic[uiLoadInfo.loadPath].OnOpen(panelArg);
-                // ´¦ÀíÃæ°å´´½¨Íê³ÉºóµÄÂß¼­
+                // å¤„ç†é¢æ¿åˆ›å»ºå®Œæˆåçš„é€»è¾‘
                 callBack?.Invoke(panelDic[uiLoadInfo.loadPath] as T);
-                //±ÜÃâÃæ°åÖØ¸´¼ÓÔØ Èç¹û´æÔÚ¸ÃÃæ°å ¼´Ö±½ÓÏÔÊ¾ µ÷ÓÃ»Øµ÷º¯Êıºó  Ö±½Óreturn ²»ÔÙ´¦ÀíºóÃæµÄÒì²½¼ÓÔØÂß¼­
+                //é¿å…é¢æ¿é‡å¤åŠ è½½ å¦‚æœå­˜åœ¨è¯¥é¢æ¿ å³ç›´æ¥æ˜¾ç¤º è°ƒç”¨å›è°ƒå‡½æ•°å  ç›´æ¥return ä¸å†å¤„ç†åé¢çš„å¼‚æ­¥åŠ è½½é€»è¾‘
                 return;
             }
             else
@@ -204,9 +204,9 @@ namespace UPandaGF
                     if (perfab != null)
                     {
                         GameObject uiObj = Instantiate(perfab);
-                        //°ÑUIÃæ°å×÷Îª CanvasµÄ×Ó¶ÔÏó
-                        //ÉèÖÃËüµÄÏà¶ÔÎ»ÖÃ
-                        //ÕÒµ½¸¸¶ÔÏó µ×ÏÔÊ¾ÔÚ¶ÔÓ¦µÄ²ã
+                        //æŠŠUIé¢æ¿ä½œä¸º Canvasçš„å­å¯¹è±¡
+                        //è®¾ç½®å®ƒçš„ç›¸å¯¹ä½ç½®
+                        //æ‰¾åˆ°çˆ¶å¯¹è±¡ åº•æ˜¾ç¤ºåœ¨å¯¹åº”çš„å±‚
                         Transform father = this.bot;
                         switch (uiLoadInfo.ui_Layer)
                         {
@@ -220,14 +220,14 @@ namespace UPandaGF
                                 father = this.system;
                                 break;
                         }
-                        //ÉèÖÃ¸¸¶ÔÏó  ÉèÖÃÏà¶ÔÎ»ÖÃºÍ´óĞ¡
+                        //è®¾ç½®çˆ¶å¯¹è±¡  è®¾ç½®ç›¸å¯¹ä½ç½®å’Œå¤§å°
                         uiObj.transform.SetParent(father);
                         uiObj.transform.localPosition = Vector3.zero;
                         uiObj.transform.localRotation = Quaternion.identity;
                         uiObj.transform.localScale = Vector3.one;
                         (uiObj.transform as RectTransform).offsetMax = Vector2.zero;
                         (uiObj.transform as RectTransform).offsetMin = Vector2.zero;
-                        //µÃµ½Ô¤ÉèÌåÉíÉÏµÄÃæ°å½Å±¾
+                        //å¾—åˆ°é¢„è®¾ä½“èº«ä¸Šçš„é¢æ¿è„šæœ¬
                         T panel = uiObj.GetComponent<T>();
                         panel.OnOpen(panelArg);
                         panelDic.Add(uiLoadInfo.loadPath, panel);
@@ -240,17 +240,17 @@ namespace UPandaGF
         public async Task<T> ShowPanelAsync<T>(object panelArg = null) where T : BasePanel
         {
             UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
-            // ¼ì²éµ±Ç°ÀàÊÇ·ñ°üº¬ÌØĞÔ
+            // æ£€æŸ¥å½“å‰ç±»æ˜¯å¦åŒ…å«ç‰¹æ€§
             if (uiLoadInfo == null)
             {
-                Debug.LogError($"¼Ì³Ğ×ÔBasePanelµÄÀà:({typeof(T).Name})±ØĞë±ê¼ÇUILoadInfoÌØĞÔ£¡£¡£¡");
+                Debug.LogError($"ç»§æ‰¿è‡ªBasePanelçš„ç±»:({typeof(T).Name})å¿…é¡»æ ‡è®°UILoadInfoç‰¹æ€§ï¼ï¼ï¼");
                 return null;
             }
 
             if (panelDic.ContainsKey(uiLoadInfo.loadPath))
             {
                 panelDic[uiLoadInfo.loadPath].OnOpen(panelArg);
-                //±ÜÃâÃæ°åÖØ¸´¼ÓÔØ Èç¹û´æÔÚ¸ÃÃæ°å ¼´Ö±½ÓÏÔÊ¾ µ÷ÓÃ»Øµ÷º¯Êıºó  Ö±½Óreturn ²»ÔÙ´¦ÀíºóÃæµÄÒì²½¼ÓÔØÂß¼­
+                //é¿å…é¢æ¿é‡å¤åŠ è½½ å¦‚æœå­˜åœ¨è¯¥é¢æ¿ å³ç›´æ¥æ˜¾ç¤º è°ƒç”¨å›è°ƒå‡½æ•°å  ç›´æ¥return ä¸å†å¤„ç†åé¢çš„å¼‚æ­¥åŠ è½½é€»è¾‘
                 return panelDic[uiLoadInfo.loadPath] as T;
             }
             else
@@ -271,14 +271,14 @@ namespace UPandaGF
                             father = this.system;
                             break;
                     }
-                    //ÉèÖÃ¸¸¶ÔÏó  ÉèÖÃÏà¶ÔÎ»ÖÃºÍ´óĞ¡
+                    //è®¾ç½®çˆ¶å¯¹è±¡  è®¾ç½®ç›¸å¯¹ä½ç½®å’Œå¤§å°
                     uiObj.transform.SetParent(father);
                     uiObj.transform.localPosition = Vector3.zero;
                     uiObj.transform.localRotation = Quaternion.identity;
                     uiObj.transform.localScale = Vector3.one;
                     (uiObj.transform as RectTransform).offsetMax = Vector2.zero;
                     (uiObj.transform as RectTransform).offsetMin = Vector2.zero;
-                    //µÃµ½Ô¤ÉèÌåÉíÉÏµÄÃæ°å½Å±¾
+                    //å¾—åˆ°é¢„è®¾ä½“èº«ä¸Šçš„é¢æ¿è„šæœ¬
                     T panel = uiObj.GetOrAddComponent<T>();
                     panel.OnOpen(panelArg);
                     panelDic.Add(uiLoadInfo.loadPath, panel);
@@ -312,7 +312,7 @@ namespace UPandaGF
             }
             if (uiObj == null)
             {
-                PLogger.LogError($"¼ÓÔØÊ§°Ü£º{loadPath} \n¡¾{loadMethod}¡¿");
+                PLogger.LogError($"åŠ è½½å¤±è´¥ï¼š{loadPath} \nã€{loadMethod}ã€‘");
                 return null;
             }
             return Instantiate(uiObj);
@@ -334,18 +334,18 @@ namespace UPandaGF
 
 
         /// <summary>
-        /// Òş²ØÃæ°å
-        /// »áÖ±½Ó°ÑUI¶ÔÏó¸øÉ±µô
-        /// Èç¹û²»ÏëµÄ»°¿ÉÒÔÓÃGetPanelµÃµ½Ãæ°åºóÖ±½Óµ÷ÓÃ¸ÃÃæ°åµÄOnClose·½·¨
+        /// éšè—é¢æ¿
+        /// ä¼šç›´æ¥æŠŠUIå¯¹è±¡ç»™æ€æ‰
+        /// å¦‚æœä¸æƒ³çš„è¯å¯ä»¥ç”¨GetPanelå¾—åˆ°é¢æ¿åç›´æ¥è°ƒç”¨è¯¥é¢æ¿çš„OnCloseæ–¹æ³•
         /// </summary>
         /// <param name="panelName"></param>
         public void ClosePanel<T>() where T : BasePanel
         {
             UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
-            // ¼ì²éµ±Ç°ÀàÊÇ·ñ°üº¬ÌØĞÔ
+            // æ£€æŸ¥å½“å‰ç±»æ˜¯å¦åŒ…å«ç‰¹æ€§
             if (uiLoadInfo == null)
             {
-                throw new ArgumentException($"¼Ì³Ğ×ÔBasePanelµÄÀà:({typeof(T).Name})±ØĞë±ê¼ÇUILoadInfoÌØĞÔ£¡£¡£¡");
+                throw new ArgumentException($"ç»§æ‰¿è‡ªBasePanelçš„ç±»:({typeof(T).Name})å¿…é¡»æ ‡è®°UILoadInfoç‰¹æ€§ï¼ï¼ï¼");
             }
             if (panelDic.ContainsKey(uiLoadInfo.loadPath))
             {
@@ -355,7 +355,7 @@ namespace UPandaGF
             }
         }
         /// <summary>
-        /// µÃµ½Ä³Ò»¸öÒÑ¾­ÏÔÊ¾µÄÃæ°å ·½±ãÍâ²¿Ê¹ÓÃ
+        /// å¾—åˆ°æŸä¸€ä¸ªå·²ç»æ˜¾ç¤ºçš„é¢æ¿ æ–¹ä¾¿å¤–éƒ¨ä½¿ç”¨
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="panelName"></param>
@@ -363,10 +363,10 @@ namespace UPandaGF
         public T GetPanel<T>() where T : BasePanel
         {
             UILoadInfoAttribute uiLoadInfo = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
-            // ¼ì²éµ±Ç°ÀàÊÇ·ñ°üº¬ÌØĞÔ
+            // æ£€æŸ¥å½“å‰ç±»æ˜¯å¦åŒ…å«ç‰¹æ€§
             if (uiLoadInfo == null)
             {
-                Debug.LogError($"¼Ì³Ğ×ÔBasePanelµÄÀà:({typeof(T).Name})±ØĞë±ê¼ÇUILoadInfoÌØĞÔ£¡£¡£¡");
+                Debug.LogError($"ç»§æ‰¿è‡ªBasePanelçš„ç±»:({typeof(T).Name})å¿…é¡»æ ‡è®°UILoadInfoç‰¹æ€§ï¼ï¼ï¼");
                 return null;
             }
 
@@ -378,11 +378,11 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ¸ø¿Ø¼şÌí¼Ó×Ô¶¨ÒåÊÂ¼ş¼àÌı
+        /// ç»™æ§ä»¶æ·»åŠ è‡ªå®šä¹‰äº‹ä»¶ç›‘å¬
         /// </summary>
-        /// <param name="control">¿Ø¼ş¶ÔÏó</param>
-        /// <param name="type">ÊÂ¼şÀàĞÍ</param>
-        /// <param name="callBack">ÊÂ¼şµÄÏìÓ¦º¯Êı</param>
+        /// <param name="control">æ§ä»¶å¯¹è±¡</param>
+        /// <param name="type">äº‹ä»¶ç±»å‹</param>
+        /// <param name="callBack">äº‹ä»¶çš„å“åº”å‡½æ•°</param>
         public static void AddCustomEventListener(UIBehaviour control, EventTriggerType type, UnityAction<BaseEventData> callBack)
         {
             EventTrigger trigger = control.gameObject.GetOrAddComponent<EventTrigger>();

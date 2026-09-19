@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEditor.IMGUI.Controls;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace AssetBundleBrowser
 
         [SerializeField]
         private InspectTabData m_Data;
-        
+
 
         private Dictionary<string, List<string> > m_BundleList;
         private InspectBundleTree m_BundleTreeView;
@@ -472,7 +472,7 @@ namespace AssetBundleBrowser
                     bundle = record.bundle;
                 }
             }
-                
+
             if (null == bundle)
             {
                 // Load the bundle

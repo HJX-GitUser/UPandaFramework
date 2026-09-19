@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -8,126 +8,126 @@ using UPandaGF;
 public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
 {
     /// <summary>
-    /// ´òÓ¡¹¤¾ß
+    /// æ‰“å°å·¥å…·
     /// </summary>
-    /// <param name="db">ÄÚÈİ</param>
+    /// <param name="db">å†…å®¹</param>
     private void MyDebug(string db)
     {
         PLogger.Log(db);
     }
     /// <summary>
-    /// ´æ´¢Êı¾İ
+    /// å­˜å‚¨æ•°æ®
     /// </summary>
-    /// <param name="data">Êı¾İ¶ÔÏó</param>
-    /// <param name="keyName">Êı¾İ¶ÔÏóµÄÎ¨Ò»key</param>
+    /// <param name="data">æ•°æ®å¯¹è±¡</param>
+    /// <param name="keyName">æ•°æ®å¯¹è±¡çš„å”¯ä¸€key</param>
     public void SaveData(object data, string keyName)
     {
-        //¾ÍÊÇÒªÍ¨¹ı Type µÃµ½´«ÈëÊı¾İ¶ÔÏóµÄËùÓĞµÄ ×Ö¶Î
-        //È»ºó½áºÏ PlayerPrefsÀ´½øĞĞ´æ´¢
+        //å°±æ˜¯è¦é€šè¿‡ Type å¾—åˆ°ä¼ å…¥æ•°æ®å¯¹è±¡çš„æ‰€æœ‰çš„ å­—æ®µ
+        //ç„¶åç»“åˆ PlayerPrefsæ¥è¿›è¡Œå­˜å‚¨
 
-        #region µÚÒ»²½ »ñÈ¡´«ÈëÊı¾İ¶ÔÏóµÄËùÓĞ×Ö¶Î
+        #region ç¬¬ä¸€æ­¥ è·å–ä¼ å…¥æ•°æ®å¯¹è±¡çš„æ‰€æœ‰å­—æ®µ
         Type dataType = data.GetType();
-        //µÃµ½ËùÓĞµÄ×Ö¶Î
+        //å¾—åˆ°æ‰€æœ‰çš„å­—æ®µ
         FieldInfo[] infos = dataType.GetFields();
         #endregion
 
-        #region µÚ¶ş²½ ×Ô¼º¶¨ÒåÒ»¸ökeyµÄ¹æÔò ½øĞĞÊı¾İ´æ´¢
-        //ÎÒÃÇ´æ´¢¶¼ÊÇÍ¨¹ıPlayerPrefsÀ´½øĞĞ´æ´¢µÄ
-        //±£Ö¤keyµÄÎ¨Ò»ĞÔ ÎÒÃÇ¾ÍĞèÒª×Ô¼º¶¨Ò»¸ökeyµÄ¹æÔò
+        #region ç¬¬äºŒæ­¥ è‡ªå·±å®šä¹‰ä¸€ä¸ªkeyçš„è§„åˆ™ è¿›è¡Œæ•°æ®å­˜å‚¨
+        //æˆ‘ä»¬å­˜å‚¨éƒ½æ˜¯é€šè¿‡PlayerPrefsæ¥è¿›è¡Œå­˜å‚¨çš„
+        //ä¿è¯keyçš„å”¯ä¸€æ€§ æˆ‘ä»¬å°±éœ€è¦è‡ªå·±å®šä¸€ä¸ªkeyçš„è§„åˆ™
 
-        //ÎÒÃÇ×Ô¼º¶¨Ò»¸ö¹æÔò
-        // keyName_Êı¾İÀàĞÍ_×Ö¶ÎÀàĞÍ_×Ö¶ÎÃû
+        //æˆ‘ä»¬è‡ªå·±å®šä¸€ä¸ªè§„åˆ™
+        // keyName_æ•°æ®ç±»å‹_å­—æ®µç±»å‹_å­—æ®µå
         #endregion
 
-        #region µÚÈı²½ ±éÀúÕâĞ©×Ö¶Î ½øĞĞÊı¾İ´æ´¢
+        #region ç¬¬ä¸‰æ­¥ éå†è¿™äº›å­—æ®µ è¿›è¡Œæ•°æ®å­˜å‚¨
         string saveKeyName = "";
         FieldInfo info;
         for (int i = 0; i < infos.Length; i++)
         {
-            //¶ÔÃ¿Ò»¸ö×Ö¶Î ½øĞĞÊı¾İ´æ´¢
-            //µÃµ½¾ßÌåµÄ×Ö¶ÎĞÅÏ¢
+            //å¯¹æ¯ä¸€ä¸ªå­—æ®µ è¿›è¡Œæ•°æ®å­˜å‚¨
+            //å¾—åˆ°å…·ä½“çš„å­—æ®µä¿¡æ¯
             info = infos[i];
-            //Í¨¹ıFieldInfo¿ÉÒÔÖ±½Ó»ñÈ¡µ½ ×Ö¶ÎµÄÀàĞÍ ºÍ×Ö¶ÎµÄÃû×Ö
-            //×Ö¶ÎµÄÀàĞÍ info.FieldType.Name
-            //×Ö¶ÎµÄÃû×Ö info.Name;
+            //é€šè¿‡FieldInfoå¯ä»¥ç›´æ¥è·å–åˆ° å­—æ®µçš„ç±»å‹ å’Œå­—æ®µçš„åå­—
+            //å­—æ®µçš„ç±»å‹ info.FieldType.Name
+            //å­—æ®µçš„åå­— info.Name;
 
-            //Òª¸ù¾İÎÒÃÇ¶¨µÄkeyµÄÆ´½Ó¹æÔò À´½øĞĞkeyµÄÉú³É
+            //è¦æ ¹æ®æˆ‘ä»¬å®šçš„keyçš„æ‹¼æ¥è§„åˆ™ æ¥è¿›è¡Œkeyçš„ç”Ÿæˆ
             //Player1_PlayerInfo_Int32_age
             saveKeyName = keyName + "_" + dataType.Name + "_" + info.FieldType.Name + "_" + info.Name;
 
-            //ÏÖÔÚµÃµ½ÁËKey °´ÕÕÎÒÃÇµÄ¹æÔò
-            //½ÓÏÂÀ´¾ÍÒªÀ´Í¨¹ıPlayerPrefsÀ´½øĞĞ´æ´¢
-            //ÈçºÎ»ñÈ¡Öµ
+            //ç°åœ¨å¾—åˆ°äº†Key æŒ‰ç…§æˆ‘ä»¬çš„è§„åˆ™
+            //æ¥ä¸‹æ¥å°±è¦æ¥é€šè¿‡PlayerPrefsæ¥è¿›è¡Œå­˜å‚¨
+            //å¦‚ä½•è·å–å€¼
             //info.GetValue(data)
-            //·â×°ÁËÒ»¸ö·½·¨ ×¨ÃÅÀ´´æ´¢Öµ 
+            //å°è£…äº†ä¸€ä¸ªæ–¹æ³• ä¸“é—¨æ¥å­˜å‚¨å€¼
             SaveValue(info.GetValue(data), saveKeyName);
         }
         PlayerPrefs.Save();
         #endregion
     }
     /// <summary>
-    /// ´æ´¢
+    /// å­˜å‚¨
     /// </summary>
-    /// <param name="value">Êı¾İ¶ÔÏó</param>
-    /// <param name="keyName">Êı¾İµÄKey</param>
+    /// <param name="value">æ•°æ®å¯¹è±¡</param>
+    /// <param name="keyName">æ•°æ®çš„Key</param>
     private void SaveValue(object value, string keyName)
     {
-        //Ö±½ÓÍ¨¹ıPlayerPrefsÀ´½øĞĞ´æ´¢ÁË
-        //¾ÍÊÇ¸ù¾İÊı¾İÀàĞÍµÄ²»Í¬ À´¾ö¶¨Ê¹ÓÃÄÄÒ»¸öAPIÀ´½øĞĞ´æ´¢
-        //PlayerPrefsÖ»Ö§³Ö3ÖÖÀàĞÍ´æ´¢ 
-        //ÅĞ¶Ï Êı¾İÀàĞÍ ÊÇÊ²Ã´ÀàĞÍ È»ºóµ÷ÓÃ¾ßÌåµÄ·½·¨À´´æ´¢
+        //ç›´æ¥é€šè¿‡PlayerPrefsæ¥è¿›è¡Œå­˜å‚¨äº†
+        //å°±æ˜¯æ ¹æ®æ•°æ®ç±»å‹çš„ä¸åŒ æ¥å†³å®šä½¿ç”¨å“ªä¸€ä¸ªAPIæ¥è¿›è¡Œå­˜å‚¨
+        //PlayerPrefsåªæ”¯æŒ3ç§ç±»å‹å­˜å‚¨
+        //åˆ¤æ–­ æ•°æ®ç±»å‹ æ˜¯ä»€ä¹ˆç±»å‹ ç„¶åè°ƒç”¨å…·ä½“çš„æ–¹æ³•æ¥å­˜å‚¨
         Type fieldType = value.GetType();
-        //ÀàĞÍÅĞ¶Ï
+        //ç±»å‹åˆ¤æ–­
         if (fieldType == typeof(int))
         {
-            MyDebug($"{keyName}´æ´¢int,ÀàĞÍ³ÉÔ±{fieldType.Name}");
+            MyDebug($"{keyName}å­˜å‚¨int,ç±»å‹æˆå‘˜{fieldType.Name}");
             int intValue = (int)value;
-            //TODO:ÔÚÕâÀï¿ÉÒÔÎªintÊı¾İ¼ÓÃÜ
+            //TODO:åœ¨è¿™é‡Œå¯ä»¥ä¸ºintæ•°æ®åŠ å¯†
             //rValue += 10;
             PlayerPrefs.SetInt(keyName, intValue);
         }
         else if (fieldType == typeof(float))
         {
-            MyDebug($"{keyName}´æ´¢float,ÀàĞÍ³ÉÔ±{fieldType.Name}");
+            MyDebug($"{keyName}å­˜å‚¨float,ç±»å‹æˆå‘˜{fieldType.Name}");
             PlayerPrefs.SetFloat(keyName, (float)value);
         }
         else if (fieldType == typeof(string))
         {
-            MyDebug($"{keyName}´æ´¢string,ÀàĞÍ³ÉÔ±{fieldType.Name}");
+            MyDebug($"{keyName}å­˜å‚¨string,ç±»å‹æˆå‘˜{fieldType.Name}");
             PlayerPrefs.SetString(keyName, (string)value);
         }
         else if (fieldType == typeof(bool))
         {
-            MyDebug($"{keyName}´æ´¢bool,ÀàĞÍ³ÉÔ±{fieldType.Name}");
-            //×Ô¼º¶¨µÄ´æ´¢boolµÄ¹æÔò£¬1 true,0 false
+            MyDebug($"{keyName}å­˜å‚¨bool,ç±»å‹æˆå‘˜{fieldType.Name}");
+            //è‡ªå·±å®šçš„å­˜å‚¨boolçš„è§„åˆ™ï¼Œ1 true,0 false
             PlayerPrefs.SetInt(keyName, (bool)value ? 1 : 0);
         }
-        //Èç¹ûÊÇListÊı×éÀàĞÍ
+        //å¦‚æœæ˜¯Listæ•°ç»„ç±»å‹
         else if (typeof(IList).IsAssignableFrom(fieldType))
         {
-            MyDebug($"{keyName}´æ´¢ListÊı×é,ÀàĞÍ³ÉÔ±{fieldType.Name}");
-            //¸¸Àà×°×ÓÀà
+            MyDebug($"{keyName}å­˜å‚¨Listæ•°ç»„,ç±»å‹æˆå‘˜{fieldType.Name}");
+            //çˆ¶ç±»è£…å­ç±»
             IList list = value as IList;
-            //ÏÈ´æ´¢Êı×éÊıÁ¿ 
+            //å…ˆå­˜å‚¨æ•°ç»„æ•°é‡
             PlayerPrefs.SetInt(keyName, list.Count);
             int index = 0;
             foreach (object item in list)
             {
-                //´æ´¢¾ßÌåµÄÖµ
+                //å­˜å‚¨å…·ä½“çš„å€¼
                 SaveValue(item, keyName + index);
                 index++;
             }
         }
-        //ÅĞ¶ÏÊÇ²»ÊÇDictionaryÀàĞÍ Í¨¹ıDictionaryµÄ¸¸ÀàÀ´ÅĞ¶Ï
+        //åˆ¤æ–­æ˜¯ä¸æ˜¯Dictionaryç±»å‹ é€šè¿‡Dictionaryçš„çˆ¶ç±»æ¥åˆ¤æ–­
         else if (typeof(IDictionary).IsAssignableFrom(fieldType))
         {
-            MyDebug($"{keyName}´æ´¢Dictionary,ÀàĞÍ³ÉÔ±{fieldType.Name}");
-            //¸¸Àà×°×ÓÀà
+            MyDebug($"{keyName}å­˜å‚¨Dictionary,ç±»å‹æˆå‘˜{fieldType.Name}");
+            //çˆ¶ç±»è£…å­ç±»
             IDictionary dic = value as IDictionary;
-            //ÏÈ´æ×Öµä³¤¶È
+            //å…ˆå­˜å­—å…¸é•¿åº¦
             PlayerPrefs.SetInt(keyName, dic.Count);
-            //±éÀú´æ´¢DicÀïÃæµÄ¾ßÌåÖµ
-            //ÓÃÓÚÇø·Ö ±íÊ¾µÄ Çø·Ö key
+            //éå†å­˜å‚¨Dicé‡Œé¢çš„å…·ä½“å€¼
+            //ç”¨äºåŒºåˆ† è¡¨ç¤ºçš„ åŒºåˆ† key
             int index = 0;
             foreach (object key in dic.Keys)
             {
@@ -142,55 +142,55 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
         }
     }
     /// <summary>
-    /// ¶ÁÈ¡Êı¾İ
+    /// è¯»å–æ•°æ®
     /// </summary>
-    /// <param name="type">ÏëÒª¶ÁÈ¡Êı¾İµÄ Êı¾İÀàĞÍType</param>
-    /// <param name="keyName">Êı¾İ¶ÔÏóµÄÎ¨Ò»key ×Ô¼º¿ØÖÆµÄ</param>
+    /// <param name="type">æƒ³è¦è¯»å–æ•°æ®çš„ æ•°æ®ç±»å‹Type</param>
+    /// <param name="keyName">æ•°æ®å¯¹è±¡çš„å”¯ä¸€key è‡ªå·±æ§åˆ¶çš„</param>
     /// <returns></returns>
     public object LoadData(Type type, string keyName)
     {
-        //²»ÓÃobject¶ÔÏó´«Èë ¶øÊ¹ÓÃ Type´«Èë
-        //Ö÷ÒªÄ¿µÄÊÇ½ÚÔ¼Ò»ĞĞ´úÂë£¨ÔÚÍâ²¿£©
-        //¼ÙÉèÏÖÔÚÄãÒª ¶ÁÈ¡Ò»¸öPlayerÀàĞÍµÄÊı¾İ Èç¹ûÊÇobject Äã¾Í±ØĞëÔÚÍâ²¿newÒ»¸ö¶ÔÏó´«Èë
-        //ÏÖÔÚÓĞTypeµÄ ÄãÖ»ÓÃ´«Èë Ò»¸öType typeof(Player) È»ºóÎÒÔÚÄÚ²¿¶¯Ì¬´´½¨Ò»¸ö¶ÔÏó¸øÄã·µ»Ø³öÀ´
-        //´ïµ½ÁË ÈÃÄãÔÚÍâ²¿ ÉÙĞ´Ò»ĞĞ´úÂëµÄ×÷ÓÃ
+        //ä¸ç”¨objectå¯¹è±¡ä¼ å…¥ è€Œä½¿ç”¨ Typeä¼ å…¥
+        //ä¸»è¦ç›®çš„æ˜¯èŠ‚çº¦ä¸€è¡Œä»£ç ï¼ˆåœ¨å¤–éƒ¨ï¼‰
+        //å‡è®¾ç°åœ¨ä½ è¦ è¯»å–ä¸€ä¸ªPlayerç±»å‹çš„æ•°æ® å¦‚æœæ˜¯object ä½ å°±å¿…é¡»åœ¨å¤–éƒ¨newä¸€ä¸ªå¯¹è±¡ä¼ å…¥
+        //ç°åœ¨æœ‰Typeçš„ ä½ åªç”¨ä¼ å…¥ ä¸€ä¸ªType typeof(Player) ç„¶åæˆ‘åœ¨å†…éƒ¨åŠ¨æ€åˆ›å»ºä¸€ä¸ªå¯¹è±¡ç»™ä½ è¿”å›å‡ºæ¥
+        //è¾¾åˆ°äº† è®©ä½ åœ¨å¤–éƒ¨ å°‘å†™ä¸€è¡Œä»£ç çš„ä½œç”¨
 
-        //¸ù¾İÄã´«ÈëµÄÀàĞÍ ºÍ keyName
-        //ÒÀ¾İÄã´æ´¢Êı¾İÊ±  keyµÄÆ´½Ó¹æÔò À´½øĞĞÊı¾İµÄ»ñÈ¡¸³Öµ ·µ»Ø³öÈ¥
+        //æ ¹æ®ä½ ä¼ å…¥çš„ç±»å‹ å’Œ keyName
+        //ä¾æ®ä½ å­˜å‚¨æ•°æ®æ—¶  keyçš„æ‹¼æ¥è§„åˆ™ æ¥è¿›è¡Œæ•°æ®çš„è·å–èµ‹å€¼ è¿”å›å‡ºå»
 
-        //¸ù¾İ´«ÈëµÄType ´´½¨Ò»¸ö¶ÔÏó ÓÃÓÚ´æ´¢Êı¾İ
+        //æ ¹æ®ä¼ å…¥çš„Type åˆ›å»ºä¸€ä¸ªå¯¹è±¡ ç”¨äºå­˜å‚¨æ•°æ®
         object data = Activator.CreateInstance(type);
-        //ÒªÍùÕâ¸önew³öÀ´µÄ¶ÔÏóÖĞ´æ´¢Êı¾İ Ìî³äÊı¾İ
-        //µÃµ½ËùÓĞ×Ö¶Î 
+        //è¦å¾€è¿™ä¸ªnewå‡ºæ¥çš„å¯¹è±¡ä¸­å­˜å‚¨æ•°æ® å¡«å……æ•°æ®
+        //å¾—åˆ°æ‰€æœ‰å­—æ®µ
         FieldInfo[] infos = type.GetFields();
-        //ÓÃÓÚÆ´½ÓkeyµÄ×Ö·û´®
+        //ç”¨äºæ‹¼æ¥keyçš„å­—ç¬¦ä¸²
         string loadKeyName = "";
-        //ÓÃÓÚ´æ´¢ µ¥¸ö×Ö¶ÎĞÅÏ¢µÄ ¶ÔÏó
+        //ç”¨äºå­˜å‚¨ å•ä¸ªå­—æ®µä¿¡æ¯çš„ å¯¹è±¡
         FieldInfo info;
         for (int i = 0; i < infos.Length; i++)
         {
             info = infos[i];
-            //keyµÄÆ´½Ó¹æÔò Ò»¶¨ÊÇºÍ´æ´¢Ê±Ò»Ä£Ò»Ñù ÕâÑù²ÅÄÜÕÒµ½¶ÔÓ¦Êı¾İ
+            //keyçš„æ‹¼æ¥è§„åˆ™ ä¸€å®šæ˜¯å’Œå­˜å‚¨æ—¶ä¸€æ¨¡ä¸€æ · è¿™æ ·æ‰èƒ½æ‰¾åˆ°å¯¹åº”æ•°æ®
             loadKeyName = keyName + "_" + type.Name + "_" + info.FieldType.Name + "_" + info.Name;
-            //ÓĞkey ¾Í¿ÉÒÔ½áºÏ PlayerPrefsÀ´¶ÁÈ¡Êı¾İ
-            //Ìî³äÊı¾İµ½dataÖĞ 
+            //æœ‰key å°±å¯ä»¥ç»“åˆ PlayerPrefsæ¥è¯»å–æ•°æ®
+            //å¡«å……æ•°æ®åˆ°dataä¸­
             info.SetValue(data, LoadValue(info.FieldType, loadKeyName));
         }
         return data;
     }
     /// <summary>
-    /// µÃµ½µ¥¸öÊı¾İµÄ·½·¨
+    /// å¾—åˆ°å•ä¸ªæ•°æ®çš„æ–¹æ³•
     /// </summary>
-    /// <param name="fieldType">×Ö¶ÎÀàĞÍ ÓÃÓÚÅĞ¶Ï ÓÃÄÄ¸öapiÀ´¶ÁÈ¡</param>
-    /// <param name="keyName">ÓÃÓÚ»ñÈ¡¾ßÌåÊı¾İ</param>
+    /// <param name="fieldType">å­—æ®µç±»å‹ ç”¨äºåˆ¤æ–­ ç”¨å“ªä¸ªapiæ¥è¯»å–</param>
+    /// <param name="keyName">ç”¨äºè·å–å…·ä½“æ•°æ®</param>
     /// <returns></returns>
     private object LoadValue(Type fieldType, string keyName)
     {
-        //¸ù¾İ ×Ö¶ÎÀàĞÍ À´ÅĞ¶Ï ÓÃÄÄ¸öAPIÀ´¶ÁÈ¡
+        //æ ¹æ® å­—æ®µç±»å‹ æ¥åˆ¤æ–­ ç”¨å“ªä¸ªAPIæ¥è¯»å–
         if (fieldType == typeof(int))
         {
-            //TODO:Èç¹û´æ´¢Ê±ÓĞ¼ÓÃÜ²Ù×÷£¬ÒªÔÚÕâÀï½øĞĞ½âÃÜ
-            return PlayerPrefs.GetInt(keyName, 0);//µÚ¶ş¸ö²ÎÊıÊÇÈç¹ûÃ»ÓĞÕâ¸öÖµ£¬¸ø³öµÄÄ¬ÈÏÖµ
+            //TODO:å¦‚æœå­˜å‚¨æ—¶æœ‰åŠ å¯†æ“ä½œï¼Œè¦åœ¨è¿™é‡Œè¿›è¡Œè§£å¯†
+            return PlayerPrefs.GetInt(keyName, 0);//ç¬¬äºŒä¸ªå‚æ•°æ˜¯å¦‚æœæ²¡æœ‰è¿™ä¸ªå€¼ï¼Œç»™å‡ºçš„é»˜è®¤å€¼
         }
         else if (fieldType == typeof(float))
         {
@@ -202,28 +202,28 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
         }
         else if (fieldType == typeof(bool))
         {
-            //¸ù¾İ×Ô¶¨Òå´æ´¢boolµÄ¹æÔò À´½øĞĞÖµµÄ»ñÈ¡
+            //æ ¹æ®è‡ªå®šä¹‰å­˜å‚¨boolçš„è§„åˆ™ æ¥è¿›è¡Œå€¼çš„è·å–
             return PlayerPrefs.GetInt(keyName, 0) == 1 ? true : false;
         }
         else if (typeof(IList).IsAssignableFrom(fieldType))
         {
-            //µÃµ½³¤¶È
+            //å¾—åˆ°é•¿åº¦
             int count = PlayerPrefs.GetInt(keyName, 0);
-            //ÊµÀı»¯Ò»¸öList¶ÔÏó À´½øĞĞ¸³Öµ
-            //ÓÃÁË·´ÉäÖĞË«AÖĞ Activator½øĞĞ¿ìËÙÊµÀı»¯List¶ÔÏó
+            //å®ä¾‹åŒ–ä¸€ä¸ªListå¯¹è±¡ æ¥è¿›è¡Œèµ‹å€¼
+            //ç”¨äº†åå°„ä¸­åŒAä¸­ Activatorè¿›è¡Œå¿«é€Ÿå®ä¾‹åŒ–Listå¯¹è±¡
             IList list = Activator.CreateInstance(fieldType) as IList;
             for (int i = 0; i < count; i++)
             {
-                //Ä¿µÄÊÇÒªµÃµ½ ListÖĞ·ºĞÍµÄÀàĞÍ 
+                //ç›®çš„æ˜¯è¦å¾—åˆ° Listä¸­æ³›å‹çš„ç±»å‹
                 list.Add(LoadValue(fieldType.GetGenericArguments()[0], keyName + i));
             }
             return list;
         }
         else if (typeof(IDictionary).IsAssignableFrom(fieldType))
         {
-            //µÃµ½×ÖµäµÄ³¤¶È
+            //å¾—åˆ°å­—å…¸çš„é•¿åº¦
             int count = PlayerPrefs.GetInt(keyName, 0);
-            //ÊµÀı»¯Ò»¸ö×Öµä¶ÔÏó ÓÃ¸¸Àà×°×ÓÀà
+            //å®ä¾‹åŒ–ä¸€ä¸ªå­—å…¸å¯¹è±¡ ç”¨çˆ¶ç±»è£…å­ç±»
             IDictionary dic = Activator.CreateInstance(fieldType) as IDictionary;
             Type[] kvType = fieldType.GetGenericArguments();
             for (int i = 0; i < count; i++)

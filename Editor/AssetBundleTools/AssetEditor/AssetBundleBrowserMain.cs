@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+Ôªøusing System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System;
@@ -60,7 +60,7 @@ namespace AssetBundleBrowser
 
         public AssetBundleBuildTab.BuildTabData m_BuildTabData => m_BuildTab.M_UserData;
 
-        [MenuItem("UPandaGF/AB∞¸π§æﬂ/AssetBundle Browser")]
+        [MenuItem("UPandaGF/ABÂåÖÂ∑•ÂÖ∑/AssetBundle Browser")]
 
         static void ShowWindow()
         {
@@ -230,7 +230,7 @@ namespace AssetBundleBrowser
             if (tempMode != m_Mode)
             {
                 tempMode = m_Mode;
-                //Debug.Log($"«–ªª“≥«©{tempMode}");
+                //Debug.Log($"ÂàáÊç¢È°µÁ≠æ{tempMode}");
                 if (tempMode == Mode.Builder)
                 {
                     m_BuildTab.RepaintAssetBundleClassification();

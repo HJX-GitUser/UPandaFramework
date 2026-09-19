@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.IO;
 using System.Net;
@@ -9,7 +9,7 @@ using UnityEngine.Networking;
 using UPandaGF;
 
 /// <summary>
-/// StreamingAssets¼ÓÔØ¹¤¾ß
+/// StreamingAssetsåŠ è½½å·¥å…·
 /// </summary>
 public static class StreamingAssetsLoader
 {
@@ -17,7 +17,7 @@ public static class StreamingAssetsLoader
     public static string StreamingAssetsPath => streamingAssetsPath;
 
     /// <summary>
-    /// »ñÈ¡StreamingAssetsµÄÂ·¾¶£¨ÊÊÓÃÓÚËùÓĞÆ½Ì¨£©
+    /// è·å–StreamingAssetsçš„è·¯å¾„ï¼ˆé€‚ç”¨äºæ‰€æœ‰å¹³å°ï¼‰
     /// </summary>
     private static string GetStreamingAssetsPath()
     {
@@ -27,20 +27,20 @@ public static class StreamingAssetsLoader
 #if UNITY_EDITOR
         path = Application.streamingAssetsPath;
 #else
-            // ÅĞ¶ÏÆ½Ì¨ÀàĞÍ£¬»ñÈ¡¶ÔÓ¦µÄÂ·¾¶
+            // åˆ¤æ–­å¹³å°ç±»å‹ï¼Œè·å–å¯¹åº”çš„è·¯å¾„
             if (Application.platform == RuntimePlatform.Android)
             {
-                // AndroidÆ½Ì¨ÉÏ£¬StreamingAssetsÂ·¾¶ÊÇÍ¨¹ıjar°ü·ÃÎÊµÄ
+                // Androidå¹³å°ä¸Šï¼ŒStreamingAssetsè·¯å¾„æ˜¯é€šè¿‡jaråŒ…è®¿é—®çš„
                 path = "jar:file://" + Application.dataPath + "!/assets";
             }
             else if (Application.platform == RuntimePlatform.IPhonePlayer)
             {
-                // iOSÆ½Ì¨£¬StreamingAssetsÔÚÓ¦ÓÃ°üµÄ¸ùÄ¿Â¼
+                // iOSå¹³å°ï¼ŒStreamingAssetsåœ¨åº”ç”¨åŒ…çš„æ ¹ç›®å½•
                 path = "file://" + System.IO.Path.Combine(Application.dataPath, "Raw");
             }
             else
             {
-                // ÆäËûÆ½Ì¨£¨Windows, Mac, Linux, WebGLµÈ£©£¬¿ÉÒÔÖ±½ÓÊ¹ÓÃApplication.streamingAssetsPath
+                // å…¶ä»–å¹³å°ï¼ˆWindows, Mac, Linux, WebGLç­‰ï¼‰ï¼Œå¯ä»¥ç›´æ¥ä½¿ç”¨Application.streamingAssetsPath
                 path = Application.streamingAssetsPath;
             }
 #endif
@@ -56,17 +56,17 @@ public static class StreamingAssetsLoader
             relativePath = '/' + relativePath;
         }
         return streamingAssetsPath + relativePath;
-        
+
     }
 
 
     /// <summary>
-    /// ¼ÓÔØÎÄ±¾ÎÄ¼ş
+    /// åŠ è½½æ–‡æœ¬æ–‡ä»¶
     /// </summary>
     /// <param name="relativePath"></param>
     /// <returns></returns>
 #if UNITY_WEBGL
-    [Obsolete("¡¾¾¯¸æ¡¿±ğÔÚWebGLÆ½Ì¨Ê¹ÓÃÍ¬²½·½·¨[LoadTextFile],ÓÃÒì²½·½·¨¼ÓÔØ[LoadTextFileAsync]",true)]
+    [Obsolete("ã€è­¦å‘Šã€‘åˆ«åœ¨WebGLå¹³å°ä½¿ç”¨åŒæ­¥æ–¹æ³•[LoadTextFile],ç”¨å¼‚æ­¥æ–¹æ³•åŠ è½½[LoadTextFileAsync]",true)]
 #endif
     public static string LoadTextFile(string relativePath)
     {
@@ -79,7 +79,7 @@ public static class StreamingAssetsLoader
 
                 while (!request.isDone)
                 {
-                    // µÈ´ıÎÄ¼ş¼ÓÔØÍê³É
+                    // ç­‰å¾…æ–‡ä»¶åŠ è½½å®Œæˆ
                 }
                 if (IsRequestSuccess(request))
                 {
@@ -87,7 +87,7 @@ public static class StreamingAssetsLoader
                 }
                 else
                 {
-                    Debug.LogError($"{fullPath} ¼ÓÔØÊ§°Ü:\n{request.error}");
+                    Debug.LogError($"{fullPath} åŠ è½½å¤±è´¥:\n{request.error}");
                     return null;
                 }
             }
@@ -100,26 +100,26 @@ public static class StreamingAssetsLoader
     }
 
     /// <summary>
-    /// Òì²½¼ÓÔØÎÄ±¾ÎÄ¼ş
+    /// å¼‚æ­¥åŠ è½½æ–‡æœ¬æ–‡ä»¶
     /// </summary>
-    /// <param name="relativePath">Ïà¶ÔÓÚStreamingAssetsµÄÂ·¾¶£¬Èç "Config/settings.json"</param>
-    /// <returns>ÎÄ±¾ÄÚÈİ</returns>
+    /// <param name="relativePath">ç›¸å¯¹äºStreamingAssetsçš„è·¯å¾„ï¼Œå¦‚ "Config/settings.json"</param>
+    /// <returns>æ–‡æœ¬å†…å®¹</returns>
     public static async Task<string> LoadTextFileAsync(string relativePath)
     {
         string fullPath = CombineRelativePath(relativePath);
         string data = null;
-        // ÅĞ¶ÏÆ½Ì¨£¬Ñ¡Ôñ¼ÓÔØ·½Ê½
+        // åˆ¤æ–­å¹³å°ï¼Œé€‰æ‹©åŠ è½½æ–¹å¼
         if (Application.platform == RuntimePlatform.Android ||
             Application.platform == RuntimePlatform.WebGLPlayer)
         {
-            // AndroidºÍWebGLÆ½Ì¨Ê¹ÓÃUnityWebRequest
+            // Androidå’ŒWebGLå¹³å°ä½¿ç”¨UnityWebRequest
             using (UnityWebRequest www = UnityWebRequest.Get(fullPath))
             {
                 var operation = www.SendWebRequest();
 
                 while (!operation.isDone)
                 {
-                    await System.Threading.Tasks.Task.Yield(); // Òì²½µÈ´ıÏÂÒ»Ö¡
+                    await System.Threading.Tasks.Task.Yield(); // å¼‚æ­¥ç­‰å¾…ä¸‹ä¸€å¸§
                 }
 
                 if (IsRequestSuccess(www))
@@ -128,7 +128,7 @@ public static class StreamingAssetsLoader
                 }
                 else
                 {
-                    Debug.LogError($"{fullPath} ¼ÓÔØÊ§°Ü:\n{www.error}");
+                    Debug.LogError($"{fullPath} åŠ è½½å¤±è´¥:\n{www.error}");
                 }
 
 
@@ -142,13 +142,13 @@ public static class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                Debug.LogError($"{fullPath} ¼ÓÔØÊ§°Ü:\n{e.Message}");
+                Debug.LogError($"{fullPath} åŠ è½½å¤±è´¥:\n{e.Message}");
             }
         }
         return data;
     }
     /// <summary>
-    /// ¼ÓÔØÎÄ±¾ÎÄ¼ş Ğ­³ÌÒì²½
+    /// åŠ è½½æ–‡æœ¬æ–‡ä»¶ åç¨‹å¼‚æ­¥
     /// </summary>
     /// <param name="relativePath"></param>
     /// <param name="callback"></param>
@@ -170,7 +170,7 @@ public static class StreamingAssetsLoader
                 }
                 else
                 {
-                    PLogger.LogError($"{fullPath} ¼ÓÔØÊ§°Ü:\n{request.error} ");
+                    PLogger.LogError($"{fullPath} åŠ è½½å¤±è´¥:\n{request.error} ");
                 }
             }
         }
@@ -182,7 +182,7 @@ public static class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                PLogger.LogError($"{fullPath} ¼ÓÔØÊ§°Ü:\n{e.Message}");
+                PLogger.LogError($"{fullPath} åŠ è½½å¤±è´¥:\n{e.Message}");
             }
         }
         callback?.Invoke(text);
@@ -190,12 +190,12 @@ public static class StreamingAssetsLoader
     }
 
     /// <summary>
-    /// ¼ÓÔØ¶ş½øÖÆÎÄ¼ş
+    /// åŠ è½½äºŒè¿›åˆ¶æ–‡ä»¶
     /// </summary>
     /// <param name="relativePath"></param>
     /// <returns></returns>
 #if UNITY_WEBGL
-    [Obsolete("¡¾¾¯¸æ¡¿±ğÔÚWebGLÆ½Ì¨Ê¹ÓÃÍ¬²½·½·¨[LoadBinaryData],ÓÃÒì²½·½·¨¼ÓÔØ[LoadBinaryDataAsync]", true)]
+    [Obsolete("ã€è­¦å‘Šã€‘åˆ«åœ¨WebGLå¹³å°ä½¿ç”¨åŒæ­¥æ–¹æ³•[LoadBinaryData],ç”¨å¼‚æ­¥æ–¹æ³•åŠ è½½[LoadBinaryDataAsync]", true)]
 #endif
     public static byte[] LoadBinaryData(string relativePath)
     {
@@ -208,7 +208,7 @@ public static class StreamingAssetsLoader
 
                 while (!request.isDone)
                 {
-                    // µÈ´ıÎÄ¼ş¼ÓÔØÍê³É
+                    // ç­‰å¾…æ–‡ä»¶åŠ è½½å®Œæˆ
                 }
 
                 if (IsRequestSuccess(request))
@@ -217,7 +217,7 @@ public static class StreamingAssetsLoader
                 }
                 else
                 {
-                    Debug.LogError($"{fullPath} ¼ÓÔØÊ§°Ü:\n{request.error}");
+                    Debug.LogError($"{fullPath} åŠ è½½å¤±è´¥:\n{request.error}");
                     return null;
                 }
             }
@@ -230,7 +230,7 @@ public static class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                PLogger.LogError($"{fullPath} ¼ÓÔØÊ§°Ü: \n{e.Message}");
+                PLogger.LogError($"{fullPath} åŠ è½½å¤±è´¥: \n{e.Message}");
                 return null;
             }
         }
@@ -238,13 +238,13 @@ public static class StreamingAssetsLoader
     }
 
     /// <summary>
-    /// Òì²½¼ÓÔØ¶ş½øÖÆÊı¾İ£¨ÈçÍ¼Æ¬¡¢ÒôÆµÎÄ¼ş£©
+    /// å¼‚æ­¥åŠ è½½äºŒè¿›åˆ¶æ•°æ®ï¼ˆå¦‚å›¾ç‰‡ã€éŸ³é¢‘æ–‡ä»¶ï¼‰
     /// </summary>
     public static async Task<byte[]> LoadBinaryDataAsync(string relativePath)
     {
         if (!CheckFile(relativePath))
         {
-            Debug.LogError($"¼ÓÔØÊ§°Ü:{relativePath} ");
+            Debug.LogWarning($"åŠ è½½å¤±è´¥:{relativePath} ");
             return null;
         }
         string fullPath = CombineRelativePath(relativePath);
@@ -263,7 +263,7 @@ public static class StreamingAssetsLoader
 
                 if (!IsRequestSuccess(www))
                 {
-                    Debug.LogError($"{fullPath} ¼ÓÔØÊ§°Ü: \n{www.error}");
+                    Debug.LogError($"{fullPath} åŠ è½½å¤±è´¥: \n{www.error}");
                 }
 
                 return www.downloadHandler.data;
@@ -277,7 +277,7 @@ public static class StreamingAssetsLoader
             }
             catch (Exception e)
             {
-                Debug.LogError($"{fullPath} ¼ÓÔØÊ§°Ü: \n {e.Message}");
+                Debug.LogError($"{fullPath} åŠ è½½å¤±è´¥: \n {e.Message}");
                 return null;
             }
         }
@@ -286,7 +286,7 @@ public static class StreamingAssetsLoader
     }
 
     /// <summary>
-    /// ¼ÓÔØ¶ş½øÖÆÎÄ¼ş Ğ­³ÌÒì²½
+    /// åŠ è½½äºŒè¿›åˆ¶æ–‡ä»¶ åç¨‹å¼‚æ­¥
     /// </summary>
     /// <param name="relativePath"></param>
     /// <param name="callback"></param>
@@ -329,9 +329,9 @@ public static class StreamingAssetsLoader
     }
 
     /// <summary>
-    /// Æ´½ÓÂ·¾¶
+    /// æ‹¼æ¥è·¯å¾„
     /// </summary>
-    /// <param name="path">Ïà¶ÔÂ·¾¶</param>
+    /// <param name="path">ç›¸å¯¹è·¯å¾„</param>
     /// <returns></returns>
     public static string CombinePath(string path)
     {
@@ -339,7 +339,7 @@ public static class StreamingAssetsLoader
     }
 
     /// <summary>
-    /// ¼ì²éÂ·¾¶ÊÇ·ñ´æÔÚ
+    /// æ£€æŸ¥è·¯å¾„æ˜¯å¦å­˜åœ¨
     /// </summary>
     /// <returns></returns>
     public static bool CheckFile(string relativePath)

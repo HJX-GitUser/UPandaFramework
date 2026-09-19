@@ -1,4 +1,4 @@
-using UnityEditor;
+ï»¿using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +18,7 @@ namespace AssetBundleBrowser
 
         [SerializeField]
         private bool m_AdvancedSettings;
-       
+
 
         [SerializeField]
         private Vector2 m_ScrollPosition;
@@ -121,55 +121,55 @@ namespace AssetBundleBrowser
             m_ToggleData = new List<ToggleData>();
             m_ToggleData.Add(new ToggleData(
                 false,
-                "ÅÅ³ıÀàĞÍĞÅÏ¢[Exclude Type Information]",
-                "²»ÒªÔÚ×ÊÔ´°üÖĞ°üº¬ÀàĞÍĞÅÏ¢£¨²»Òª±àĞ´ÀàĞÍÊ÷£©[Do not include type information within the asset bundle (don't write type tree).]",
+                "æ’é™¤ç±»å‹ä¿¡æ¯[Exclude Type Information]",
+                "ä¸è¦åœ¨èµ„æºåŒ…ä¸­åŒ…å«ç±»å‹ä¿¡æ¯ï¼ˆä¸è¦ç¼–å†™ç±»å‹æ ‘ï¼‰[Do not include type information within the asset bundle (don't write type tree).]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.DisableWriteTypeTree));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "Ç¿ÖÆÖØ½¨[Force Rebuild]",
-                "Ç¿ÖÆÖØĞÂ¹¹½¨×ÊÔ´°ü[Force rebuild the asset bundles]",
+                "å¼ºåˆ¶é‡å»º[Force Rebuild]",
+                "å¼ºåˆ¶é‡æ–°æ„å»ºèµ„æºåŒ…[Force rebuild the asset bundles]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.ForceRebuildAssetBundle));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "ºöÂÔÀàĞÍÊ÷¸ü¸Ä[Ignore Type Tree Changes]",
-                "ÔÚ½øĞĞÔöÁ¿¹¹½¨¼ì²éÊ±£¬ºöÂÔÀàĞÍÊ÷µÄ±ä»¯[Ignore the type tree changes when doing the incremental build check.]",
+                "å¿½ç•¥ç±»å‹æ ‘æ›´æ”¹[Ignore Type Tree Changes]",
+                "åœ¨è¿›è¡Œå¢é‡æ„å»ºæ£€æŸ¥æ—¶ï¼Œå¿½ç•¥ç±»å‹æ ‘çš„å˜åŒ–[Ignore the type tree changes when doing the incremental build check.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.IgnoreTypeTreeChanges));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "×·¼Ó¹şÏ£[Append Hash]",
-                "½«¹şÏ£Öµ¸½¼Óµ½assetBundleÃû³ÆÉÏ[Append the hash to the assetBundle name.]",
+                "è¿½åŠ å“ˆå¸Œ[Append Hash]",
+                "å°†å“ˆå¸Œå€¼é™„åŠ åˆ°assetBundleåç§°ä¸Š[Append the hash to the assetBundle name.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.AppendHashToAssetBundleName));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "ÑÏ¸ñÄ£Ê½[Strict Mode]",
-                "Èç¹ûÔÚ¹¹½¨¹ı³ÌÖĞ±¨¸æÁËÈÎºÎ´íÎó£¬Ôò²»ÔÊĞí¹¹½¨³É¹¦¡£[Do not allow the build to succeed if any errors are reporting during it.]",
+                "ä¸¥æ ¼æ¨¡å¼[Strict Mode]",
+                "å¦‚æœåœ¨æ„å»ºè¿‡ç¨‹ä¸­æŠ¥å‘Šäº†ä»»ä½•é”™è¯¯ï¼Œåˆ™ä¸å…è®¸æ„å»ºæˆåŠŸã€‚[Do not allow the build to succeed if any errors are reporting during it.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.StrictMode));
             m_ToggleData.Add(new ToggleData(
                 false,
-                "ÊÔÔËĞĞ¹¹½¨[Dry Run Build]",
-                "½øĞĞÒ»´ÎÄ£Äâ¹¹½¨[Do a dry run build.]",
+                "è¯•è¿è¡Œæ„å»º[Dry Run Build]",
+                "è¿›è¡Œä¸€æ¬¡æ¨¡æ‹Ÿæ„å»º[Do a dry run build.]",
                 m_UserData.m_OnToggles,
                 BuildAssetBundleOptions.DryRunBuild));
 
 
             m_ForceRebuild = new ToggleData(
                 false,
-                "ÇåÀíÎÄ¼ş¼Ğ[Clear Folders]",
-                "Èç¹ûÄúÑ¡Ôñ½«¹¹½¨ÄÚÈİ¸´ÖÆµ½StreamingAssets/AssetBundles£¬Ôò´Ë²Ù×÷½«Çå³ı¹¹½¨Ä¿Â¼ÒÔ¼°¸ÃÄ¿Â¼ÖĞËùÓĞÄÚÈİ¡£[Will wipe out all contents of build directory as well as StreamingAssets/AssetBundles if you are choosing to copy build there.]",
+                "æ¸…ç†æ–‡ä»¶å¤¹[Clear Folders]",
+                "å¦‚æœæ‚¨é€‰æ‹©å°†æ„å»ºå†…å®¹å¤åˆ¶åˆ°StreamingAssets/AssetBundlesï¼Œåˆ™æ­¤æ“ä½œå°†æ¸…é™¤æ„å»ºç›®å½•ä»¥åŠè¯¥ç›®å½•ä¸­æ‰€æœ‰å†…å®¹ã€‚[Will wipe out all contents of build directory as well as StreamingAssets/AssetBundles if you are choosing to copy build there.]",
                 m_UserData.m_OnToggles);
             m_CopyToStreaming = new ToggleData(
                 false,
                 "[Copy to StreamingAssets]",
-                "[After build completes, will copy all build content to " + m_streamingPath + " for use in stand-alone player.]",
+                "[After build completes, will copy all build content to <StreamingAssets>/<OutputPath> (keeping the folder structure) for use in stand-alone player.]",
                 m_UserData.m_OnToggles);
 
             m_TargetContent = new GUIContent("Build Target", "Choose target platform to build for.");
-            m_CompressionContent = new GUIContent("Ñ¹Ëõ[Compression]", "Choose no compress, standard (LZMA), or chunk based (LZ4)");
+            m_CompressionContent = new GUIContent("å‹ç¼©[Compression]", "Choose no compress, standard (LZMA), or chunk based (LZ4)");
 
             if (m_UserData.m_UseDefaultPath)
             {
@@ -247,24 +247,24 @@ namespace AssetBundleBrowser
                         m_UserData.m_OnToggles.Remove(m_ForceRebuild.content.text);
                     m_ForceRebuild.state = newState;
                 }
-                //newState = GUILayout.Toggle(
-                //    m_CopyToStreaming.state,
-                //    m_CopyToStreaming.content);
-                //if (newState != m_CopyToStreaming.state)
-                //{
-                //    if (newState)
-                //        m_UserData.m_OnToggles.Add(m_CopyToStreaming.content.text);
-                //    else
-                //        m_UserData.m_OnToggles.Remove(m_CopyToStreaming.content.text);
-                //    m_CopyToStreaming.state = newState;
-                //}
+                newState = GUILayout.Toggle(
+                    m_CopyToStreaming.state,
+                    m_CopyToStreaming.content);
+                if (newState != m_CopyToStreaming.state)
+                {
+                    if (newState)
+                        m_UserData.m_OnToggles.Add(m_CopyToStreaming.content.text);
+                    else
+                        m_UserData.m_OnToggles.Remove(m_CopyToStreaming.content.text);
+                    m_CopyToStreaming.state = newState;
+                }
             }
 
             // advanced options
             using (new EditorGUI.DisabledScope(!AssetBundleModel.Model.DataSource.CanSpecifyBuildOptions))
             {
                 EditorGUILayout.Space();
-                m_AdvancedSettings = EditorGUILayout.Foldout(m_AdvancedSettings, "¸ß¼¶ÉèÖÃ[Advanced Settings]");
+                m_AdvancedSettings = EditorGUILayout.Foldout(m_AdvancedSettings, "é«˜çº§è®¾ç½®[Advanced Settings]");
                 if (m_AdvancedSettings)
                 {
                     var indent = EditorGUI.indentLevel;
@@ -306,7 +306,7 @@ namespace AssetBundleBrowser
             //    //AssetBundleClassificationWindow.ShowWindow();
             //    //EditorApplication.delayCall += ExecuteBuild;
             //}
-           
+
             assetBundleClassification.OnGUI();
 
             GUILayout.EndVertical();
@@ -314,7 +314,7 @@ namespace AssetBundleBrowser
         }
         public void ExecuteBuild()
         {
-            // 1. ¼ÇÂ¼¿ªÊ¼Ê±¼ä£¨TicksÎª100ÄÉÃëµ¥Î»£©
+            // 1. è®°å½•å¼€å§‹æ—¶é—´ï¼ˆTicksä¸º100çº³ç§’å•ä½ï¼‰
             long startTicks = System.DateTime.UtcNow.Ticks;
 
             if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory)
@@ -330,9 +330,10 @@ namespace AssetBundleBrowser
 
                 if (m_ForceRebuild.state)
                 {
+                    string streamingTarget = GetStreamingTargetPath();
                     string message = "Do you want to delete all files in the directory " + m_UserData.m_OutputPath;
                     if (m_CopyToStreaming.state)
-                        message += " and " + m_streamingPath;
+                        message += " and " + streamingTarget;
                     message += "?";
                     if (EditorUtility.DisplayDialog("File delete confirmation", message, "Yes", "No"))
                     {
@@ -341,9 +342,10 @@ namespace AssetBundleBrowser
                             if (Directory.Exists(m_UserData.m_OutputPath))
                                 Directory.Delete(m_UserData.m_OutputPath, true);
 
+                            // åªåˆ æœ¬æ¬¡çš„æ‹·è´ç›®æ ‡ï¼ˆ<StreamingAssets>/<OutputPath>ï¼‰ï¼Œç»ä¸åˆ æ•´ä¸ª StreamingAssets
                             if (m_CopyToStreaming.state)
-                                if (Directory.Exists(m_streamingPath))
-                                    Directory.Delete(m_streamingPath, true);
+                                if (Directory.Exists(streamingTarget))
+                                    Directory.Delete(streamingTarget, true);
                         }
                         catch (System.Exception e)
                         {
@@ -375,12 +377,12 @@ namespace AssetBundleBrowser
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
             if (m_CopyToStreaming.state)
-                DirectoryCopy(m_UserData.m_OutputPath, m_streamingPath);
+                DirectoryCopy(m_UserData.m_OutputPath, GetStreamingTargetPath());
 
-            // 2. ¼ÆËãºÄÊ±²¢Êä³ö£¨×ª»»ÎªºÁÃë£©
+            // 2. è®¡ç®—è€—æ—¶å¹¶è¾“å‡ºï¼ˆè½¬æ¢ä¸ºæ¯«ç§’ï¼‰
             long endTicks = System.DateTime.UtcNow.Ticks;
-            double durationMs = (endTicks - startTicks) / 10000.0; // 1 Tick = 100ÄÉÃë ¡ú 1ºÁÃë = 10000 Ticks 1ºÁÃëµÈÓÚ1,000,000ÄÉÃë
-            UnityEngine.Debug.Log($"´ò°üÖ´ĞĞºÄÊ±£º{(durationMs/1000):F2} Ãë");
+            double durationMs = (endTicks - startTicks) / 10000.0; // 1 Tick = 100çº³ç§’ â†’ 1æ¯«ç§’ = 10000 Ticks 1æ¯«ç§’ç­‰äº1,000,000çº³ç§’
+            UnityEngine.Debug.Log($"æ‰“åŒ…æ‰§è¡Œè€—æ—¶ï¼š{(durationMs/1000):F2} ç§’");
         }
 
         public BuildAssetBundleOptions GetOpt()
@@ -402,6 +404,32 @@ namespace AssetBundleBrowser
             return opt;
         }
 
+
+        /// <summary>
+        /// AB åŒ…æ‹·è´åˆ° StreamingAssets çš„ç›®æ ‡ç›®å½•ï¼šä¿ç•™è¾“å‡ºè·¯å¾„å±‚çº§ï¼ˆå¦‚ Assets/StreamingAssets/AssetBundles/StandaloneWindowsï¼‰ï¼Œ
+        /// å¦åˆ™è¿è¡Œæ—¶æŒ‰ LoadAssetPath æ‰¾ä¸åˆ°åŒ…
+        /// </summary>
+        private string GetStreamingTargetPath()
+        {
+            string relative = (m_UserData.m_OutputPath ?? string.Empty).Replace("\\", "/");
+            relative = relative.Trim(new char[] { System.IO.Path.AltDirectorySeparatorChar });
+            string projectRoot = System.IO.Path.GetFullPath(".").Replace("\\", "/").TrimEnd(new char[] { System.IO.Path.AltDirectorySeparatorChar });
+
+            if (relative.StartsWith(projectRoot + "/"))
+                relative = relative.Substring(projectRoot.Length + 1);
+
+            // å·¥ç¨‹å¤–çš„ç»å¯¹è·¯å¾„ï¼šåªä¿ç•™æœ€åä¸€çº§ç›®å½•åï¼Œé¿å…æ‹·åˆ° StreamingAssets ä¹‹å¤–
+            if (System.IO.Path.IsPathRooted(relative))
+            {
+                int index = relative.LastIndexOf(System.IO.Path.AltDirectorySeparatorChar);
+                relative = index >= 0 ? relative.Substring(index + 1) : relative;
+            }
+
+            if (relative.StartsWith("Assets/"))
+                return relative;
+
+            return m_streamingPath.TrimEnd(new char[] { System.IO.Path.AltDirectorySeparatorChar }) + "/" + relative;
+        }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName)
         {

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,16 +8,16 @@ using UnityEngine.SceneManagement;
 using UPandaGF;
 
 /// <summary>
-/// ³¡¾°ÇĞ»»Ä£¿é,
+/// åœºæ™¯åˆ‡æ¢æ¨¡å—,
 /// </summary>
 public class SceneMgr : LazySingletonBase<SceneMgr>
 {
     /// <summary>
-    /// Í¬²½¼ÓÔØ³¡¾°
+    /// åŒæ­¥åŠ è½½åœºæ™¯
     /// </summary>
-    /// <param name="sceneName">³¡¾°Ãû³Æ</param>
-    /// <param name="loadSceneMode">¼ÓÔØÄ£Ê½£ºSingle(¼ÓÔØ³¡¾°²¢Ìæ»»µ±Ç°³¡¾°) Additive(¼ÓÔØ³¡¾°²¢µş¼ÓÔÚµ±Ç°³¡¾°ÉÏ£¬²»Ğ¶ÔØµ±Ç°³¡¾°)</param>
-    /// <param name="Callback">»Øµ÷</param>
+    /// <param name="sceneName">åœºæ™¯åç§°</param>
+    /// <param name="loadSceneMode">åŠ è½½æ¨¡å¼ï¼šSingle(åŠ è½½åœºæ™¯å¹¶æ›¿æ¢å½“å‰åœºæ™¯) Additive(åŠ è½½åœºæ™¯å¹¶å åŠ åœ¨å½“å‰åœºæ™¯ä¸Šï¼Œä¸å¸è½½å½“å‰åœºæ™¯)</param>
+    /// <param name="Callback">å›è°ƒ</param>
     public void LoadScene(string sceneName, UnityAction Callback = null)
     {
         LoadScene(sceneName, LoadSceneMode.Single, Callback);
@@ -30,11 +30,11 @@ public class SceneMgr : LazySingletonBase<SceneMgr>
 
 
     /// <summary>
-    /// Òì²½¼ÓÔØ³¡¾°
+    /// å¼‚æ­¥åŠ è½½åœºæ™¯
     /// </summary>
-    /// <param name="sceneName">³¡¾°Ãû³Æ</param>
-    /// <param name="loadSceneMode">¼ÓÔØÄ£Ê½£ºSingle(¼ÓÔØ³¡¾°²¢Ìæ»»µ±Ç°³¡¾°) Additive(¼ÓÔØ³¡¾°²¢µş¼ÓÔÚµ±Ç°³¡¾°ÉÏ£¬²»Ğ¶ÔØµ±Ç°³¡¾°)</param>
-    /// <param name="Callback">»Øµ÷</param>
+    /// <param name="sceneName">åœºæ™¯åç§°</param>
+    /// <param name="loadSceneMode">åŠ è½½æ¨¡å¼ï¼šSingle(åŠ è½½åœºæ™¯å¹¶æ›¿æ¢å½“å‰åœºæ™¯) Additive(åŠ è½½åœºæ™¯å¹¶å åŠ åœ¨å½“å‰åœºæ™¯ä¸Šï¼Œä¸å¸è½½å½“å‰åœºæ™¯)</param>
+    /// <param name="Callback">å›è°ƒ</param>
     public void LoadSceneAsyn(string sceneName, UnityAction Callback = null)
     {
         LoadSceneAsyn(sceneName, LoadSceneMode.Single, Callback);
@@ -65,7 +65,7 @@ public class SceneMgr : LazySingletonBase<SceneMgr>
         AsyncOperation ao = SceneManager.LoadSceneAsync(sceneName, loadSceneMode);
         while (!ao.isDone)
         {
-            // ÊÂ¼şÖĞĞÄ ÏòÍâ·Ö·¢ ½ø¶ÈÇé¿ö
+            // äº‹ä»¶ä¸­å¿ƒ å‘å¤–åˆ†å‘ è¿›åº¦æƒ…å†µ
             EventCenter.Instance.EventTrigger(new SceneMgr_SceneAsynLoadProgress(ao.progress));
             yield return 0;
         }
@@ -90,12 +90,12 @@ public class SceneMgr : LazySingletonBase<SceneMgr>
 }
 
 /// <summary>
-/// Òì²½¼ÓÔØ³¡¾°½ø¶ÈÍ¨ÖªÊÂ¼ş
+/// å¼‚æ­¥åŠ è½½åœºæ™¯è¿›åº¦é€šçŸ¥äº‹ä»¶
 /// </summary>
 public class SceneMgr_SceneAsynLoadProgress : EventArgBase
 {
     /// <summary>
-    /// ¼ÓÔØ½ø¶È
+    /// åŠ è½½è¿›åº¦
     /// </summary>
     public float progress { get; private set; }
 

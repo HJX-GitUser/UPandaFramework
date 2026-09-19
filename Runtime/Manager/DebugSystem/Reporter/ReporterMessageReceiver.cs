@@ -12,7 +12,7 @@ public class ReporterMessageReceiver : MonoBehaviour
 
     void OnPreStart()
     {
-        //To Do : this method is called before initializing reporter, 
+        //To Do : this method is called before initializing reporter,
         //we can for example check the resultion of our device ,then change the size of reporter
         if (reporter == null)
             reporter = gameObject.GetComponent<Reporter>();
@@ -36,7 +36,7 @@ public class ReporterMessageReceiver : MonoBehaviour
     }
     void OnLog(Reporter.Log log)
     {
-        //TO DO : put you custom code 
+        //TO DO : put you custom code
     }
 
 }

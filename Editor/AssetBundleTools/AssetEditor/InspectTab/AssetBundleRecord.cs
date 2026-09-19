@@ -6,28 +6,28 @@ namespace AssetBundleBrowser
     /// This class maintains a record of a loaded asset bundle, allowing us
     /// to associate the full path of an asset bundle with the actual bundle,
     /// so that we can:
-    /// 
+    ///
     /// 1. distinguish between bundle variants, which, when loaded
-    /// resolve to the same name. 
-    /// 
+    /// resolve to the same name.
+    ///
     /// 2. Differentiate between the same asset bundles built for different platforms.
-    /// 
+    ///
     /// ex:
     ///
     /// Two asset bundle variants:
-    /// 
+    ///
     /// - variant one: mycylinder.one
     /// - variant two: mycylinder.two
-    /// 
+    ///
     /// Will Resolve to "mycylinder" when loaded.
-    /// 
-    /// Likewise, 
-    /// 
+    ///
+    /// Likewise,
+    ///
     /// - iOS: AssetBundles/iOS/myBundle
     /// - Android: AssetBundle/Android/myBundle
-    /// 
+    ///
     /// Will both resolve to "mybundle" when loaded.
-    /// 
+    ///
     /// </summary>
     internal class AssetBundleRecord
     {
@@ -49,7 +49,7 @@ namespace AssetBundleBrowser
                 string msg = string.Format("AssetBundleRecord encountered invalid parameters path={0}, bundle={1}",
                     path,
                     bundle);
-                
+
                 throw new System.ArgumentException(msg);
             }
 

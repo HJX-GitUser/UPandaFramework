@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -10,18 +10,24 @@ using UnityEngine;
 [System.Serializable]
 public class FTPUpLoadABConfig
 {
-    //[Tooltip("ÉÏ´«AB°üµØÖ·")]
+    //[Tooltip("ä¸Šä¼ ABåŒ…åœ°å€")]
     public string UpABURL;
 
-    //FTPÍ¨ĞÅÆ¾Ö¤
-    //ftpÓÃ»§Ãû
+    /// <summary>
+    /// èµ„æºæ¸…å•ï¼ˆassetData.assetrefï¼‰çš„ä¸Šä¼ åœ°å€ï¼šçº¦å®šä¸º {remoteURL}/AssetBundles/ï¼Œä¸ UPGameRoot.UpdateAssets çš„è¯»å–ä½ç½®ä¸€è‡´
+    /// </summary>
+    public string ManifestABURL;
+
+    //FTPé€šä¿¡å‡­è¯
+    //ftpç”¨æˆ·å
     public string Ftp_UserName;
-    //ftpÃÜÂë
+    //ftpå¯†ç 
     public string Ftp_Password;
 
     public FTPUpLoadABConfig(string BuidTarget)
     {
         UpABURL = $"ftp://127.0.0.1/AssetBundles/{BuidTarget}/";
+        ManifestABURL = "ftp://127.0.0.1/AssetBundles/";
         Ftp_UserName = "Admin";
         Ftp_Password = "Admin123";
     }
@@ -35,6 +41,7 @@ public class UpLoadFTP
         {
             Config = new FTPUpLoadABConfig(BuidTarget);
             Config.UpABURL = EditorPrefs.GetString("UpLoadABEditor_UpABURL", Config.UpABURL);
+            Config.ManifestABURL = EditorPrefs.GetString("UpLoadABEditor_ManifestABURL", Config.ManifestABURL);
             Config.Ftp_UserName = EditorPrefs.GetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
             Config.Ftp_Password = EditorPrefs.GetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
         }
@@ -51,31 +58,53 @@ public class UpLoadFTP
     public void SaveData()
     {
         EditorPrefs.SetString("UpLoadABEditor_UpABURL", Config.UpABURL);
+        EditorPrefs.SetString("UpLoadABEditor_ManifestABURL", Config.ManifestABURL);
         EditorPrefs.SetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
         EditorPrefs.SetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
-        Debug.Log("FTPÅäÖÃÒÑ±£´æ");
+        Debug.Log("FTPé…ç½®å·²ä¿å­˜");
     }
 
     /// <summary>
-    /// ÉÏ´«
+    /// ä¸Šä¼ 
     /// </summary>
     public void UpLoadAllABFile(string LocalABPath)
     {
-        Debug.Log($"¿ªÊ¼ÉÏ´«£º{Config.UpABURL}");
+        Debug.Log($"å¼€å§‹ä¸Šä¼ ï¼š{Config.UpABURL}");
         if(!Directory.Exists(LocalABPath))
         {
-            Debug.LogError($"Â·¾¶²»´æÔÚ£º{LocalABPath}");
+            Debug.LogError($"è·¯å¾„ä¸å­˜åœ¨ï¼š{LocalABPath}");
             return;
         }
         DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
         FileInfo[] fileInfos = directory.GetFiles();
+        int uploadCount = 0;
         foreach (FileInfo fileInfo in fileInfos)
         {
             if (IsABAssets(fileInfo))
             {
                 FtpUploadFile(fileInfo.FullName, fileInfo.Name);
+                uploadCount++;
             }
         }
+        Debug.Log($"å·²å‘èµ· {uploadCount} ä¸ªABåŒ…çš„ä¸Šä¼ ï¼ˆå¼‚æ­¥ï¼Œç»“æœè§åç»­æ—¥å¿—ï¼‰ï¼š{Config.UpABURL}");
+    }
+
+    /// <summary>
+    /// ä¸Šä¼ å•ä¸ªæ–‡ä»¶åˆ°æŒ‡å®šåœ°å€ï¼ˆç”¨äºèµ„æºæ¸…å• assetData.assetrefï¼‰
+    /// </summary>
+    public void UpLoadFile(string localFilePath, string remoteURL)
+    {
+        if (string.IsNullOrEmpty(localFilePath) || !File.Exists(localFilePath))
+        {
+            Debug.LogError($"æ–‡ä»¶ä¸å­˜åœ¨ï¼Œä¸Šä¼ å·²è·³è¿‡ï¼š{localFilePath}\nè¯·å…ˆåœ¨èµ„æºåˆ†ç±»çª—å£ç‚¹ã€Œæ›´æ–°é…ç½®ã€ç”Ÿæˆæ¸…å•ã€‚");
+            return;
+        }
+        if (string.IsNullOrEmpty(remoteURL))
+        {
+            Debug.LogError("ä¸Šä¼ åœ°å€ä¸ºç©ºï¼Œä¸Šä¼ å·²è·³è¿‡");
+            return;
+        }
+        FtpUploadFile(localFilePath, Path.GetFileName(localFilePath), remoteURL);
     }
 
     private bool IsABAssets(FileInfo fileInfo)
@@ -89,57 +118,61 @@ public class UpLoadFTP
     }
 
     /// <summary>
-    /// ÉÏ´«AB°üºÍ¶Ô±ÈÎÄ¼ş
+    /// ä¸Šä¼ ABåŒ…å’Œå¯¹æ¯”æ–‡ä»¶
     /// </summary>
     /// <param name="filePath"></param>
     /// <param name="fileName"></param>
-    private async void FtpUploadFile(string filePath, string fileName)
+    private async void FtpUploadFile(string filePath, string fileName, string remoteURL = null)
     {
+        string baseUrl = string.IsNullOrEmpty(remoteURL) ? Config.UpABURL : remoteURL;
+        if (!baseUrl.EndsWith("/"))
+            baseUrl += "/";
+
         await Task.Run(() =>
         {
             try
             {
-                //1.´´½¨Ò»¸öFTPÁ¬½Ó ÓÃÓÚÉÏ´«
-                FtpWebRequest req = FtpWebRequest.Create(new Uri(Config.UpABURL + fileName)) as FtpWebRequest;
-                //2.ÉèÖÃÒ»¸öÍ¨ĞÅÆ¾Ö¤ ÕâÑù²ÅÄÜÉÏ´«
+                //1.åˆ›å»ºä¸€ä¸ªFTPè¿æ¥ ç”¨äºä¸Šä¼ 
+                FtpWebRequest req = FtpWebRequest.Create(new Uri(baseUrl + fileName)) as FtpWebRequest;
+                //2.è®¾ç½®ä¸€ä¸ªé€šä¿¡å‡­è¯ è¿™æ ·æ‰èƒ½ä¸Šä¼ 
                 NetworkCredential n = new NetworkCredential(Config.Ftp_UserName, Config.Ftp_Password);
                 req.Credentials = n;
-                //3.ÆäËüÉèÖÃ
-                //  ÉèÖÃ´úÀíÎªnull
+                //3.å…¶å®ƒè®¾ç½®
+                //  è®¾ç½®ä»£ç†ä¸ºnull
                 req.Proxy = null;
-                //  ÇëÇóÍê±Ïºó ÊÇ·ñ¹Ø±Õ¿ØÖÆÁ¬½Ó
+                //  è¯·æ±‚å®Œæ¯•å æ˜¯å¦å…³é—­æ§åˆ¶è¿æ¥
                 req.KeepAlive = false;
-                //  ²Ù×÷ÃüÁî-ÉÏ´«
+                //  æ“ä½œå‘½ä»¤-ä¸Šä¼ 
                 req.Method = WebRequestMethods.Ftp.UploadFile;
-                //  Ö¸¶¨´«ÊäµÄÀàĞÍ 2½øÖÆ
+                //  æŒ‡å®šä¼ è¾“çš„ç±»å‹ 2è¿›åˆ¶
                 req.UseBinary = true;
-                //4.ÉÏ´«ÎÄ¼ş
-                //  ftpµÄÁ÷¶ÔÏó
+                //4.ä¸Šä¼ æ–‡ä»¶
+                //  ftpçš„æµå¯¹è±¡
                 Stream upLoadStream = req.GetRequestStream();
-                //  ¶ÁÈ¡ÎÄ¼şĞÅÏ¢ Ğ´Èë¸ÃÁ÷¶ÔÏó
+                //  è¯»å–æ–‡ä»¶ä¿¡æ¯ å†™å…¥è¯¥æµå¯¹è±¡
                 using (FileStream file = File.OpenRead(filePath))
                 {
-                    //Ò»µãÒ»µãµÄÉÏ´«ÄÚÈİ
+                    //ä¸€ç‚¹ä¸€ç‚¹çš„ä¸Šä¼ å†…å®¹
                     byte[] bytes = new byte[1024];
-                    //·µ»ØÖµ ´ú±í¶ÁÈ¡ÁË¶àÉÙ¸ö×Ö½Ú
+                    //è¿”å›å€¼ ä»£è¡¨è¯»å–äº†å¤šå°‘ä¸ªå­—èŠ‚
                     int contentLength = file.Read(bytes, 0, bytes.Length);
                     while (contentLength != 0)
                     {
-                        //Ğ´Èëµ½ÉÏ´«Á÷ÖĞ
+                        //å†™å…¥åˆ°ä¸Šä¼ æµä¸­
                         upLoadStream.Write(bytes, 0, contentLength);
-                        //Ğ´ÍêÔÙ¶Á
+                        //å†™å®Œå†è¯»
                         contentLength = file.Read(bytes, 0, bytes.Length);
                     }
-                    //Ñ­»·Íê±Ïºó ÉÏ´«½áÊø
+                    //å¾ªç¯å®Œæ¯•å ä¸Šä¼ ç»“æŸ
                     file.Close();
                     upLoadStream.Close();
 
                 }
-                Debug.Log(fileName + "ÉÏ´«³É¹¦");
+                Debug.Log(fileName + "ä¸Šä¼ æˆåŠŸ");
             }
             catch (Exception ex)
             {
-                Debug.Log(fileName + "ÉÏ´«Ê§°Ü£¬´íÎóĞÅÏ¢£º" + ex.Message);
+                Debug.LogError(fileName + "ä¸Šä¼ å¤±è´¥ï¼Œé”™è¯¯ä¿¡æ¯ï¼š" + ex.Message);
             }
         });
     }

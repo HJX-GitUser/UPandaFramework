@@ -1,4 +1,4 @@
-using System.Collections;
+锘縰sing System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -17,7 +17,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             base.OnInspectorGUI();
             if (!string.IsNullOrEmpty(component.OperatingStepID) && component.TargetEntity == null)
             {
-                if (GUILayout.Button("查找对应实体"))
+                if (GUILayout.Button("鏌ユ壘瀵瑰簲瀹炰綋"))
                 {
                     TaskEntityBase[] args = FindObjectsOfType<TaskEntityBase>();
                     bool findSuccess = false;
@@ -40,7 +40,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                             if (findSuccess) break;
                         }
                     }
-                    if (!findSuccess) Debug.LogWarning($"{component.GetID} 查找失败");
+                    if (!findSuccess) Debug.LogWarning($"{component.GetID} 鏌ユ壘澶辫触");
                 }
             }
         }

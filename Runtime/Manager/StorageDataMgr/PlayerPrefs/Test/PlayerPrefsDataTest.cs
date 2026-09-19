@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -38,12 +38,12 @@ public class PlayerPrefsDataTest : MonoBehaviour
     {
         SaveData();
 
-        //¶ÁÈ¡Êı¾İ
+        //è¯»å–æ•°æ®
         PlayerPrefsDataTest_PlayerInfo mydata = PlayerPrefsDataMgr.Instance.LoadData(typeof(PlayerPrefsDataTest_PlayerInfo), mykey) as PlayerPrefsDataTest_PlayerInfo;
-        Debug.Log("¶ÁÈ¡½áÊø");
+        Debug.Log("è¯»å–ç»“æŸ");
         PlayerPrefs.DeleteAll();
         PlayerPrefsDataTest_PlayerInfo mydata2 = PlayerPrefsDataMgr.Instance.LoadData(typeof(PlayerPrefsDataTest_PlayerInfo), mykey) as PlayerPrefsDataTest_PlayerInfo;
-        Debug.Log("É¾³ıÊı¾İ");
+        Debug.Log("åˆ é™¤æ•°æ®");
 
     }
 
@@ -68,12 +68,12 @@ public class PlayerPrefsDataTest : MonoBehaviour
         p.itemList.Add(new PlayerPrefsDataTest_ItemInfo(1, 99));
         p.itemList.Add(new PlayerPrefsDataTest_ItemInfo(2, 199));
 
-        //´æÁËÒ»´ÎÊı¾İ ÔÙÖ´ĞĞÕâµÄ´úÂë ÀïÃæÒÑ¾­ÓĞ3µÄÊı¾İÁË ×Öµäkey²»ÄÜÖØ¸´ ËùÒÔ±¨´í
+        //å­˜äº†ä¸€æ¬¡æ•°æ® å†æ‰§è¡Œè¿™çš„ä»£ç  é‡Œé¢å·²ç»æœ‰3çš„æ•°æ®äº† å­—å…¸keyä¸èƒ½é‡å¤ æ‰€ä»¥æŠ¥é”™
         p.itemDic = new Dictionary<int, PlayerPrefsDataTest_ItemInfo> { };
         p.itemDic.Add(3, new PlayerPrefsDataTest_ItemInfo(3, 1));
         p.itemDic.Add(4, new PlayerPrefsDataTest_ItemInfo(4, 2));
 
-        //ÓÎÏ·Êı¾İ´æ´¢
+        //æ¸¸æˆæ•°æ®å­˜å‚¨
         PlayerPrefsDataMgr.Instance.SaveData(p, mykey);
     }
 

@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Water_Surface_Builtin
+  m_Shader: {fileID: 4800000, guid: 9189e8e5857a09d45930b6220c7f7259, type: 3}
+  m_ValidKeywords:
+  - _DEPTH_FADE
+  - _FOAM_MASK
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _FoamMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FoamMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap1:
+        m_Texture: {fileID: 2800000, guid: 32acd1717cb4ff54aa42171a5573b8fb, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap2:
+        m_Texture: {fileID: 2800000, guid: 32acd1717cb4ff54aa42171a5573b8fb, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ReflectionCube:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Alpha: 0.9
+    - _DepthFadeDistance: 6
+    - _FoamCrestStart: 0.65
+    - _FoamIntensity: 1
+    - _FoamShoreWidth: 1
+    - _FoamThreshold: 0.45
+    - _FoamTiling: 0.08
+    - _FresnelBias: 0.03
+    - _FresnelPower: 4
+    - _NormalScale: 0.24
+    - _NormalTiling: 0.05
+    - _NormalTiling2: 1.7
+    - _ReflectionBlur: 0.041
+    - _ReflectionIntensity: 0.75
+    - _RefractionStrength: 0.091
+    - _SpecIntensity: 0.6
+    - _SpecPower: 128
+    - _UseCustomCube: 0
+    - _UseDepthFade: 1
+    - _UseFoamMask: 1
+    - _WaveAmplitude: 0.04
+    - _WaveLength: 15
+    - _WaveSpeed: 1.2
+    m_Colors:
+    - _DeepColor: {r: 0.02, g: 0.089999996, b: 0.15999997, a: 1}
+    - _FoamColor: {r: 0.95, g: 0.97999996, b: 1, a: 1}
+    - _FoamSpeed: {r: 0.015, g: 0.012, b: 0, a: 0}
+    - _NormalSpeed1: {r: 0.02, g: 0.03, b: 0, a: 0}
+    - _NormalSpeed2: {r: 0.03, g: -0.018, b: 0, a: 0}
+    - _ShallowColor: {r: 0.45, g: 0.8, b: 0.86, a: 1}
+    - _SpecTint: {r: 1, g: 1, b: 1, a: 1}
+    - _WaveDirection: {r: 1, g: 0.35, b: 0, a: 0}
+  m_BuildTextureStacks: []

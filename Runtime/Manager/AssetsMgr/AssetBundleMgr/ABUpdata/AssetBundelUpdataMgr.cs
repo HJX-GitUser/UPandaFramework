@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -9,26 +9,26 @@ using UnityEngine.Networking;
 
 namespace UPandaGF
 {
-    [Obsolete("ÒÑÆúÓÃ£¡")]
+    [Obsolete("å·²å¼ƒç”¨ï¼")]
     [System.Serializable]
     public class ABUpdataMgrArg
     {
         public string DownLoadURL = "ftp://127.0.0.1/AssetBundles/StandaloneWindows/";
         public string Ftp_UserName = "Admin";
         public string Ftp_Password = "Admin123";
-        public int reDownTimes = 5;//ÖØĞÂÏÂÔØ´ÎÊı
-        public string comparativeDocumentName = "ABCompareInfo.txt";//Ô¶¶Ë¶Ô±ÈÎÄ¼şÃû³Æ
+        public int reDownTimes = 5;//é‡æ–°ä¸‹è½½æ¬¡æ•°
+        public string comparativeDocumentName = "ABCompareInfo.txt";//è¿œç«¯å¯¹æ¯”æ–‡ä»¶åç§°
     }
 
     /// <summary>
-    /// ×ÊÔ´¸üĞÂ×é¼ş
+    /// èµ„æºæ›´æ–°ç»„ä»¶
     /// </summary>
-    [Obsolete("ÒÑÆúÓÃ£¡")]
+    [Obsolete("å·²å¼ƒç”¨ï¼")]
     public class AssetBundelUpdataMgr : MonoBehaviour
     {
         private bool hasInit = false;
         /// <summary>
-        /// AB°ü¶Ô±ÈÊı¾İ
+        /// ABåŒ…å¯¹æ¯”æ•°æ®
         /// </summary>
         public class ABInfo
         {
@@ -44,32 +44,32 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ×ÊÔ´Ô¶¶Ë¸üĞÂÅäÖÃ
+        /// èµ„æºè¿œç«¯æ›´æ–°é…ç½®
         /// </summary>
         [HideInInspector]
         public ABUpdataMgrArg configArg;
 
-        //[Header("×ÊÔ´°üÏÂÔØÂ·¾¶")]
+        //[Header("èµ„æºåŒ…ä¸‹è½½è·¯å¾„")]
         [HideInInspector]
         public string localFilePath = "";
 
-        private string abCompareInfoLocalPath;//±¾µØ¶Ô±ÈÎÄ¼ş´æ·ÅÂ·¾¶
-        private string abCompare_Tmp_InfoLocalPath;//Ô¶¶Ë¶Ô±ÈÎÄ¼ş´æ·ÅÂ·¾¶
+        private string abCompareInfoLocalPath;//æœ¬åœ°å¯¹æ¯”æ–‡ä»¶å­˜æ”¾è·¯å¾„
+        private string abCompare_Tmp_InfoLocalPath;//è¿œç«¯å¯¹æ¯”æ–‡ä»¶å­˜æ”¾è·¯å¾„
 
-        //ÓÃÓÚ´æ´¢Ô¶¶ËAB°üĞÅÏ¢µÄ×Öµä Ö®ºóºÍ±¾µØ½øĞĞ¶Ô±È¼´¿ÉÍê³É ¸üĞÂ ÏÂÔØÏà¹ØÂß¼­
+        //ç”¨äºå­˜å‚¨è¿œç«¯ABåŒ…ä¿¡æ¯çš„å­—å…¸ ä¹‹åå’Œæœ¬åœ°è¿›è¡Œå¯¹æ¯”å³å¯å®Œæˆ æ›´æ–° ä¸‹è½½ç›¸å…³é€»è¾‘
         private Dictionary<string, ABInfo> remoteABInfo = new Dictionary<string, ABInfo>();
 
-        //ÓÃÓÚ´æ´¢±¾µØAB°üĞÅÏ¢µÄ×Öµä Ö÷ÒªÓÃÓÚºÍÔ¶¶ËĞÅÏ¢¶Ô±È
+        //ç”¨äºå­˜å‚¨æœ¬åœ°ABåŒ…ä¿¡æ¯çš„å­—å…¸ ä¸»è¦ç”¨äºå’Œè¿œç«¯ä¿¡æ¯å¯¹æ¯”
         private Dictionary<string, ABInfo> localABInfo = new Dictionary<string, ABInfo>();
 
-        //Õâ¸öÊÇ´ıÏÂÔØµÄAB°üÁĞ±íÎÄ¼ş ´æ´¢AB°üµÄÃû×Ö
+        //è¿™ä¸ªæ˜¯å¾…ä¸‹è½½çš„ABåŒ…åˆ—è¡¨æ–‡ä»¶ å­˜å‚¨ABåŒ…çš„åå­—
         private List<string> downLoadList = new List<string>();
 
-        //ÏÂÔØµÄÎÄ¼şÊıÁ¿
+        //ä¸‹è½½çš„æ–‡ä»¶æ•°é‡
         private int downLoadOverNum = 0;
 
-        public UnityAction<string> updataMessage;//¸üĞÂĞÅÏ¢ÊÂ¼ş
-        public UnityAction<bool> updataCompleteEvent;//¸üĞÂĞÅÏ¢ÊÂ¼ş
+        public UnityAction<string> updataMessage;//æ›´æ–°ä¿¡æ¯äº‹ä»¶
+        public UnityAction<bool> updataCompleteEvent;//æ›´æ–°ä¿¡æ¯äº‹ä»¶
 
         protected void Awake()
         {
@@ -84,9 +84,9 @@ namespace UPandaGF
             localFilePath = $"{Application.persistentDataPath}/{localFilePath}";
             if (!Directory.Exists(localFilePath))
             {
-                // ²»´æÔÚÔò´´½¨£¨Ö§³Ö¶à¼¶Ä¿Â¼£©
+                // ä¸å­˜åœ¨åˆ™åˆ›å»ºï¼ˆæ”¯æŒå¤šçº§ç›®å½•ï¼‰
                 Directory.CreateDirectory(localFilePath);
-                PLogger.Log("×ÊÔ´Â·¾¶´´½¨³É¹¦£º" + localFilePath);
+                PLogger.Log("èµ„æºè·¯å¾„åˆ›å»ºæˆåŠŸï¼š" + localFilePath);
             }
             abCompareInfoLocalPath = localFilePath + configArg.comparativeDocumentName + ".txt";
             abCompare_Tmp_InfoLocalPath = localFilePath + configArg.comparativeDocumentName + "_TMP.txt";
@@ -102,10 +102,10 @@ namespace UPandaGF
         public IEnumerator StartUpadateAssets()
         {
             bool isLoaded = false;
-            PLogger.Log("Æô¶¯×ÊÔ´¸üĞÂ¼ì²é");
+            PLogger.Log("å¯åŠ¨èµ„æºæ›´æ–°æ£€æŸ¥");
             CheckUpdata((arg) =>
             {
-                if (!arg) PLogger.Log("×ÊÔ´¸üĞÂÊ§°Ü");
+                if (!arg) PLogger.Log("èµ„æºæ›´æ–°å¤±è´¥");
                 isLoaded = true;
                 updataCompleteEvent?.Invoke(arg);
             },
@@ -117,87 +117,87 @@ namespace UPandaGF
             {
                 yield return 0;
             }
-            PLogger.Log("¸üĞÂÁ÷³Ì½áÊø");
+            PLogger.Log("æ›´æ–°æµç¨‹ç»“æŸ");
 
         }
 
         /// <summary>
-        /// ÓÃÓÚ¼ì²âÈÈ¸üĞÂµÄº¯Êı
+        /// ç”¨äºæ£€æµ‹çƒ­æ›´æ–°çš„å‡½æ•°
         /// </summary>
-        /// <param name="overCallBack">¸üĞÂ½áÊøµÄ»Øµ÷£¬²ÎÊıÎªfalse±íÊ¾¸üĞÂÊ§°Ü</param>
-        /// <param name="updataInfoCallBack">¸üĞÂĞÅÏ¢µÄ»Øµ÷£¬ÆÚ¼äµÄËùÓĞ¸üĞÂÏûÏ¢¶¼·¢³öÈ¥£¬¸üĞÂ²½Öè¹²10²½£¬µÚ9²½¿ªÊ¼¸üĞÂ×ÊÔ´</param>
+        /// <param name="overCallBack">æ›´æ–°ç»“æŸçš„å›è°ƒï¼Œå‚æ•°ä¸ºfalseè¡¨ç¤ºæ›´æ–°å¤±è´¥</param>
+        /// <param name="updataInfoCallBack">æ›´æ–°ä¿¡æ¯çš„å›è°ƒï¼ŒæœŸé—´çš„æ‰€æœ‰æ›´æ–°æ¶ˆæ¯éƒ½å‘å‡ºå»ï¼Œæ›´æ–°æ­¥éª¤å…±10æ­¥ï¼Œç¬¬9æ­¥å¼€å§‹æ›´æ–°èµ„æº</param>
         public void CheckUpdata(UnityAction<bool> overCallBack, UnityAction<string> updataInfoCallBack)
         {
-            //ÎªÁË±ÜÃâÓÉÓÚÉÏÒ»´Î±¨´í ¶ø²ĞÁôĞÅÏ¢ ËùÒÔÇå¿Õ
+            //ä¸ºäº†é¿å…ç”±äºä¸Šä¸€æ¬¡æŠ¥é”™ è€Œæ®‹ç•™ä¿¡æ¯ æ‰€ä»¥æ¸…ç©º
             remoteABInfo.Clear();
             localABInfo.Clear();
             downLoadList.Clear();
 
-            //1.¼ÓÔØÔ¶¶Ë×ÊÔ´¶Ô±ÈÎÄ¼ş
+            //1.åŠ è½½è¿œç«¯èµ„æºå¯¹æ¯”æ–‡ä»¶
             DownLoadABComparteFile((isOver) =>
             {
-                updataInfoCallBack("¶Ô±ÈÎÄ¼şÏÂÔØ½áÊø*1");
+                updataInfoCallBack("å¯¹æ¯”æ–‡ä»¶ä¸‹è½½ç»“æŸ*1");
                 if (isOver)
                 {
-                    updataInfoCallBack("¿ªÊ¼¸üĞÂ×ÊÔ´*2");
-                    string remoteInfo = File.ReadAllText(abCompare_Tmp_InfoLocalPath);//»ñÈ¡Ô¶¶Ë¶Ô±ÈĞÅÏ¢
-                    updataInfoCallBack("½âÎöÔ¶¶Ë¶Ô±ÈÎÄ¼ş*3");
+                    updataInfoCallBack("å¼€å§‹æ›´æ–°èµ„æº*2");
+                    string remoteInfo = File.ReadAllText(abCompare_Tmp_InfoLocalPath);//è·å–è¿œç«¯å¯¹æ¯”ä¿¡æ¯
+                    updataInfoCallBack("è§£æè¿œç«¯å¯¹æ¯”æ–‡ä»¶*3");
                     AnalysisABCompareFileInfo(remoteInfo, remoteABInfo);
-                    updataInfoCallBack("½âÎöÔ¶¶Ë¶Ô±ÈÎÄ¼şÍê³É*4");
-                    //2.¼ÓÔØ±¾µØ×ÊÔ´¶Ô±ÈÎÄ¼ş
+                    updataInfoCallBack("è§£æè¿œç«¯å¯¹æ¯”æ–‡ä»¶å®Œæˆ*4");
+                    //2.åŠ è½½æœ¬åœ°èµ„æºå¯¹æ¯”æ–‡ä»¶
                     GetLocalABCompareFileInfo((isOK) =>
                     {
                         if (isOK)
                         {
-                            updataInfoCallBack("½âÎö±¾µØ¶Ô±ÈÎÄ¼şÍê³É*5");
-                            //3.¶Ô±ÈËûÃÇ È»ºó½øĞĞAB°üÏÂÔØ
-                            updataInfoCallBack("¿ªÊ¼¶Ô±È*6");
+                            updataInfoCallBack("è§£ææœ¬åœ°å¯¹æ¯”æ–‡ä»¶å®Œæˆ*5");
+                            //3.å¯¹æ¯”ä»–ä»¬ ç„¶åè¿›è¡ŒABåŒ…ä¸‹è½½
+                            updataInfoCallBack("å¼€å§‹å¯¹æ¯”*6");
                             foreach (string abName in remoteABInfo.Keys)
                             {
-                                //1.ÅĞ¶Ï ÄÄĞ©×ÊÔ´ÊÇĞÂµÄ È»ºó¼ÇÂ¼ Ö®ºóÓÃÓÚÏÂÔØ
-                                //ÕâÓÉÓÚ±¾µØ¶Ô±ÈĞÅÏ¢ÖĞÃ»ÓĞ½ĞÕâ¸öÃû×ÖµÄAB°ü ËùÒÔ¼ÇÂ¼ÏÂÔØËü
+                                //1.åˆ¤æ–­ å“ªäº›èµ„æºæ˜¯æ–°çš„ ç„¶åè®°å½• ä¹‹åç”¨äºä¸‹è½½
+                                //è¿™ç”±äºæœ¬åœ°å¯¹æ¯”ä¿¡æ¯ä¸­æ²¡æœ‰å«è¿™ä¸ªåå­—çš„ABåŒ… æ‰€ä»¥è®°å½•ä¸‹è½½å®ƒ
                                 if (!localABInfo.ContainsKey(abName))
                                 {
                                     downLoadList.Add(abName);
                                 }
-                                else//·¢ÏÖ±¾µØÓĞÍ¬ÃûAB°ü È»ºó¼ÌĞø´¦Àí
+                                else//å‘ç°æœ¬åœ°æœ‰åŒåABåŒ… ç„¶åç»§ç»­å¤„ç†
                                 {
-                                    //2.ÅĞ¶Ï ÄÄĞ©×ÊÔ´ÊÇĞèÒª¸üĞÂµÄ È»ºó¼ÇÂ¼ Ö®ºóÓÃÓÚÏÂÔØ
+                                    //2.åˆ¤æ–­ å“ªäº›èµ„æºæ˜¯éœ€è¦æ›´æ–°çš„ ç„¶åè®°å½• ä¹‹åç”¨äºä¸‹è½½
                                     if (localABInfo[abName].md5 != remoteABInfo[abName].md5)
                                     {
                                         downLoadList.Add(abName);
                                     }
-                                    //Èç¹ûmd5ÂëÏàµÈ Ö¤Ã÷ÊÇÍ¬Ò»¸ö×ÊÔ´ ²»ĞèÒª¸üĞÂ
-                                    //3.ÅĞ¶Ï ÄÄĞ©×ÊÔ´ĞèÒªÉ¾³ı
-                                    //Ã¿´Î¼ì²âÍêÒ»¸öÃû×ÖµÄAB°ü ¾ÍÒÆ³ı±¾µØµÄĞÅÏ¢ ÄÇÃ´±¾µØÊ£ÏÂÀ´µÄĞÅÏ¢ ¾ÍÊÇÔ¶¶ËÃ»ÓĞµÄÄÚÈİ
-                                    //¾Í¿ÉÒÔ°ÑËûÃÇÉ¾³ıÁË
+                                    //å¦‚æœmd5ç ç›¸ç­‰ è¯æ˜æ˜¯åŒä¸€ä¸ªèµ„æº ä¸éœ€è¦æ›´æ–°
+                                    //3.åˆ¤æ–­ å“ªäº›èµ„æºéœ€è¦åˆ é™¤
+                                    //æ¯æ¬¡æ£€æµ‹å®Œä¸€ä¸ªåå­—çš„ABåŒ… å°±ç§»é™¤æœ¬åœ°çš„ä¿¡æ¯ é‚£ä¹ˆæœ¬åœ°å‰©ä¸‹æ¥çš„ä¿¡æ¯ å°±æ˜¯è¿œç«¯æ²¡æœ‰çš„å†…å®¹
+                                    //å°±å¯ä»¥æŠŠä»–ä»¬åˆ é™¤äº†
                                     localABInfo.Remove(abName);
                                 }
                             }
-                            updataInfoCallBack("¶Ô±ÈÍê³É*7");
-                            updataInfoCallBack("¿ªÊ¼É¾³ıÎŞÓÃµÄAB°üÎÄ¼ş*8");
-                            //ÉÏÃæ¶Ô±ÈÍêÁË ÄÇ¾ÍÏÈÉ¾³ıÃ»ÓÃµÄÄÚÈİ ÔÙÏÂÔØAB°ü
-                            //É¾³ıÎŞÓÃµÄAB°ü
+                            updataInfoCallBack("å¯¹æ¯”å®Œæˆ*7");
+                            updataInfoCallBack("å¼€å§‹åˆ é™¤æ— ç”¨çš„ABåŒ…æ–‡ä»¶*8");
+                            //ä¸Šé¢å¯¹æ¯”å®Œäº† é‚£å°±å…ˆåˆ é™¤æ²¡ç”¨çš„å†…å®¹ å†ä¸‹è½½ABåŒ…
+                            //åˆ é™¤æ— ç”¨çš„ABåŒ…
                             foreach (string abName in localABInfo.Keys)
                             {
-                                //Èç¹û¿É¶ÁĞ´ÎÄ¼ş¼ĞÖĞÓĞÄÚÈİ ÎÒÃÇ¾ÍÉ¾³ıËü 
-                                //Ä¬ÈÏ×ÊÔ´ÖĞµÄ ĞÅÏ¢ ÎÒÃÇÃ»°ì·¨É¾³ı
+                                //å¦‚æœå¯è¯»å†™æ–‡ä»¶å¤¹ä¸­æœ‰å†…å®¹ æˆ‘ä»¬å°±åˆ é™¤å®ƒ
+                                //é»˜è®¤èµ„æºä¸­çš„ ä¿¡æ¯ æˆ‘ä»¬æ²¡åŠæ³•åˆ é™¤
                                 if (File.Exists(Application.persistentDataPath + "/" + abName))
                                 {
                                     File.Delete(Application.persistentDataPath + "/" + abName);
                                 }
                             }
-                            updataInfoCallBack("ÏÂÔØºÍ¸üĞÂAB°üÎÄ¼ş*9");
-                            //ÏÂÔØ´ı¸üĞÂÁĞ±íÖĞµÄËùÓĞAB°ü
-                            //ÏÂÔØ
+                            updataInfoCallBack("ä¸‹è½½å’Œæ›´æ–°ABåŒ…æ–‡ä»¶*9");
+                            //ä¸‹è½½å¾…æ›´æ–°åˆ—è¡¨ä¸­çš„æ‰€æœ‰ABåŒ…
+                            //ä¸‹è½½
                             DownLoadABFile((dl_isOver) =>
                             {
                                 if (dl_isOver)
                                 {
-                                    //ÏÂÔØÍêËùÓĞAB°üÎÄ¼şºó
-                                    //°Ñ±¾µØµÄAB°ü¶Ô±ÈÎÄ¼ş ¸üĞÂÎª×îĞÂ
-                                    //°ÑÖ®Ç°¶ÁÈ¡³öÀ´µÄ Ô¶¶Ë¶Ô±ÈÎÄ¼şĞÅÏ¢ ´æ´¢µ½ ±¾µØ 
-                                    updataInfoCallBack("¸üĞÂ±¾µØAB°ü¶Ô±ÈÎÄ¼ş*10");
+                                    //ä¸‹è½½å®Œæ‰€æœ‰ABåŒ…æ–‡ä»¶å
+                                    //æŠŠæœ¬åœ°çš„ABåŒ…å¯¹æ¯”æ–‡ä»¶ æ›´æ–°ä¸ºæœ€æ–°
+                                    //æŠŠä¹‹å‰è¯»å–å‡ºæ¥çš„ è¿œç«¯å¯¹æ¯”æ–‡ä»¶ä¿¡æ¯ å­˜å‚¨åˆ° æœ¬åœ°
+                                    updataInfoCallBack("æ›´æ–°æœ¬åœ°ABåŒ…å¯¹æ¯”æ–‡ä»¶*10");
                                     File.WriteAllText(abCompareInfoLocalPath, remoteInfo);
                                     overCallBack(true);
                                 }
@@ -221,12 +221,12 @@ namespace UPandaGF
             });
         }
         /// <summary>
-        /// ±¾µØAB°ü¶Ô±ÈÎÄ¼ş¼ÓÔØ ½âÎöĞÅÏ¢
+        /// æœ¬åœ°ABåŒ…å¯¹æ¯”æ–‡ä»¶åŠ è½½ è§£æä¿¡æ¯
         /// </summary>
-        /// <param name="overCallBack">½âÎö½áÊø»Øµ÷</param>
+        /// <param name="overCallBack">è§£æç»“æŸå›è°ƒ</param>
         public void GetLocalABCompareFileInfo(UnityAction<bool> overCallBack)
         {
-            //Èç¹û¿É¶Á¿ÉĞ´ÎÄ¼ş¼ĞÖĞ ´æÔÚ¶Ô±ÈÎÄ¼ş ËµÃ÷Ö®Ç°ÒÑ¾­ÏÂÔØ¸üĞÂ¹ıÁË
+            //å¦‚æœå¯è¯»å¯å†™æ–‡ä»¶å¤¹ä¸­ å­˜åœ¨å¯¹æ¯”æ–‡ä»¶ è¯´æ˜ä¹‹å‰å·²ç»ä¸‹è½½æ›´æ–°è¿‡äº†
             if (File.Exists(abCompareInfoLocalPath))
             {
                 StartCoroutine(IE_GetLocalABCompareFileInfo(abCompareInfoLocalPath, overCallBack));
@@ -237,17 +237,17 @@ namespace UPandaGF
             }
         }
         /// <summary>
-        /// ¼ÓÔØ±¾µØĞÅÏ¢ ²¢ÇÒ½âÎö´æÈë×Öµä
+        /// åŠ è½½æœ¬åœ°ä¿¡æ¯ å¹¶ä¸”è§£æå­˜å…¥å­—å…¸
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="overCallBack"></param>
         /// <returns></returns>
         private IEnumerator IE_GetLocalABCompareFileInfo(string filePath, UnityAction<bool> overCallBack)
         {
-            //Í¨¹ı UnityWebRequest È¥¼ÓÔØ±¾µØÎÄ¼ş
+            //é€šè¿‡ UnityWebRequest å»åŠ è½½æœ¬åœ°æ–‡ä»¶
             UnityWebRequest req = UnityWebRequest.Get(filePath);
             yield return req.SendWebRequest();
-            //»ñÈ¡ÎÄ¼ş³É¹¦ ¼ÌĞøÍùÏÂÖ´ĞĞ
+            //è·å–æ–‡ä»¶æˆåŠŸ ç»§ç»­å¾€ä¸‹æ‰§è¡Œ
 #if UNITY_2020_1_OR_NEWER
             if (req.result != UnityWebRequest.Result.Success)
 #else
@@ -264,74 +264,74 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ÏÂÔØ×ÊÔ´¶Ô±ÈÎÄ¼ş£¨txt£©
+        /// ä¸‹è½½èµ„æºå¯¹æ¯”æ–‡ä»¶ï¼ˆtxtï¼‰
         /// </summary>
-        /// <param name="overCallBack">ÏÂÔØ»Øµ÷£¬²ÎÊıÊÇÊÇ·ñÏÂÔØ³É¹¦</param>
+        /// <param name="overCallBack">ä¸‹è½½å›è°ƒï¼Œå‚æ•°æ˜¯æ˜¯å¦ä¸‹è½½æˆåŠŸ</param>
         public async void DownLoadABComparteFile(UnityAction<bool> overCallBack)
         {
-            //1.´Ó×ÊÔ´·şÎñÆ÷ÏÂÔØ×ÊÔ´¶Ô±ÈÎÄ¼ş
-            bool isOver = false; //ÏÂÔØÊÇ·ñ³É¹¦
-                                 //ÖØĞÂÏÂÔØ´ÎÊı
+            //1.ä»èµ„æºæœåŠ¡å™¨ä¸‹è½½èµ„æºå¯¹æ¯”æ–‡ä»¶
+            bool isOver = false; //ä¸‹è½½æ˜¯å¦æˆåŠŸ
+                                 //é‡æ–°ä¸‹è½½æ¬¡æ•°
             int ReDownTimes = configArg.reDownTimes;
             if (ReDownTimes <= 0) ReDownTimes = 1;
             while (!isOver && ReDownTimes > 0)
             {
                 await System.Threading.Tasks.Task.Run(() =>
                 {
-                    isOver = DownLoadFile(configArg.comparativeDocumentName, abCompare_Tmp_InfoLocalPath);//Ô¶¶ËµÄ¶Ô±ÈÎÄ¼ş´æ·ÅÂ·¾¶
+                    isOver = DownLoadFile(configArg.comparativeDocumentName, abCompare_Tmp_InfoLocalPath);//è¿œç«¯çš„å¯¹æ¯”æ–‡ä»¶å­˜æ”¾è·¯å¾„
                 });
                 if (!isOver)
                 {
                     --ReDownTimes;
-                    PLogger.LogError($"¶Ô±ÈÎÄ¼şÏÂÔØÊ§°Ü£¬Ê£Óà¼ÓÔØ´ÎÊı£º{ReDownTimes}");
+                    PLogger.LogError($"å¯¹æ¯”æ–‡ä»¶ä¸‹è½½å¤±è´¥ï¼Œå‰©ä½™åŠ è½½æ¬¡æ•°ï¼š{ReDownTimes}");
                 }
             }
-            //¸æËßÍâ²¿³É¹¦Óë·ñ
+            //å‘Šè¯‰å¤–éƒ¨æˆåŠŸä¸å¦
             overCallBack?.Invoke(isOver);
         }
         /// <summary>
-        /// ÏÂÔØÎÄ¼ş
+        /// ä¸‹è½½æ–‡ä»¶
         /// </summary>
-        /// <param name="fileName">Ô¶¶ËÏÂÔØÎÄ¼şÃû³Æ</param>
-        /// <param name="localPath">±¾µØ´æ´¢Â·¾¶ÎÄ¼şÂ·¾¶</param>
+        /// <param name="fileName">è¿œç«¯ä¸‹è½½æ–‡ä»¶åç§°</param>
+        /// <param name="localPath">æœ¬åœ°å­˜å‚¨è·¯å¾„æ–‡ä»¶è·¯å¾„</param>
         /// <returns></returns>
         private bool DownLoadFile(string fileName, string localPath)
         {
             try
             {
-                //1.´´½¨Ò»¸öFTPÁ¬½Ó ÓÃÓÚÏÂÔØ
+                //1.åˆ›å»ºä¸€ä¸ªFTPè¿æ¥ ç”¨äºä¸‹è½½
                 FtpWebRequest req = FtpWebRequest.Create(new Uri(configArg.DownLoadURL + fileName)) as FtpWebRequest;
-                //2.ÉèÖÃÒ»¸öÍ¨ĞÅÆ¾Ö¤ ÕâÑù²ÅÄÜÏÂÔØ£¨Èç¹ûÓĞÄäÃûÕËºÅ ¿ÉÒÔ²»ÉèÖÃÆ¾Ö¤)
+                //2.è®¾ç½®ä¸€ä¸ªé€šä¿¡å‡­è¯ è¿™æ ·æ‰èƒ½ä¸‹è½½ï¼ˆå¦‚æœæœ‰åŒ¿åè´¦å· å¯ä»¥ä¸è®¾ç½®å‡­è¯)
                 NetworkCredential n = new NetworkCredential(configArg.Ftp_UserName, configArg.Ftp_Password);
                 req.Credentials = n;
-                //3.ÆäËüÉèÖÃ
-                //  ÉèÖÃ´úÀíÎªnull
+                //3.å…¶å®ƒè®¾ç½®
+                //  è®¾ç½®ä»£ç†ä¸ºnull
                 req.Proxy = null;
-                //  ÇëÇóÍê±Ïºó ÊÇ·ñ¹Ø±Õ¿ØÖÆÁ¬½Ó
+                //  è¯·æ±‚å®Œæ¯•å æ˜¯å¦å…³é—­æ§åˆ¶è¿æ¥
                 req.KeepAlive = false;
-                //  ²Ù×÷ÃüÁî-ÏÂÔØ
+                //  æ“ä½œå‘½ä»¤-ä¸‹è½½
                 req.Method = WebRequestMethods.Ftp.DownloadFile;
-                //  Ö¸¶¨´«ÊäµÄÀàĞÍ 2½øÖÆ
+                //  æŒ‡å®šä¼ è¾“çš„ç±»å‹ 2è¿›åˆ¶
                 req.UseBinary = true;
-                //4.ÏÂÔØÎÄ¼ş
-                //  ftpµÄÁ÷¶ÔÏó
+                //4.ä¸‹è½½æ–‡ä»¶
+                //  ftpçš„æµå¯¹è±¡
                 FtpWebResponse res = req.GetResponse() as FtpWebResponse;
                 Stream downLoadStream = res.GetResponseStream();
                 using (FileStream file = File.Create(localPath))
                 {
-                    //Ò»µãÒ»µãµÄÏÂÔØÄÚÈİ
+                    //ä¸€ç‚¹ä¸€ç‚¹çš„ä¸‹è½½å†…å®¹
                     byte[] bytes = new byte[1024];
-                    //·µ»ØÖµ  ´ú±í¶ÁÈ¡ÁË¶àÉÙ¸ö×Ö½Ú
+                    //è¿”å›å€¼  ä»£è¡¨è¯»å–äº†å¤šå°‘ä¸ªå­—èŠ‚
                     int contentLength = downLoadStream.Read(bytes, 0, bytes.Length);
-                    //Ñ­»·ÏÂÔØÊı¾İ
+                    //å¾ªç¯ä¸‹è½½æ•°æ®
                     while (contentLength != 0)
                     {
-                        //Ğ´Èëµ½±¾µØÎÄ¼şÁ÷ÖĞ
+                        //å†™å…¥åˆ°æœ¬åœ°æ–‡ä»¶æµä¸­
                         file.Write(bytes, 0, contentLength);
-                        //Ğ´ÍêÔÙ¶Á
+                        //å†™å®Œå†è¯»
                         contentLength = downLoadStream.Read(bytes, 0, bytes.Length);
                     }
-                    //Ñ­»·Íê±Ïºó Ö¤Ã÷ÏÂÔØ½áÊø
+                    //å¾ªç¯å®Œæ¯•å è¯æ˜ä¸‹è½½ç»“æŸ
                     file.Close();
                     downLoadStream.Close();
                     return true;
@@ -340,51 +340,51 @@ namespace UPandaGF
             }
             catch (System.Exception ex)
             {
-                PLogger.LogError(fileName + "ÏÂÔØÊ§°Ü:" + ex.Message);
+                PLogger.LogError(fileName + "ä¸‹è½½å¤±è´¥:" + ex.Message);
                 return false;
             }
         }
         /// <summary>
-        /// ½âÎö×ÊÔ´¶Ô±ÈÎÄ¼ş
+        /// è§£æèµ„æºå¯¹æ¯”æ–‡ä»¶
         /// </summary>
-        /// <param name="info">½âÎöµÄ×Ö·û´®</param>
-        /// <param name="AbInfo">½âÎöµÄĞÅÏ¢·ÅÈë¸Ã×Öµä</param>
+        /// <param name="info">è§£æçš„å­—ç¬¦ä¸²</param>
+        /// <param name="AbInfo">è§£æçš„ä¿¡æ¯æ”¾å…¥è¯¥å­—å…¸</param>
         public void AnalysisABCompareFileInfo(string info, Dictionary<string, ABInfo> AbInfo)
         {
-            //¾ÍÊÇ»ñÈ¡×ÊÔ´¶Ô±ÈÎÄ¼şÖĞµÄ ×Ö·û´®ĞÅÏ¢ ½øĞĞ²ğ·Ö
+            //å°±æ˜¯è·å–èµ„æºå¯¹æ¯”æ–‡ä»¶ä¸­çš„ å­—ç¬¦ä¸²ä¿¡æ¯ è¿›è¡Œæ‹†åˆ†
             //string info = File.ReadAllText(Application.persistentDataPath + "/ABCompareInfo_TMP.txt");
-            //Í¨¹ı|²ğ·Ö×Ö·û´® °ÑÒ»¸ö¸öAB°üĞÅÏ¢²ğ·Ö³öÀ´
+            //é€šè¿‡|æ‹†åˆ†å­—ç¬¦ä¸² æŠŠä¸€ä¸ªä¸ªABåŒ…ä¿¡æ¯æ‹†åˆ†å‡ºæ¥
             string[] strs = info.Split('|');
             string[] abInfos = null;
             for (int i = 0; i < strs.Length; i++)
             {
-                //ÓÖ°ÑÒ»¸öABµÄÏêÏ¸ĞÅÏ¢²ğ·Ö³öÀ´
+                //åˆæŠŠä¸€ä¸ªABçš„è¯¦ç»†ä¿¡æ¯æ‹†åˆ†å‡ºæ¥
                 abInfos = strs[i].Split(' ');
-                //¼ÇÂ¼Ã¿Ò»¸öÔ¶¶ËAB°üµÄĞÅÏ¢ Ö®ºó ºÃÓÃÀ´¶Ô±È
+                //è®°å½•æ¯ä¸€ä¸ªè¿œç«¯ABåŒ…çš„ä¿¡æ¯ ä¹‹å å¥½ç”¨æ¥å¯¹æ¯”
                 AbInfo.Add(abInfos[0], new ABInfo(abInfos[0], abInfos[1], abInfos[2]));
             }
         }
 
         /// <summary>
-        /// ¸ù¾İ½âÎöµÄ¶Ô±ÈÎÄ¼ş ÏÂÔØAB°ü
+        /// æ ¹æ®è§£æçš„å¯¹æ¯”æ–‡ä»¶ ä¸‹è½½ABåŒ…
         /// </summary>
-        /// <param name="overCallBack">ÏÂÔØ½áÊøµÄ»Øµ÷£¬²ÎÊı´ú±í×ÊÔ´ÊÇ·ñÈ«²¿ÏÂÔØ³É¹¦</param>
-        /// <param name="updatePro">ÏÂÔØ½ø¶È»Øµ÷£¬Ã¿µ±ÓĞÒ»¸ö°üÏÂÔØ³É¹¦¶¼»áµ÷ÓÃ</param>
+        /// <param name="overCallBack">ä¸‹è½½ç»“æŸçš„å›è°ƒï¼Œå‚æ•°ä»£è¡¨èµ„æºæ˜¯å¦å…¨éƒ¨ä¸‹è½½æˆåŠŸ</param>
+        /// <param name="updatePro">ä¸‹è½½è¿›åº¦å›è°ƒï¼Œæ¯å½“æœ‰ä¸€ä¸ªåŒ…ä¸‹è½½æˆåŠŸéƒ½ä¼šè°ƒç”¨</param>
         public async void DownLoadABFile(UnityAction<bool> overCallBack, UnityAction<string> updatePro)
         {
-            // ÊÇ·ñÏÂÔØ³É¹¦
+            // æ˜¯å¦ä¸‹è½½æˆåŠŸ
             bool isOver = false;
-            //ÏÂÔØ³É¹¦µÄÁĞ±í Ö®ºóÓÃÓÚÒÆ³ıÏÂÔØ³É¹¦µÄÄÚÈİ
+            //ä¸‹è½½æˆåŠŸçš„åˆ—è¡¨ ä¹‹åç”¨äºç§»é™¤ä¸‹è½½æˆåŠŸçš„å†…å®¹
             List<string> tempList = new List<string>();
-            //ÖØĞÂÏÂÔØµÄ×î´ó´ÎÊı
+            //é‡æ–°ä¸‹è½½çš„æœ€å¤§æ¬¡æ•°
             int ReDownTimes = this.configArg.reDownTimes;
-            //ÏÂÔØ³É¹¦µÄ×ÊÔ´Êı
+            //ä¸‹è½½æˆåŠŸçš„èµ„æºæ•°
             downLoadOverNum = 0;
-            //ĞèÒªÏÂÔØ×ÊÔ´µÄÊıÁ¿
+            //éœ€è¦ä¸‹è½½èµ„æºçš„æ•°é‡
             int currentDownCount = downLoadList.Count;
-            Debug.Log($"<color=green>ĞèÒªÏÂÔØ×ÊÔ´µÄÊıÁ¿:{currentDownCount}</color>");
+            Debug.Log($"<color=green>éœ€è¦ä¸‹è½½èµ„æºçš„æ•°é‡:{currentDownCount}</color>");
             updatePro("0*0");
-            //whileÑ­»·µÄÄ¿µÄ ÊÇ½øĞĞn´ÎÖØĞÂÏÂÔØ ±ÜÃâÍøÂçÒì³£Ê± ÏÂÔØÊ§°Ü
+            //whileå¾ªç¯çš„ç›®çš„ æ˜¯è¿›è¡Œnæ¬¡é‡æ–°ä¸‹è½½ é¿å…ç½‘ç»œå¼‚å¸¸æ—¶ ä¸‹è½½å¤±è´¥
             while (downLoadList.Count > 0 && ReDownTimes > 0)
             {
                 for (int i = 0; i < downLoadList.Count; i++)
@@ -396,25 +396,25 @@ namespace UPandaGF
                     });
                     if (isOver)
                     {
-                        //ÒªÖªµÀÏÖÔÚÏÂÔØÁË¶àÉÙ ½áÊøÓë·ñ
+                        //è¦çŸ¥é“ç°åœ¨ä¸‹è½½äº†å¤šå°‘ ç»“æŸä¸å¦
                         updatePro(++downLoadOverNum + "/" + currentDownCount);
-                        //ÏÂÔØ³É¹¦¼ÇÂ¼ÏÂÀ´
+                        //ä¸‹è½½æˆåŠŸè®°å½•ä¸‹æ¥
                         tempList.Add(downLoadList[i]);
                     }
                 }
-                //°ÑÏÂÔØ³É¹¦µÄÎÄ¼şÃû ´Ó´ıÏÂÔØÁĞ±íÖĞÒÆ³ı
+                //æŠŠä¸‹è½½æˆåŠŸçš„æ–‡ä»¶å ä»å¾…ä¸‹è½½åˆ—è¡¨ä¸­ç§»é™¤
                 for (int i = 0; i < tempList.Count; i++)
                 {
                     downLoadList.Remove(tempList[i]);
                 }
                 --ReDownTimes;
             }
-            //ÏÂÔØ×´Ì¬·µ»Ø
+            //ä¸‹è½½çŠ¶æ€è¿”å›
             overCallBack(downLoadList.Count == 0);
         }
 
         /// <summary>
-        /// Çå¿Õ×ÊÔ´
+        /// æ¸…ç©ºèµ„æº
         /// </summary>
         public void DeleteAllAssets()
         {
@@ -425,12 +425,12 @@ namespace UPandaGF
                 {
                     try
                     {
-                        File.Delete(file); // É¾³ıµ¥¸öÎÄ¼ş
-                        Debug.Log("ÒÑÉ¾³ıÎÄ¼ş£º" + file);
+                        File.Delete(file); // åˆ é™¤å•ä¸ªæ–‡ä»¶
+                        Debug.Log("å·²åˆ é™¤æ–‡ä»¶ï¼š" + file);
                     }
                     catch (IOException ex)
                     {
-                        Debug.LogError("É¾³ıÊ§°Ü£º" + ex.Message); // ²¶»ñÒì³££¨ÈçÎÄ¼ş±»Õ¼ÓÃ£©
+                        Debug.LogError("åˆ é™¤å¤±è´¥ï¼š" + ex.Message); // æ•è·å¼‚å¸¸ï¼ˆå¦‚æ–‡ä»¶è¢«å ç”¨ï¼‰
                     }
                 }
             }

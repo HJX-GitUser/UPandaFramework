@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
@@ -11,12 +11,11 @@ using System.Threading;
 using System.Security.Cryptography;
 using System.Text;
 using UPandaGF.GFEditor;
-using log4net;
 
 namespace AssetBundleBrowser
 {
     /// <summary>
-    /// AssetBundle·ÖÀà´°¿Ú
+    /// AssetBundleåˆ†ç±»çª—å£
     /// </summary>
     internal class AssetBundleClassificationWindow
     {
@@ -26,7 +25,7 @@ namespace AssetBundleBrowser
         private string configName = "AssetBundleBuildConfig";
         private AssetBundleClassificationWindowConfig config;
         /// <summary>
-        /// keyÊÇ°üÃû
+        /// keyæ˜¯åŒ…å
         /// </summary>
         public Dictionary<string, ABLoadPath> sourcesDic;
         public void ShowWindow(AssetBundleBrowserMain arg)
@@ -44,23 +43,26 @@ namespace AssetBundleBrowser
         private bool showDetails = false;
         private AssetBundleInfo selectedBundle = null;
 
-        // ÁĞ¿í
+        // åˆ—å®½
         private float nameColumnWidth = 200f;
         private float sizeColumnWidth = 100f;
         private float dependenciesColumnWidth = 60f;
         private float pathColumnWidth = 200f;
         private float lastClickTime = 0;
         private float doubleClickTime = 0.3f;
-        private int sortColumn = 0; // 0: Ãû³Æ, 1: ´óĞ¡, 2: ÒÀÀµÊı
+        private int sortColumn = 0; // 0: åç§°, 1: å¤§å°, 2: ä¾èµ–æ•°
         private bool sortAscending = true;
 
-        // Ìí¼Ó¹¹½¨×´Ì¬±äÁ¿
+        // æ·»åŠ æ„å»ºçŠ¶æ€å˜é‡
         private bool isBuildingSingle = false;
         private string currentBuildingBundle = "";
-        private float buildProgress = 0f;
+
+        // AES é…ç½®ä¸€è‡´æ€§æ£€æµ‹ç¼“å­˜
+        private UPandaGF.UPGameRoot aesSyncGameRoot = null;
+        private bool aesSyncSearched = false;
 
         /// <summary>
-        /// BundleÏÔÊ¾ÁĞ±í
+        /// Bundleæ˜¾ç¤ºåˆ—è¡¨
         /// </summary>
         private IEnumerable<AssetBundleInfo> ABargs;
 
@@ -74,6 +76,10 @@ namespace AssetBundleBrowser
             public List<string> assets = new List<string>();
             public List<string> dependencies = new List<string>();
             public string path;
+            /// <summary>
+            /// æ˜¯å¦å·²æ„å»ºï¼ˆæœªæ„å»ºçš„åŒ…æ²¡æœ‰çœŸå®çš„å¤§å°/MD5ï¼Œä¸ä¼šå†™å…¥æ¸…å•ï¼‰
+            /// </summary>
+            public bool isBuilt = false;
             public bool isVariant = false;
             public string variant = "";
         }
@@ -84,26 +90,30 @@ namespace AssetBundleBrowser
             GetData();
             await GetABSourcesRelated();
             RefreshAssetBundleList();
-            // ¼àÌıEditor¸üĞÂ£¬ÓÃÓÚÏÔÊ¾¹¹½¨½ø¶È
-            // EditorApplication.update += OnEditorUpdate;
         }
         private void GetData()
         {
             config = UPandaGFConfig.LoadJsonConfig<AssetBundleClassificationWindowConfig>(configName);
-            //»ñÈ¡Ö÷°üĞÅÏ¢
+            //è·å–ä¸»åŒ…ä¿¡æ¯
             string m_OutputPath = _mainBrower.m_BuildTabData.m_OutputPath;
-            string bundleName = _mainBrower.m_BuildTabData.m_BuildTarget.ToString();
+            // Unity ç”¨"è¾“å‡ºç›®å½•å"ä½œä¸ºä¸»åŒ…ï¼ˆmanifest bundleï¼‰çš„æ–‡ä»¶åï¼šé»˜è®¤è·¯å¾„ AssetBundles/<BuildTarget> ä¸‹æ°å¥½ç­‰äº BuildTarget åï¼Œ
+            // ä½†ç”¨æˆ· Browse æ”¹æˆåˆ«çš„ç›®å½•åä¸»åŒ…åå°±æ˜¯é‚£ä¸ªç›®å½•åï¼Œå› æ­¤è¿™é‡Œä¸èƒ½ç¡¬ç¼–ç  BuildTarget
+            string bundleName = GetLastPathSegment(m_OutputPath);
             if (mainBundleInfo == null) mainBundleInfo = new AssetBundleInfo();
             mainBundleInfo.name = bundleName;
-            string fullPath = Path.Combine(m_OutputPath, bundleName);
-            if (!File.Exists(fullPath))
+            string fullPath = GetBuildPathForBundle(bundleName);
+            if (string.IsNullOrEmpty(fullPath) || !File.Exists(fullPath))
             {
-                Debug.Log("×ÊÔ´°üÎ´¹¹½¨£º" + fullPath);
+                Debug.Log($"ä¸»åŒ…æœªæ„å»ºï¼š{Path.Combine(m_OutputPath, bundleName)}");
+                mainBundleInfo.isBuilt = false;
                 mainBundleInfo.size = 0;
+                mainBundleInfo.md5 = string.Empty;
+                mainBundleInfo.path = "æœªæ„å»º";
             }
             else
             {
                 FileInfo fileInfo = new FileInfo(fullPath);
+                mainBundleInfo.isBuilt = true;
                 mainBundleInfo.size = fileInfo.Length;
                 mainBundleInfo.md5 = GetMD5(fullPath);
                 mainBundleInfo.path = fullPath;
@@ -116,35 +126,99 @@ namespace AssetBundleBrowser
             UPandaGFConfig.SaveJsonConfig(config, configName);
         }
 
-        private void OnEditorUpdate()
+        /// <summary>
+        /// å–åœºæ™¯ä¸­çš„ UPGameRootï¼ˆç”¨äºæ ¡éªŒ AES é…ç½®æ˜¯å¦ä¸æ‰“åŒ…ç«¯ä¸€è‡´ï¼‰
+        /// </summary>
+        private static UPandaGF.UPGameRoot FindSceneGameRoot()
         {
-            // ¸üĞÂ¹¹½¨½ø¶ÈÏÔÊ¾
-            //if (isBuildingSingle)
-            //{
-            //    Repaint();
-            //}
+            UPandaGF.UPGameRoot[] roots = Resources.FindObjectsOfTypeAll<UPandaGF.UPGameRoot>();
+            foreach (UPandaGF.UPGameRoot root in roots)
+            {
+                if (root == null) continue;
+                if (!root.gameObject.scene.IsValid()) continue;   // è¿‡æ»¤å·¥ç¨‹èµ„æº
+                if (EditorUtility.IsPersistent(root)) continue;   // è¿‡æ»¤é¢„åˆ¶ä½“èµ„æº
+                return root;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// AES é…ç½®æœ‰ä¸¤ä»½ï¼ˆæœ¬çª—å£çš„ JSON ä¸åœºæ™¯ä¸­ UPGameRoot çš„åºåˆ—åŒ–å­—æ®µï¼‰ï¼Œè¿™é‡Œåšä¸€è‡´æ€§æé†’ + ä¸€é”®åŒæ­¥
+        /// </summary>
+        private void DrawAESConfigSync()
+        {
+            if (!aesSyncSearched)
+            {
+                aesSyncGameRoot = FindSceneGameRoot();
+                aesSyncSearched = true;
+            }
+
+            GUILayout.BeginHorizontal();
+            if (aesSyncGameRoot == null)
+            {
+                EditorGUILayout.HelpBox("åœºæ™¯ä¸­æœªæ‰¾åˆ° UPGameRootã€‚è¿è¡Œæ—¶çš„è§£å¯†é…ç½®æ¥è‡ªå®ƒï¼Œæœ¬çª—å£çš„ AES è®¾ç½®ä¸ä¼šè‡ªåŠ¨ç”Ÿæ•ˆã€‚", MessageType.Info);
+                if (GUILayout.Button("é‡æ–°æ£€æµ‹", GUILayout.Width(80))) aesSyncSearched = false;
+            }
+            else
+            {
+                AssetBundleClassificationWindowConfig sceneConfig = aesSyncGameRoot.Config != null
+                    ? aesSyncGameRoot.Config.AssetAESConfig
+                    : null;
+                bool same = sceneConfig != null
+                    && sceneConfig.enable == config.enable
+                    && string.Equals(sceneConfig.AESKEY, config.AESKEY)
+                    && string.Equals(sceneConfig.AESIV, config.AESIV);
+
+                if (same)
+                {
+                    EditorGUILayout.HelpBox("åœºæ™¯ä¸­ UPGameRoot çš„ AES é…ç½®ä¸æœ¬çª—å£ä¸€è‡´ã€‚", MessageType.Info);
+                }
+                else
+                {
+                    EditorGUILayout.HelpBox("åœºæ™¯ä¸­ UPGameRoot çš„ AES é…ç½®ä¸æœ¬çª—å£ä¸ä¸€è‡´ï¼šè¿è¡Œæ—¶è§£å¯†ä¼šå¤±è´¥å¹¶ä¸­æ­¢ AB æ¨¡å¼åˆå§‹åŒ–ï¼Œè¯·åŒæ­¥åå†æ‰“åŒ…ã€‚", MessageType.Warning);
+                }
+
+                if (GUILayout.Button("åŒæ­¥åˆ°åœºæ™¯ä¸­çš„ UPGameRoot", GUILayout.Width(220)))
+                {
+                    Undo.RecordObject(aesSyncGameRoot, "Sync AssetBundle AES Config");
+                    if (aesSyncGameRoot.Config.AssetAESConfig == null)
+                        aesSyncGameRoot.Config.AssetAESConfig = new AssetBundleClassificationWindowConfig();
+                    aesSyncGameRoot.Config.AssetAESConfig.enable = config.enable;
+                    aesSyncGameRoot.Config.AssetAESConfig.AESKEY = config.AESKEY;
+                    aesSyncGameRoot.Config.AssetAESConfig.AESIV = config.AESIV;
+                    EditorUtility.SetDirty(aesSyncGameRoot);
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(aesSyncGameRoot.gameObject.scene);
+                    Debug.Log("AES é…ç½®å·²åŒæ­¥åˆ°åœºæ™¯ä¸­çš„ UPGameRootï¼ˆè®°å¾—ä¿å­˜åœºæ™¯ï¼‰");
+                }
+                if (GUILayout.Button("é‡æ–°æ£€æµ‹", GUILayout.Width(80)))
+                {
+                    aesSyncSearched = false;
+                }
+            }
+            GUILayout.EndHorizontal();
         }
 
         public void OnGUI()
         {
-            // ÏÔÊ¾¹¹½¨½ø¶È
+            // æ„å»ºä¸­æç¤ºï¼šBuildPipeline æ˜¯åŒæ­¥é˜»å¡è°ƒç”¨ï¼Œæ‹¿ä¸åˆ°çœŸå®è¿›åº¦ï¼Œè¿™é‡ŒåªåšçŠ¶æ€æç¤º + é˜²é‡å…¥
             if (isBuildingSingle)
             {
-                DrawBuildProgress();
+                EditorGUILayout.HelpBox($"æ­£åœ¨æ„å»ºï¼š{currentBuildingBundle}\næ„å»ºæœŸé—´ç¼–è¾‘å™¨ä¼šé˜»å¡ï¼Œè¯·ç­‰å¾…å®Œæˆã€‚", MessageType.Info);
             }
-            assetSettings = EditorGUILayout.Foldout(assetSettings, "¼ÓÃÜÉèÖÃ");
+            assetSettings = EditorGUILayout.Foldout(assetSettings, "åŠ å¯†è®¾ç½®");
             if (assetSettings)
             {
-                EditorGUILayout.LabelField("´æ´¢Î»ÖÃ", assetRefSavePath);
-                EditorGUILayout.LabelField("ÎÄ¼şÃû", assetRefName);
-                EditorGUILayout.LabelField("ÎÄ¼şºó×º", assetRefextension);
+                EditorGUILayout.LabelField("å­˜å‚¨ä½ç½®", assetRefSavePath);
+                EditorGUILayout.LabelField("æ–‡ä»¶å", assetRefName);
+                EditorGUILayout.LabelField("æ–‡ä»¶åç¼€", assetRefextension);
                 GUILayout.Space(1);
-                EditorGUILayout.LabelField("AESÅäÖÃ:");
-                config.enable = EditorGUILayout.BeginToggleGroup("Ê¹ÓÃ¼ÓÃÜ", config.enable);
+                EditorGUILayout.LabelField("AESé…ç½®:");
+                config.enable = EditorGUILayout.BeginToggleGroup("ä½¿ç”¨åŠ å¯†", config.enable);
                 config.AESKEY = EditorGUILayout.TextField("Key", config.AESKEY);
                 config.AESIV = EditorGUILayout.TextField("IV", config.AESIV);
                 EditorGUILayout.EndToggleGroup();
                 GUILayout.Space(5);
+                DrawAESConfigSync();
             }
             DrawMainBundlAsset();
             DrawToolbar();
@@ -163,16 +237,23 @@ namespace AssetBundleBrowser
                 }
             }
 
+            // ç»Ÿä¸€å†™å›"åŠ è½½é…ç½®"ï¼šä¸ä¾èµ–æ¯ä¸€è¡Œéƒ½è¢«ç»˜åˆ¶ï¼ˆè¢«æœç´¢è¿‡æ»¤æ‰çš„è¡Œä¹Ÿèƒ½ä¿ç•™ç”¨æˆ·çš„é€‰æ‹©ï¼‰
+            SyncLoadPathToSourcesDic();
         }
 
-        // ÏÔÊ¾¹¹½¨½ø¶È
-        private void DrawBuildProgress()
+        /// <summary>
+        /// æŠŠåˆ—è¡¨å½“å‰çš„"åŠ è½½é…ç½®"åŒæ­¥åˆ° sourcesDicï¼Œä½œä¸ºä¸‹æ¬¡ RefreshAssetBundleList çš„åˆå€¼
+        /// </summary>
+        private void SyncLoadPathToSourcesDic()
         {
-            Rect progressRect = new Rect(0, 0, 200, 20);
-            EditorGUI.ProgressBar(progressRect, buildProgress, $"ÕıÔÚ¹¹½¨: {currentBuildingBundle}");
+            if (sourcesDic == null) return;
+            foreach (AssetBundleInfo bundleInfo in assetBundleInfos)
+            {
+                sourcesDic[bundleInfo.name] = bundleInfo.loadPath;
+            }
         }
 
-        // ´´½¨´¿É«ÎÆÀí
+        // åˆ›å»ºçº¯è‰²çº¹ç†
         private Texture2D MakeTex(int width, int height, Color col)
         {
             Color[] pix = new Color[width * height];
@@ -189,7 +270,7 @@ namespace AssetBundleBrowser
         {
             GUILayout.BeginHorizontal(EditorStyles.toolbar);
 
-            //if (GUILayout.Button("Ë¢ĞÂ", EditorStyles.toolbarButton, GUILayout.Width(60)))
+            //if (GUILayout.Button("åˆ·æ–°", EditorStyles.toolbarButton, GUILayout.Width(60)))
             //{
             //    RefreshAssetBundleList();
             //}
@@ -199,7 +280,7 @@ namespace AssetBundleBrowser
             {
                 searchFilter = newSearch;
             }
-            if (GUILayout.Button("ËÑË÷", EditorStyles.toolbarButton, GUILayout.Width(40)))
+            if (GUILayout.Button("æœç´¢", EditorStyles.toolbarButton, GUILayout.Width(40)))
             {
                 if (GetFilteredAssetBundles().Count() == 0)
                 {
@@ -207,14 +288,14 @@ namespace AssetBundleBrowser
                 }
                 RefreshAssetBundleList();
             }
-            //GUILayout.Label("ËÑË÷:", GUILayout.Width(40));
+            //GUILayout.Label("æœç´¢:", GUILayout.Width(40));
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("¸üĞÂÅäÖÃ", EditorStyles.toolbarButton, GUILayout.Width(120)))
+            if (GUILayout.Button("æ›´æ–°é…ç½®", EditorStyles.toolbarButton, GUILayout.Width(120)))
             {
                 GenerateAssetBundleInfo();
             }
 
-            //if (GUILayout.Button("¹¹½¨ AssetBundle",  EditorStyles.toolbarButton, GUILayout.Width(120)))
+            //if (GUILayout.Button("æ„å»º AssetBundle",  EditorStyles.toolbarButton, GUILayout.Width(120)))
             if (ColorButton("Build All", Color.green, EditorStyles.toolbarButton, GUILayout.Width(120)))
             {
                 EditorApplication.delayCall += ExecuteBuild;
@@ -225,7 +306,7 @@ namespace AssetBundleBrowser
         private void ExecuteBuild()
         {
             _mainBrower.m_BuildTab.ExecuteBuild();
-            // Ë¢ĞÂÁĞ±í
+            // åˆ·æ–°åˆ—è¡¨
             RefreshAssetBundleList();
             GenerateAssetBundleInfo();
         }
@@ -246,33 +327,33 @@ namespace AssetBundleBrowser
         {
             GUILayout.BeginHorizontal(EditorStyles.toolbar);
 
-            // Ãû³ÆÁĞ
-            if (DrawSortableHeader("°üÃû", 0, nameColumnWidth))
+            // åç§°åˆ—
+            if (DrawSortableHeader("åŒ…å", 0, nameColumnWidth))
             {
                 SortAssetBundles(0);
             }
 
-            // ´óĞ¡ÁĞ
-            if (DrawSortableHeader("´óĞ¡", 1, sizeColumnWidth))
+            // å¤§å°åˆ—
+            if (DrawSortableHeader("å¤§å°", 1, sizeColumnWidth))
             {
                 SortAssetBundles(1);
             }
 
-            // ÒÀÀµÁĞ
-            if (DrawSortableHeader("ÒÀÀµÊıÁ¿", 2, dependenciesColumnWidth))
+            // ä¾èµ–åˆ—
+            if (DrawSortableHeader("ä¾èµ–æ•°é‡", 2, dependenciesColumnWidth))
             {
                 SortAssetBundles(2);
             }
 
-            // Â·¾¶ÁĞ
-            if (GUILayout.Button(new GUIContent("¼ÓÔØÅäÖÃ"), EditorStyles.toolbarButton,
+            // è·¯å¾„åˆ—
+            if (GUILayout.Button(new GUIContent("åŠ è½½é…ç½®"), EditorStyles.toolbarButton,
                 GUILayout.Width(pathColumnWidth), GUILayout.MinWidth(pathColumnWidth)))
             {
-                EditorUtility.DisplayDialog("ËµÃ÷£º",
-                     $"SreamingAssets : ×ÊÔ´´ÓSreamingAssetsÂ·¾¶¼ÓÔØ.\n\n" +
-                     $"PersistentDataPath : ×ÊÔ´´ÓPersistentDataPathÂ·¾¶¼ÓÔØ£¬¸Ã×ÊÔ´ĞèÒªÏÈÏÂÔØµ½±¾µØ£¬Ö÷ÒªÅäºÏÈÈ¸üĞÂÊ¹ÓÃ.\n\n" +
-                     $"RemotePath : ×ÊÔ´Ö±½Ó´ÓÔ¶³ÌÂ·¾¶¼ÓÔØ",
-                     "È·¶¨");
+                EditorUtility.DisplayDialog("è¯´æ˜ï¼š",
+                     $"SreamingAssets : èµ„æºä»SreamingAssetsè·¯å¾„åŠ è½½.\n\n" +
+                     $"PersistentDataPath : èµ„æºä»PersistentDataPathè·¯å¾„åŠ è½½ï¼Œè¯¥èµ„æºéœ€è¦å…ˆä¸‹è½½åˆ°æœ¬åœ°ï¼Œä¸»è¦é…åˆçƒ­æ›´æ–°ä½¿ç”¨.\n\n" +
+                     $"RemotePath : èµ„æºç›´æ¥ä»è¿œç¨‹è·¯å¾„åŠ è½½",
+                     "ç¡®å®š");
             }
             GUILayout.EndHorizontal();
         }
@@ -283,37 +364,43 @@ namespace AssetBundleBrowser
 
             if (sortColumn == columnIndex)
             {
-                content.text += sortAscending ? " ¡ü" : " ¡ı";
+                content.text += sortAscending ? " â†‘" : " â†“";
             }
 
             return GUILayout.Button(content, EditorStyles.toolbarButton,
                 GUILayout.Width(width), GUILayout.MinWidth(width));
         }
 
-        #region ×ÊÔ´ÒıÓÃÊı¾İ
+        #region èµ„æºå¼•ç”¨æ•°æ®
         /// <summary>
-        /// ×ÊÔ´Êı¾İ´æ´¢µÄÎ»ÖÃ
+        /// èµ„æºæ•°æ®å­˜å‚¨çš„ä½ç½®
         /// </summary>
         private static string assetRefSavePath = "/Data/";
         /// <summary>
-        /// ×ÊÔ´Ãû
+        /// èµ„æºå
         /// </summary>
         private static string assetRefName = "assetData";
 
         /// <summary>
-        /// ×ÊÔ´Êı¾İ´æ´¢ÎÄ¼şºó×º
+        /// èµ„æºæ•°æ®å­˜å‚¨æ–‡ä»¶åç¼€
         /// </summary>
         private static string assetRefextension = ".assetref";
+
         /// <summary>
-        /// ±éÀúÏîÄ¿Ä¿Â¼£¬Éú³ÉAB×ÊÔ´¹ØÁªÊı¾İ
+        /// èµ„æºæ¸…å•ï¼ˆassetData.assetrefï¼‰çš„å®Œæ•´æœ¬åœ°è·¯å¾„ï¼›ä¸Šä¼ é¡µç­¾ç­‰å¤ç”¨ï¼Œé¿å…è·¯å¾„é‡å¤ç¡¬ç¼–ç 
+        /// </summary>
+        internal static string AssetDataFullPath => Application.streamingAssetsPath + assetRefSavePath + assetRefName + assetRefextension;
+
+        /// <summary>
+        /// éå†é¡¹ç›®ç›®å½•ï¼Œç”ŸæˆABèµ„æºå…³è”æ•°æ®
         /// </summary>
         public void GenerateAssetBundleInfo()
         {
-            // »ñÈ¡ËùÓĞµÄ×ÊÔ´Â·¾¶
+            // è·å–æ‰€æœ‰çš„èµ„æºè·¯å¾„
             string[] allAssetPaths = AssetDatabase.GetAllAssetPaths();
-            
+
             ABSourcesRelated aBSourcesRef = new ABSourcesRelated();
-            //Ö÷°üµÄÊı¾İ£º
+            //ä¸»åŒ…çš„æ•°æ®ï¼š
             aBSourcesRef.mainBundleInfo = new AssetBundleLoadInfo()
             {
                 bundleName = mainBundleInfo.name,
@@ -321,35 +408,50 @@ namespace AssetBundleBrowser
                 md5 = mainBundleInfo.md5,
                 loadPath = mainBundleInfo.loadPath
             };
-            //AssetBundleÊı¾İ
-            List<AssetBundleLoadInfo> abLoadInfo = GetAssetBundleInfo();
+            //AssetBundleæ•°æ®ï¼ˆåªç™»è®°å·²æ„å»ºçš„åŒ…ï¼‰
+            List<string> unbuiltBundles = new List<string>();
+            List<AssetBundleLoadInfo> abLoadInfo = GetAssetBundleInfo(unbuiltBundles);
             foreach (AssetBundleLoadInfo item in abLoadInfo)
             {
-                //Debug.Log(item.bundleName);
                 aBSourcesRef.bundleInfo.Add(item.bundleName, item);
             }
-            //×ÊÔ´¼ÓÔØÊı¾İ
+
+            if (unbuiltBundles.Count > 0)
+            {
+                Debug.LogWarning($"æœ‰ {unbuiltBundles.Count} ä¸ª AssetBundle å°šæœªæ„å»ºï¼Œæœ¬æ¬¡ä¸ä¼šå†™å…¥æ¸…å•ï¼ˆè¯·å…ˆæ‰“åŒ…åå†ç‚¹ã€Œæ›´æ–°é…ç½®ã€ï¼‰ã€‚è‹¥è¿™äº›åŒ…ä¹‹å‰æ‰“åŒ…è¿‡ï¼Œæ§åˆ¶å°å¯èƒ½åŒæ—¶æç¤ºã€Œå·²è¢«ç§»é™¤ã€ï¼Œå±é¢„æœŸï¼š\n{FormatUnbuiltBundles(unbuiltBundles)}");
+            }
+
+            // ä¸»åŒ…æœªæ„å»ºæ—¶æ¸…å•æ²¡æœ‰ä»»ä½•å¯ç”¨ä¿¡æ¯ï¼Œç›´æ¥ä¸å†™ï¼Œé¿å…ç”¨ç©ºæ¸…å•è¦†ç›–ä¸Šä¸€æ¬¡å¯ç”¨çš„æ¸…å•
+            if (!mainBundleInfo.isBuilt)
+            {
+                Debug.LogError($"ä¸»åŒ…æœªæ„å»ºï¼š{mainBundleInfo.path}\næœ¬æ¬¡ä¸å†™å…¥ {assetRefName + assetRefextension}ï¼Œä»¥å…è¦†ç›–ä¸Šä¸€æ¬¡å¯ç”¨çš„æ¸…å•ã€‚è¯·å…ˆæ‰§è¡Œ Build All æˆ–å³é”®å•ä¸ªåŒ…æ„å»ºã€‚");
+                SaveData();
+                return;
+            }
+            //èµ„æºåŠ è½½æ•°æ®
             foreach (string assetPath in allAssetPaths)
             {
-                // ÅÅ³ı·Ç×ÊÔ´ÎÄ¼ş
+                // æ’é™¤éèµ„æºæ–‡ä»¶
                 if (assetPath.StartsWith("Assets/") && !assetPath.StartsWith("Assets/Plugins") && !assetPath.EndsWith(".cs"))
                 {
-                    // »ñÈ¡¸Ã×ÊÔ´µÄ AssetBundle Ãû×Ö
+                    // è·å–è¯¥èµ„æºçš„ AssetBundle åå­—
                     string assetBundleName = AssetDatabase.GetImplicitAssetBundleName(assetPath);
 
-                    // Èç¹û×ÊÔ´Ã»ÓĞ±»·ÖÅäµ½ AssetBundle£¬ÔòÌø¹ı
+                    // å¦‚æœèµ„æºæ²¡æœ‰è¢«åˆ†é…åˆ° AssetBundleï¼Œåˆ™è·³è¿‡
                     if (string.IsNullOrEmpty(assetBundleName)) continue;
                     string variantName = AssetDatabase.GetImplicitAssetBundleVariantName(assetPath);
                     bool variantNameisNull = string.IsNullOrEmpty(variantName);
-                    //Debug.Log($"×ÊÔ´°üÃû×Ö:{assetBundleName}\n±äÌå£º{variantName},isNull:{variantNameisNull}");
+                    //Debug.Log($"èµ„æºåŒ…åå­—:{assetBundleName}\nå˜ä½“ï¼š{variantName},isNull:{variantNameisNull}");
                     if (!variantNameisNull)
                     {
                         assetBundleName += $".{variantName}";
                     }
-                    // »ñÈ¡×ÊÔ´µÄÃû×Ö
+                    // èµ„æºæ‰€å±çš„åŒ…æœªæ„å»ºï¼ˆæ²¡å†™è¿› bundleInfoï¼‰æ—¶è·³è¿‡ï¼Œ
+                    // å¦åˆ™è¿è¡Œæ—¶ GetABLoadPath ä¼šå› ä¸ºæŸ¥ä¸åˆ°åŒ…ä¿¡æ¯è€ŒæŠ› KeyNotFoundException
+                    if (!aBSourcesRef.bundleInfo.ContainsKey(assetBundleName))
+                        continue;
+                    // è·å–èµ„æºçš„åå­—
                     string assetName = Path.GetFileNameWithoutExtension(assetPath);
-                    // ´´½¨Ò»¸ö AssetInfo ¶ÔÏó£¬²¢Ìí¼Óµ½ÁĞ±íÖĞ
-                    //ABLoadPath arg = sourcesDic[assetBundleName];
                     AssetRelatedArg assetInfo = new AssetRelatedArg(assetBundleName, assetName);
                     aBSourcesRef.sourcesDic.Add(assetPath, assetInfo);
                 }
@@ -359,26 +461,27 @@ namespace AssetBundleBrowser
 
             Save(aBSourcesRef);
             SaveData();
-            Debug.Log($"ÏîÄ¿¹²ÓĞ {sourcesRelated.sourcesDic.Count} ¸ö×ÊÔ´");
+            Debug.Log($"é¡¹ç›®å…±æœ‰ {sourcesRelated.sourcesDic.Count} ä¸ªèµ„æºï¼Œ{sourcesRelated.bundleInfo.Count} ä¸ªå·²æ„å»ºçš„åŒ…"
+                + (unbuiltBundles.Count > 0 ? $"ï¼Œè·³è¿‡ {unbuiltBundles.Count} ä¸ªæœªæ„å»ºçš„åŒ…" : string.Empty));
             AssetDatabase.Refresh();
         }
 
         public void Save(object obj)
         {
             string SAVE_PATH = Application.streamingAssetsPath + assetRefSavePath;
-            //ÏÈÅĞ¶ÏÂ·¾¶ÎÄ¼ş¼ĞÓĞÃ»ÓĞ
+            //å…ˆåˆ¤æ–­è·¯å¾„æ–‡ä»¶å¤¹æœ‰æ²¡æœ‰
             if (!Directory.Exists(SAVE_PATH))
             {
                 Directory.CreateDirectory(SAVE_PATH);
             }
 
-            //¿ÉÒÔ¶ÔÊı¾İÔÙ×öĞ©²Ù×÷£¬±ÈÈç½øĞĞ¼ÓÃÜ
+            //å¯ä»¥å¯¹æ•°æ®å†åšäº›æ“ä½œï¼Œæ¯”å¦‚è¿›è¡ŒåŠ å¯†
             using (MemoryStream ms = new MemoryStream())
             {
                 BinaryFormatter bf = new BinaryFormatter();
                 bf.Serialize(ms, obj);
                 byte[] bytes = ms.GetBuffer();
-                //ToDo:..ÔÚÕâÀï¿ÉÒÔ×öÒ»Ğ©¼ÓÃÜµÄ¹¤×÷
+                //ToDo:..åœ¨è¿™é‡Œå¯ä»¥åšä¸€äº›åŠ å¯†çš„å·¥ä½œ
                 //string AESKEY = "111a222aaabbbccc";
                 //string AESIV = "111b222aaabbbccc";
                 if (config.enable)
@@ -387,11 +490,11 @@ namespace AssetBundleBrowser
                 File.WriteAllBytes(SAVE_PATH + assetRefName + assetRefextension, bytes);
                 ms.Close();
             }
-            Debug.Log("×ÊÔ´Êı¾İÒÑ±£´æÖÁ£º" + SAVE_PATH + assetRefName + assetRefextension);
+            Debug.Log("èµ„æºæ•°æ®å·²ä¿å­˜è‡³ï¼š" + SAVE_PATH + assetRefName + assetRefextension);
         }
 
         /// <summary>
-        /// ¼ì²é²»Í¬
+        /// æ£€æŸ¥ä¸åŒ
         /// </summary>
         /// <param name="arg"></param>
         private void CheckDifferences(ABSourcesRelated arg)
@@ -404,12 +507,12 @@ namespace AssetBundleBrowser
                     AssetBundleLoadInfo old = sourcesRelated.bundleInfo[item.bundleName];
                     if (!old.md5.Equals(item.md5))
                     {
-                        Debug.Log($"{item.bundleName}ÒÑ¸ü¸Ä!\nold:{old.md5}\nnew:{item.md5}");
+                        Debug.Log($"{item.bundleName}å·²æ›´æ”¹!\nold:{old.md5}\nnew:{item.md5}");
                     }
                 }
                 else
                 {
-                    Debug.Log($"ĞÂÔö£º{item.bundleName}\nmd5:{item.md5}");
+                    Debug.Log($"æ–°å¢ï¼š{item.bundleName}\nmd5:{item.md5}");
                 }
             }
 
@@ -417,7 +520,7 @@ namespace AssetBundleBrowser
             {
                 if (!arg.bundleInfo.ContainsKey(item.bundleName))
                 {
-                    Debug.Log($"{item.bundleName}ÒÑ±»ÒÆ³ı£¡£¡£¡");
+                    Debug.Log($"{item.bundleName}å·²è¢«ç§»é™¤ï¼ï¼ï¼");
                 }
             }
 
@@ -425,7 +528,7 @@ namespace AssetBundleBrowser
 
         public async Task GetABSourcesRelated()
         {
-            //×ÊÔ´¹ØÁªÊı¾İ
+            //èµ„æºå…³è”æ•°æ®
             string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
             byte[] b = null;
             if (StreamingAssetsLoader.CheckFile(assetRefpath))
@@ -434,7 +537,7 @@ namespace AssetBundleBrowser
             }
             else
             {
-                Debug.LogWarning($"×ÊÔ´¹ØÁªÊı¾İÎ´´´½¨£¡\n{assetRefpath}");
+                Debug.LogWarning($"èµ„æºå…³è”æ•°æ®æœªåˆ›å»ºï¼\n{assetRefpath}");
             }
 
             if (b != null)
@@ -493,15 +596,15 @@ namespace AssetBundleBrowser
 
             switch (column)
             {
-                case 0: // °´Ãû³ÆÅÅĞò
+                case 0: // æŒ‰åç§°æ’åº
                     assetBundleInfos.Sort((a, b) =>
                         sortAscending ? a.name.CompareTo(b.name) : b.name.CompareTo(a.name));
                     break;
-                case 1: // °´´óĞ¡ÅÅĞò
+                case 1: // æŒ‰å¤§å°æ’åº
                     assetBundleInfos.Sort((a, b) =>
                         sortAscending ? a.size.CompareTo(b.size) : b.size.CompareTo(a.size));
                     break;
-                case 2: // °´ÒÀÀµÊıÅÅĞò
+                case 2: // æŒ‰ä¾èµ–æ•°æ’åº
                     assetBundleInfos.Sort((a, b) =>
                         sortAscending ? a.dependencies.Count.CompareTo(b.dependencies.Count) :
                                       b.dependencies.Count.CompareTo(a.dependencies.Count));
@@ -541,10 +644,10 @@ namespace AssetBundleBrowser
             GUILayout.BeginHorizontal(EditorStyles.helpBox);
             //GUI.backgroundColor = originalColor;
 
-            GUILayout.Label("Ö÷°üÉèÖÃ£º", GetRowStyle(),
+            GUILayout.Label("ä¸»åŒ…è®¾ç½®ï¼š", GetRowStyle(),
                 GUILayout.Width(sizeColumnWidth), GUILayout.MinWidth(sizeColumnWidth));
 
-            // Ãû³Æ
+            // åç§°
             Rect nameRect = GUILayoutUtility.GetRect(
                 new GUIContent(bundleInfo.name),
                 GetRowStyle(),
@@ -554,26 +657,26 @@ namespace AssetBundleBrowser
 
             if (GUI.Button(nameRect, bundleInfo.name, GetRowStyle()))
             {
-                if (Event.current.button == 0) // ×ó¼ü
+                if (Event.current.button == 0) // å·¦é”®
                 {
                     //HandleBundleClick(bundleInfo);
 
                 }
                 else if (Event.current.button == 1)
                 {
-                    //Debug.Log("Ñ¡ÖĞ");
+                    //Debug.Log("é€‰ä¸­");
                     //selectedBundle = bundleInfo;
                     //showDetails = true;
 
-                    // ÏÔÊ¾ÓÒ¼ü²Ëµ¥
+                    // æ˜¾ç¤ºå³é”®èœå•
                     //ShowNameContextMenu(bundleInfo);
                 }
             }
-            // ´óĞ¡
+            // å¤§å°
             GUILayout.Label(FormatFileSize(bundleInfo.size), GetRowStyle(),
                 GUILayout.Width(sizeColumnWidth), GUILayout.MinWidth(sizeColumnWidth));
 
-            // Â·¾¶
+            // è·¯å¾„
             //GUILayout.Label(bundleInfo.loadPath.ToString(), GetRowStyle(), GUILayout.MinWidth(200));
             float lableW = pathColumnWidth - 40;
             lableW = Mathf.Clamp(lableW, 20, pathColumnWidth - 40);
@@ -590,12 +693,12 @@ namespace AssetBundleBrowser
         {
             Color originalColor = GUI.backgroundColor;
 
-            // ½»ÌæĞĞ±³¾°É«
+            // äº¤æ›¿è¡ŒèƒŒæ™¯è‰²
             if (index % 2 == 0)
             {
                 GUI.backgroundColor = new Color(0, 0, 0, 0.8f);
             }
-            // Ñ¡ÖĞ×´Ì¬
+            // é€‰ä¸­çŠ¶æ€
             bool isSelected = selectedBundle == bundleInfo;
             if (isSelected)
             {
@@ -604,7 +707,7 @@ namespace AssetBundleBrowser
             GUILayout.BeginHorizontal(EditorStyles.helpBox);
             GUI.backgroundColor = originalColor;
 
-            // Ãû³Æ
+            // åç§°
             Rect nameRect = GUILayoutUtility.GetRect(
                 new GUIContent(bundleInfo.name),
                 GetRowStyle(),
@@ -614,35 +717,34 @@ namespace AssetBundleBrowser
 
             if (GUI.Button(nameRect, bundleInfo.name, GetRowStyle()))
             {
-                if (Event.current.button == 0) // ×ó¼ü
+                if (Event.current.button == 0) // å·¦é”®
                 {
                     HandleBundleClick(bundleInfo);
 
                 }
                 else if (Event.current.button == 1)
                 {
-                    //Debug.Log("Ñ¡ÖĞ");
+                    //Debug.Log("é€‰ä¸­");
                     //selectedBundle = bundleInfo;
                     //showDetails = true;
 
-                    // ÏÔÊ¾ÓÒ¼ü²Ëµ¥
+                    // æ˜¾ç¤ºå³é”®èœå•
                     ShowNameContextMenu(bundleInfo);
                 }
             }
-            // ´óĞ¡
+            // å¤§å°
             GUILayout.Label(FormatFileSize(bundleInfo.size), GetRowStyle(),
                 GUILayout.Width(sizeColumnWidth), GUILayout.MinWidth(sizeColumnWidth));
 
-            // ÒÀÀµÊıÁ¿
+            // ä¾èµ–æ•°é‡
             GUILayout.Label(bundleInfo.dependencies.Count.ToString(), GetRowStyle(),
                 GUILayout.Width(dependenciesColumnWidth), GUILayout.MinWidth(dependenciesColumnWidth));
 
-            // Â·¾¶
+            // è·¯å¾„
             //GUILayout.Label(bundleInfo.loadPath.ToString(), GetRowStyle(), GUILayout.MinWidth(200));
             float lableW = pathColumnWidth - 40;
             lableW = Mathf.Clamp(lableW, 20, pathColumnWidth - 40);
             bundleInfo.loadPath = (ABLoadPath)EditorGUILayout.EnumPopup(bundleInfo.loadPath, GUILayout.Width(lableW), GUILayout.MinWidth(lableW));
-            sourcesDic[bundleInfo.name] = bundleInfo.loadPath;
             GUILayout.FlexibleSpace();
 
             GUILayout.EndHorizontal();
@@ -663,13 +765,13 @@ namespace AssetBundleBrowser
             float currentTime = (float)EditorApplication.timeSinceStartup;
             if (selectedBundle == bundleInfo && (currentTime - lastClickTime) < doubleClickTime)
             {
-                // Ë«»÷
+                // åŒå‡»
                 selectedBundle = bundleInfo;
                 showDetails = true;
             }
             else
             {
-                // µ¥»÷
+                // å•å‡»
                 selectedBundle = bundleInfo;
                 if (showDetails) showDetails = false;
             }
@@ -679,25 +781,25 @@ namespace AssetBundleBrowser
         private void DrawDetailsPanel()
         {
             GUILayout.Space(5);
-            EditorGUILayout.LabelField("ÏêÏ¸ĞÅÏ¢", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("è¯¦ç»†ä¿¡æ¯", EditorStyles.boldLabel);
             GUILayout.BeginVertical(EditorStyles.helpBox);
             detailsscrollPosition = GUILayout.BeginScrollView(detailsscrollPosition, GUILayout.Height(150));
-            // »ù±¾ĞÅÏ¢
-            EditorGUILayout.LabelField("Ãû³Æ:", selectedBundle.name);
-            EditorGUILayout.LabelField("´óĞ¡:", FormatFileSize(selectedBundle.size));
-            EditorGUILayout.LabelField("¼ÓÔØ·½Ê½:", selectedBundle.loadPath.ToString());
-            EditorGUILayout.LabelField("Â·¾¶:", selectedBundle.path);
-            EditorGUILayout.LabelField("MD5:", selectedBundle.md5);
+            // åŸºæœ¬ä¿¡æ¯
+            EditorGUILayout.LabelField("åç§°:", selectedBundle.name);
+            EditorGUILayout.LabelField("å¤§å°:", FormatFileSize(selectedBundle.size));
+            EditorGUILayout.LabelField("åŠ è½½æ–¹å¼:", selectedBundle.loadPath.ToString());
+            EditorGUILayout.LabelField("è·¯å¾„:", selectedBundle.path);
+            EditorGUILayout.LabelField("MD5:", selectedBundle.isBuilt ? selectedBundle.md5 : "æœªæ„å»º");
 
             if (selectedBundle.isVariant)
             {
-                EditorGUILayout.LabelField("±äÌå:", selectedBundle.variant);
+                EditorGUILayout.LabelField("å˜ä½“:", selectedBundle.variant);
             }
 
             GUILayout.Space(10);
 
-            // °üº¬µÄ×ÊÔ´
-            EditorGUILayout.LabelField($"°üº¬µÄ×ÊÔ´ ({selectedBundle.assets.Count}):", EditorStyles.boldLabel);
+            // åŒ…å«çš„èµ„æº
+            EditorGUILayout.LabelField($"åŒ…å«çš„èµ„æº ({selectedBundle.assets.Count}):", EditorStyles.boldLabel);
             if (selectedBundle.assets.Count > 0)
             {
                 foreach (var asset in selectedBundle.assets)
@@ -706,7 +808,7 @@ namespace AssetBundleBrowser
                     GUILayout.Space(20);
                     EditorGUILayout.LabelField(asset);
 
-                    if (GUILayout.Button("¶¨Î»", GUILayout.Width(40)))
+                    if (GUILayout.Button("å®šä½", GUILayout.Width(40)))
                     {
                         UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(asset);
                         if (obj != null)
@@ -723,8 +825,8 @@ namespace AssetBundleBrowser
 
             GUILayout.Space(10);
 
-            // ÒÀÀµ
-            EditorGUILayout.LabelField($"ÒÀÀµ ({selectedBundle.dependencies.Count}):", EditorStyles.boldLabel);
+            // ä¾èµ–
+            EditorGUILayout.LabelField($"ä¾èµ– ({selectedBundle.dependencies.Count}):", EditorStyles.boldLabel);
             if (selectedBundle.dependencies.Count > 0)
             {
                 foreach (var dependency in selectedBundle.dependencies)
@@ -733,7 +835,7 @@ namespace AssetBundleBrowser
                     GUILayout.Space(20);
                     EditorGUILayout.LabelField(dependency);
 
-                    if (GUILayout.Button("¶¨Î»", GUILayout.Width(40)))
+                    if (GUILayout.Button("å®šä½", GUILayout.Width(40)))
                     {
                         var dependencyBundle = assetBundleInfos.Find(b => b.name == dependency);
                         if (dependencyBundle != null)
@@ -748,7 +850,7 @@ namespace AssetBundleBrowser
             }
             else
             {
-                EditorGUILayout.LabelField("ÎŞÒÀÀµ");
+                EditorGUILayout.LabelField("æ— ä¾èµ–");
             }
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
@@ -757,7 +859,7 @@ namespace AssetBundleBrowser
         public void RefreshAssetBundleList()
         {
             assetBundleInfos.Clear();
-            // »ñÈ¡ËùÓĞÉèÖÃÁËAssetBundle±êÇ©µÄ×ÊÔ´
+            // è·å–æ‰€æœ‰è®¾ç½®äº†AssetBundleæ ‡ç­¾çš„èµ„æº
             string[] allAssetBundleNames = AssetDatabase.GetAllAssetBundleNames();
             ABLoadPath anLP = ABLoadPath.StreamingAssetsPath;
             foreach (string bundleName in allAssetBundleNames)
@@ -769,57 +871,69 @@ namespace AssetBundleBrowser
                     assets = new List<string>(),
                     loadPath = anLP
                 };
-                // »ñÈ¡¸ÃAssetBundleÖĞµÄËùÓĞ×ÊÔ´Â·¾¶
+                // è·å–è¯¥AssetBundleä¸­çš„æ‰€æœ‰èµ„æºè·¯å¾„
                 string[] assetPaths = AssetDatabase.GetAssetPathsFromAssetBundle(bundleName);
                 info.assets.AddRange(assetPaths);
 
-                // »ñÈ¡¸ÃAssetBundleµÄÒÀÀµ
+                // è·å–è¯¥AssetBundleçš„ä¾èµ–
                 string[] dependencies = AssetDatabase.GetAssetBundleDependencies(bundleName, true);
                 info.dependencies.AddRange(dependencies);
 
-                // »ñÈ¡ÎÄ¼ş´óĞ¡£¨Èç¹ûÒÑ¹¹½¨£©
+                // è·å–æ–‡ä»¶å¤§å°ï¼ˆå¦‚æœå·²æ„å»ºï¼‰
                 string buildPath = GetBuildPathForBundle(bundleName);
                 if (File.Exists(buildPath))
                 {
                     FileInfo fileInfo = new FileInfo(buildPath);
+                    info.isBuilt = true;
                     info.size = fileInfo.Length;
                     info.path = buildPath;
                     info.md5 = GetMD5(fileInfo.FullName);
                 }
                 else
                 {
-                    // Èç¹ûÃ»ÓĞ¹¹½¨£¬¹À¼Æ´óĞ¡
+                    // æœªæ„å»ºï¼šä¸èƒ½å†™"å ä½ MD5"ï¼Œå¦åˆ™çƒ­æ›´çš„ MD5 æ¯”å¯¹ä¼šå…¨éƒ¨å¤±çœŸï¼›ç”Ÿæˆæ¸…å•æ—¶ä¼šè·³è¿‡è¿™ç±»åŒ…
+                    info.isBuilt = false;
                     info.size = 0;//EstimateBundleSize(assetPaths);
-                    info.path = "Î´¹¹½¨";
-                    info.md5 = "Î´¹¹½¨";
+                    info.path = "æœªæ„å»º";
+                    info.md5 = string.Empty;
                 }
 
-                // ¼ì²éÊÇ·ñÊÇ±äÌå
-                int variantIndex = bundleName.IndexOf('.');
+                // æ£€æŸ¥æ˜¯å¦æ˜¯å˜ä½“ï¼ˆä¸ Unity è§„åˆ™ä¸€è‡´ï¼šå…ˆå–æœ€åä¸€ä¸ª '/' ä¹‹åçš„çŸ­åï¼Œå†æŒ‰çŸ­åä¸­æœ€åä¸€ä¸ª '.' åˆ†å‰²å˜ä½“ï¼‰
+                string shortName = bundleName;
+                int lastSlash = shortName.LastIndexOf('/');
+                if (lastSlash >= 0) shortName = shortName.Substring(lastSlash + 1);
+                int variantIndex = shortName.LastIndexOf('.');
                 if (variantIndex > 0)
                 {
                     info.isVariant = true;
-                    info.variant = bundleName.Substring(variantIndex + 1);
+                    info.variant = shortName.Substring(variantIndex + 1);
                 }
 
                 assetBundleInfos.Add(info);
             }
 
-            // ³õÊ¼ÅÅĞò
+            // åˆå§‹æ’åº
             SortAssetBundles(0);
             showDetails = false;
             ABargs = GetFilteredAssetBundles();
         }
 
         /// <summary>
-        /// »ñÈ¡×ÊÔ´°üĞÅÏ¢
+        /// è·å–èµ„æºåŒ…ä¿¡æ¯
         /// </summary>
         /// <returns></returns>
-        private List<AssetBundleLoadInfo> GetAssetBundleInfo()
+        private List<AssetBundleLoadInfo> GetAssetBundleInfo(List<string> unbuiltBundles)
         {
             List<AssetBundleLoadInfo> abInfo = new List<AssetBundleLoadInfo>();
             foreach (var bundle in assetBundleInfos)
             {
+                // æœªæ„å»ºçš„åŒ…ä¸å†™è¿›æ¸…å•ï¼šå®ƒçš„å¤§å°/MD5 æ²¡æœ‰çœŸå®å€¼
+                if (!bundle.isBuilt)
+                {
+                    if (unbuiltBundles != null) unbuiltBundles.Add(bundle.name);
+                    continue;
+                }
+
                 AssetBundleLoadInfo info = new AssetBundleLoadInfo
                 {
                     bundleName = bundle.name,
@@ -827,28 +941,43 @@ namespace AssetBundleBrowser
                     size = bundle.size,
                     md5 = bundle.md5
                 };
-                //Debug.Log($"bundleName:{info.bundleName},size:{info.size},md5:{info.md5},loadPath:{info.loadPath}");
                 abInfo.Add(info);
             }
             return abInfo;
         }
 
         /// <summary>
-        /// µÃµ½ÎÄ¼şµÄMD5Âë
+        /// æœªæ„å»ºåŒ…çš„æç¤ºæ–‡æœ¬ï¼ˆæœ€å¤šåˆ—ä¸¾ 10 ä¸ªï¼‰
         /// </summary>
-        /// <param name="filePath">ÎÄ¼şÂ·¾¶</param>
+        private static string FormatUnbuiltBundles(List<string> unbuiltBundles)
+        {
+            int count = Mathf.Min(unbuiltBundles.Count, 10);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < count; i++)
+            {
+                sb.Append("  - ").Append(unbuiltBundles[i]).Append('\n');
+            }
+            if (unbuiltBundles.Count > count)
+                sb.Append("  ...ï¼ˆå…¶ä½™ ").Append(unbuiltBundles.Count - count).Append(" ä¸ªçœç•¥ï¼‰\n");
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// å¾—åˆ°æ–‡ä»¶çš„MD5ç 
+        /// </summary>
+        /// <param name="filePath">æ–‡ä»¶è·¯å¾„</param>
         /// <returns></returns>
         private string GetMD5(string filePath)
         {
             using (FileStream file = new FileStream(filePath, FileMode.Open))
             {
-                //ÉùÃ÷Ò»¸öMD5¶ÔÏó ÓÃÓÚÉú³ÉMD5Âë
+                //å£°æ˜ä¸€ä¸ªMD5å¯¹è±¡ ç”¨äºç”ŸæˆMD5ç 
                 MD5 md5 = new MD5CryptoServiceProvider();
-                //ÀûÓÃAPI µÃµ½Êı¾İµÄMD5Âë 16¸ö×Ö½Ú Êı×é
+                //åˆ©ç”¨API å¾—åˆ°æ•°æ®çš„MD5ç  16ä¸ªå­—èŠ‚ æ•°ç»„
                 byte[] md5Info = md5.ComputeHash(file);
-                //¹Ø±ÕÎÄ¼şÁ÷
+                //å…³é—­æ–‡ä»¶æµ
                 file.Close();
-                //°Ñ16¸ö×Ö½Ú×ª»»Îª 16½øÖÆ Æ´½Ó³É×Ö·û´® ÎªÁË¼õĞ¡md5ÂëµÄ³¤¶È
+                //æŠŠ16ä¸ªå­—èŠ‚è½¬æ¢ä¸º 16è¿›åˆ¶ æ‹¼æ¥æˆå­—ç¬¦ä¸² ä¸ºäº†å‡å°md5ç çš„é•¿åº¦
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < md5Info.Length; i++)
                 {
@@ -858,26 +987,42 @@ namespace AssetBundleBrowser
             }
         }
 
+        /// <summary>
+        /// å–è·¯å¾„æœ€åä¸€çº§åç§°ï¼ˆä¸»åŒ…å = è¾“å‡ºç›®å½•åï¼ŒBuildPipeline ç”¨è¾“å‡ºç›®å½•åå‘½å manifest bundleï¼‰
+        /// </summary>
+        private static string GetLastPathSegment(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return string.Empty;
+            char[] separators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+            string trimmed = path.TrimEnd(separators);
+            int index = trimmed.LastIndexOfAny(separators);
+            return index >= 0 ? trimmed.Substring(index + 1) : trimmed;
+        }
+
+        /// <summary>
+        /// æŸ¥æ‰¾åŒ…æ–‡ä»¶ï¼šè¾“å‡ºè·¯å¾„å¯èƒ½æ˜¯å·¥ç¨‹å†…ç›¸å¯¹è·¯å¾„ï¼Œæˆ–å·¥ç¨‹å†…/å¤–çš„ç»å¯¹è·¯å¾„
+        /// </summary>
         private string GetBuildPathForBundle(string bundleName)
         {
-            if (_mainBrower == null) return "";
+            if (_mainBrower == null || string.IsNullOrEmpty(bundleName)) return string.Empty;
 
             string m_OutputPath = _mainBrower.m_BuildTabData.m_OutputPath;
-            if (string.IsNullOrEmpty(m_OutputPath)) return "";
+            if (string.IsNullOrEmpty(m_OutputPath)) return string.Empty;
 
-            string result = "AssetBundles/";
-            int startIndex = m_OutputPath.IndexOf("AssetBundles/");
-            if (startIndex != -1)
+            string[] possiblePaths;
+            if (Path.IsPathRooted(m_OutputPath))
             {
-                result = m_OutputPath.Substring(startIndex);
+                possiblePaths = new string[] { Path.Combine(m_OutputPath, bundleName) };
             }
-            // ÕâÀïĞèÒª¸ù¾İÄãµÄ¹¹½¨Êä³öÂ·¾¶½øĞĞµ÷Õû
-            string[] possiblePaths =
+            else
             {
-            $"{Application.dataPath}/{result}/{bundleName}",
-            $"{Application.streamingAssetsPath}/{result}/{bundleName}",
-            $"{System.Environment.CurrentDirectory}/{result}/{bundleName}"
-        };
+                possiblePaths = new string[]
+                {
+                    Path.Combine(System.Environment.CurrentDirectory, m_OutputPath, bundleName),  // å·¥ç¨‹æ ¹
+                    Path.Combine(Application.dataPath, m_OutputPath, bundleName),                // è¾“å‡ºç›®å½•ä½äº Assets ä¸‹
+                    Path.Combine(Application.streamingAssetsPath, m_OutputPath, bundleName),    // å·²æ‹·åˆ° StreamingAssets
+                };
+            }
 
             foreach (string path in possiblePaths)
             {
@@ -887,7 +1032,7 @@ namespace AssetBundleBrowser
                 }
             }
 
-            return "";
+            return string.Empty;
         }
 
         private long EstimateBundleSize(string[] assetPaths)
@@ -910,7 +1055,7 @@ namespace AssetBundleBrowser
             {
                 if (bytes == 0)
                 {
-                    return "Î´¹¹½¨";
+                    return "æœªæ„å»º";
                 }
                 return $"{bytes} B";
             }
@@ -924,39 +1069,39 @@ namespace AssetBundleBrowser
             }
         }
 
-        //ÓÒ¼ü²Ëµ¥·½·¨
+        //å³é”®èœå•æ–¹æ³•
         private void ShowNameContextMenu(AssetBundleInfo bundleInfo)
         {
             GenericMenu menu = new GenericMenu();
 
-            // Build²Ëµ¥Ïî
+            // Buildèœå•é¡¹
             menu.AddItem(new GUIContent("Build/Build This Bundle"), false, () =>
             {
                 BuildSingleAssetBundle(bundleInfo.name);
             });
 
-            // ¹¹½¨Ñ¡ÖĞµÄAssetBundle¼°ÆäÒÀÀµ
+            // æ„å»ºé€‰ä¸­çš„AssetBundleåŠå…¶ä¾èµ–
             menu.AddItem(new GUIContent("Build/Build This Bundle + Dependencies"), false, () =>
             {
                 BuildAssetBundleWithDependencies(bundleInfo.name);
             });
 
             menu.AddSeparator("");
-            menu.AddItem(new GUIContent("ÏêÏ¸ĞÅÏ¢"), false, () =>
+            menu.AddItem(new GUIContent("è¯¦ç»†ä¿¡æ¯"), false, () =>
             {
                 selectedBundle = bundleInfo;
                 showDetails = true;
             });
             menu.AddSeparator("");
 
-            //¶¨Î»µ½ÎÄ¼ş/ÔÚProjectÖĞ¸ßÁÁ
+            //å®šä½åˆ°æ–‡ä»¶/åœ¨Projectä¸­é«˜äº®
             if (bundleInfo.assets != null && bundleInfo.assets.Count > 0)
             {
-                menu.AddItem(new GUIContent("ÔÚProjectÖĞ¸ßÁÁ"), false, () =>
+                menu.AddItem(new GUIContent("åœ¨Projectä¸­é«˜äº®"), false, () =>
                 {
                     if (bundleInfo.assets.Count > 0)
                     {
-                        // ¸ßÁÁµÚÒ»¸ö×ÊÔ´
+                        // é«˜äº®ç¬¬ä¸€ä¸ªèµ„æº
                         string firstAsset = bundleInfo.assets[0];
                         if (firstAsset != null)
                         {
@@ -973,48 +1118,55 @@ namespace AssetBundleBrowser
             }
             else
             {
-                menu.AddDisabledItem(new GUIContent("ÔÚProjectÖĞ¸ßÁÁ(ÎŞ×ÊÔ´)"));
+                menu.AddDisabledItem(new GUIContent("åœ¨Projectä¸­é«˜äº®(æ— èµ„æº)"));
             }
 
-            //¸´ÖÆÃû³Æ
-            menu.AddItem(new GUIContent("¸´ÖÆ°üÃû"), false, () =>
+            //å¤åˆ¶åç§°
+            menu.AddItem(new GUIContent("å¤åˆ¶åŒ…å"), false, () =>
             {
                 EditorGUIUtility.systemCopyBuffer = bundleInfo.name;
             });
 
-            //ÔÚ×ÊÔ´¹ÜÀíÆ÷ÖĞÏÔÊ¾(Èç¹ûÒÑ¹¹½¨)
-            if (bundleInfo.path != "Î´¹¹½¨" && !string.IsNullOrEmpty(bundleInfo.path))
+            //åœ¨èµ„æºç®¡ç†å™¨ä¸­æ˜¾ç¤º(å¦‚æœå·²æ„å»º)
+            if (bundleInfo.isBuilt)
             {
-                menu.AddItem(new GUIContent("ÔÚ×ÊÔ´¹ÜÀíÆ÷ÖĞÏÔÊ¾"), false, () =>
+                menu.AddItem(new GUIContent("åœ¨èµ„æºç®¡ç†å™¨ä¸­æ˜¾ç¤º"), false, () =>
                 {
                     if (File.Exists(bundleInfo.path))
                     {
-                        // ÔÚÎÄ¼ş¹ÜÀíÆ÷ÖĞ¸ßÁÁÎÄ¼ş
+                        // åœ¨æ–‡ä»¶ç®¡ç†å™¨ä¸­é«˜äº®æ–‡ä»¶
                         EditorUtility.RevealInFinder(bundleInfo.path);
                     }
                     else
                     {
-                        Debug.LogWarning($"ÎÄ¼ş²»´æÔÚ: {bundleInfo.path}");
+                        Debug.LogWarning($"æ–‡ä»¶ä¸å­˜åœ¨: {bundleInfo.path}");
                     }
                 });
             }
             else
             {
-                menu.AddDisabledItem(new GUIContent("ÔÚ×ÊÔ´¹ÜÀíÆ÷ÖĞÏÔÊ¾(Î´¹¹½¨)"));
+                menu.AddDisabledItem(new GUIContent("åœ¨èµ„æºç®¡ç†å™¨ä¸­æ˜¾ç¤º(æœªæ„å»º)"));
             }
 
             menu.AddSeparator("");
-            //¸´ÖÆÂ·¾¶
-            menu.AddItem(new GUIContent("¸´ÖÆAssetBundleÂ·¾¶"), false, () =>
+            //å¤åˆ¶è·¯å¾„
+            menu.AddItem(new GUIContent("å¤åˆ¶AssetBundleè·¯å¾„"), false, () =>
             {
                 EditorGUIUtility.systemCopyBuffer = bundleInfo.path;
             });
-            menu.AddItem(new GUIContent("¸´ÖÆMD5Âë"), false, () =>
+            if (bundleInfo.isBuilt)
             {
-                EditorGUIUtility.systemCopyBuffer = bundleInfo.md5;
-            });
-            //¸´ÖÆ¼ÓÔØÂ·¾¶Ã¶¾Ù
-            menu.AddItem(new GUIContent($"¸´ÖÆ¼ÓÔØÂ·¾¶:{bundleInfo.loadPath}"), false, () =>
+                menu.AddItem(new GUIContent("å¤åˆ¶MD5ç "), false, () =>
+                {
+                    EditorGUIUtility.systemCopyBuffer = bundleInfo.md5;
+                });
+            }
+            else
+            {
+                menu.AddDisabledItem(new GUIContent("å¤åˆ¶MD5ç (æœªæ„å»º)"));
+            }
+            //å¤åˆ¶åŠ è½½è·¯å¾„æšä¸¾
+            menu.AddItem(new GUIContent($"å¤åˆ¶åŠ è½½è·¯å¾„:{bundleInfo.loadPath}"), false, () =>
             {
                 EditorGUIUtility.systemCopyBuffer = $"ABLoadPath.{bundleInfo.loadPath}";
             });
@@ -1023,20 +1175,20 @@ namespace AssetBundleBrowser
         }
 
 
-        // ¹¹½¨µ¥¸öAssetBundle
-        private async void BuildSingleAssetBundle(string bundleName)
+        // æ„å»ºå•ä¸ªAssetBundle
+        private void BuildSingleAssetBundle(string bundleName)
         {
-            // 1. ¼ÇÂ¼¿ªÊ¼Ê±¼ä£¨TicksÎª100ÄÉÃëµ¥Î»£©
+            // 1. è®°å½•å¼€å§‹æ—¶é—´ï¼ˆTicksä¸º100çº³ç§’å•ä½ï¼‰
             long startTicks = System.DateTime.UtcNow.Ticks;
 
             if (isBuildingSingle)
             {
-                Debug.LogWarning("ÕıÔÚ¹¹½¨ÖĞ£¬ÇëµÈ´ıÍê³É...");
+                Debug.LogWarning("æ­£åœ¨æ„å»ºä¸­ï¼Œè¯·ç­‰å¾…å®Œæˆ...");
                 return;
             }
 
-            //if (!EditorUtility.DisplayDialog("¹¹½¨È·ÈÏ",
-            //    $"×¢Òâ£ºÕâ½«Ö»¹¹½¨Ö¸¶¨µÄAssetBundle:{bundleName}£¬²»°üÀ¨ÆäÒÀÀµ¡£", "È·¶¨", "È¡Ïû"))
+            //if (!EditorUtility.DisplayDialog("æ„å»ºç¡®è®¤",
+            //    $"æ³¨æ„ï¼šè¿™å°†åªæ„å»ºæŒ‡å®šçš„AssetBundle:{bundleName}ï¼Œä¸åŒ…æ‹¬å…¶ä¾èµ–ã€‚", "ç¡®å®š", "å–æ¶ˆ"))
             //{
             //    return;
             //}
@@ -1045,110 +1197,99 @@ namespace AssetBundleBrowser
             {
                 isBuildingSingle = true;
                 currentBuildingBundle = bundleName;
-                buildProgress = 0f;
 
-                Debug.Log($"¿ªÊ¼¹¹½¨µ¥¸öAssetBundle: {bundleName}");
-                // »ñÈ¡¹¹½¨ÅäÖÃ
+                Debug.Log($"å¼€å§‹æ„å»ºå•ä¸ªAssetBundle: {bundleName}");
+                // è·å–æ„å»ºé…ç½®
                 AssetBundleBuildTab buildTab = _mainBrower.m_BuildTab;
                 if (buildTab == null)
                 {
-                    Debug.LogError("ÎŞ·¨»ñÈ¡AssetBundleBrowserµÄBuildTab");
+                    Debug.LogError("æ— æ³•è·å–AssetBundleBrowserçš„BuildTab");
                     return;
                 }
 
-                // »ñÈ¡¹¹½¨²ÎÊı
+                // è·å–æ„å»ºå‚æ•°
                 BuildTarget buildTarget = (BuildTarget)buildTab.M_UserData.m_BuildTarget;
                 BuildAssetBundleOptions buildOptions = buildTab.GetOpt();
 
-                // ´´½¨ÁÙÊ±¹¹½¨Ä¿±êÄ¿Â¼
+                // åˆ›å»ºä¸´æ—¶æ„å»ºç›®æ ‡ç›®å½•
                 string outputPath = _mainBrower.m_BuildTabData.m_OutputPath;
                 if (string.IsNullOrEmpty(outputPath))
                 {
                     outputPath = "AssetBundles/" + buildTarget;
                 }
 
-                // È·±£Êä³öÄ¿Â¼´æÔÚ
+                // ç¡®ä¿è¾“å‡ºç›®å½•å­˜åœ¨
                 Directory.CreateDirectory(outputPath);
 
-                // »ñÈ¡Òª¹¹½¨µÄAssetBundleµÄËùÓĞ×ÊÔ´Â·¾¶
+                // è·å–è¦æ„å»ºçš„AssetBundleçš„æ‰€æœ‰èµ„æºè·¯å¾„
                 string[] assetPaths = AssetDatabase.GetAssetPathsFromAssetBundle(bundleName);
                 if (assetPaths.Length == 0)
                 {
-                    Debug.LogWarning($"Ã»ÓĞÕÒµ½ÊôÓÚAssetBundle '{bundleName}' µÄ×ÊÔ´");
+                    Debug.LogWarning($"æ²¡æœ‰æ‰¾åˆ°å±äºAssetBundle '{bundleName}' çš„èµ„æº");
                     return;
                 }
 
-                // ´´½¨AssetBundle¹¹½¨ÅäÖÃ
+                // åˆ›å»ºAssetBundleæ„å»ºé…ç½®
                 var builds = new List<AssetBundleBuild>();
                 var build = new AssetBundleBuild
                 {
                     assetBundleName = bundleName,
-                    // Ìí¼ÓÖ÷×ÊÔ´
+                    // æ·»åŠ ä¸»èµ„æº
                     assetNames = assetPaths
                 };
                 builds.Add(build);
 
-                // ¿ªÊ¼¹¹½¨
-                buildProgress = 0.2f;
-                await Task.Run(() => Thread.Sleep(100)); // ÈÃ½ø¶ÈÌõÏÔÊ¾
+                Debug.Log($"æ„å»ºAssetBundle: {bundleName}, åŒ…å«èµ„æºæ•°: {assetPaths.Length}");
+                Debug.Log($"è¾“å‡ºè·¯å¾„: {outputPath}");
 
-                Debug.Log($"¹¹½¨AssetBundle: {bundleName}, °üº¬×ÊÔ´Êı: {assetPaths.Length}");
-                Debug.Log($"Êä³öÂ·¾¶: {outputPath}");
-
-                // Ö´ĞĞ¹¹½¨
-                buildProgress = 0.5f;
+                // æ‰§è¡Œæ„å»ºï¼ˆBuildPipeline æ˜¯åŒæ­¥é˜»å¡è°ƒç”¨ï¼ŒæœŸé—´æ— æ³•åˆ·æ–°ç•Œé¢ï¼‰
                 var result = BuildPipeline.BuildAssetBundles(outputPath, builds.ToArray(), buildOptions, buildTarget);
 
                 if (result == null)
                 {
-                    Debug.LogError($"¹¹½¨AssetBundle '{bundleName}' Ê§°Ü");
+                    Debug.LogError($"æ„å»ºAssetBundle '{bundleName}' å¤±è´¥");
                     return;
                 }
 
-                // ¹¹½¨Íê³É
-                buildProgress = 1.0f;
-                await Task.Run(() => Thread.Sleep(500)); // ÏÔÊ¾Íê³É×´Ì¬
+                Debug.Log($"AssetBundle '{bundleName}' æ„å»ºå®Œæˆ!");
+                Debug.Log($"æ–‡ä»¶å¤§å°: {new FileInfo(Path.Combine(outputPath, bundleName)).Length} bytes");
 
-                Debug.Log($"AssetBundle '{bundleName}' ¹¹½¨Íê³É!");
-                Debug.Log($"ÎÄ¼ş´óĞ¡: {new FileInfo(Path.Combine(outputPath, bundleName)).Length} bytes");
-
-                // Ë¢ĞÂÁĞ±í
+                // åˆ·æ–°åˆ—è¡¨
                 RefreshAssetBundleList();
-                // ±£´æ×ÊÔ´¹ØÁªÊı¾İ
+                // ä¿å­˜èµ„æºå…³è”æ•°æ®
                 GenerateAssetBundleInfo();
                 AssetDatabase.Refresh();
             }
             catch (Exception e)
             {
-                Debug.LogError($"¹¹½¨AssetBundle '{bundleName}' Ê±·¢Éú´íÎó: {e.Message}");
+                Debug.LogError($"æ„å»ºAssetBundle '{bundleName}' æ—¶å‘ç”Ÿé”™è¯¯: {e.Message}");
                 Debug.LogError(e.StackTrace);
             }
             finally
             {
                 isBuildingSingle = false;
                 currentBuildingBundle = "";
-                buildProgress = 0f;
             }
 
-            // 2. ¼ÆËãºÄÊ±²¢Êä³ö£¨×ª»»ÎªºÁÃë£©
+            // 2. è®¡ç®—è€—æ—¶å¹¶è¾“å‡ºï¼ˆè½¬æ¢ä¸ºæ¯«ç§’ï¼‰
             long endTicks = System.DateTime.UtcNow.Ticks;
-            double durationMs = (endTicks - startTicks) / 10000.0; // 1 Tick = 100ÄÉÃë ¡ú 1ºÁÃë = 10000 Ticks 1ºÁÃëµÈÓÚ1,000,000ÄÉÃë
-            UnityEngine.Debug.Log($"´ò°üÖ´ĞĞºÄÊ±£º{(durationMs / 1000):F2} Ãë");
+            double durationMs = (endTicks - startTicks) / 10000.0; // 1 Tick = 100çº³ç§’ â†’ 1æ¯«ç§’ = 10000 Ticks 1æ¯«ç§’ç­‰äº1,000,000çº³ç§’
+            UnityEngine.Debug.Log($"æ‰“åŒ…æ‰§è¡Œè€—æ—¶ï¼š{(durationMs / 1000):F2} ç§’");
         }
 
-        // ¹¹½¨AssetBundle¼°ÆäÒÀÀµ
-        private async void BuildAssetBundleWithDependencies(string bundleName)
+        // æ„å»ºAssetBundleåŠå…¶ä¾èµ–
+        private void BuildAssetBundleWithDependencies(string bundleName)
         {
-            // 1. ¼ÇÂ¼¿ªÊ¼Ê±¼ä£¨TicksÎª100ÄÉÃëµ¥Î»£©
+            // 1. è®°å½•å¼€å§‹æ—¶é—´ï¼ˆTicksä¸º100çº³ç§’å•ä½ï¼‰
             long startTicks = System.DateTime.UtcNow.Ticks;
 
             if (isBuildingSingle)
             {
-                Debug.LogWarning("ÕıÔÚ¹¹½¨ÖĞ£¬ÇëµÈ´ıÍê³É...");
+                Debug.LogWarning("æ­£åœ¨æ„å»ºä¸­ï¼Œè¯·ç­‰å¾…å®Œæˆ...");
                 return;
             }
-            //if (!EditorUtility.DisplayDialog("¹¹½¨È·ÈÏ",
-            //    $"È·¶¨Òª¹¹½¨ '{bundleName}' ¼°ÆäËùÓĞÒÀÀµÂğ£¿", "È·¶¨", "È¡Ïû"))
+            //if (!EditorUtility.DisplayDialog("æ„å»ºç¡®è®¤",
+            //    $"ç¡®å®šè¦æ„å»º '{bundleName}' åŠå…¶æ‰€æœ‰ä¾èµ–å—ï¼Ÿ", "ç¡®å®š", "å–æ¶ˆ"))
             //{
             //    return;
             //}
@@ -1156,49 +1297,48 @@ namespace AssetBundleBrowser
             {
                 isBuildingSingle = true;
                 currentBuildingBundle = bundleName;
-                buildProgress = 0f;
 
-                Debug.Log($"¿ªÊ¼¹¹½¨AssetBundle¼°ÆäÒÀÀµ: {bundleName}");
+                Debug.Log($"å¼€å§‹æ„å»ºAssetBundleåŠå…¶ä¾èµ–: {bundleName}");
 
-                //»ñÈ¡¹¹½¨ÅäÖÃ
+                //è·å–æ„å»ºé…ç½®
                 AssetBundleBuildTab buildTab = _mainBrower.m_BuildTab;
                 if (buildTab == null)
                 {
-                    Debug.LogError("ÎŞ·¨»ñÈ¡AssetBundleBrowserµÄBuildTab");
+                    Debug.LogError("æ— æ³•è·å–AssetBundleBrowserçš„BuildTab");
                     return;
                 }
 
-                //»ñÈ¡Òª¹¹½¨µÄAssetBundle¼°ÆäÒÀÀµ
+                //è·å–è¦æ„å»ºçš„AssetBundleåŠå…¶ä¾èµ–
                 var bundlesToBuild = new HashSet<string>();
                 CollectBundleDependencies(bundleName, bundlesToBuild);
 
                 if (bundlesToBuild.Count == 0)
                 {
-                    Debug.LogWarning("Ã»ÓĞÕÒµ½Òª¹¹½¨µÄAssetBundle");
+                    Debug.LogWarning("æ²¡æœ‰æ‰¾åˆ°è¦æ„å»ºçš„AssetBundle");
                     return;
                 }
 
-                Debug.Log($"½«Òª¹¹½¨ {bundlesToBuild.Count} ¸öAssetBundle:");
+                Debug.Log($"å°†è¦æ„å»º {bundlesToBuild.Count} ä¸ªAssetBundle:");
                 foreach (var bundle in bundlesToBuild)
                 {
                     Debug.Log($"  - {bundle}");
                 }
 
-                //»ñÈ¡¹¹½¨²ÎÊı
+                //è·å–æ„å»ºå‚æ•°
                 BuildTarget buildTarget = (BuildTarget)buildTab.M_UserData.m_BuildTarget;
                 BuildAssetBundleOptions buildOptions = buildTab.GetOpt();
 
-                //´´½¨ÁÙÊ±¹¹½¨Ä¿±êÄ¿Â¼
+                //åˆ›å»ºä¸´æ—¶æ„å»ºç›®æ ‡ç›®å½•
                 string outputPath = _mainBrower.m_BuildTabData.m_OutputPath;
                 if (string.IsNullOrEmpty(outputPath))
                 {
                     outputPath = "AssetBundles/" + buildTarget;
                 }
 
-                //È·±£Êä³öÄ¿Â¼´æÔÚ
+                //ç¡®ä¿è¾“å‡ºç›®å½•å­˜åœ¨
                 Directory.CreateDirectory(outputPath);
 
-                //´´½¨AssetBundle¹¹½¨ÅäÖÃ
+                //åˆ›å»ºAssetBundleæ„å»ºé…ç½®
                 var builds = new List<AssetBundleBuild>();
 
                 foreach (var bundle in bundlesToBuild)
@@ -1217,57 +1357,47 @@ namespace AssetBundleBrowser
 
                 if (builds.Count == 0)
                 {
-                    Debug.LogWarning("Ã»ÓĞÕÒµ½ÓĞĞ§µÄAssetBundle½øĞĞ¹¹½¨");
+                    Debug.LogWarning("æ²¡æœ‰æ‰¾åˆ°æœ‰æ•ˆçš„AssetBundleè¿›è¡Œæ„å»º");
                     return;
                 }
 
-                //¿ªÊ¼¹¹½¨
-                buildProgress = 0.2f;
-                await Task.Run(() => Thread.Sleep(100)); // ÈÃ½ø¶ÈÌõÏÔÊ¾
+                Debug.Log($"æ„å»º {builds.Count} ä¸ªAssetBundle");
+                Debug.Log($"è¾“å‡ºè·¯å¾„: {outputPath}");
 
-                Debug.Log($"¹¹½¨ {builds.Count} ¸öAssetBundle");
-                Debug.Log($"Êä³öÂ·¾¶: {outputPath}");
-
-                //Ö´ĞĞ¹¹½¨
-                buildProgress = 0.5f;
+                //æ‰§è¡Œæ„å»ºï¼ˆåŒæ­¥é˜»å¡è°ƒç”¨ï¼ŒæœŸé—´æ— æ³•åˆ·æ–°ç•Œé¢ï¼‰
                 var result = BuildPipeline.BuildAssetBundles(outputPath, builds.ToArray(), buildOptions, buildTarget);
 
                 if (result == null)
                 {
-                    Debug.LogError("¹¹½¨AssetBundleÊ§°Ü");
+                    Debug.LogError("æ„å»ºAssetBundleå¤±è´¥");
                     return;
                 }
 
-                //¹¹½¨Íê³É
-                buildProgress = 1.0f;
-                await Task.Run(() => Thread.Sleep(500)); // ÏÔÊ¾Íê³É×´Ì¬
-
-                Debug.Log($"AssetBundle '{bundleName}' ¼°ÆäÒÀÀµ¹¹½¨Íê³É!");
-                //Ë¢ĞÂÁĞ±í
+                Debug.Log($"AssetBundle '{bundleName}' åŠå…¶ä¾èµ–æ„å»ºå®Œæˆ!");
+                //åˆ·æ–°åˆ—è¡¨
                 RefreshAssetBundleList();
-                //±£´æ×ÊÔ´¹ØÁªÊı¾İ
+                //ä¿å­˜èµ„æºå…³è”æ•°æ®
                 GenerateAssetBundleInfo();
                 AssetDatabase.Refresh();
 
             }
             catch (Exception e)
             {
-                Debug.LogError($"¹¹½¨AssetBundle '{bundleName}' Ê±·¢Éú´íÎó: {e.Message}");
+                Debug.LogError($"æ„å»ºAssetBundle '{bundleName}' æ—¶å‘ç”Ÿé”™è¯¯: {e.Message}");
                 Debug.LogError(e.StackTrace);
             }
             finally
             {
                 isBuildingSingle = false;
                 currentBuildingBundle = "";
-                buildProgress = 0f;
             }
-            // 2. ¼ÆËãºÄÊ±²¢Êä³ö£¨×ª»»ÎªºÁÃë£©
+            // 2. è®¡ç®—è€—æ—¶å¹¶è¾“å‡ºï¼ˆè½¬æ¢ä¸ºæ¯«ç§’ï¼‰
             long endTicks = System.DateTime.UtcNow.Ticks;
-            double durationMs = (endTicks - startTicks) / 10000.0; // 1 Tick = 100ÄÉÃë ¡ú 1ºÁÃë = 10000 Ticks 1ºÁÃëµÈÓÚ1,000,000ÄÉÃë
-            UnityEngine.Debug.Log($"´ò°üÖ´ĞĞºÄÊ±£º{(durationMs / 1000):F2} Ãë");
+            double durationMs = (endTicks - startTicks) / 10000.0; // 1 Tick = 100çº³ç§’ â†’ 1æ¯«ç§’ = 10000 Ticks 1æ¯«ç§’ç­‰äº1,000,000çº³ç§’
+            UnityEngine.Debug.Log($"æ‰“åŒ…æ‰§è¡Œè€—æ—¶ï¼š{(durationMs / 1000):F2} ç§’");
         }
 
-        // µİ¹éÊÕ¼¯AssetBundleµÄÒÀÀµ
+        // é€’å½’æ”¶é›†AssetBundleçš„ä¾èµ–
         private void CollectBundleDependencies(string bundleName, HashSet<string> bundles)
         {
             if (bundles.Contains(bundleName))
@@ -1277,7 +1407,7 @@ namespace AssetBundleBrowser
 
             bundles.Add(bundleName);
 
-            // »ñÈ¡Ö±½ÓÒÀÀµ
+            // è·å–ç›´æ¥ä¾èµ–
             string[] dependencies = AssetDatabase.GetAssetBundleDependencies(bundleName, true);
 
             foreach (var dependency in dependencies)

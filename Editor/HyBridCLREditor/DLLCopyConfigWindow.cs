@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
@@ -44,29 +44,29 @@ namespace UPandaGF.GFEditor
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("DLL¸´ÖÆÅäÖÃ", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("DLLå¤åˆ¶é…ç½®", EditorStyles.boldLabel);
 
             EditorGUILayout.Space(5);
-            config.clearTargetBeforeCopy = EditorGUILayout.Toggle("¸´ÖÆÇ°Çå¿ÕÄ¿±êÄ¿Â¼", config.clearTargetBeforeCopy);
+            config.clearTargetBeforeCopy = EditorGUILayout.Toggle("å¤åˆ¶å‰æ¸…ç©ºç›®æ ‡ç›®å½•", config.clearTargetBeforeCopy);
 
             EditorGUILayout.Space(20);
-            EditorGUILayout.LabelField("¸´ÖÆ¹æÔò", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("å¤åˆ¶è§„åˆ™", EditorStyles.boldLabel);
 
-            // ¹æÔòÁĞ±í
+            // è§„åˆ™åˆ—è¡¨
             for (int i = 0; i < config.rules.Count; i++)
             {
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-                EditorGUILayout.LabelField($"¹æÔò {i + 1}", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField($"è§„åˆ™ {i + 1}", EditorStyles.boldLabel);
 
                 CopyRule rule = config.rules[i];
 
-                // Ô´Â·¾¶
+                // æºè·¯å¾„
                 EditorGUILayout.BeginHorizontal();
-                rule.sourcePath = EditorGUILayout.TextField("Ô´Â·¾¶", rule.sourcePath);
-                if (GUILayout.Button("ä¯ÀÀ", GUILayout.Width(60)))
+                rule.sourcePath = EditorGUILayout.TextField("æºè·¯å¾„", rule.sourcePath);
+                if (GUILayout.Button("æµè§ˆ", GUILayout.Width(60)))
                 {
-                    string path = EditorUtility.OpenFolderPanel("Ñ¡ÔñÔ´Ä¿Â¼", Application.dataPath, "");
+                    string path = EditorUtility.OpenFolderPanel("é€‰æ‹©æºç›®å½•", Application.dataPath, "");
                     if (!string.IsNullOrEmpty(path))
                     {
                         rule.sourcePath = path;
@@ -74,12 +74,12 @@ namespace UPandaGF.GFEditor
                 }
                 EditorGUILayout.EndHorizontal();
 
-                // Ä¿±êÂ·¾¶
+                // ç›®æ ‡è·¯å¾„
                 EditorGUILayout.BeginHorizontal();
-                rule.targetPath = EditorGUILayout.TextField("Ä¿±êÂ·¾¶", rule.targetPath);
-                if (GUILayout.Button("ä¯ÀÀ", GUILayout.Width(60)))
+                rule.targetPath = EditorGUILayout.TextField("ç›®æ ‡è·¯å¾„", rule.targetPath);
+                if (GUILayout.Button("æµè§ˆ", GUILayout.Width(60)))
                 {
-                    string path = EditorUtility.OpenFolderPanel("Ñ¡ÔñÄ¿±êÄ¿Â¼", Application.dataPath, "");
+                    string path = EditorUtility.OpenFolderPanel("é€‰æ‹©ç›®æ ‡ç›®å½•", Application.dataPath, "");
                     if (!string.IsNullOrEmpty(path))
                     {
                         rule.targetPath = path;
@@ -87,15 +87,15 @@ namespace UPandaGF.GFEditor
                 }
                 EditorGUILayout.EndHorizontal();
 
-                // ÆäËûÑ¡Ïî
-                rule.renameToBytes = EditorGUILayout.Toggle("ÖØÃüÃûÎª.bytes", rule.renameToBytes);
-                rule.includeSubfolders = EditorGUILayout.Toggle("°üº¬×ÓÎÄ¼ş¼Ğ", rule.includeSubfolders);
-                rule.filePattern = EditorGUILayout.TextField("ÎÄ¼şÆ¥ÅäÄ£Ê½", rule.filePattern);
+                // å…¶ä»–é€‰é¡¹
+                rule.renameToBytes = EditorGUILayout.Toggle("é‡å‘½åä¸º.bytes", rule.renameToBytes);
+                rule.includeSubfolders = EditorGUILayout.Toggle("åŒ…å«å­æ–‡ä»¶å¤¹", rule.includeSubfolders);
+                rule.filePattern = EditorGUILayout.TextField("æ–‡ä»¶åŒ¹é…æ¨¡å¼", rule.filePattern);
 
-                // É¾³ı°´Å¥
+                // åˆ é™¤æŒ‰é’®
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button("É¾³ı¹æÔò", GUILayout.Width(100)))
+                if (GUILayout.Button("åˆ é™¤è§„åˆ™", GUILayout.Width(100)))
                 {
                     config.rules.RemoveAt(i);
                 }
@@ -105,8 +105,8 @@ namespace UPandaGF.GFEditor
                 EditorGUILayout.Space(10);
             }
 
-            // Ìí¼Ó¹æÔò°´Å¥
-            if (GUILayout.Button("Ìí¼ÓĞÂ¹æÔò"))
+            // æ·»åŠ è§„åˆ™æŒ‰é’®
+            if (GUILayout.Button("æ·»åŠ æ–°è§„åˆ™"))
             {
                 config.rules.Add(new CopyRule());
             }
@@ -115,19 +115,19 @@ namespace UPandaGF.GFEditor
 
             EditorGUILayout.Space(20);
 
-            // ²Ù×÷°´Å¥
+            // æ“ä½œæŒ‰é’®
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("±£´æÅäÖÃ", GUILayout.Height(30)))
+            if (GUILayout.Button("ä¿å­˜é…ç½®", GUILayout.Height(30)))
             {
                 UPandaGFConfig.SaveJsonConfig(config, fileName);
             }
 
-            if (GUILayout.Button("¼ÓÔØÅäÖÃ", GUILayout.Height(30)))
+            if (GUILayout.Button("åŠ è½½é…ç½®", GUILayout.Height(30)))
             {
                 config = UPandaGFConfig.LoadJsonConfig<CopyConfig>(fileName);
             }
 
-            if (GUILayout.Button("Ö´ĞĞ¸´ÖÆ", GUILayout.Height(40)))
+            if (GUILayout.Button("æ‰§è¡Œå¤åˆ¶", GUILayout.Height(40)))
             {
                 ExecuteCopy();
             }
@@ -135,8 +135,8 @@ namespace UPandaGF.GFEditor
 
             EditorGUILayout.Space(10);
 
-            // ¿ìËÙ²Ù×÷
-            if (GUILayout.Button("¿ìËÙÉèÖÃ HyBridCLR Â·¾¶"))
+            // å¿«é€Ÿæ“ä½œ
+            if (GUILayout.Button("å¿«é€Ÿè®¾ç½® HyBridCLR è·¯å¾„"))
             {
                 SetupHybridCLRPaths();
             }
@@ -151,23 +151,23 @@ namespace UPandaGF.GFEditor
             {
                 if (string.IsNullOrEmpty(rule.sourcePath) || !Directory.Exists(rule.sourcePath))
                 {
-                    Debug.LogWarning($"Ô´Â·¾¶²»´æÔÚ: {rule.sourcePath}");
+                    Debug.LogWarning($"æºè·¯å¾„ä¸å­˜åœ¨: {rule.sourcePath}");
                     continue;
                 }
 
                 if (string.IsNullOrEmpty(rule.targetPath))
                 {
-                    Debug.LogWarning($"Ä¿±êÂ·¾¶Îª¿Õ");
+                    Debug.LogWarning($"ç›®æ ‡è·¯å¾„ä¸ºç©º");
                     continue;
                 }
 
-                // È·±£Ä¿±êÄ¿Â¼´æÔÚ
+                // ç¡®ä¿ç›®æ ‡ç›®å½•å­˜åœ¨
                 if (!Directory.Exists(rule.targetPath))
                 {
                     Directory.CreateDirectory(rule.targetPath);
                 }
 
-                // ÇåÀíÄ¿±êÄ¿Â¼
+                // æ¸…ç†ç›®æ ‡ç›®å½•
                 if (config.clearTargetBeforeCopy)
                 {
                     string[] existingFiles = Directory.GetFiles(rule.targetPath, "*.*");
@@ -177,7 +177,7 @@ namespace UPandaGF.GFEditor
                     }
                 }
 
-                // »ñÈ¡ÎÄ¼ş
+                // è·å–æ–‡ä»¶
                 SearchOption searchOption = rule.includeSubfolders ?
                     SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
@@ -202,29 +202,29 @@ namespace UPandaGF.GFEditor
                         }
 
                         File.Copy(file, targetFile, true);
-                        Debug.Log($"ÒÑ¸´ÖÆ: {fileName} -> {targetFile}");
+                        Debug.Log($"å·²å¤åˆ¶: {fileName} -> {targetFile}");
                         success++;
                     }
                     catch (System.Exception e)
                     {
-                        Debug.LogError($"¸´ÖÆÊ§°Ü {file}: {e.Message}");
+                        Debug.LogError($"å¤åˆ¶å¤±è´¥ {file}: {e.Message}");
                     }
                 }
 
                 totalSuccess += success;
                 totalFiles += files.Length;
-                Debug.Log($"¹æÔòÍê³É: {success}/{files.Length} ¸öÎÄ¼ş");
+                Debug.Log($"è§„åˆ™å®Œæˆ: {success}/{files.Length} ä¸ªæ–‡ä»¶");
             }
 
             AssetDatabase.Refresh();
-            EditorUtility.DisplayDialog("Íê³É",
-                $"ËùÓĞ¹æÔòÖ´ĞĞÍê³É£¡\n×Ü¹²³É¹¦: {totalSuccess}/{totalFiles} ¸öÎÄ¼ş",
-                "È·¶¨");
+            EditorUtility.DisplayDialog("å®Œæˆ",
+                $"æ‰€æœ‰è§„åˆ™æ‰§è¡Œå®Œæˆï¼\næ€»å…±æˆåŠŸ: {totalSuccess}/{totalFiles} ä¸ªæ–‡ä»¶",
+                "ç¡®å®š");
         }
 
         private void SetupHybridCLRPaths()
         {
-            // Ìí¼ÓHyBridCLRÄ¬ÈÏÂ·¾¶
+            // æ·»åŠ HyBridCLRé»˜è®¤è·¯å¾„
             CopyRule rule = new CopyRule
             {
                 sourcePath = Path.Combine(Application.dataPath, "HybridCLRData", "HotUpdateDlls", "StandaloneWindows64"),

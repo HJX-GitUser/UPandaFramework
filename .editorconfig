@@ -1,0 +1,48 @@
+# upanda-framework 代码格式约定
+# 目的：统一 C# 源码编码 / 行尾 / 缩进，避免中文注释在不同机器上乱码或编译报错。
+#
+# 为什么 C# 源码必须用 UTF-8 with BOM：
+#   C# 编译器在源文件没有 BOM 时，会按「系统当前 ANSI 代码页」解码（中文 Windows = 936/GBK）。
+#   因此 UTF-8 无 BOM 的文件在中文 Windows 上会把中文注释按 GBK 误读，导致乱码或 CS1010/CS1056。
+#   带 BOM 才能强制编译器按 UTF-8 解码，跨平台一致。
+#
+# VS Code 需安装 "EditorConfig for VS Code" 扩展方可生效；
+# Visual Studio / Rider 原生支持。
+
+root = true
+
+[*.cs]
+charset = utf-8-bom
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{asmdef,json}]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{shader,cginc,hlsl}]
+charset = utf-8
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+charset = utf-8
+end_of_line = lf
+trim_trailing_whitespace = false
+
+[*.ps1]
+charset = utf-8-bom
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+insert_final_newline = true

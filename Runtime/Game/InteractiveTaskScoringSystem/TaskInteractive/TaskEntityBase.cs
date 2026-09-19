@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 {
     /// <summary>
-    /// ½»»¥´¥·¢½Ó¿Ú
+    /// äº¤äº’è§¦å‘æ¥å£
     /// </summary>
     public interface InteractiveTrigger
     {
@@ -21,7 +21,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     }
 
     /// <summary>
-    /// ÈÎÎñ½»»¥¶ÔÏó
+    /// ä»»åŠ¡äº¤äº’å¯¹è±¡
     /// </summary>
     public abstract class TaskEntityBase : MonoBehaviour, InteractiveTrigger
     {
@@ -33,34 +33,33 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         protected virtual void Awake()
         {
             TaskEntityManager.Instance.Register(this);
-            //½»»¥²âÊÔ
-            gameObject.AddComponent<TaskTriggerExample>();
+            // ä¿®å¤ï¼šä¸å†è‡ªåŠ¨æŒ‚è½½ç¤ºä¾‹è§¦å‘å™¨ï¼Œè¯·æ˜¾å¼æŒ‚è½½ TaskTriggerExampleï¼ˆæˆ–è‡ªè¡Œå®ç° InteractiveTrigger è§¦å‘å™¨ï¼‰
         }
 
 
         /// <summary>
-        /// Ö´ĞĞ¶¯×÷,ÈÎÎñ¼ì²éÍ¨¹ıºóµ÷ÓÃ
+        /// æ‰§è¡ŒåŠ¨ä½œ,ä»»åŠ¡æ£€æŸ¥é€šè¿‡åè°ƒç”¨
         /// </summary>
         /// <param name="callback"></param>
         public abstract void Execute(UnityAction callback);
 
         /// <summary>
-        /// ¼¤»î½»»¥
+        /// æ¿€æ´»äº¤äº’
         /// </summary>
         public abstract void EnableInteractive();
 
         /// <summary>
-        /// ¹Ø±Õ½»»¥
+        /// å…³é—­äº¤äº’
         /// </summary>
         public abstract void DisableInteractive();
 
         /// <summary>
-        /// Æô¶¯Òıµ¼
+        /// å¯åŠ¨å¼•å¯¼
         /// </summary>
         public abstract void EnableGuide();
 
 
-        #region ½»»¥´¥·¢½Ó¿Ú
+        #region äº¤äº’è§¦å‘æ¥å£
         public abstract void OnEnter();
 
         public abstract void OnExit();
@@ -70,7 +69,13 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         public virtual void OnSelect()
         {
             //Debug.Log($"{id} OnSelect");
-            TaskDataManager.Instance.OperationCheck(this);
+            ITaskHost host = TaskDataManager.Instance;   // é€šè¿‡æ¥å£è®¿é—®ä»»åŠ¡å®¿ä¸»ï¼ˆä¾¿äºæ›¿æ¢/æµ‹è¯•/å¤šå®ä¾‹ï¼‰
+            if (host == null)
+            {
+                Debug.LogError("åœºæ™¯ä¸­ç¼ºå°‘ TaskDataManagerï¼Œæ— æ³•è¿›è¡Œä»»åŠ¡æ£€æŸ¥");
+                return;
+            }
+            host.OperationCheck(this);
         }
 
         public abstract void OnSelectExit();
@@ -81,8 +86,8 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
         public bool IsPointerOverUI()
         {
-            // EventSystem.current.IsPointerOverGameObject() ÊÇ Unity ÄÚÖÃ·½·¨
-            // ×¢Òâ£ºÕâ¸ö·½·¨ÔÚ´¥ÃşÆÁÉÏ¿ÉÄÜÓĞÒ»Ğ©ÌØÊâÇé¿ö
+            // EventSystem.current.IsPointerOverGameObject() æ˜¯ Unity å†…ç½®æ–¹æ³•
+            // æ³¨æ„ï¼šè¿™ä¸ªæ–¹æ³•åœ¨è§¦æ‘¸å±ä¸Šå¯èƒ½æœ‰ä¸€äº›ç‰¹æ®Šæƒ…å†µ
             return EventSystem.current != null &&
                    EventSystem.current.IsPointerOverGameObject();
         }

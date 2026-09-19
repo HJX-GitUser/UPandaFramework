@@ -1,4 +1,4 @@
-using System.Collections;
+锘縰sing System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,12 +8,12 @@ namespace UPandaGF
     {
         private BinaryDataMgr binaryDataMgr;
         /// <summary>
-        /// 数据类存储的位置
+        /// 鏁版嵁绫诲瓨鍌ㄧ殑浣嶇疆
         /// </summary>
         public string savePath = "/Data/";
 
         /// <summary>
-        /// 存储文件后缀
+        /// 瀛樺偍鏂囦欢鍚庣紑
         /// </summary>
         public string extension = ".binary";
 

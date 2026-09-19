@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -11,27 +11,27 @@ using UnityEngine;
 namespace UPandaGF
 {
     /// <summary>
-    /// ¶ÁÈ¡¶ş½øÖÆµÄÄÚÈİ£¬Í¨¹ı·´ÉäµÃµ½Êı¾İ£¬²¢°ÑÊı¾İ´æÈëÈİÆ÷¡£ÔÙÓÃÕâ¸ö¶ş½øÖÆÊı¾İ¹ÜÀíÆ÷Í³Ò»¹ÜÀí
+    /// è¯»å–äºŒè¿›åˆ¶çš„å†…å®¹ï¼Œé€šè¿‡åå°„å¾—åˆ°æ•°æ®ï¼Œå¹¶æŠŠæ•°æ®å­˜å…¥å®¹å™¨ã€‚å†ç”¨è¿™ä¸ªäºŒè¿›åˆ¶æ•°æ®ç®¡ç†å™¨ç»Ÿä¸€ç®¡ç†
     /// </summary>
     public class BinaryDataMgr : LazySingletonBase<BinaryDataMgr>
     {
         /// <summary>
-        /// Êı¾İÀà´æ´¢µÄÎ»ÖÃ
+        /// æ•°æ®ç±»å­˜å‚¨çš„ä½ç½®
         /// </summary>
         private static string SAVE_PATH = Application.persistentDataPath + "/Data/";
 
         /// <summary>
-        /// ´æ´¢ÎÄ¼şºó×º
+        /// å­˜å‚¨æ–‡ä»¶åç¼€
         /// </summary>
         private static string FILE_EXTENSION = ".binary";
 
         /// <summary>
-        /// ExcelÅäÖÃµÄ 2½øÖÆÊı¾İÀàµÄ ´æ´¢Î»ÖÃÂ·¾¶
-        /// Â·¾¶ºÍExcelToolÀïµÄÊı¾İ´æ´¢Â·¾¶Ò»ÖÂ
+        /// Excelé…ç½®çš„ 2è¿›åˆ¶æ•°æ®ç±»çš„ å­˜å‚¨ä½ç½®è·¯å¾„
+        /// è·¯å¾„å’ŒExcelToolé‡Œçš„æ•°æ®å­˜å‚¨è·¯å¾„ä¸€è‡´
         /// </summary>
         private static string DATA_BINARY_PATH = Application.persistentDataPath + "/BinaryData/";
         /// <summary>
-        /// ÓÃÓÚ´æ´¢ ËùÓĞExcel±íÊı¾İÈİÆ÷Àà µÄÈİÆ÷
+        /// ç”¨äºå­˜å‚¨ æ‰€æœ‰Excelè¡¨æ•°æ®å®¹å™¨ç±» çš„å®¹å™¨
         /// </summary>
         private Dictionary<string, object> tableDic = new Dictionary<string, object>();
 
@@ -40,54 +40,54 @@ namespace UPandaGF
         {
             DATA_BINARY_PATH =  savePath;
             FILE_EXTENSION = extension;
-            PLogger.Log($"BinaryDataMgr Init!\n´æ´¢Â·¾¶£º{DATA_BINARY_PATH}£¬ºó×º£º{FILE_EXTENSION}");
+            PLogger.Log($"BinaryDataMgr Init!\nå­˜å‚¨è·¯å¾„ï¼š{DATA_BINARY_PATH}ï¼Œåç¼€ï¼š{FILE_EXTENSION}");
         }
         /// <summary>
-        /// ¼ÓÔØExcel±íµÄ2½øÖÆÊı¾İµ½ÄÚ´æÖĞ 
+        /// åŠ è½½Excelè¡¨çš„2è¿›åˆ¶æ•°æ®åˆ°å†…å­˜ä¸­
         /// </summary>
-        /// <typeparam name="T">ÈİÆ÷Àà</typeparam>
-        /// <typeparam name="K">Êı¾İ½á¹¹Àà</typeparam>
+        /// <typeparam name="T">å®¹å™¨ç±»</typeparam>
+        /// <typeparam name="K">æ•°æ®ç»“æ„ç±»</typeparam>
         public void LoadTable<T, K>()
         {
-            //¶ÁÈ¡ excel±í¶ÔÓ¦µÄ2½øÖÆÎÄ¼ş À´½øĞĞ½âÎö
+            //è¯»å– excelè¡¨å¯¹åº”çš„2è¿›åˆ¶æ–‡ä»¶ æ¥è¿›è¡Œè§£æ
             using (FileStream fs = File.Open(DATA_BINARY_PATH + typeof(K).Name + FILE_EXTENSION, FileMode.Open, FileAccess.Read))
             {
-                //ÉùÃ÷×Ö½ÚÈİÆ÷
+                //å£°æ˜å­—èŠ‚å®¹å™¨
                 byte[] bytes = new byte[fs.Length];
-                //Â·¾¶ÏÂµÄÎÄ¼şÄÚÈİ¶Á½ø×Ö½ÚÈİÆ÷Àï
+                //è·¯å¾„ä¸‹çš„æ–‡ä»¶å†…å®¹è¯»è¿›å­—èŠ‚å®¹å™¨é‡Œ
                 fs.Read(bytes, 0, bytes.Length);
                 fs.Close();
 
-                //ÓÃÓÚ¼ÇÂ¼µ±Ç°¶ÁÈ¡ÁË¶àÉÙ×Ö½ÚÁË
+                //ç”¨äºè®°å½•å½“å‰è¯»å–äº†å¤šå°‘å­—èŠ‚äº†
                 int index = 0;
 
-                //¶ÁÈ¡Ò»¹²ÓĞ¶àÉÙĞĞÊı¾İ
+                //è¯»å–ä¸€å…±æœ‰å¤šå°‘è¡Œæ•°æ®
                 int count = BitConverter.ToInt32(bytes, index);
                 index += 4;
 
-                //¶ÁÈ¡Ö÷¼üµÄÃû×Ö
+                //è¯»å–ä¸»é”®çš„åå­—
                 int keyNameLength = BitConverter.ToInt32(bytes, index);
                 index += 4;
                 string keyName = Encoding.UTF8.GetString(bytes, index, keyNameLength);
                 index += keyNameLength;
 
-                //´´½¨ÈİÆ÷Àà¶ÔÏó
+                //åˆ›å»ºå®¹å™¨ç±»å¯¹è±¡
                 Type contaninerType = typeof(T);
                 object contaninerObj = Activator.CreateInstance(contaninerType);
-                //µÃµ½Êı¾İ½á¹¹ÀàµÄType
+                //å¾—åˆ°æ•°æ®ç»“æ„ç±»çš„Type
                 Type classType = typeof(K);
-                //Í¨¹ı·´Éä µÃµ½Êı¾İ½á¹¹Àà ËùÓĞ×Ö¶ÎµÄĞÅÏ¢
+                //é€šè¿‡åå°„ å¾—åˆ°æ•°æ®ç»“æ„ç±» æ‰€æœ‰å­—æ®µçš„ä¿¡æ¯
                 FieldInfo[] infos = classType.GetFields();
-                //¶ÁÈ¡Ã¿Ò»ĞĞµÄĞÅÏ¢
+                //è¯»å–æ¯ä¸€è¡Œçš„ä¿¡æ¯
                 for (int i = 0; i < count; i++)
                 {
-                    //ÊµÀı»¯Ò»¸öÊı¾İ½á¹¹Àà ¶ÔÏó
+                    //å®ä¾‹åŒ–ä¸€ä¸ªæ•°æ®ç»“æ„ç±» å¯¹è±¡
                     object dataObj = Activator.CreateInstance(classType);
                     foreach (FieldInfo info in infos)
                     {
                         if (info.FieldType == typeof(int))
                         {
-                            //Ïàµ±ÓÚ¾ÍÊÇ°Ñ2½øÖÆÊı¾İ×ªÎªint È»ºó¸³Öµ¸øÁË¶ÔÓ¦µÄ×Ö¶Î
+                            //ç›¸å½“äºå°±æ˜¯æŠŠ2è¿›åˆ¶æ•°æ®è½¬ä¸ºint ç„¶åèµ‹å€¼ç»™äº†å¯¹åº”çš„å­—æ®µ
                             info.SetValue(dataObj, BitConverter.ToInt32(bytes, index));
                             index += 4;
                         }
@@ -103,32 +103,32 @@ namespace UPandaGF
                         }
                         else if (info.FieldType == typeof(string))
                         {
-                            //ÏÈ¶ÁÈ¡×Ö·û´®×Ö½ÚÊı×éµÄ³¤¶È
+                            //å…ˆè¯»å–å­—ç¬¦ä¸²å­—èŠ‚æ•°ç»„çš„é•¿åº¦
                             int length = BitConverter.ToInt32(bytes, index);
                             index += 4;
                             info.SetValue(dataObj, Encoding.UTF8.GetString(bytes, index, length));
                             index += length;
                         }
                     }
-                    //¶ÁÈ¡ÍêÒ»ĞĞµÄÊı¾İÁË Ó¦¸Ã°ÑÕâ¸öÊı¾İÌí¼Óµ½ÈİÆ÷¶ÔÏóÖĞ
-                    //µÃµ½ÈİÆ÷¶ÔÏóÖĞµÄ ×Öµä¶ÔÏó
+                    //è¯»å–å®Œä¸€è¡Œçš„æ•°æ®äº† åº”è¯¥æŠŠè¿™ä¸ªæ•°æ®æ·»åŠ åˆ°å®¹å™¨å¯¹è±¡ä¸­
+                    //å¾—åˆ°å®¹å™¨å¯¹è±¡ä¸­çš„ å­—å…¸å¯¹è±¡
                     object dicObject = contaninerType.GetField("dataDic").GetValue(contaninerObj);
-                    //Í¨¹ı×Öµä¶ÔÏóµÃµ½ÆäÖĞµÄ Add·½·¨
+                    //é€šè¿‡å­—å…¸å¯¹è±¡å¾—åˆ°å…¶ä¸­çš„ Addæ–¹æ³•
                     MethodInfo mInfo = dicObject.GetType().GetMethod("Add");
-                    //µÃµ½Êı¾İ½á¹¹Àà¶ÔÏóÖĞ Ö¸¶¨Ö÷¼ü×Ö¶ÎµÄÖµ
+                    //å¾—åˆ°æ•°æ®ç»“æ„ç±»å¯¹è±¡ä¸­ æŒ‡å®šä¸»é”®å­—æ®µçš„å€¼
                     object keyValue = classType.GetField(keyName).GetValue(dataObj);
                     mInfo.Invoke(dicObject, new object[] { keyValue, dataObj });
                 }
-                //°Ñ¶ÁÈ¡ÍêµÄ±í¼ÇÂ¼ÏÂÀ´
+                //æŠŠè¯»å–å®Œçš„è¡¨è®°å½•ä¸‹æ¥
                 tableDic.Add(typeof(T).Name, contaninerObj);
 
                 fs.Close();
             }
         }
         /// <summary>
-        /// µÃµ½Ò»ÕÅ±íµÄĞÅÏ¢
+        /// å¾—åˆ°ä¸€å¼ è¡¨çš„ä¿¡æ¯
         /// </summary>
-        /// <typeparam name="T">ÈİÆ÷ÀàÃû</typeparam>
+        /// <typeparam name="T">å®¹å™¨ç±»å</typeparam>
         /// <returns></returns>
         public T GetTable<T>() where T : class
         {
@@ -141,57 +141,57 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// ´æ´¢Àà¶ÔÏóÊı¾İ
+        /// å­˜å‚¨ç±»å¯¹è±¡æ•°æ®
         /// </summary>
-        /// <param name="obj">Êı¾İÀà</param>
-        /// <param name="fileName">´æ´¢ÎÄ¼şÃû³Æ</param>
+        /// <param name="obj">æ•°æ®ç±»</param>
+        /// <param name="fileName">å­˜å‚¨æ–‡ä»¶åç§°</param>
         public void Save(object obj, string fileName)
         {
-            //ÏÈÅĞ¶ÏÂ·¾¶ÎÄ¼ş¼ĞÓĞÃ»ÓĞ
+            //å…ˆåˆ¤æ–­è·¯å¾„æ–‡ä»¶å¤¹æœ‰æ²¡æœ‰
             if (!Directory.Exists(SAVE_PATH))
             {
                 Directory.CreateDirectory(SAVE_PATH);
             }
 
-            /*ÕâÊÇÓÃÎÄ¼şÁ÷µÄ·½Ê½´æÊı¾İ£¬
+            /*è¿™æ˜¯ç”¨æ–‡ä»¶æµçš„æ–¹å¼å­˜æ•°æ®ï¼Œ
             using (FileStream fs = new FileStream(SAVE_PATH + fileName + FILE_EXTENSION, FileMode.OpenOrCreate, FileAccess.Write))
             {
-                //°ÑÀàĞòÁĞ»¯³É¶ş½øÖÆÊı¾İµÄ¹¤¾ß  ÃüÃû¿Õ¼ä£ºusing System.Runtime.Serialization.Formatters.Binary;
+                //æŠŠç±»åºåˆ—åŒ–æˆäºŒè¿›åˆ¶æ•°æ®çš„å·¥å…·  å‘½åç©ºé—´ï¼šusing System.Runtime.Serialization.Formatters.Binary;
                 BinaryFormatter bf = new BinaryFormatter();
                 bf.Serialize(fs, obj);
                 fs.Close();
             }
             */
 
-            //¸ÄÓÃÄÚ´æÁ÷µÄ·½Ê½¿ÉÒÔ¶ÔÊı¾İÔÙ×öĞ©²Ù×÷£¬±ÈÈç½øĞĞ¼ÓÃÜ
+            //æ”¹ç”¨å†…å­˜æµçš„æ–¹å¼å¯ä»¥å¯¹æ•°æ®å†åšäº›æ“ä½œï¼Œæ¯”å¦‚è¿›è¡ŒåŠ å¯†
             using (MemoryStream ms = new MemoryStream())
             {
                 BinaryFormatter bf = new BinaryFormatter();
                 bf.Serialize(ms, obj);
 
                 byte[] bytes = ms.GetBuffer();
-                //ToDo:..ÔÚÕâÀï¿ÉÒÔ×öÒ»Ğ©¼ÓÃÜµÄ¹¤×÷
+                //ToDo:..åœ¨è¿™é‡Œå¯ä»¥åšä¸€äº›åŠ å¯†çš„å·¥ä½œ
                 File.WriteAllBytes(SAVE_PATH + fileName + FILE_EXTENSION, bytes);
                 ms.Close();
             }
 
         }
         /// <summary>
-        /// ¶ÁÈ¡2½øÖÆÊı¾İ£¬²¢×ª»»³É¶ÔÏó
+        /// è¯»å–2è¿›åˆ¶æ•°æ®ï¼Œå¹¶è½¬æ¢æˆå¯¹è±¡
         /// </summary>
-        /// <typeparam name="T">¶ÔÏóÀàĞÍ</typeparam>
-        /// <param name="fileName">´æ´¢ÎÄ¼şÃû³Æ</param>
-        /// <returns>Êı¾İ¶ÔÏó</returns>
+        /// <typeparam name="T">å¯¹è±¡ç±»å‹</typeparam>
+        /// <param name="fileName">å­˜å‚¨æ–‡ä»¶åç§°</param>
+        /// <returns>æ•°æ®å¯¹è±¡</returns>
         public T Load<T>(string fileName) where T : class
         {
-            //Èç¹û²»´æÔÚÕâ¸öÎÄ¼ş ¾ÍÖ±½Ó·µ»Ø·ºĞÍ¶ÔÏóµÄÄ¬ÈÏÖµ
+            //å¦‚æœä¸å­˜åœ¨è¿™ä¸ªæ–‡ä»¶ å°±ç›´æ¥è¿”å›æ³›å‹å¯¹è±¡çš„é»˜è®¤å€¼
             if (!File.Exists(SAVE_PATH + fileName + FILE_EXTENSION))
             {
                 return default(T);
             }
             T obj = null;
 
-            /*ÕâÊÇÓÃÎÄ¼şÁ÷µÄ·½Ê½¶ÁÊı¾İ£¬
+            /*è¿™æ˜¯ç”¨æ–‡ä»¶æµçš„æ–¹å¼è¯»æ•°æ®ï¼Œ
             using (FileStream fs = File.Open(SAVE_PATH + fileName + FILE_EXTENSION, FileMode.Open, FileAccess.Read))
             {
                 BinaryFormatter bf = new BinaryFormatter();
@@ -201,7 +201,7 @@ namespace UPandaGF
             */
 
             byte[] bytes = File.ReadAllBytes(SAVE_PATH + fileName + FILE_EXTENSION);
-            //ToDo..ÕâÀï¿ÉÒÔ¸ù¾İ¹æÔò×ö½âÃÜµÄ¹¤×÷
+            //ToDo..è¿™é‡Œå¯ä»¥æ ¹æ®è§„åˆ™åšè§£å¯†çš„å·¥ä½œ
             using (MemoryStream ms = new MemoryStream(bytes))
             {
                 BinaryFormatter bf = new BinaryFormatter();
@@ -214,13 +214,13 @@ namespace UPandaGF
 
     public static class AESEncryption
     {
-        // ¼ÓÃÜ
+        // åŠ å¯†
         public static byte[] AESEncrypt(byte[] dataToEncrypt, string key, string iv)
         {
             using (Aes aesAlg = Aes.Create())
             {
-                aesAlg.Key = Encoding.UTF8.GetBytes(key);  // ÃÜÔ¿±ØĞëÊÇ 16¡¢24 »ò 32 ×Ö½Ú
-                aesAlg.IV = Encoding.UTF8.GetBytes(iv);    // IV£¨³õÊ¼»¯ÏòÁ¿£©³¤¶ÈÎª 16 ×Ö½Ú
+                aesAlg.Key = Encoding.UTF8.GetBytes(key);  // å¯†é’¥å¿…é¡»æ˜¯ 16ã€24 æˆ– 32 å­—èŠ‚
+                aesAlg.IV = Encoding.UTF8.GetBytes(iv);    // IVï¼ˆåˆå§‹åŒ–å‘é‡ï¼‰é•¿åº¦ä¸º 16 å­—èŠ‚
 
                 using (ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV))
                 {
@@ -237,7 +237,7 @@ namespace UPandaGF
             }
         }
 
-        // AES ½âÃÜ
+        // AES è§£å¯†
         public static byte[] AESDecrypt(byte[] dataToDecrypt, string key, string iv)
         {
             using (Aes aesAlg = Aes.Create())

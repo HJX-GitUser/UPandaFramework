@@ -1,14 +1,16 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace UPandaGF
 {
     /// <summary>
-    /// ±à¼­Æ÷»·¾³ ×ÊÔ´¼ÓÔØ
+    /// ç¼–è¾‘å™¨ç¯å¢ƒ èµ„æºåŠ è½½
     /// </summary>
     public class EditorSourcesMgr : LazySingletonBase<EditorSourcesMgr>
     {
@@ -17,7 +19,7 @@ namespace UPandaGF
 #if UNITY_EDITOR
             return AssetDatabase.LoadAssetAtPath<T>(path);
 #else
-            PLogger.LogError("ÎŞ·¨¼ÓÔØ×ÊÔ´£¬Editor»·¾³ÏÂ²ÅÄÜÊ¹ÓÃ´Ë·½·¨");
+            PLogger.LogError("æ— æ³•åŠ è½½èµ„æºï¼ŒEditorç¯å¢ƒä¸‹æ‰èƒ½ä½¿ç”¨æ­¤æ–¹æ³•");
             return null;
 #endif
         }
@@ -27,7 +29,7 @@ namespace UPandaGF
 #if UNITY_EDITOR
             return AssetDatabase.LoadAssetAtPath(path, type);
 #else
-            PLogger.LogError("ÎŞ·¨¼ÓÔØ×ÊÔ´£¬Editor»·¾³ÏÂ²ÅÄÜÊ¹ÓÃ´Ë·½·¨");
+            PLogger.LogError("æ— æ³•åŠ è½½èµ„æºï¼ŒEditorç¯å¢ƒä¸‹æ‰èƒ½ä½¿ç”¨æ­¤æ–¹æ³•");
             return null;
 #endif
         }

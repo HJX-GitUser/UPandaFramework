@@ -1,23 +1,25 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.Events;
 using UPandaGF;
 
 /// <summary>
-/// ÓÎÏ·Æô¶¯°¸Àı
+/// æ¸¸æˆå¯åŠ¨æ¡ˆä¾‹
 /// </summary>
 public class GameLaunchExample : MonoBehaviour
 {
-    [Header("¼ÓÔØÈÈ¸ü³ÌĞò¼¯")]
+    [Header("åŠ è½½çƒ­æ›´ç¨‹åºé›†")]
     public bool loadHotUpdateScripts = false;//HybridCLR
-    [Header("ÈÈ¸ü³ÌĞò¼¯×ÊÔ´ÁĞ±í")]
+    [Header("çƒ­æ›´ç¨‹åºé›†èµ„æºåˆ—è¡¨")]
     public string[] HybridCLRScriptsList;
-    [Header("¼ÓÔØ³¡¾°")]
+    [Header("åŠ è½½åœºæ™¯")]
     public string firstScene = "Assets/Scenes/InitScene.unity";
     IAssetsLoader sourcesLoad;
     private UIManager uiManager;
@@ -25,71 +27,144 @@ public class GameLaunchExample : MonoBehaviour
     public UnityAction onAssemblyLoaded;
     private void Awake()
     {
-        EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnGFLoadedEvent);//¿ò¼Ü¼ÓÔØ½áÊøÊÂ¼ş
-        EventCenter.Instance.AddEventListener<SceneMgr_SceneAsynLoadProgress>(SceneAsynLoadProgress);//³¡¾°¼ÓÔØ½ø¶È
+        EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnGFLoadedEvent);//æ¡†æ¶åŠ è½½ç»“æŸäº‹ä»¶
+        EventCenter.Instance.AddEventListener<GFLoadedFailedEvent>(OnGFLoadedFailed);//æ¡†æ¶åˆå§‹åŒ–å¤±è´¥äº‹ä»¶
+        EventCenter.Instance.AddEventListener<SceneMgr_SceneAsynLoadProgress>(SceneAsynLoadProgress);//åœºæ™¯åŠ è½½è¿›åº¦
     }
 
     private void OnDestroy()
     {
         EventCenter.Instance.RemoveEventListener<GFLoadedEvent>(OnGFLoadedEvent);
+        EventCenter.Instance.RemoveEventListener<GFLoadedFailedEvent>(OnGFLoadedFailed);
         EventCenter.Instance.RemoveEventListener<SceneMgr_SceneAsynLoadProgress>(SceneAsynLoadProgress);
+    }
+
+    /// <summary>
+    /// æ¡†æ¶åˆå§‹åŒ–å¤±è´¥ï¼šç»™å‡ºæ˜ç¡®æç¤ºã€‚
+    /// å¤±è´¥æ—¶ GFLoadedEvent ä¸ä¼šå†æ¥ï¼Œè‹¥ä¸å¤„ç†ä¼šè¡¨ç°ä¸º"å¡åœ¨åŠ è½½ç•Œé¢ / é»‘å±ä¸”æ²¡æœ‰ä»»ä½•åé¦ˆ"ã€‚
+    /// </summary>
+    private void OnGFLoadedFailed(GFLoadedFailedEvent arg0)
+    {
+        PLogger.LogError($"æ¡†æ¶åˆå§‹åŒ–å¤±è´¥ï¼Œåç»­å¯åŠ¨æµç¨‹å·²ä¸­æ­¢ï¼š{arg0?.message}");
+        if (simpleLoadUI != null)
+            simpleLoadUI.SetMessage(1f, "æ¡†æ¶åˆå§‹åŒ–å¤±è´¥ï¼Œè¯·æŸ¥çœ‹æ—¥å¿—");
     }
 
     private void SceneAsynLoadProgress(SceneMgr_SceneAsynLoadProgress arg0)
     {
+        if (arg0 == null || simpleLoadUI == null)
+            return;
         PLogger.Log($"Scene load :{arg0.progress * 100}%");
-        simpleLoadUI.SetMessage(arg0.progress, "³¡¾°¼ÓÔØÖĞ...");
+        simpleLoadUI.SetMessage(arg0.progress, "åœºæ™¯åŠ è½½ä¸­...");
     }
 
     private async void OnGFLoadedEvent(GFLoadedEvent arg0)
     {
-        PLogger.Log_white("¿ò¼Ü¼ÓÔØ½áÊø£¬½øÈëÓÎÏ·Âß¼­");
-        uiManager = UIManager.Instance;
-        simpleLoadUI = await uiManager.ShowPanelAsync<SimpleLoadUI>();
-        simpleLoadUI.SetMessage(0.4f, "³ÌĞò¼ÓÔØÖĞ...");
-        simpleLoadUI.SetMessage(1f, "AOT³ÌĞò¼ÓÔØÍê³É");
-        UPGameRoot gr = UPGameRoot.Instance;
-
-        sourcesLoad = gr.GetAssetsLoader();
-
-        if (loadHotUpdateScripts)
+        try
         {
-            int count = 0;
-            for (int i = 0; i < HybridCLRScriptsList.Length; i++)
+            PLogger.Log_white("æ¡†æ¶åŠ è½½ç»“æŸï¼Œè¿›å…¥æ¸¸æˆé€»è¾‘");
+            uiManager = UIManager.Instance;
+            if (uiManager == null)
             {
-                simpleLoadUI.SetMessage(i / HybridCLRScriptsList.Length, "ÈÈ¸üĞÂ³ÌĞò¼¯¼ÓÔØÖĞ...");
-                Assembly assembly = await sourcesLoad.LoadAssemblyAsync(HybridCLRScriptsList[i]);
-                if (assembly != null)
+                PLogger.LogError("UIManager æœªåˆå§‹åŒ–ï¼Œæ— æ³•å¯åŠ¨åŠ è½½æµç¨‹");
+                return;
+            }
+
+            simpleLoadUI = await uiManager.ShowPanelAsync<SimpleLoadUI>();
+            if (simpleLoadUI == null)
+            {
+                PLogger.LogError("åŠ è½½ç•Œé¢ SimpleLoadUI æ‰“å¼€å¤±è´¥");
+                return;
+            }
+
+            simpleLoadUI.SetMessage(0.4f, "ç¨‹åºåŠ è½½ä¸­...");
+            simpleLoadUI.SetMessage(1f, "AOTç¨‹åºåŠ è½½å®Œæˆ");
+
+            UPGameRoot gr = UPGameRoot.Instance;
+            if (gr == null)
+            {
+                PLogger.LogError("UPGameRoot æœªåˆå§‹åŒ–");
+                return;
+            }
+
+            sourcesLoad = gr.GetAssetsLoader();
+            if (sourcesLoad == null)
+            {
+                PLogger.LogError("èµ„æºåŠ è½½å™¨æœªåˆå§‹åŒ–");
+                return;
+            }
+
+            if (loadHotUpdateScripts)
+            {
+                if (HybridCLRScriptsList == null || HybridCLRScriptsList.Length == 0)
                 {
-                    count++;
+                    PLogger.LogError("å¯ç”¨äº†çƒ­æ›´åŠ è½½ï¼Œä½† HybridCLRScriptsList ä¸ºç©º");
+                    simpleLoadUI.SetMessage(1f, "ç¨‹åºçƒ­æ›´å¤±è´¥ï¼ï¼ï¼");
+                }
+                else
+                {
+                    int count = 0;
+                    for (int i = 0; i < HybridCLRScriptsList.Length; i++)
+                    {
+                        simpleLoadUI.SetMessage((float)(i + 1) / HybridCLRScriptsList.Length, "çƒ­æ›´æ–°ç¨‹åºé›†åŠ è½½ä¸­...");
+                        Assembly assembly = null;
+                        try
+                        {
+                            assembly = await sourcesLoad.LoadAssemblyAsync(HybridCLRScriptsList[i]);
+                        }
+                        catch (Exception e)
+                        {
+                            PLogger.LogError($"åŠ è½½ç¨‹åºé›† {HybridCLRScriptsList[i]} å¤±è´¥ï¼š{e}");
+                        }
+                        if (assembly != null)
+                        {
+                            count++;
+                        }
+                    }
+                    if (count == HybridCLRScriptsList.Length)
+                        simpleLoadUI.SetMessage(1f, "ç¨‹åºçƒ­æ›´å®Œæˆ");
+                    else
+                        simpleLoadUI.SetMessage(1f, "ç¨‹åºçƒ­æ›´å¤±è´¥ï¼ï¼ï¼");
+                    simpleLoadUI.SetMessage(0.5f, "æ³›å‹æ³¨å†Œ...");
+                    onAssemblyLoaded?.Invoke();
+                    simpleLoadUI.SetMessage(1f, "æ³›å‹æ³¨å†Œå®Œæˆ");
                 }
             }
-            if (count == HybridCLRScriptsList.Length)
-                simpleLoadUI.SetMessage(1, "³ÌĞòÈÈ¸üÍê³É");
-            else
-                simpleLoadUI.SetMessage(1, "³ÌĞòÈÈ¸üÊ§°Ü£¡£¡£¡");
-            simpleLoadUI.SetMessage(0.5f, "·ºĞÍ×¢²á...");
-            onAssemblyLoaded?.Invoke();
-            simpleLoadUI.SetMessage(1, "·ºĞÍ×¢²áÍê³É");
+
+            if (string.IsNullOrEmpty(firstScene))
+            {
+                PLogger.LogError("å¯åŠ¨åœºæ™¯ firstScene æœªé…ç½®");
+                simpleLoadUI.SetMessage(1f, "å¯åŠ¨å¤±è´¥ï¼šæœªé…ç½®å¯åŠ¨åœºæ™¯");
+                return;
+            }
+
+            simpleLoadUI.SetMessage(0f, "å¼€å§‹è·å–åœºæ™¯èµ„æº");
+            EventCenter.Instance.AddEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
+            //è¿™æ˜¯åœºæ™¯ä½œä¸ºAssetBundleåŠ è½½çš„æ–¹å¼
+            sourcesLoad.LoadSceneAsync(firstScene, () =>
+            {
+                EventCenter.Instance.RemoveEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
+            },
+            () =>
+            {
+                PLogger.Log("<color=blue>è¿›å…¥åœºæ™¯</color>");
+                simpleLoadUI.SetMessage(1f, "åœºæ™¯åŠ è½½å®Œæˆ");
+                uiManager.ClosePanel<SimpleLoadUI>();//SimpleLoadUI.CloseUI;
+            });
         }
-        simpleLoadUI.SetMessage(0f, "¿ªÊ¼»ñÈ¡³¡¾°×ÊÔ´");
-        EventCenter.Instance.AddEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
-        //ÕâÊÇ³¡¾°×÷ÎªAssetBundle¼ÓÔØµÄ·½Ê½
-        sourcesLoad.LoadSceneAsync(firstScene, () =>
+        catch (Exception e)
         {
-            EventCenter.Instance.RemoveEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
-        },
-        () =>
-        {
-            PLogger.Log("<color=blue>½øÈë³¡¾°</color>");
-            simpleLoadUI.SetMessage(1, "³¡¾°¼ÓÔØÍê³É");
-            uiManager.ClosePanel<SimpleLoadUI>();//SimpleLoadUI.CloseUI;
-        });
+            PLogger.LogError($"æ¸¸æˆå¯åŠ¨æµç¨‹å¼‚å¸¸ï¼š{e}");
+            if (simpleLoadUI != null)
+                simpleLoadUI.SetMessage(0f, $"å¯åŠ¨å¤±è´¥ï¼š{e.Message}");
+        }
     }
 
     private void AssetLoadProgressEvent(ABLoadProgressEvent arg0)
     {
-        string messageInfo = arg0.loadPath == ABLoadPath.RemotePath ? "ÏÂÔØ" : "¼ÓÔØ";
-        simpleLoadUI.SetMessage(arg0.progress, $"¡¾{arg0.abName}¡¿ ÕıÔÚ{messageInfo}");
+        if (arg0 == null || simpleLoadUI == null)
+            return;
+        string messageInfo = arg0.loadPath == ABLoadPath.RemotePath ? "ä¸‹è½½" : "åŠ è½½";
+        simpleLoadUI.SetMessage(arg0.progress, $"ã€{arg0.abName}ã€‘ æ­£åœ¨{messageInfo}");
     }
 }

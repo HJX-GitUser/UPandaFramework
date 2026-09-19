@@ -1,11 +1,11 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ÀÁººÄ£Ê½µ¥Àı»ùÀà
-/// µÚÒ»´Î·ÃÎÊÊ±²Å»á´´½¨ÊµÀı
+/// æ‡’æ±‰æ¨¡å¼å•ä¾‹åŸºç±»
+/// ç¬¬ä¸€æ¬¡è®¿é—®æ—¶æ‰ä¼šåˆ›å»ºå®ä¾‹
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public abstract class LazySingletonBase<T> where T : class, new()
@@ -15,7 +15,7 @@ public abstract class LazySingletonBase<T> where T : class, new()
     private static bool _isInitialized = false;
 
     /// <summary>
-    /// µ¥ÀıÊµÀı
+    /// å•ä¾‹å®ä¾‹
     /// </summary>
     public static T Instance
     {
@@ -29,7 +29,7 @@ public abstract class LazySingletonBase<T> where T : class, new()
                     {
                         _instance = new T();
                         _isInitialized = true;
-                        Debug.Log($"[LazySingleton] ´´½¨ {typeof(T).Name} ÊµÀı");
+                        Debug.Log($"[LazySingleton] åˆ›å»º {typeof(T).Name} å®ä¾‹");
                     }
                 }
             }
@@ -38,20 +38,20 @@ public abstract class LazySingletonBase<T> where T : class, new()
     }
 
     /// <summary>
-    /// ±£»¤¹¹Ôìº¯Êı£¬·ÀÖ¹Íâ²¿ÊµÀı»¯
+    /// ä¿æŠ¤æ„é€ å‡½æ•°ï¼Œé˜²æ­¢å¤–éƒ¨å®ä¾‹åŒ–
     /// </summary>
     protected LazySingletonBase()
     {
         if (_isInitialized)
         {
-            throw new InvalidOperationException($"{typeof(T).Name} ÒÑ¾­ÊÇµ¥Àı£¬²»ÄÜÖØ¸´´´½¨");
+            throw new InvalidOperationException($"{typeof(T).Name} å·²ç»æ˜¯å•ä¾‹ï¼Œä¸èƒ½é‡å¤åˆ›å»º");
         }
         OnInit();
     }
 
     protected virtual void OnInit() { }
     /// <summary>
-    /// ÊÍ·Åµ¥ÀıÊµÀı
+    /// é‡Šæ”¾å•ä¾‹å®ä¾‹
     /// </summary>
     public static void Release()
     {
@@ -63,7 +63,7 @@ public abstract class LazySingletonBase<T> where T : class, new()
             }
             _instance = null;
             _isInitialized = false;
-            Debug.Log($"[LazySingleton] ÊÍ·Å {typeof(T).Name} ÊµÀı");
+            Debug.Log($"[LazySingleton] é‡Šæ”¾ {typeof(T).Name} å®ä¾‹");
         }
     }
 }

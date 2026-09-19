@@ -1,4 +1,4 @@
-using AssetBundleBrowser;
+ï»¿using AssetBundleBrowser;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using UPandaGF.GFEditor;
 /// <summary>
-/// ÉÏ´«¸üĞÂAB°ü
+/// ä¸Šä¼ æ›´æ–°ABåŒ…
 /// </summary>
 internal class UpLoadABEditor
 {
@@ -31,11 +31,16 @@ internal class UpLoadABEditor
 
     private AssetBundleBrowserMain abMainE;
 
-    //±¾µØAB°üÂ·¾¶
+    //æœ¬åœ°ABåŒ…è·¯å¾„
     public string LocalABPath;
 
     public string configName = "UpLoadABEditorConfig";
     public UpLoadABEditorConfig config;
+
+    /// <summary>
+    /// èµ„æºæ¸…å•ï¼ˆassetData.assetrefï¼‰çš„æœ¬åœ°å®Œæ•´è·¯å¾„ï¼šä¸èµ„æºåˆ†ç±»çª—å£å…±ç”¨ï¼Œé¿å…è·¯å¾„é‡å¤ç¡¬ç¼–ç 
+    /// </summary>
+    private static string AssetDataFullPath => AssetBundleClassificationWindow.AssetDataFullPath;
 
     public void OnEnable(AssetBundleBrowserMain bm)
     {
@@ -60,18 +65,18 @@ internal class UpLoadABEditor
         m_ScrollPosition = EditorGUILayout.BeginScrollView(m_ScrollPosition);
         var centeredStyle = new GUIStyle(GUI.skin.GetStyle("Label"));
         centeredStyle.alignment = TextAnchor.UpperCenter;
-        GUILayout.Label(new GUIContent("×ÊÔ´°üÉÏ´«Ò³Ç©"), centeredStyle);
+        GUILayout.Label(new GUIContent("èµ„æºåŒ…ä¸Šä¼ é¡µç­¾"), centeredStyle);
         EditorGUILayout.Space();
         GUILayout.BeginVertical();
         if (!LocalABPath.Equals(abMainE.m_BuildTabData.m_OutputPath))
             LocalABPath = abMainE.m_BuildTabData.m_OutputPath;
-        EditorGUILayout.LabelField("±¾µØ×ÊÔ´Â·¾¶", LocalABPath);
-        //if (GUILayout.Button("´´½¨AB°ü¶Ô±ÈÎÄ¼ş"))
+        EditorGUILayout.LabelField("æœ¬åœ°èµ„æºè·¯å¾„", LocalABPath);
+        //if (GUILayout.Button("åˆ›å»ºABåŒ…å¯¹æ¯”æ–‡ä»¶"))
         //{
         //    CreateABCompareFile();
         //}
         EditorGUILayout.Space(10);
-        config.contactMethod = (ContactMethod)EditorGUILayout.EnumPopup("ÉÏ´«·½Ê½", config.contactMethod);
+        config.contactMethod = (ContactMethod)EditorGUILayout.EnumPopup("ä¸Šä¼ æ–¹å¼", config.contactMethod);
         switch (config.contactMethod)
         {
             case ContactMethod.FTP:
@@ -82,9 +87,9 @@ internal class UpLoadABEditor
                 break;
         }
         EditorGUILayout.Space(30);
-        if (GUILayout.Button("¸´ÖÆ×ÊÔ´µ½StreamingAssets"))
+        if (GUILayout.Button("å¤åˆ¶èµ„æºåˆ°StreamingAssets"))
         {
-            //string savePath = LocalABPath.Substring(LocalABPath.IndexOf("Assets") + "Assets".Length);//AssetBundle·Åµ½AssetsÂ·¾¶ÏÂÓÃÕâ¸ö
+            //string savePath = LocalABPath.Substring(LocalABPath.IndexOf("Assets") + "Assets".Length);//AssetBundleæ”¾åˆ°Assetsè·¯å¾„ä¸‹ç”¨è¿™ä¸ª
             string savePath = $"/{LocalABPath}";
             savePath = Application.streamingAssetsPath + savePath;
             if (!Directory.Exists(savePath))
@@ -94,45 +99,45 @@ internal class UpLoadABEditor
             MoveABToStreamingAssets(savePath);
         }
         EditorGUILayout.Space(30);
-        EditorGUILayout.LabelField("Ä¿±êÂ·¾¶£º", config.targetDirectory);
-        if (GUILayout.Button("Ñ¡ÔñÄ¿±êÂ·¾¶"))
+        EditorGUILayout.LabelField("ç›®æ ‡è·¯å¾„ï¼š", config.targetDirectory);
+        if (GUILayout.Button("é€‰æ‹©ç›®æ ‡è·¯å¾„"))
         {
-            config.targetDirectory = EditorUtility.OpenFolderPanel("Ä¿±êÂ·¾¶Ñ¡Ôñ", config.targetDirectory, string.Empty);
+            config.targetDirectory = EditorUtility.OpenFolderPanel("ç›®æ ‡è·¯å¾„é€‰æ‹©", config.targetDirectory, string.Empty);
         }
-        if (GUILayout.Button("¸´ÖÆ×ÊÔ´µ½Ä¿±êÂ·¾¶"))
+        if (GUILayout.Button("å¤åˆ¶èµ„æºåˆ°ç›®æ ‡è·¯å¾„"))
         {
             if (!Directory.Exists(LocalABPath))
             {
-                Debug.LogError($"AssetBundleÔ´Ä¿Â¼²»´æÔÚ: {LocalABPath}");
+                Debug.LogError($"AssetBundleæºç›®å½•ä¸å­˜åœ¨: {LocalABPath}");
                 return;
             }
 
             if (!Directory.Exists(config.targetDirectory))
             {
-                Debug.LogError($"Ä¿±êÂ·¾¶²»´æÔÚ£¡: {config.targetDirectory}");
+                Debug.LogError($"ç›®æ ‡è·¯å¾„ä¸å­˜åœ¨ï¼: {config.targetDirectory}");
                 return;
             }
 
-            Debug.Log($"¿ªÊ¼¸´ÖÆAssetBundle: {LocalABPath} -> {config.targetDirectory}");
+            Debug.Log($"å¼€å§‹å¤åˆ¶AssetBundle: {LocalABPath} -> {config.targetDirectory}");
             ClearTargetDirectory();
-            // ¸´ÖÆËùÓĞÎÄ¼şºÍ×ÓÄ¿Â¼
+            // å¤åˆ¶æ‰€æœ‰æ–‡ä»¶å’Œå­ç›®å½•
             CopyDirectory(LocalABPath, config.targetDirectory);
 
-            Debug.Log($"AssetBundle¸´ÖÆÍê³É£¡Ä¿±êÎ»ÖÃ: {config.targetDirectory}");
+            Debug.Log($"AssetBundleå¤åˆ¶å®Œæˆï¼ç›®æ ‡ä½ç½®: {config.targetDirectory}");
 
-            // Ë¢ĞÂ×ÊÔ´Êı¾İ¿â
+            // åˆ·æ–°èµ„æºæ•°æ®åº“
             AssetDatabase.Refresh();
 
-            // ´ò¿ªÄ¿±êÄ¿Â¼
+            // æ‰“å¼€ç›®æ ‡ç›®å½•
             EditorUtility.RevealInFinder(config.targetDirectory);
         }
 
         EditorGUILayout.Space(20);
-        if (GUILayout.Button("´òÓ¡persistentDataPathÂ·¾¶"))
+        if (GUILayout.Button("æ‰“å°persistentDataPathè·¯å¾„"))
         {
             DebugPath();
         }
-        if (GUILayout.Button("±£´æ"))
+        if (GUILayout.Button("ä¿å­˜"))
         {
             SaveData();
         }
@@ -143,26 +148,35 @@ internal class UpLoadABEditor
     private void FTPGUI()
     {
         FTPUpLoadABConfig FTPConfig = GetFTPConfig();
-        FTPConfig.UpABURL = EditorGUILayout.TextField("ÉÏ´«µØÖ·", FTPConfig.UpABURL);
-        EditorGUILayout.LabelField("FTPÍ¨ĞÅÆ¾Ö¤:");
-        FTPConfig.Ftp_UserName = EditorGUILayout.TextField("ftpÓÃ»§Ãû", FTPConfig.Ftp_UserName);
-        FTPConfig.Ftp_Password = EditorGUILayout.TextField("ftpÃÜÂë", FTPConfig.Ftp_Password);
-        if (GUILayout.Button("ÉÏ´«AB°üºÍ¶Ô±ÈÎÄ¼ş"))
+        FTPConfig.UpABURL = EditorGUILayout.TextField("ä¸Šä¼ åœ°å€", FTPConfig.UpABURL);
+        FTPConfig.ManifestABURL = EditorGUILayout.TextField("æ¸…å•ä¸Šä¼ åœ°å€", FTPConfig.ManifestABURL);
+        EditorGUILayout.LabelField("FTPé€šä¿¡å‡­è¯:");
+        FTPConfig.Ftp_UserName = EditorGUILayout.TextField("ftpç”¨æˆ·å", FTPConfig.Ftp_UserName);
+        FTPConfig.Ftp_Password = EditorGUILayout.TextField("ftpå¯†ç ", FTPConfig.Ftp_Password);
+        EditorGUILayout.LabelField("æ¸…å•æœ¬åœ°è·¯å¾„", AssetDataFullPath);
+        if (GUILayout.Button("ä¸Šä¼ ABåŒ…å’Œæ¸…å•"))
         {
             DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
             if (config.contactMethod == ContactMethod.FTP)
             {
                 upLoadFTP.UpLoadAllABFile(LocalABPath);
+                // æ¸…å•å¿…é¡»ä¸ABåŒ…ä¸€èµ·æ›´æ–°ï¼Œå¦åˆ™è¿œç«¯æ¸…å•æ²¡å˜ï¼Œçƒ­æ›´çš„ MD5 æ¯”å¯¹ä¸ä¸‹è½½éƒ½ä¸ä¼šå‘ç”Ÿ
+                upLoadFTP.UpLoadFile(AssetDataFullPath, FTPConfig.ManifestABURL);
+            }
+        }
+        if (GUILayout.Button("åªä¸Šä¼ æ¸…å•ï¼ˆassetData.assetrefï¼‰"))
+        {
+            if (config.contactMethod == ContactMethod.FTP)
+            {
+                upLoadFTP.UpLoadFile(AssetDataFullPath, FTPConfig.ManifestABURL);
             }
         }
     }
 
     private void HTTPGUI()
     {
-        //if (upLoadHTTP == null) upLoadHTTP = new UpLoadHTTP();
-        ////upLoadHTTP.HTTPConfig.serverUrl = EditorGUILayout.TextField("ÉÏ´«µØÖ·", upLoadHTTP. HTTPConfig.serverUrl);
-        //upLoadHTTP.OnGUI();
-        if (GUILayout.Button("HTTP ÉÏ´«¹¤¾ß"))
+        EditorGUILayout.HelpBox("HTTP ä¸Šä¼ æ˜¯æ‰‹åŠ¨å·¥å…·ï¼šè¯·æŠŠæ‰“åŒ…è¾“å‡ºç›®å½•ä¸ã€Œæ¸…å•æ–‡ä»¶ã€ä¸€èµ·åŠ å…¥ä¸Šä¼ åˆ—è¡¨ï¼Œå¹¶ä¿è¯è¿œç«¯ç»“æ„ä¸ UPGameRoot çš„åŠ è½½è·¯å¾„ä¸€è‡´ã€‚\næ¸…å•æœ¬åœ°è·¯å¾„ï¼š" + AssetDataFullPath, MessageType.Info);
+        if (GUILayout.Button("HTTP ä¸Šä¼ å·¥å…·"))
         {
             NginxUploader.ShowWindow();
         }
@@ -178,7 +192,7 @@ internal class UpLoadABEditor
         return isABAssets;
     }
     /// <summary>
-    /// Ñ¡ÔñÂ·¾¶
+    /// é€‰æ‹©è·¯å¾„
     /// </summary>
     private void BrowseForFolder()
     {
@@ -194,19 +208,19 @@ internal class UpLoadABEditor
     }
 
     /// <summary>
-    /// ÖØÖÃÊı¾İ
+    /// é‡ç½®æ•°æ®
     /// </summary>
     public void ResetPathToDefault()
     {
         if (config.contactMethod == ContactMethod.FTP)
         {
             upLoadFTP.ResetData(abMainE.m_BuildTabData.m_BuildTarget.ToString());
-            Debug.Log("FTPÒÑÖØÖÃ");
+            Debug.Log("FTPå·²é‡ç½®");
         }
     }
 
     /// <summary>
-    /// ±£´æÊı¾İ
+    /// ä¿å­˜æ•°æ®
     /// </summary>
     public void SaveData()
     {
@@ -215,7 +229,7 @@ internal class UpLoadABEditor
     }
 
     /// <summary>
-    /// ´òÓ¡persistentDataPathÂ·¾¶
+    /// æ‰“å°persistentDataPathè·¯å¾„
     /// </summary>
     private void DebugPath()
     {
@@ -224,16 +238,16 @@ internal class UpLoadABEditor
 
     private void SelectAB()
     {
-        //Í¨¹ı±à¼­Æ÷SelectionÀàÖĞµÄ·½·¨ »ñÈ¡ÔÙProject´°¿ÚÖĞÑ¡ÖĞµÄ×ÊÔ´ 
+        //é€šè¿‡ç¼–è¾‘å™¨Selectionç±»ä¸­çš„æ–¹æ³• è·å–å†Projectçª—å£ä¸­é€‰ä¸­çš„èµ„æº
         UnityEngine.Object[] selectedAsset = Selection.GetFiltered(typeof(UnityEngine.Object), SelectionMode.DeepAssets);
-        //Èç¹ûÒ»¸ö×ÊÔ´¶¼Ã»ÓĞÑ¡Ôñ ¾ÍÃ»ÓĞ±ØÒª´¦ÀíºóÃæµÄÂß¼­ÁË
+        //å¦‚æœä¸€ä¸ªèµ„æºéƒ½æ²¡æœ‰é€‰æ‹© å°±æ²¡æœ‰å¿…è¦å¤„ç†åé¢çš„é€»è¾‘äº†
         if (selectedAsset.Length == 0)
         {
-            Debug.Log("ÇëÏÈÑ¡Ôñ×ÊÔ´ÎÄ¼ş");
+            Debug.Log("è¯·å…ˆé€‰æ‹©èµ„æºæ–‡ä»¶");
         }
         else
         {
-            string savePath = EditorUtility.OpenFolderPanel("¸´ÖÆÂ·¾¶Ñ¡Ôñ", Application.streamingAssetsPath, string.Empty);
+            string savePath = EditorUtility.OpenFolderPanel("å¤åˆ¶è·¯å¾„é€‰æ‹©", Application.streamingAssetsPath, string.Empty);
             if (!string.IsNullOrEmpty(savePath))
             {
                 SelectABToStreamingAssets(savePath, selectedAsset);
@@ -241,52 +255,52 @@ internal class UpLoadABEditor
         }
     }
     /// <summary>
-    /// Ñ¡Ôñ×ÊÔ´µ½StreamingAssets
+    /// é€‰æ‹©èµ„æºåˆ°StreamingAssets
     /// </summary>
     private void SelectABToStreamingAssets(string savePath, UnityEngine.Object[] selectedAsset)
     {
-        //ÓÃÓÚÆ´½Ó±¾µØÄ¬ÈÏAB°ü×ÊÔ´ĞÅÏ¢µÄ×Ö·û´®
+        //ç”¨äºæ‹¼æ¥æœ¬åœ°é»˜è®¤ABåŒ…èµ„æºä¿¡æ¯çš„å­—ç¬¦ä¸²
         string abCompareInfo = "";
-        //±éÀúÑ¡ÖĞµÄ×ÊÔ´¶ÔÏó
+        //éå†é€‰ä¸­çš„èµ„æºå¯¹è±¡
         foreach (UnityEngine.Object asset in selectedAsset)
         {
-            //Í¨¹ıAssetdatabaseÀà »ñÈ¡ ×ÊÔ´µÄÂ·¾¶
+            //é€šè¿‡Assetdatabaseç±» è·å– èµ„æºçš„è·¯å¾„
             string assetPath = AssetDatabase.GetAssetPath(asset);
-            //ÅĞ¶ÏÑ¡È¡µÄ×ÊÔ´ÊÇ²»ÊÇAB°üÎÄ¼ş¼ĞÏÂµÄ£¬²»ÊÇµÄ»°±¨´í
+            //åˆ¤æ–­é€‰å–çš„èµ„æºæ˜¯ä¸æ˜¯ABåŒ…æ–‡ä»¶å¤¹ä¸‹çš„ï¼Œä¸æ˜¯çš„è¯æŠ¥é”™
             string judge_fileName = assetPath.Substring(0, assetPath.LastIndexOf('/'));
             if (judge_fileName != LocalABPath)
             {
                 if (judge_fileName != LocalABPath.Substring(0, LocalABPath.LastIndexOf('/')))
-                    Debug.LogError($"£¨{judge_fileName}£©ÎŞ·¨¸´ÖÆ£¬ÄãÖ»ÄÜÑ¡\"{LocalABPath}\"Â·¾¶ÏÂµÄ×ÊÔ´");
+                    Debug.LogError($"ï¼ˆ{judge_fileName}ï¼‰æ— æ³•å¤åˆ¶ï¼Œä½ åªèƒ½é€‰\"{LocalABPath}\"è·¯å¾„ä¸‹çš„èµ„æº");
                 continue;
             }
-            //½ØÈ¡Â·¾¶µ±ÖĞµÄÎÄ¼şÃû ÓÃÓÚ×÷Îª StreamingAssetsÖĞµÄÎÄ¼şÃû
+            //æˆªå–è·¯å¾„å½“ä¸­çš„æ–‡ä»¶å ç”¨äºä½œä¸º StreamingAssetsä¸­çš„æ–‡ä»¶å
             string fileName = assetPath.Substring(assetPath.LastIndexOf('/'));
-            // ÅĞ¶ÏÊÇ·ñÓĞ.·ûºÅ Èç¹ûÓĞ Ö¤Ã÷ÓĞºó×º ²»´¦Àí
+            // åˆ¤æ–­æ˜¯å¦æœ‰.ç¬¦å· å¦‚æœæœ‰ è¯æ˜æœ‰åç¼€ ä¸å¤„ç†
             if (fileName.IndexOf('.') != -1)
-                continue;//Ò²¿ÉÒÔÔÚ¿½±´Ö®Ç°È¥»ñÈ¡È«Â·¾¶£¬È»ºóÍ¨¹ıFileInfoÈ¥»ñÈ¡ºó×ºÀ´ÅĞ¶Ï ÕâÑù¸ü×¼È·
+                continue;//ä¹Ÿå¯ä»¥åœ¨æ‹·è´ä¹‹å‰å»è·å–å…¨è·¯å¾„ï¼Œç„¶åé€šè¿‡FileInfoå»è·å–åç¼€æ¥åˆ¤æ–­ è¿™æ ·æ›´å‡†ç¡®
             string copyPath = $"{savePath}/{fileName}";
             Debug.Log(copyPath);
-            //ÀûÓÃAssetDatabaseÖĞµÄAPI ½«Ñ¡ÖĞÎÄ¼ş ¸´ÖÆµ½Ä¿±êÂ·¾¶
+            //åˆ©ç”¨AssetDatabaseä¸­çš„API å°†é€‰ä¸­æ–‡ä»¶ å¤åˆ¶åˆ°ç›®æ ‡è·¯å¾„
             AssetDatabase.CopyAsset(assetPath, copyPath);
 
-            //»ñÈ¡¿½±´µ½StreamingAssetsÎÄ¼ş¼ĞÖĞµÄÎÄ¼şµÄÈ«²¿ĞÅÏ¢
+            //è·å–æ‹·è´åˆ°StreamingAssetsæ–‡ä»¶å¤¹ä¸­çš„æ–‡ä»¶çš„å…¨éƒ¨ä¿¡æ¯
             System.IO.FileInfo fileInfo = new System.IO.FileInfo(copyPath);
-            //Æ´½ÓAB°üĞÅÏ¢µ½×Ö·û´®ÖĞ
+            //æ‹¼æ¥ABåŒ…ä¿¡æ¯åˆ°å­—ç¬¦ä¸²ä¸­
             abCompareInfo += fileInfo.Name + " " + fileInfo.Length + " " + GetMD5(fileInfo.FullName);
-            //ÓÃÒ»¸ö·ûºÅ¸ô¿ª¶à¸öAB°üĞÅÏ¢
+            //ç”¨ä¸€ä¸ªç¬¦å·éš”å¼€å¤šä¸ªABåŒ…ä¿¡æ¯
             abCompareInfo += "|";
         }
-        //È¥µô×îºóÒ»¸ö|·ûºÅ ÎªÁËÖ®ºó²ğ·Ö×Ö·û´®·½±ã
+        //å»æ‰æœ€åä¸€ä¸ª|ç¬¦å· ä¸ºäº†ä¹‹åæ‹†åˆ†å­—ç¬¦ä¸²æ–¹ä¾¿
         if (abCompareInfo != "")
         {
             abCompareInfo = abCompareInfo.Substring(0, abCompareInfo.Length - 1);
-            //½«±¾µØÄ¬ÈÏ×ÊÔ´µÄ¶Ô±ÈĞÅÏ¢ ´æÈëÎÄ¼ş
+            //å°†æœ¬åœ°é»˜è®¤èµ„æºçš„å¯¹æ¯”ä¿¡æ¯ å­˜å…¥æ–‡ä»¶
             File.WriteAllText(savePath + "/ABCompareInfo.txt", abCompareInfo);
         }
         else
         {
-            Debug.Log("ÎŞ·¨Éú³É¶Ô±ÈÎÄ¼ş£¬ÇëÑ¡Ôñ×ÊÔ´ÎÄ¼ş½øĞĞÒÆ¶¯");
+            Debug.Log("æ— æ³•ç”Ÿæˆå¯¹æ¯”æ–‡ä»¶ï¼Œè¯·é€‰æ‹©èµ„æºæ–‡ä»¶è¿›è¡Œç§»åŠ¨");
         }
         AssetDatabase.Refresh();
     }
@@ -300,59 +314,59 @@ internal class UpLoadABEditor
 
 
     /// <summary>
-    /// ´´½¨¶Ô±ÈÎÄ¼ş
+    /// åˆ›å»ºå¯¹æ¯”æ–‡ä»¶
     /// </summary>
     public void CreateABCompareFile()
     {
-        //»ñÈ¡ÎÄ¼ş¼ĞĞÅÏ¢
+        //è·å–æ–‡ä»¶å¤¹ä¿¡æ¯
         DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
-        //»ñÈ¡¸ÃÄ¿Â¼ÏÂµÄËùÓĞÎÄ¼şĞÅÏ¢
+        //è·å–è¯¥ç›®å½•ä¸‹çš„æ‰€æœ‰æ–‡ä»¶ä¿¡æ¯
         FileInfo[] fileInfos = directory.GetFiles();
 
-        //ÓÃÓÚ´æ´¢ĞÅÏ¢µÄ ×Ö·û´®
+        //ç”¨äºå­˜å‚¨ä¿¡æ¯çš„ å­—ç¬¦ä¸²
         string abCompareInfo = "";
 
         foreach (FileInfo item in fileInfos)
         {
-            //Ã»ÓĞºó×ºµÄ ²ÅÊÇAB°ü ÕâÀïÖ»ÏëÒªAB°üµÄĞÅÏ¢
+            //æ²¡æœ‰åç¼€çš„ æ‰æ˜¯ABåŒ… è¿™é‡Œåªæƒ³è¦ABåŒ…çš„ä¿¡æ¯
             if (item.Extension == "")
             {
-                //Æ´½ÓÒ»¸öAB°üµÄĞÅÏ¢
+                //æ‹¼æ¥ä¸€ä¸ªABåŒ…çš„ä¿¡æ¯
                 abCompareInfo += item.Name + " " + item.Length + " " + GetMD5(item.FullName);
                 abCompareInfo += "|";
             }
         }
-        //ÒòÎªÑ­»·Íê±Ïºó »áÔÚ×îºóÓĞÒ»¸ö | ·ûºÅ ËùÒÔ °ÑËüÈ¥µô
+        //å› ä¸ºå¾ªç¯å®Œæ¯•å ä¼šåœ¨æœ€åæœ‰ä¸€ä¸ª | ç¬¦å· æ‰€ä»¥ æŠŠå®ƒå»æ‰
         if (abCompareInfo.Length == 0)
         {
-            Debug.LogError("¶Ô±ÈÎÄ¼ş´´½¨Ê§°Ü£¡Çë¼ì²é×ÊÔ´Â·¾¶£º" + LocalABPath);
+            Debug.LogError("å¯¹æ¯”æ–‡ä»¶åˆ›å»ºå¤±è´¥ï¼è¯·æ£€æŸ¥èµ„æºè·¯å¾„ï¼š" + LocalABPath);
             return;
         }
         abCompareInfo = abCompareInfo.Substring(0, abCompareInfo.Length - 1);
-        //´æ´¢Æ´½ÓºÃµÄ AB°ü×ÊÔ´ĞÅÏ¢
+        //å­˜å‚¨æ‹¼æ¥å¥½çš„ ABåŒ…èµ„æºä¿¡æ¯
         int _index = LocalABPath.IndexOf('/', 1);
         string rawPath = LocalABPath.Substring(_index, LocalABPath.Length - _index);
         string nPath = $"{Application.dataPath}{rawPath}/ABCompareInfo.txt";
         File.WriteAllText(nPath, abCompareInfo);
         AssetDatabase.Refresh();
-        Debug.Log("AB°ü¶Ô±ÈÎÄ¼şÉú³É³É¹¦,Â·¾¶£º" + nPath);
+        Debug.Log("ABåŒ…å¯¹æ¯”æ–‡ä»¶ç”ŸæˆæˆåŠŸ,è·¯å¾„ï¼š" + nPath);
     }
     /// <summary>
-    /// µÃµ½ÎÄ¼şµÄMD5Âë
+    /// å¾—åˆ°æ–‡ä»¶çš„MD5ç 
     /// </summary>
-    /// <param name="filePath">ÎÄ¼şÂ·¾¶</param>
+    /// <param name="filePath">æ–‡ä»¶è·¯å¾„</param>
     /// <returns></returns>
     public static string GetMD5(string filePath)
     {
         using (FileStream file = new FileStream(filePath, FileMode.Open))
         {
-            //ÉùÃ÷Ò»¸öMD5¶ÔÏó ÓÃÓÚÉú³ÉMD5Âë
+            //å£°æ˜ä¸€ä¸ªMD5å¯¹è±¡ ç”¨äºç”ŸæˆMD5ç 
             MD5 md5 = new MD5CryptoServiceProvider();
-            //ÀûÓÃAPI µÃµ½Êı¾İµÄMD5Âë 16¸ö×Ö½Ú Êı×é
+            //åˆ©ç”¨API å¾—åˆ°æ•°æ®çš„MD5ç  16ä¸ªå­—èŠ‚ æ•°ç»„
             byte[] md5Info = md5.ComputeHash(file);
-            //¹Ø±ÕÎÄ¼şÁ÷
+            //å…³é—­æ–‡ä»¶æµ
             file.Close();
-            //°Ñ16¸ö×Ö½Ú×ª»»Îª 16½øÖÆ Æ´½Ó³É×Ö·û´® ÎªÁË¼õĞ¡md5ÂëµÄ³¤¶È
+            //æŠŠ16ä¸ªå­—èŠ‚è½¬æ¢ä¸º 16è¿›åˆ¶ æ‹¼æ¥æˆå­—ç¬¦ä¸² ä¸ºäº†å‡å°md5ç çš„é•¿åº¦
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < md5Info.Length; i++)
             {
@@ -364,50 +378,50 @@ internal class UpLoadABEditor
     }
 
     /// <summary>
-    /// Çå¿ÕÄ¿±êÄ¿Â¼
+    /// æ¸…ç©ºç›®æ ‡ç›®å½•
     /// </summary>
     private void ClearTargetDirectory()
     {
         if (Directory.Exists(config.targetDirectory))
         {
-            Debug.Log($"Çå¿ÕÄ¿±êÄ¿Â¼: {config.targetDirectory}");
+            Debug.Log($"æ¸…ç©ºç›®æ ‡ç›®å½•: {config.targetDirectory}");
 
-            // »ñÈ¡ËùÓĞÎÄ¼ş
+            // è·å–æ‰€æœ‰æ–‡ä»¶
             string[] files = Directory.GetFiles(config.targetDirectory, "*", SearchOption.AllDirectories);
             foreach (string file in files)
             {
                 File.Delete(file);
             }
 
-            // É¾³ıËùÓĞ×ÓÄ¿Â¼£¨³ıÁË¸ùÄ¿Â¼£©
+            // åˆ é™¤æ‰€æœ‰å­ç›®å½•ï¼ˆé™¤äº†æ ¹ç›®å½•ï¼‰
             string[] directories = Directory.GetDirectories(config.targetDirectory);
             foreach (string dir in directories)
             {
                 Directory.Delete(dir, true);
             }
 
-            Debug.Log($"ÒÑÉ¾³ı {files.Length} ¸öÎÄ¼şºÍ {directories.Length} ¸öÄ¿Â¼");
+            Debug.Log($"å·²åˆ é™¤ {files.Length} ä¸ªæ–‡ä»¶å’Œ {directories.Length} ä¸ªç›®å½•");
         }
         else
         {
-            // Èç¹ûÄ¿Â¼²»´æÔÚ£¬´´½¨Ëü
+            // å¦‚æœç›®å½•ä¸å­˜åœ¨ï¼Œåˆ›å»ºå®ƒ
             Directory.CreateDirectory(config.targetDirectory);
-            Debug.Log($"´´½¨Ä¿±êÄ¿Â¼: {config.targetDirectory}");
+            Debug.Log($"åˆ›å»ºç›®æ ‡ç›®å½•: {config.targetDirectory}");
         }
     }
 
     /// <summary>
-    /// ¸´ÖÆÄ¿Â¼
+    /// å¤åˆ¶ç›®å½•
     /// </summary>
     private static void CopyDirectory(string sourceDir, string targetDir)
     {
-        // È·±£Ä¿±êÄ¿Â¼´æÔÚ
+        // ç¡®ä¿ç›®æ ‡ç›®å½•å­˜åœ¨
         if (!Directory.Exists(targetDir))
         {
             Directory.CreateDirectory(targetDir);
         }
 
-        // ¸´ÖÆËùÓĞÎÄ¼ş
+        // å¤åˆ¶æ‰€æœ‰æ–‡ä»¶
         string[] files = Directory.GetFiles(sourceDir);
         foreach (string file in files)
         {
@@ -418,10 +432,10 @@ internal class UpLoadABEditor
             string fileName = Path.GetFileName(file);
             string destFile = Path.Combine(targetDir, fileName);
             File.Copy(file, destFile, true);
-            Debug.Log($"¸´ÖÆÎÄ¼ş: {fileName}");
+            Debug.Log($"å¤åˆ¶æ–‡ä»¶: {fileName}");
         }
 
-        // µİ¹é¸´ÖÆ×ÓÄ¿Â¼
+        // é€’å½’å¤åˆ¶å­ç›®å½•
         string[] subDirectories = Directory.GetDirectories(sourceDir);
         foreach (string subDir in subDirectories)
         {

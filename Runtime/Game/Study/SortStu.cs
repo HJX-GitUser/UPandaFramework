@@ -119,12 +119,11 @@ public static class SortStu
 
         private static int BinarySearch(int[] arr, int left, int right, int key)
         {
+            // 返回"第一个大于 key 的位置"（越过所有相等的元素），从而保持稳定
             while (left <= right)
             {
                 int mid = left + (right - left) / 2;
-                if (arr[mid] == key)
-                    return mid;
-                else if (arr[mid] < key)
+                if (arr[mid] <= key)
                     left = mid + 1;
                 else
                     right = mid - 1;
@@ -255,8 +254,8 @@ public static class SortStu
         {
             if (left < right)
             {
-                // 分区操作，返回基准点索引
-                int pivotIndex = Partition(arr, left, right);
+                // 分区操作（三数取中选择基准），返回基准点索引
+                int pivotIndex = PartitionMedianOfThree(arr, left, right);
 
                 // 递归排序基准点左右两部分
                 Sort(arr, left, pivotIndex - 1);
@@ -284,12 +283,12 @@ public static class SortStu
             return i + 1;
         }
 
-        // 三数取中法选择基准，优化已排序数组的情况
+        // 三数取中法选择基准，优化已排序数组的情况（排序入口现默认调用它）
         private static int PartitionMedianOfThree(int[] arr, int left, int right)
         {
             int mid = left + (right - left) / 2;
 
-            // 对左、中、右三个元素进行排序
+            // 对左、中、右三个元素进行排序，使 arr[mid] 为三者中位数
             if (arr[left] > arr[mid])
                 Swap(arr, left, mid);
             if (arr[left] > arr[right])
@@ -297,9 +296,9 @@ public static class SortStu
             if (arr[mid] > arr[right])
                 Swap(arr, mid, right);
 
-            // 将中位数放到right-1位置
-            Swap(arr, mid, right - 1);
-            return Partition(arr, left + 1, right - 1);
+            // 把中位数交换到末尾作为基准，再复用标准 Lomuto 分区
+            Swap(arr, mid, right);
+            return Partition(arr, left, right);
         }
 
         private static void Swap(int[] arr, int i, int j)
@@ -377,9 +376,33 @@ public static class SortStu
     /// </summary>
     public static class CountingSort
     {
+        // 便捷重载：自动探测最小/最大值（省去手动传范围）
+        public static int[] Sort(int[] arr)
+        {
+            if (arr == null || arr.Length == 0)
+                return arr; // null / 空数组原样返回
+
+            int minValue = arr[0], maxValue = arr[0];
+            for (int i = 1; i < arr.Length; i++)
+            {
+                if (arr[i] < minValue) minValue = arr[i];
+                if (arr[i] > maxValue) maxValue = arr[i];
+            }
+            return Sort(arr, minValue, maxValue);
+        }
+
         public static int[] Sort(int[] arr, int minValue, int maxValue)
         {
+            if (arr == null || arr.Length == 0)
+                return arr; // null / 空数组原样返回
+
             int range = maxValue - minValue + 1;
+            if (range <= 0)
+            {
+                // 非法范围（minValue > maxValue），拷贝返回原数组
+                return (int[])arr.Clone();
+            }
+
             int[] count = new int[range];
             int[] output = new int[arr.Length];
 
@@ -416,32 +439,30 @@ public static class SortStu
     {
         public static void Sort(int[] arr)
         {
-            if (arr == null || arr.Length == 0)
+            if (arr == null || arr.Length <= 1)
                 return;
 
-            // 找到最大值，确定最大位数
-            int max = GetMax(arr);
-
-            // 对每个位数进行计数排序
-            for (int exp = 1; max / exp > 0; exp *= 10)
-            {
-                CountingSortByDigit(arr, exp);
-            }
-        }
-
-        private static int GetMax(int[] arr)
-        {
-            int max = arr[0];
+            // 求最小/最大值：最小值用于整体平移以支持负数
+            int min = arr[0], max = arr[0];
             for (int i = 1; i < arr.Length; i++)
             {
-                if (arr[i] > max)
-                    max = arr[i];
+                if (arr[i] < min) min = arr[i];
+                if (arr[i] > max) max = arr[i];
             }
-            return max;
+
+            // 平移偏移量：使所有数非负（用 long 防止 int 溢出，如 min = int.MinValue）
+            long offset = -(long)min;
+            long shiftedMax = (long)max + offset;
+
+            // 对每一位（个、十、百...）做一次稳定的计数排序
+            for (long exp = 1; shiftedMax / exp > 0; exp *= 10)
+            {
+                CountingSortByDigit(arr, offset, exp);
+            }
         }
 
-        // 对特定位数进行计数排序
-        private static void CountingSortByDigit(int[] arr, int exp)
+        // 对特定位数进行计数排序（digit 基于"平移后的非负值"计算）
+        private static void CountingSortByDigit(int[] arr, long offset, long exp)
         {
             int n = arr.Length;
             int[] output = new int[n];
@@ -450,7 +471,7 @@ public static class SortStu
             // 统计当前位数的数字出现次数
             for (int i = 0; i < n; i++)
             {
-                int digit = (arr[i] / exp) % 10;
+                int digit = (int)((((long)arr[i] + offset) / exp) % 10);
                 count[digit]++;
             }
 
@@ -463,7 +484,7 @@ public static class SortStu
             // 构建输出数组（从后向前保持稳定性）
             for (int i = n - 1; i >= 0; i--)
             {
-                int digit = (arr[i] / exp) % 10;
+                int digit = (int)((((long)arr[i] + offset) / exp) % 10);
                 output[count[digit] - 1] = arr[i];
                 count[digit]--;
             }

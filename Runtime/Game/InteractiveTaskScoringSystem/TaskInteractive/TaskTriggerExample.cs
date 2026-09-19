@@ -1,10 +1,10 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UPandaGF.RunTime.InteractiveTaskScoringSystem;
 
 /// <summary>
-/// ����������������ȡinteractiveTrigger�ӿڣ��������󴥷�
+/// 交互触发案例，获取interactiveTrigger接口，根据需求触发
 /// </summary>
 public class TaskTriggerExample : MonoBehaviour
 {
@@ -12,31 +12,32 @@ public class TaskTriggerExample : MonoBehaviour
     protected virtual void Awake()
     {
         interactiveTrigger = GetComponent<InteractiveTrigger>();
+        if (interactiveTrigger == null) Debug.LogError($"{name} 上未找到 InteractiveTrigger 实现，鼠标事件将无法转发");   // 修复：给出明确提示
     }
     void OnMouseDown()
     {
-        interactiveTrigger.OnSelect();
+        if (interactiveTrigger != null) interactiveTrigger.OnSelect();   // 修复：空引用保护
     }
 
     void OnMouseUp()
     {
-        interactiveTrigger.OnSelectExit();
+        if (interactiveTrigger != null) interactiveTrigger.OnSelectExit();   // 修复：空引用保护
     }
 
     private void OnMouseOver()
     {
-        interactiveTrigger.OnStay();
+        if (interactiveTrigger != null) interactiveTrigger.OnStay();   // 修复：空引用保护
     }
 
     void OnMouseEnter()
     {
 
-        interactiveTrigger.OnEnter();
+        if (interactiveTrigger != null) interactiveTrigger.OnEnter();   // 修复：空引用保护
     }
 
     void OnMouseExit()
     {
 
-        interactiveTrigger.OnExit();
+        if (interactiveTrigger != null) interactiveTrigger.OnExit();   // 修复：空引用保护
     }
 }

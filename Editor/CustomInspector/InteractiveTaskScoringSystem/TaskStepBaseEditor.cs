@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -9,7 +9,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     public class TaskStepBaseEditor : Editor
     {
         private TaskStepBase component;
-        private bool operationsCheck = false; //È·±£ÈÎÎñ½ÚµãÏÂÖ»ÓĞÒ»¸öÈÎÎñ¼ì²é×é
+        private bool operationsCheck = false; //ç¡®ä¿ä»»åŠ¡èŠ‚ç‚¹ä¸‹åªæœ‰ä¸€ä¸ªä»»åŠ¡æ£€æŸ¥ç»„
         private void OnEnable()
         {
             //Debug.Log("TaskStepBase Inspector OnEnable");
@@ -24,7 +24,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             operationsCheck = operations.Count > 1;
             if (operationsCheck)
             {
-                Debug.LogError("ÈÎÎñ½ÚµãÏÂÖ»ÔÊĞíÓĞÒ»¸ö²Ù×÷¼ì²é×é£¬Äã¿ÉÒÔÔÚÈÎÎñ×é½ÚµãÏÂ¼ÌĞø´´½¨ÆäËûÈÎÎñ×é½Úµã¡£");
+                Debug.LogError("ä»»åŠ¡èŠ‚ç‚¹ä¸‹åªå…è®¸æœ‰ä¸€ä¸ªæ“ä½œæ£€æŸ¥ç»„ï¼Œä½ å¯ä»¥åœ¨ä»»åŠ¡ç»„èŠ‚ç‚¹ä¸‹ç»§ç»­åˆ›å»ºå…¶ä»–ä»»åŠ¡ç»„èŠ‚ç‚¹ã€‚");
             }
         }
 
@@ -33,20 +33,20 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
             base.OnInspectorGUI();
             if (operationsCheck)
             {
-                EditorGUILayout.HelpBox("ÈÎÎñ½ÚµãÏÂÖ»ÔÊĞíÓĞÒ»¸ö²Ù×÷¼ì²é×é,Äã¿ÉÒÔÔÚÈÎÎñ×é½ÚµãÏÂ¼ÌĞø´´½¨ÆäËûÈÎÎñ×é½Úµã¡£", MessageType.Error);
+                EditorGUILayout.HelpBox("ä»»åŠ¡èŠ‚ç‚¹ä¸‹åªå…è®¸æœ‰ä¸€ä¸ªæ“ä½œæ£€æŸ¥ç»„,ä½ å¯ä»¥åœ¨ä»»åŠ¡ç»„èŠ‚ç‚¹ä¸‹ç»§ç»­åˆ›å»ºå…¶ä»–ä»»åŠ¡ç»„èŠ‚ç‚¹ã€‚", MessageType.Error);
             }
             else
             {
                 if (component.operationGroup == null && !EditorApplication.isPlaying)
                 {
                     GUILayout.Space(10);
-                    if (GUILayout.Button("Add ²Ù×÷¼ì²é×é£¨´®Áª£©"))
+                    if (GUILayout.Button("Add æ“ä½œæ£€æŸ¥ç»„ï¼ˆä¸²è”ï¼‰"))
                     {
                         GameObject obj = CreatNode("SeriesOperationGroup");
                         component.operationGroup = obj.AddComponent<SeriesOperationGroup>();
                         Undo.RecordObject(obj, "SeriesOperationGroup");
                     }
-                    if (GUILayout.Button("Add ²Ù×÷¼ì²é×é£¨²¢Áª£©"))
+                    if (GUILayout.Button("Add æ“ä½œæ£€æŸ¥ç»„ï¼ˆå¹¶è”ï¼‰"))
                     {
                         GameObject obj = CreatNode("ParallelOperationGroup");
                         component.operationGroup = obj.AddComponent<ParallelOperationGroup>();

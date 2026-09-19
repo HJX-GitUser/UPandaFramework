@@ -1,52 +1,52 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UPandaGF.StateMechine
 {
     /// <summary>
-    /// ×´Ì¬½Ó¿Ú
+    /// çŠ¶æ€æ¥å£
     /// </summary>
     public interface IState
     {
         /// <summary>
-        /// ×´Ì¬ID£¨ÓÃÓÚ×´Ì¬ÇĞ»»ºÍÊ¶±ğ£©
+        /// çŠ¶æ€IDï¼ˆç”¨äºçŠ¶æ€åˆ‡æ¢å’Œè¯†åˆ«ï¼‰
         /// </summary>
         string StateID { get; }
 
         /// <summary>
-        /// ¸¸×´Ì¬£¨ÓÃÓÚ¹¹½¨²ã¼¶¹ØÏµ£©
+        /// çˆ¶çŠ¶æ€ï¼ˆç”¨äºæ„å»ºå±‚çº§å…³ç³»ï¼‰
         /// </summary>
         IState Parent { get; set; }
 
         /// <summary>
-        /// ½øÈë×´Ì¬
+        /// è¿›å…¥çŠ¶æ€
         /// </summary>
         void OnEnter();
 
         /// <summary>
-        /// ÍË³ö×´Ì¬
+        /// é€€å‡ºçŠ¶æ€
         /// </summary>
         void OnExit();
 
         /// <summary>
-        /// Ã¿Ö¡¸üĞÂ
+        /// æ¯å¸§æ›´æ–°
         /// </summary>
         void OnUpdate(float deltaTime);
 
         /// <summary>
-        /// ¹Ì¶¨¸üĞÂ£¨ÓÃÓÚÎïÀí¼ÆËã£©
+        /// å›ºå®šæ›´æ–°ï¼ˆç”¨äºç‰©ç†è®¡ç®—ï¼‰
         /// </summary>
         void OnFixedUpdate();
 
         /// <summary>
-        /// ÄÜ·ñÇĞ»»µ½Ö¸¶¨×´Ì¬
+        /// èƒ½å¦åˆ‡æ¢åˆ°æŒ‡å®šçŠ¶æ€
         /// </summary>
         bool CanTransitionTo(string stateID);
     }
 
     /// <summary>
-    /// ³éÏó×´Ì¬»ùÀà
+    /// æŠ½è±¡çŠ¶æ€åŸºç±»
     /// </summary>
     public abstract class BaseState : IState
     {
@@ -54,28 +54,33 @@ namespace UPandaGF.StateMechine
         public IState Parent { get; set; }
 
         /// <summary>
-        /// ²ã¼¶Éî¶È£¨¸ù×´Ì¬Îª0£¬Ã¿Ôö¼ÓÒ»¼¶×Ó×´Ì¬+1£©
+        /// å±‚çº§æ·±åº¦ï¼ˆæ ¹çŠ¶æ€ä¸º0ï¼Œæ¯å¢åŠ ä¸€çº§å­çŠ¶æ€+1ï¼‰
         /// </summary>
         public int Depth => Parent == null ? 0 : (Parent as BaseState)?.Depth + 1 ?? 1;
 
         /// <summary>
-        /// ×Ó×´Ì¬Ó³Éä±í
+        /// å­çŠ¶æ€æ˜ å°„è¡¨
         /// </summary>
         public Dictionary<string, IState> children = new Dictionary<string, IState>();
 
         /// <summary>
-        /// µ±Ç°»îÔ¾µÄ×Ó×´Ì¬
+        /// å½“å‰æ´»è·ƒçš„å­çŠ¶æ€
         /// </summary>
         protected IState activeChild = null;
 
         /// <summary>
-        /// Ä¬ÈÏ×Ó×´Ì¬ID
+        /// å½“å‰æ´»è·ƒçš„å­çŠ¶æ€ï¼ˆåªè¯»ï¼Œä¾›çŠ¶æ€ç®¡ç†å™¨è®¿é—®ï¼Œç”¨äºå¤šçº§åˆ‡æ¢çš„å›æ»šï¼‰
+        /// </summary>
+        public IState ActiveChild => activeChild;
+
+        /// <summary>
+        /// é»˜è®¤å­çŠ¶æ€ID
         /// </summary>
         protected string defaultChildID = string.Empty;
 
         public virtual void OnEnter()
         {
-            // ½øÈëÊ±¼¤»îÄ¬ÈÏ×Ó×´Ì¬
+            // è¿›å…¥æ—¶æ¿€æ´»é»˜è®¤å­çŠ¶æ€
             if (!string.IsNullOrEmpty(defaultChildID) && children.ContainsKey(defaultChildID))
             {
                 SwitchToChild(defaultChildID);
@@ -84,7 +89,7 @@ namespace UPandaGF.StateMechine
 
         public virtual void OnExit()
         {
-            // ÍË³öÊ±¹Ø±ÕËùÓĞ×Ó×´Ì¬
+            // é€€å‡ºæ—¶å…³é—­æ‰€æœ‰å­çŠ¶æ€
             if (activeChild != null)
             {
                 activeChild.OnExit();
@@ -94,7 +99,7 @@ namespace UPandaGF.StateMechine
 
         public virtual void OnUpdate(float deltaTime)
         {
-            // ¸üĞÂµ±Ç°»îÔ¾µÄ×Ó×´Ì¬
+            // æ›´æ–°å½“å‰æ´»è·ƒçš„å­çŠ¶æ€
             activeChild?.OnUpdate(deltaTime);
         }
 
@@ -105,11 +110,11 @@ namespace UPandaGF.StateMechine
 
         public virtual bool CanTransitionTo(string stateID)
         {
-            return true; // Ä¬ÈÏÔÊĞíÇĞ»»µ½ÈÎºÎ×´Ì¬
+            return true; // é»˜è®¤å…è®¸åˆ‡æ¢åˆ°ä»»ä½•çŠ¶æ€
         }
 
         /// <summary>
-        /// ×¢²á×Ó×´Ì¬
+        /// æ³¨å†Œå­çŠ¶æ€
         /// </summary>
         public void RegisterChild(IState childState)
         {
@@ -120,16 +125,16 @@ namespace UPandaGF.StateMechine
         }
 
         /// <summary>
-        /// ÇĞ»»µ½Ö¸¶¨×Ó×´Ì¬
+        /// åˆ‡æ¢åˆ°æŒ‡å®šå­çŠ¶æ€
         /// </summary>
         public bool SwitchToChild(string childID)
         {
             if (!children.ContainsKey(childID)) return false;
 
-            // ÍË³öµ±Ç°»îÔ¾×Ó×´Ì¬
+            // é€€å‡ºå½“å‰æ´»è·ƒå­çŠ¶æ€
             activeChild?.OnExit();
 
-            // ¼¤»îĞÂ×Ó×´Ì¬
+            // æ¿€æ´»æ–°å­çŠ¶æ€
             activeChild = children[childID];
             activeChild.OnEnter();
 
@@ -137,7 +142,19 @@ namespace UPandaGF.StateMechine
         }
 
         /// <summary>
-        /// ÉèÖÃÄ¬ÈÏ×Ó×´Ì¬
+        /// æ¸…ç©ºå½“å‰æ´»è·ƒå­çŠ¶æ€ï¼ˆé€€å‡ºå½“å‰å­çŠ¶æ€ä½†ä¸è¿›å…¥æ–°çš„ï¼Œä¾›å›æ»šä½¿ç”¨ï¼‰
+        /// </summary>
+        public void ClearActiveChild()
+        {
+            if (activeChild != null)
+            {
+                activeChild.OnExit();
+                activeChild = null;
+            }
+        }
+
+        /// <summary>
+        /// è®¾ç½®é»˜è®¤å­çŠ¶æ€
         /// </summary>
         public void SetDefaultChild(string childID)
         {
@@ -146,7 +163,7 @@ namespace UPandaGF.StateMechine
         }
 
         /// <summary>
-        /// »ñÈ¡µ±Ç°»îÔ¾×Ó×´Ì¬µÄÍêÕûÂ·¾¶
+        /// è·å–å½“å‰æ´»è·ƒå­çŠ¶æ€çš„å®Œæ•´è·¯å¾„
         /// </summary>
         public string GetActivePath()
         {

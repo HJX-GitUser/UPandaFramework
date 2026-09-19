@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,60 +9,60 @@ namespace UPandaGF
     [RequireComponent(typeof(Image))]
     public class DragArea : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
     {
-        public RectTransform draggableRectTransform; // µ±Ç°ÍÏ¶¯ÎïÆ·µÄ RectTransform
-        private Canvas canvas; // ÓÃÓÚÆÁÄ»×ø±ê×ª»»µÄ Canvas
-        private Vector2 offset; // Êó±êµã»÷Î»ÖÃµ½UIÖĞĞÄµãµÄÆ«ÒÆÁ¿
+        public RectTransform draggableRectTransform; // å½“å‰æ‹–åŠ¨ç‰©å“çš„ RectTransform
+        private Canvas canvas; // ç”¨äºå±å¹•åæ ‡è½¬æ¢çš„ Canvas
+        private Vector2 offset; // é¼ æ ‡ç‚¹å‡»ä½ç½®åˆ°UIä¸­å¿ƒç‚¹çš„åç§»é‡
 
         void Start()
         {
             //draggableRectTransform = GetComponent<RectTransform>();
-            // »ñÈ¡×î½üµÄÉÏ²ã Canvas£¬ÓÃÓÚ×ø±ê×ª»»
+            // è·å–æœ€è¿‘çš„ä¸Šå±‚ Canvasï¼Œç”¨äºåæ ‡è½¬æ¢
             canvas = GetComponentInParent<Canvas>();
         }
 
-        // ¿ªÊ¼ÍÏ×§Ê±µ÷ÓÃ
+        // å¼€å§‹æ‹–æ‹½æ—¶è°ƒç”¨
         public void OnBeginDrag(PointerEventData eventData)
         {
-            // ¼ÆËãÊó±êµã»÷Î»ÖÃµ½UIÖĞĞÄµãµÄÆ«ÒÆÁ¿
+            // è®¡ç®—é¼ æ ‡ç‚¹å‡»ä½ç½®åˆ°UIä¸­å¿ƒç‚¹çš„åç§»é‡
             if (canvas == null) return;
 
             Vector2 mousePos;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                draggableRectTransform.parent as RectTransform, // ¸¸ÎïÌåRectTransform
+                draggableRectTransform.parent as RectTransform, // çˆ¶ç‰©ä½“RectTransform
                 eventData.position,
                 canvas.worldCamera,
                 out mousePos))
             {
-                // Æ«ÒÆÁ¿ = UIÖĞĞÄ×ø±ê - Êó±êµã»÷×ø±ê
+                // åç§»é‡ = UIä¸­å¿ƒåæ ‡ - é¼ æ ‡ç‚¹å‡»åæ ‡
                 offset = draggableRectTransform.anchoredPosition - mousePos;
             }
         }
 
-        // ÍÏ×§¹ı³ÌÖĞ³ÖĞøµ÷ÓÃ
+        // æ‹–æ‹½è¿‡ç¨‹ä¸­æŒç»­è°ƒç”¨
         public void OnDrag(PointerEventData eventData)
         {
             if (canvas == null) return;
 
-            // ºËĞÄ´úÂë£º½«Êó±êµÄÆÁÄ»×ø±ê×ª»»Îªµ±Ç° Canvas ÏÂµÄ±¾µØ×ø±ê
+            // æ ¸å¿ƒä»£ç ï¼šå°†é¼ æ ‡çš„å±å¹•åæ ‡è½¬æ¢ä¸ºå½“å‰ Canvas ä¸‹çš„æœ¬åœ°åæ ‡
             Vector2 mousePos;
-            // RectTransformUtility.ScreenPointToLocalPointInRectangle ÊÇ¹Ø¼üµÄ×ø±ê×ª»»·½·¨
+            // RectTransformUtility.ScreenPointToLocalPointInRectangle æ˜¯å…³é”®çš„åæ ‡è½¬æ¢æ–¹æ³•
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvas.transform as RectTransform, // Ä¿±ê×ø±êÏµ£¨CanvasµÄRectTransform£©
-                eventData.position,                 // Êó±êµÄÆÁÄ»×ø±ê
-                canvas.worldCamera,                 // äÖÈ¾´ËCanvasµÄÏà»ú£¨¶ÔÓÚScreen Space - Overlay Ä£Ê½£¬´«null£©
-                out mousePos))                      // Êä³öµÄ±¾µØ×ø±ê
+                canvas.transform as RectTransform, // ç›®æ ‡åæ ‡ç³»ï¼ˆCanvasçš„RectTransformï¼‰
+                eventData.position,                 // é¼ æ ‡çš„å±å¹•åæ ‡
+                canvas.worldCamera,                 // æ¸²æŸ“æ­¤Canvasçš„ç›¸æœºï¼ˆå¯¹äºScreen Space - Overlay æ¨¡å¼ï¼Œä¼ nullï¼‰
+                out mousePos))                      // è¾“å‡ºçš„æœ¬åœ°åæ ‡
             {
-                // Ö±½Ó½«UI¶ÔÏóµÄÖĞĞÄµãÉèÖÃÎªÊó±êÎ»ÖÃ
+                // ç›´æ¥å°†UIå¯¹è±¡çš„ä¸­å¿ƒç‚¹è®¾ç½®ä¸ºé¼ æ ‡ä½ç½®
                 draggableRectTransform.anchoredPosition = mousePos + offset;
             }
         }
 
-        // ½áÊøÍÏ×§Ê±µ÷ÓÃ
+        // ç»“æŸæ‹–æ‹½æ—¶è°ƒç”¨
         public void OnEndDrag(PointerEventData eventData)
         {
-            // ¿ÉÒÔÔÚÕâÀï½øĞĞ·ÅÖÃÅĞ¶Ï£¬ÀıÈç¼ì²âÊÇ·ñÍÏµ½ÁËÄ³¸ö¡°Ä¿±êÇøÓò¡±
-            // Debug.Log("ÍÏ×§½áÊø");
-            // Èç¹ûĞèÒª£¬¿ÉÒÔÈÃÎïÌå»Øµ½Ô­Ê¼Î»ÖÃ
+            // å¯ä»¥åœ¨è¿™é‡Œè¿›è¡Œæ”¾ç½®åˆ¤æ–­ï¼Œä¾‹å¦‚æ£€æµ‹æ˜¯å¦æ‹–åˆ°äº†æŸä¸ªâ€œç›®æ ‡åŒºåŸŸâ€
+            // Debug.Log("æ‹–æ‹½ç»“æŸ");
+            // å¦‚æœéœ€è¦ï¼Œå¯ä»¥è®©ç‰©ä½“å›åˆ°åŸå§‹ä½ç½®
             // draggableRectTransform.anchoredPosition = originalPosition;
         }
     }

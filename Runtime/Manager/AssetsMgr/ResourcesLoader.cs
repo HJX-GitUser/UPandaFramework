@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,42 +8,47 @@ using UPandaGF;
 [Serializable]
 public class AssetBundleClassificationWindowConfig
 {
-    public bool enable = true;
+    /// <summary>
+    /// æ˜¯å¦å¯¹èµ„æºæ¸…å•åš AES åŠ å¯†ã€‚
+    /// <para>âš  é»˜è®¤ <c>false</c>ï¼šéšåŒ…æ¸…å• assetData.assetref æ˜¯æ˜æ–‡ï¼Œè¿è¡Œç«¯è¯¯å¼€ä¼šè®©æ¸…å•è§£å¯†å¤±è´¥ã€
+    /// AssetBundle æ¨¡å¼æ•´ä½“ä¸å¯ç”¨ã€‚éœ€è¦åŠ å¯†æ—¶å¿…é¡»"æ‰“åŒ…ç«¯åŠ å¯† + è¿è¡Œç«¯å¼€å¯"æˆå¯¹é…ç½®ã€‚</para>
+    /// </summary>
+    public bool enable = false;
     public string AESKEY = "111a222aaabbbccc";
     public string AESIV = "111b222aaabbbccc";
     public ABLoadPath mainBundleLoadPath = ABLoadPath.StreamingAssetsPath;
 }
 
 /// <summary>
-/// ×ÊÔ´ĞÅÏ¢»ùÀà
+/// èµ„æºä¿¡æ¯åŸºç±»
 /// </summary>
 public abstract class ResInfoBase
 {
     /// <summary>
-    /// ÒıÓÃ¼ÆÊı
+    /// å¼•ç”¨è®¡æ•°
     /// </summary>
     public int refCount;
 }
 /// <summary>
-/// ×ÊÔ´ĞÅÏ¢
+/// èµ„æºä¿¡æ¯
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class ResInfo<T> : ResInfoBase
 {
     /// <summary>
-    /// ×ÊÔ´
+    /// èµ„æº
     /// </summary>
     public T asset;
     /// <summary>
-    /// Òì²½¼ÓÔØÍê³ÉµÄ»Øµ÷
+    /// å¼‚æ­¥åŠ è½½å®Œæˆçš„å›è°ƒ
     /// </summary>
     public UnityAction<T> callback;
     /// <summary>
-    /// ´æ´¢Òì²½Ê±µÄĞ­Í¬³ÌĞò
+    /// å­˜å‚¨å¼‚æ­¥æ—¶çš„ååŒç¨‹åº
     /// </summary>
     public Coroutine coroutine;
     /// <summary>
-    /// ÒıÓÃ¼ÆÊıÎª0£¬¸Ã×ÊÔ´ÊÇ·ñÒÆ³ı
+    /// å¼•ç”¨è®¡æ•°ä¸º0ï¼Œè¯¥èµ„æºæ˜¯å¦ç§»é™¤
     /// </summary>
     public bool isDel;
     public void AddRefCount()
@@ -54,24 +59,24 @@ public class ResInfo<T> : ResInfoBase
     public void SubRefCount()
     {
         --refCount;
-        if (refCount < 0) Debug.Log($"{asset}:¸Ã×ÊÔ´ÒıÓÃ¼ÆÊıĞ¡ÓÚ0£¡Ğè×ÔĞĞ¼ì²é¼ÓÔØºÍĞ¶ÔØµÄÖ´ĞĞ´ÎÊı");
+        if (refCount < 0) Debug.Log($"{asset}:è¯¥èµ„æºå¼•ç”¨è®¡æ•°å°äº0ï¼éœ€è‡ªè¡Œæ£€æŸ¥åŠ è½½å’Œå¸è½½çš„æ‰§è¡Œæ¬¡æ•°");
     }
 }
 
 /// <summary>
-/// ResourcesÂ·¾¶×ÊÔ´¼ÓÔØ¼ÓÔØ
+/// Resourcesè·¯å¾„èµ„æºåŠ è½½åŠ è½½
 /// </summary>
 public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
 {
     private const string splicName_T = "_T_";
     private const string splicName_Object = "_O_";
     /// <summary>
-    /// ´æ´¢ ¼ÓÔØ¹ı »ò ¼ÓÔØÖĞ µÄ×ÊÔ´
-    /// keyÊÇ×ÊÔ´Ãû £¨Â·¾¶+×ÊÔ´ÀàĞÍ£©Æ´½Ó
+    /// å­˜å‚¨ åŠ è½½è¿‡ æˆ– åŠ è½½ä¸­ çš„èµ„æº
+    /// keyæ˜¯èµ„æºå ï¼ˆè·¯å¾„+èµ„æºç±»å‹ï¼‰æ‹¼æ¥
     /// </summary>
     private Dictionary<string, ResInfoBase> resDic = new Dictionary<string, ResInfoBase>();
     /// <summary>
-    /// Í¬²½¼ÓÔØ×ÊÔ´
+    /// åŒæ­¥åŠ è½½èµ„æº
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="path"></param>
@@ -85,7 +90,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             T res = Resources.Load<T>(path);
             if (res == null)
             {
-                Debug.LogError($"×ÊÔ´¼ÓÔØÊ§°Ü£º{path}");
+                Debug.LogError($"èµ„æºåŠ è½½å¤±è´¥ï¼š{path}");
                 return null;
             }
             info = new ResInfo<T>();
@@ -94,36 +99,36 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             resDic.Add(resName, info);
             return res;
         }
-        else//Èç¹û×ÖµäÀïÓĞÕâ¸ö×ÊÔ´£¬ĞèÒªÅĞ¶ÏÊÇ·ñ´¦ÓÚ¼ÓÔØÖĞµÄ×´Ì¬
+        else//å¦‚æœå­—å…¸é‡Œæœ‰è¿™ä¸ªèµ„æºï¼Œéœ€è¦åˆ¤æ–­æ˜¯å¦å¤„äºåŠ è½½ä¸­çš„çŠ¶æ€
         {
             info = resDic[resName] as ResInfo<T>;
             info.AddRefCount();
             if (info.asset == null)
             {
-                //¹ØµôÕıÔÚÒì²½¼ÓÔØ×ÊÔ´×´Ì¬µÄĞ­³Ì£¬Ö±½ÓÓÃÍ¬²½µÄ·½Ê½¼ÓÔØ
+                //å…³æ‰æ­£åœ¨å¼‚æ­¥åŠ è½½èµ„æºçŠ¶æ€çš„åç¨‹ï¼Œç›´æ¥ç”¨åŒæ­¥çš„æ–¹å¼åŠ è½½
                 StopCoroutine(info.coroutine);
                 T res = Resources.Load<T>(path);
                 if (res == null)
                 {
-                    Debug.LogError($"×ÊÔ´¼ÓÔØÊ§°Ü£º{path}");
+                    Debug.LogError($"èµ„æºåŠ è½½å¤±è´¥ï¼š{path}");
                     return null;
                 }
                 info.asset = res;
                 info.callback?.Invoke(res);
                 info.callback = null;
                 info.coroutine = null;
-                return res;//Èç¹û×ÊÔ´ÊÇGameObject£¬ĞèÒª×Ô¼ºÔÙÊµÀı»¯
+                return res;//å¦‚æœèµ„æºæ˜¯GameObjectï¼Œéœ€è¦è‡ªå·±å†å®ä¾‹åŒ–
             }
             else
             {
-                //Debug.Log($"{path}×ÊÔ´±»ÒıÓÃ´ÎÊı£º{info.refCount}");
+                //Debug.Log($"{path}èµ„æºè¢«å¼•ç”¨æ¬¡æ•°ï¼š{info.refCount}");
                 return info.asset;
             }
         }
 
     }
     /// <summary>
-    /// [Type]Í¬²½¼ÓÔØ×ÊÔ´
+    /// [Type]åŒæ­¥åŠ è½½èµ„æº
     /// </summary>
     /// <param name="path"></param>
     /// <param name="type"></param>
@@ -137,7 +142,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             UnityEngine.Object res = Resources.Load(path, type);
             if (res == null)
             {
-                Debug.LogError($"×ÊÔ´¼ÓÔØÊ§°Ü£º{path}");
+                Debug.LogError($"èµ„æºåŠ è½½å¤±è´¥ï¼š{path}");
                 return null;
             }
             info = new ResInfo<UnityEngine.Object>();
@@ -146,18 +151,18 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             resDic.Add(resName, info);
             return res;
         }
-        else//Èç¹û×ÖµäÀïÓĞÕâ¸ö×ÊÔ´£¬ĞèÒªÅĞ¶ÏÊÇ·ñ´¦ÓÚ¼ÓÔØÖĞµÄ×´Ì¬
+        else//å¦‚æœå­—å…¸é‡Œæœ‰è¿™ä¸ªèµ„æºï¼Œéœ€è¦åˆ¤æ–­æ˜¯å¦å¤„äºåŠ è½½ä¸­çš„çŠ¶æ€
         {
             info = resDic[resName] as ResInfo<UnityEngine.Object>;
             info.AddRefCount();
             if (info.asset == null)
             {
-                //¹ØµôÕıÔÚÒì²½¼ÓÔØ×ÊÔ´×´Ì¬µÄĞ­³Ì£¬Ö±½ÓÓÃÍ¬²½µÄ·½Ê½¼ÓÔØ
+                //å…³æ‰æ­£åœ¨å¼‚æ­¥åŠ è½½èµ„æºçŠ¶æ€çš„åç¨‹ï¼Œç›´æ¥ç”¨åŒæ­¥çš„æ–¹å¼åŠ è½½
                 StopCoroutine(info.coroutine);
                 UnityEngine.Object res = Resources.Load(path, type);
                 if (res == null)
                 {
-                    Debug.LogError($"×ÊÔ´¼ÓÔØÊ§°Ü£º{path}");
+                    Debug.LogError($"èµ„æºåŠ è½½å¤±è´¥ï¼š{path}");
                     return null;
                 }
                 info.asset = res;
@@ -173,16 +178,16 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         }
     }
     /// <summary>
-    /// Òì²½¼ÓÔØ×ÊÔ´
+    /// å¼‚æ­¥åŠ è½½èµ„æº
     /// </summary>
-    /// <typeparam name="T">×ÊÔ´ÀàĞÍ</typeparam>
-    /// <param name="path">×ÊÔ´Â·¾¶</param>
-    /// <param name="callback">»Øµ÷</param>
+    /// <typeparam name="T">èµ„æºç±»å‹</typeparam>
+    /// <param name="path">èµ„æºè·¯å¾„</param>
+    /// <param name="callback">å›è°ƒ</param>
     public void LoadAsync<T>(string path, UnityAction<T> callback) where T : UnityEngine.Object
     {
         string resName = path + splicName_T + typeof(T).Name;
         ResInfo<T> info;
-        if (!resDic.ContainsKey(resName))//Èç¹û×ÖµäÀï²»°üº¬¸Ã×ÊÔ´
+        if (!resDic.ContainsKey(resName))//å¦‚æœå­—å…¸é‡Œä¸åŒ…å«è¯¥èµ„æº
         {
             info = new ResInfo<T>();
             info.AddRefCount();
@@ -195,12 +200,12 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         {
             info = resDic[resName] as ResInfo<T>;
             info.AddRefCount();
-            //µÈÓÚnull ËµÃ÷×ÊÔ´»¹Ã»ÓĞ¼ÓÔØÍê »¹ÔÚÒì²½¼ÓÔØÖĞ
+            //ç­‰äºnull è¯´æ˜èµ„æºè¿˜æ²¡æœ‰åŠ è½½å®Œ è¿˜åœ¨å¼‚æ­¥åŠ è½½ä¸­
             if (info.asset == null)
             {
                 info.callback += callback;
             }
-            else//¼ÓÔØÍê³ÉµÄ×ÊÔ´
+            else//åŠ è½½å®Œæˆçš„èµ„æº
             {
                 callback?.Invoke(info.asset);
             }
@@ -215,31 +220,31 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         if (resDic.ContainsKey(resName))
         {
             ResInfo<T> resInfo = resDic[resName] as ResInfo<T>;
-            //¼ÇÂ¼¼ÓÔØÍê³ÉµÄ×ÊÔ´
+            //è®°å½•åŠ è½½å®Œæˆçš„èµ„æº
             resInfo.asset = r.asset as T;
 
-            if (resInfo.refCount == 0)//Èç¹ûÒıÓÃÎª0ÔòÉ¾³ı
+            if (resInfo.refCount == 0)//å¦‚æœå¼•ç”¨ä¸º0åˆ™åˆ é™¤
             {
-                Debug.LogError($"[T]×ÊÔ´:{path}£¬ÒÑĞ¶ÔØ");
+                Debug.LogError($"[T]èµ„æº:{path}ï¼Œå·²å¸è½½");
                 UnLoadAsset_NoSubAssetsCount<T>(path, resInfo.isDel);
-                // Í¨ÖªËùÓĞµÈ´ıµÄ»Øµ÷¼ÓÔØÊ§°Ü
+                // é€šçŸ¥æ‰€æœ‰ç­‰å¾…çš„å›è°ƒåŠ è½½å¤±è´¥
                 resInfo.callback?.Invoke(null);
             }
             else
             {
-                resInfo.callback?.Invoke(resInfo.asset);//Í¨¹ıÎ¯ÍĞ°Ñ¼ÓÔØºÃµÄ×ÊÔ´´«³öÈ¥
+                resInfo.callback?.Invoke(resInfo.asset);//é€šè¿‡å§”æ‰˜æŠŠåŠ è½½å¥½çš„èµ„æºä¼ å‡ºå»
             }
-            //×ÊÔ´´«³öÈ¥ºó°Ñ»Øµ÷ºÍĞ­³ÌÖÃ¿Õ ±ÜÃâÒıÓÃÕ¼ÓÃ
+            //èµ„æºä¼ å‡ºå»åæŠŠå›è°ƒå’Œåç¨‹ç½®ç©º é¿å…å¼•ç”¨å ç”¨
             resInfo.callback = null;
             resInfo.coroutine = null;
         }
     }
-  
+
     public void LoadAsync(string path, Type type, UnityAction<UnityEngine.Object> callback)
     {
         string resName = path + splicName_Object + type.Name;
         ResInfo<UnityEngine.Object> info;
-        if (!resDic.ContainsKey(resName))//Èç¹û×ÖµäÀï²»°üº¬¸Ã×ÊÔ´
+        if (!resDic.ContainsKey(resName))//å¦‚æœå­—å…¸é‡Œä¸åŒ…å«è¯¥èµ„æº
         {
             info = new ResInfo<UnityEngine.Object>();
             info.AddRefCount();
@@ -252,12 +257,12 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         {
             info = resDic[resName] as ResInfo<UnityEngine.Object>;
             info.AddRefCount();
-            //µÈÓÚnull ËµÃ÷×ÊÔ´»¹Ã»ÓĞ¼ÓÔØÍê »¹ÔÚÒì²½¼ÓÔØÖĞ
+            //ç­‰äºnull è¯´æ˜èµ„æºè¿˜æ²¡æœ‰åŠ è½½å®Œ è¿˜åœ¨å¼‚æ­¥åŠ è½½ä¸­
             if (info.asset == null)
             {
                 info.callback += callback;
             }
-            else//¼ÓÔØÍê³ÉµÄ×ÊÔ´
+            else//åŠ è½½å®Œæˆçš„èµ„æº
             {
                 callback?.Invoke(info.asset);
             }
@@ -272,31 +277,31 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         if (resDic.ContainsKey(resName))
         {
             ResInfo<UnityEngine.Object> resInfo = resDic[resName] as ResInfo<UnityEngine.Object>;
-            //¼ÇÂ¼¼ÓÔØÍê³ÉµÄ×ÊÔ´
+            //è®°å½•åŠ è½½å®Œæˆçš„èµ„æº
             resInfo.asset = r.asset;
 
-            if (resInfo.refCount == 0)//Èç¹ûÒıÓÃÎª0ÔòÉ¾³ı
+            if (resInfo.refCount == 0)//å¦‚æœå¼•ç”¨ä¸º0åˆ™åˆ é™¤
             {
-                Debug.LogError($"[Type]×ÊÔ´:{path}£¬ÒÑĞ¶ÔØ");
+                Debug.LogError($"[Type]èµ„æº:{path}ï¼Œå·²å¸è½½");
                 UnLoadAsset_NoSubAssetsCount(path, type, resInfo.isDel);
-                // Í¨ÖªËùÓĞµÈ´ıµÄ»Øµ÷¼ÓÔØÊ§°Ü
+                // é€šçŸ¥æ‰€æœ‰ç­‰å¾…çš„å›è°ƒåŠ è½½å¤±è´¥
                 resInfo.callback?.Invoke(null);
             }
             else
             {
-                resInfo.callback?.Invoke(resInfo.asset);//Í¨¹ıÎ¯ÍĞ°Ñ¼ÓÔØºÃµÄ×ÊÔ´´«³öÈ¥
+                resInfo.callback?.Invoke(resInfo.asset);//é€šè¿‡å§”æ‰˜æŠŠåŠ è½½å¥½çš„èµ„æºä¼ å‡ºå»
             }
-            //×ÊÔ´´«³öÈ¥ºó°Ñ»Øµ÷ºÍĞ­³ÌÖÃ¿Õ ±ÜÃâÒıÓÃÕ¼ÓÃ
+            //èµ„æºä¼ å‡ºå»åæŠŠå›è°ƒå’Œåç¨‹ç½®ç©º é¿å…å¼•ç”¨å ç”¨
             resInfo.callback = null;
             resInfo.coroutine = null;
         }
     }
     /// <summary>
-    /// Ğ¶ÔØ·ºĞÍ¼ÓÔØµÄ×ÊÔ´
+    /// å¸è½½æ³›å‹åŠ è½½çš„èµ„æº
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="path"></param>
-    /// <param name="isDel">ÒıÓÃÎª0Ê±£¬ÊÇ·ñÒÆ³ı¸Ã×ÊÔ´</param>
+    /// <param name="isDel">å¼•ç”¨ä¸º0æ—¶ï¼Œæ˜¯å¦ç§»é™¤è¯¥èµ„æº</param>
     /// <param name="callBack"></param>
     public void UnLoadAsset<T>(string path, bool isDel = false, UnityAction<T> callBack = null)
     {
@@ -306,12 +311,12 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             ResInfo<T> resInfo = resDic[resName] as ResInfo<T>;
             resInfo.SubRefCount();
             resInfo.isDel = isDel;
-            if (resInfo.asset != null && resInfo.refCount == 0 && resInfo.isDel)//×ÊÔ´ÒÑ¼ÓÔØ½áÊøµÄ×´Ì¬
+            if (resInfo.asset != null && resInfo.refCount == 0 && resInfo.isDel)//èµ„æºå·²åŠ è½½ç»“æŸçš„çŠ¶æ€
             {
                 resDic.Remove(resName);
                 if (resInfo.asset is GameObject)
                 {
-                    // GameObjectĞèÒªDestroy
+                    // GameObjectéœ€è¦Destroy
                     Destroy(resInfo.asset as GameObject);
                 }
                 else
@@ -319,9 +324,9 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
                     Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
                 }
             }
-            else if (resInfo.asset == null)//×ÊÔ´Òì²½¼ÓÔØÖĞµÄ×´Ì¬
+            else if (resInfo.asset == null)//èµ„æºå¼‚æ­¥åŠ è½½ä¸­çš„çŠ¶æ€
             {
-                //°Ñ´ıÒÆ³ı×´Ì¬¸ÄÎªtrue,µÈÒì²½¼ÓÔØÍê³ÉÔÙ¿ªÊ¼Ğ¶ÔØ
+                //æŠŠå¾…ç§»é™¤çŠ¶æ€æ”¹ä¸ºtrue,ç­‰å¼‚æ­¥åŠ è½½å®Œæˆå†å¼€å§‹å¸è½½
                 //resInfo.isDel = true;
 
                 if (callBack != null)
@@ -330,11 +335,11 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         }
     }
     /// <summary>
-    /// ResMgrË½ÓĞ·½·¨£¬¸Ã·½·¨µ÷ÓÃ²»¼õÉÙ×ÊÔ´¼ÆÊı
+    /// ResMgrç§æœ‰æ–¹æ³•ï¼Œè¯¥æ–¹æ³•è°ƒç”¨ä¸å‡å°‘èµ„æºè®¡æ•°
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="path"></param>
-    /// <param name="isDel">ÒıÓÃÎª0Ê±£¬ÊÇ·ñÒÆ³ı¸Ã×ÊÔ´</param>
+    /// <param name="isDel">å¼•ç”¨ä¸º0æ—¶ï¼Œæ˜¯å¦ç§»é™¤è¯¥èµ„æº</param>
     /// <param name="callBack"></param>
     private void UnLoadAsset_NoSubAssetsCount<T>(string path, bool isDel = false, UnityAction<T> callBack = null)
     {
@@ -344,12 +349,12 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             ResInfo<T> resInfo = resDic[resName] as ResInfo<T>;
             //resInfo.SubRefCount();
             resInfo.isDel = isDel;
-            if (resInfo.asset != null && resInfo.refCount == 0 && resInfo.isDel)//×ÊÔ´ÒÑ¼ÓÔØ½áÊøµÄ×´Ì¬
+            if (resInfo.asset != null && resInfo.refCount == 0 && resInfo.isDel)//èµ„æºå·²åŠ è½½ç»“æŸçš„çŠ¶æ€
             {
                 resDic.Remove(resName);
                 if (resInfo.asset is GameObject)
                 {
-                    // GameObjectĞèÒªDestroy
+                    // GameObjectéœ€è¦Destroy
                     Destroy(resInfo.asset as GameObject);
                 }
                 else
@@ -357,9 +362,9 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
                     Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
                 }
             }
-            else if (resInfo.asset == null)//×ÊÔ´Òì²½¼ÓÔØÖĞµÄ×´Ì¬
+            else if (resInfo.asset == null)//èµ„æºå¼‚æ­¥åŠ è½½ä¸­çš„çŠ¶æ€
             {
-                //°Ñ´ıÒÆ³ı×´Ì¬¸ÄÎªtrue,µÈÒì²½¼ÓÔØÍê³ÉÔÙ¿ªÊ¼Ğ¶ÔØ
+                //æŠŠå¾…ç§»é™¤çŠ¶æ€æ”¹ä¸ºtrue,ç­‰å¼‚æ­¥åŠ è½½å®Œæˆå†å¼€å§‹å¸è½½
                 //resInfo.isDel = true;
 
                 if (callBack != null)
@@ -369,11 +374,11 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
     }
 
     /// <summary>
-    /// Ğ¶ÔØ[Type]¼ÓÔØµÄ×ÊÔ´ 
+    /// å¸è½½[Type]åŠ è½½çš„èµ„æº
     /// </summary>
     /// <param name="path"></param>
     /// <param name="type"></param>
-    /// <param name="isDel">ÒıÓÃÎª0Ê±£¬ÊÇ·ñÒÆ³ı¸Ã×ÊÔ´</param>
+    /// <param name="isDel">å¼•ç”¨ä¸º0æ—¶ï¼Œæ˜¯å¦ç§»é™¤è¯¥èµ„æº</param>
     /// <param name="callBack"></param>
     public void UnLoadAsset(string path, Type type, bool isDel = false, UnityAction<UnityEngine.Object> callBack = null)
     {
@@ -383,12 +388,12 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             ResInfo<UnityEngine.Object> resInfo = resDic[resName] as ResInfo<UnityEngine.Object>;
             resInfo.SubRefCount();
             resInfo.isDel = isDel;
-            if (resInfo.asset != null && resInfo.refCount == 0)//×ÊÔ´ÒÑ¼ÓÔØ½áÊøµÄ×´Ì¬
+            if (resInfo.asset != null && resInfo.refCount == 0)//èµ„æºå·²åŠ è½½ç»“æŸçš„çŠ¶æ€
             {
                 resDic.Remove(resName);
                 if (resInfo.asset is GameObject)
                 {
-                    // GameObjectĞèÒªDestroy
+                    // GameObjectéœ€è¦Destroy
                     Destroy(resInfo.asset as GameObject);
                 }
                 else
@@ -396,7 +401,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
                     Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
                 }
             }
-            else if (resInfo.asset == null)//×ÊÔ´Òì²½¼ÓÔØÖĞµÄ×´Ì¬
+            else if (resInfo.asset == null)//èµ„æºå¼‚æ­¥åŠ è½½ä¸­çš„çŠ¶æ€
             {
                 //resInfo.isDel = true;
                 if (callBack != null)
@@ -405,11 +410,11 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         }
     }
     /// <summary>
-    ///  ResMgrË½ÓĞ·½·¨£¬¸Ã·½·¨µ÷ÓÃ²»¼õÉÙ×ÊÔ´¼ÆÊı
+    ///  ResMgrç§æœ‰æ–¹æ³•ï¼Œè¯¥æ–¹æ³•è°ƒç”¨ä¸å‡å°‘èµ„æºè®¡æ•°
     /// </summary>
     /// <param name="path"></param>
     /// <param name="type"></param>
-    /// <param name="isDel">ÒıÓÃÎª0Ê±£¬ÊÇ·ñÒÆ³ı¸Ã×ÊÔ´</param>
+    /// <param name="isDel">å¼•ç”¨ä¸º0æ—¶ï¼Œæ˜¯å¦ç§»é™¤è¯¥èµ„æº</param>
     /// <param name="callBack"></param>
     private void UnLoadAsset_NoSubAssetsCount(string path, Type type, bool isDel = false, UnityAction<UnityEngine.Object> callBack = null)
     {
@@ -419,12 +424,12 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             ResInfo<UnityEngine.Object> resInfo = resDic[resName] as ResInfo<UnityEngine.Object>;
             //resInfo.SubRefCount();
             resInfo.isDel = isDel;
-            if (resInfo.asset != null && resInfo.refCount == 0)//×ÊÔ´ÒÑ¼ÓÔØ½áÊøµÄ×´Ì¬
+            if (resInfo.asset != null && resInfo.refCount == 0)//èµ„æºå·²åŠ è½½ç»“æŸçš„çŠ¶æ€
             {
                 resDic.Remove(resName);
                 if (resInfo.asset is GameObject)
                 {
-                    // GameObjectĞèÒªDestroy
+                    // GameObjectéœ€è¦Destroy
                     Destroy(resInfo.asset as GameObject);
                 }
                 else
@@ -432,7 +437,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
                     Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
                 }
             }
-            else if (resInfo.asset == null)//×ÊÔ´Òì²½¼ÓÔØÖĞµÄ×´Ì¬
+            else if (resInfo.asset == null)//èµ„æºå¼‚æ­¥åŠ è½½ä¸­çš„çŠ¶æ€
             {
                 //resInfo.isDel = true;
                 if (callBack != null)
@@ -442,7 +447,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
     }
 
     /// <summary>
-    /// Ğ¶ÔØÃ»ÓĞÊ¹ÓÃµÄ×ÊÔ´
+    /// å¸è½½æ²¡æœ‰ä½¿ç”¨çš„èµ„æº
     /// </summary>
     /// <param name="callback"></param>
     public void UnLoadUnUseAssets(UnityAction callback = null)
@@ -469,7 +474,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         callback?.Invoke();
     }
     /// <summary>
-    /// »ñÈ¡·ºĞÍ¼ÓÔØ×ÊÔ´µÄÒıÓÃ¼ÆÊı
+    /// è·å–æ³›å‹åŠ è½½èµ„æºçš„å¼•ç”¨è®¡æ•°
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="path"></param>
@@ -484,7 +489,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         return 0;
     }
     /// <summary>
-    /// »ñÈ¡[Type]¼ÓÔØ×ÊÔ´µÄÒıÓÃ¼ÆÊı
+    /// è·å–[Type]åŠ è½½èµ„æºçš„å¼•ç”¨è®¡æ•°
     /// </summary>
     /// <param name="path"></param>
     /// <param name="type"></param>
@@ -499,7 +504,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         return 0;
     }
     /// <summary>
-    /// Çå¿ÕËùÓĞ×ÊÔ´¼ÇÂ¼£¬²¢Ğ¶ÔØÃ»ÓĞÊ¹ÓÃµÄ×ÊÔ´
+    /// æ¸…ç©ºæ‰€æœ‰èµ„æºè®°å½•ï¼Œå¹¶å¸è½½æ²¡æœ‰ä½¿ç”¨çš„èµ„æº
     /// </summary>
     /// <param name="callBack"></param>
     public void ClearDic(UnityAction callBack = null)

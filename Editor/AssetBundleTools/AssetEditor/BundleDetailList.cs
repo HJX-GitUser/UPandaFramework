@@ -20,7 +20,7 @@ namespace AssetBundleBrowser
     internal class TogglePathTreeViewItem : TreeViewItem
     {
         private static bool m_DisplayAlt = false;
-        
+
         private string m_DisplayNamePrefix;
         private string m_Path;
 
@@ -28,7 +28,7 @@ namespace AssetBundleBrowser
         {
             get { return m_Path; }
         }
-        
+
         public string DisplayNamePrefix
         {
             get { return m_DisplayNamePrefix; }
@@ -42,7 +42,7 @@ namespace AssetBundleBrowser
             m_Path = path;
             m_DisplayNamePrefix = "";
         }
-        
+
         public TogglePathTreeViewItem( int id, int depth, string displayNamePrefix, string displayName, string path )
         {
             base.depth = depth;
@@ -51,7 +51,7 @@ namespace AssetBundleBrowser
             m_Path = path;
             m_DisplayNamePrefix = displayNamePrefix;
         }
-        
+
         public override string displayName
         {
             get
@@ -120,7 +120,7 @@ namespace AssetBundleBrowser
             if ((args.item as BundleDetailItem) != null)
             {
                 EditorGUI.HelpBox(
-                    new Rect(args.rowRect.x + k_DoubleIndent, args.rowRect.y, args.rowRect.width - k_DoubleIndent, args.rowRect.height), 
+                    new Rect(args.rowRect.x + k_DoubleIndent, args.rowRect.y, args.rowRect.width - k_DoubleIndent, args.rowRect.height),
                     args.item.displayName,
                     (args.item as BundleDetailItem).MessageLevel);
             }
@@ -149,7 +149,7 @@ namespace AssetBundleBrowser
             return base.GetCustomRowHeight(row, item);
         }
 
-        
+
         protected override void SelectionChanged( IList<int> selectedIds )
         {
             base.SelectionChanged( selectedIds );
@@ -163,7 +163,7 @@ namespace AssetBundleBrowser
                     AddDependentAssetsRecursive( item, pathList );
                 }
             }
-            
+
             AssetBundleBrowserMain.instance.m_ManageTab.SetAssetListSelection( pathList );
         }
 
@@ -224,13 +224,13 @@ namespace AssetBundleBrowser
                     TreeViewItem newItem = new TreeViewItem( str.GetHashCode(), 2, dep.m_BundleName );
                     newItem.icon = Model.GetBundleIcon();
                     dependency.AddChild(newItem);
-                    
+
                     Dictionary<string, TogglePathTreeViewItem> toAssetItems = new Dictionary<string, TogglePathTreeViewItem>();
 
                     for( int i = 0; i < dep.m_FromAssets.Count; ++i )
                     {
                         TogglePathTreeViewItem item = null;
-                        
+
                         if( ! toAssetItems.TryGetValue( dep.m_ToAssets[i].fullAssetName, out item ) )
                         {
                             str = itemName + dep.m_BundleName + dep.m_ToAssets[i].displayName;
@@ -305,12 +305,12 @@ namespace AssetBundleBrowser
             FindItems( rootItem, maximumDepth, expanded );
             SetExpanded( expanded );
         }
-        
+
         internal void FindItems( TreeViewItem item, int maximumDepth, List<int> expanded )
         {
             if( item.depth >= maximumDepth || ! item.hasChildren )
                 return;
-            
+
             expanded.Add( item.id );
             for( int i = 0; i < item.children.Count; ++i )
             {

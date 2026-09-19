@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -7,24 +7,24 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     public interface OperationStepCheck
     {
         /// <summary>
-        /// ²Ù×÷¼ì²éÆô¶¯
+        /// æ“ä½œæ£€æŸ¥å¯åŠ¨
         /// </summary>
         void OperationEnable();
 
         /// <summary>
-        /// ¼ì²é²Ù×÷ÊÇ·ñÕıÈ·
+        /// æ£€æŸ¥æ“ä½œæ˜¯å¦æ­£ç¡®
         /// </summary>
         /// <param name="arg"></param>
         /// <returns></returns>
         bool CheckOperation(TaskEntityBase arg);
 
         /// <summary>
-        /// ²Ù×÷Òıµ¼
+        /// æ“ä½œå¼•å¯¼
         /// </summary>
         void OperationInstructions();
 
         /// <summary>
-        /// ²Ù×÷Ö´ĞĞ
+        /// æ“ä½œæ‰§è¡Œ
         /// </summary>
         /// <param name="callback"></param>
         void OpearationExecute(UnityAction callback);
@@ -35,25 +35,34 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
     }
 
     /// <summary>
-    /// ²Ù×÷ÊµÌåÊµÏÖ¸Ã½Ó¿Úºó£¬ÓÉ¸Ã²Ù×÷×ÔĞĞÅĞ¶ÏÂú×ãÌõ¼ş
+    /// æ“ä½œå®ä½“å®ç°è¯¥æ¥å£åï¼Œç”±è¯¥æ“ä½œè‡ªè¡Œåˆ¤æ–­æ»¡è¶³æ¡ä»¶
     /// </summary>
     public interface EntityOperationCheck
     {
         bool ConditionMet(TaskEntityBase arg);
     }
 
+    /// <summary>
+    /// å¯é‡ç½®çš„æ“ä½œï¼ˆä¿®å¤ï¼šé‡æ–°å¼€å§‹ä»»åŠ¡æ—¶æŠŠæ“ä½œçŠ¶æ€æœºå¤ä½ï¼Œ
+    /// å¦åˆ™ä¸Šä¸€è½®æ®‹ç•™çš„ Execute/Complete çŠ¶æ€ä¼šè®©æœ¬è½®ç‚¹å‡»è¢«å¿½ç•¥ã€ä»»åŠ¡å¡ä½ï¼‰
+    /// </summary>
+    public interface OperationResettable
+    {
+        void ResetOperation();
+    }
+
     public enum OperationPhase
     {
-        Prepare,        // ×¼±¸
-        TargetCheck,    // Ä¿±ê¼ì²é½×¶Î
-        Execute,        // Ö´ĞĞ½×¶Î
-        Complete        // Íê³É
+        Prepare,        // å‡†å¤‡
+        TargetCheck,    // ç›®æ ‡æ£€æŸ¥é˜¶æ®µ
+        Execute,        // æ‰§è¡Œé˜¶æ®µ
+        Complete        // å®Œæˆ
     }
 
     /// <summary>
-    /// ²Ù×÷²½Öè£¬ÅĞ¶Ï²Ù×÷ÊÇ·ñÕıÈ·
+    /// æ“ä½œæ­¥éª¤ï¼Œåˆ¤æ–­æ“ä½œæ˜¯å¦æ­£ç¡®
     /// </summary>
-    public class OperationCheckBase : MonoBehaviour, OperationStepCheck,GetUniTaskID
+    public class OperationCheckBase : MonoBehaviour, OperationStepCheck,GetUniTaskID, OperationResettable
     {
         public string OperatingStepID;
         public OperationPhase operationPhase = OperationPhase.Prepare;
@@ -89,23 +98,25 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 TargetEntity = entityManager.FindEntity(OperatingStepID);
                 if (TargetEntity == null)
                 {
-                    Debug.LogError($"{transform.parent.parent.name} : {transform.name} : ÊµÌåID»ñÈ¡Ê§°Ü£¡");
+                    Debug.LogError($"{transform.name} : å®ä½“IDè·å–å¤±è´¥ï¼IDï¼š{OperatingStepID}");
+                    return;   // ä¿®å¤ï¼šæŸ¥æ‰¾å¤±è´¥å¿…é¡»è¿”å›ï¼Œå¦åˆ™ä¸‹ä¸€è¡Œä¼šå¯¹ null å–ç»„ä»¶è€Œå´©æºƒ
                 }
-                OpCheck = TargetEntity.GetComponent<EntityOperationCheck>();
             }
+            OpCheck = TargetEntity.GetComponent<EntityOperationCheck>();   // ä¿®å¤ï¼šæ‰‹å·¥æŒ‡å®š TargetEntity æ—¶åŒæ ·è¦è·å–æ¥å£å®ç°
 
         }
 
 
 
         /// <summary>
-        /// ²Ù×÷Æô¶¯
+        /// æ“ä½œå¯åŠ¨
         /// </summary>
         public virtual void OperationEnable()
         {
             operationPhase = OperationPhase.TargetCheck;
-            if (string.IsNullOrEmpty(OperatingStepID) || AutoExecute)  // Ä¿±ê¼ì²é½×¶Î×Ô¶¯Í¨¹ı Ö±½ÓÍê³É
+            if (string.IsNullOrEmpty(OperatingStepID) || AutoExecute)  // ç›®æ ‡æ£€æŸ¥é˜¶æ®µè‡ªåŠ¨é€šè¿‡ ç›´æ¥å®Œæˆ
             {
+                if (TargetEntity == null) { Debug.LogWarning($"{name} æœªé…ç½®ç›®æ ‡å®ä½“ï¼Œæ— æ³•è‡ªåŠ¨å®Œæˆ"); return; }   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
                 TargetEntity.OnSelect();
             }
             else
@@ -116,18 +127,18 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
 
 
         /// <summary>
-        /// ²Ù×÷Ö´ĞĞ
+        /// æ“ä½œæ‰§è¡Œ
         /// </summary>
         /// <param name="callback"></param>
         public virtual void OpearationExecute(UnityAction callback)
         {
             if (operationPhase == OperationPhase.Execute || operationPhase == OperationPhase.Complete)
             {
-                Debug.Log("²Ù×÷Ö´ĞĞÖĞ£¬»òÒÑÍê³É");
-                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("²Ù×÷Ö´ĞĞÖĞ,ÇëµÈ´ı"));
+                Debug.Log("æ“ä½œæ‰§è¡Œä¸­ï¼Œæˆ–å·²å®Œæˆ");
+                EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("æ“ä½œæ‰§è¡Œä¸­,è¯·ç­‰å¾…"));
                 return;
             }
-            operationPhase = OperationPhase.Execute;//Ä¿±ê¼ì²éÍ¨¹ı£¬ÇĞ»»Ö´ĞĞ½×¶Î
+            operationPhase = OperationPhase.Execute;//ç›®æ ‡æ£€æŸ¥é€šè¿‡ï¼Œåˆ‡æ¢æ‰§è¡Œé˜¶æ®µ
             TargetEntity.Execute(() =>
             {
                 operationPhase = OperationPhase.Complete;
@@ -136,9 +147,9 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
         }
 
         /// <summary>
-        /// ²Ù×÷¼ì²é
+        /// æ“ä½œæ£€æŸ¥
         /// </summary>
-        /// <param name="arg">´¥·¢µÄÈÎÎñÊµÌå¶ÔÏó</param>
+        /// <param name="arg">è§¦å‘çš„ä»»åŠ¡å®ä½“å¯¹è±¡</param>
         /// <returns></returns>
         public virtual bool CheckOperation(TaskEntityBase arg)
         {
@@ -158,6 +169,7 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                     }
                     break;
                 case OperationPhase.Execute:
+                    // è¯´æ˜ï¼šæ­¤å¤„è¿”å› true ä»¥å…¼å®¹åªåšå¼•ç”¨æ¯”å¯¹çš„æ—§é…ç½®ï¼›é‡å¤ç‚¹å‡»ä¸ä¼šé‡å¤æ‰§è¡Œï¼ˆOpearationExecute å†…æœ‰é˜¶æ®µæ‹¦æˆªï¼‰
                     if (OpCheck != null)
                     {
                         return OpCheck.ConditionMet(arg);
@@ -175,15 +187,24 @@ namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
                 TargetEntity.EnableGuide();
             else
             {
-                Debug.LogWarning("ÈÎÎñ²½ÖèÃ»ÓĞ´¦ÓÚ¼ì²â×´Ì¬£¬²»Ö´ĞĞÒıµ¼");
+                Debug.LogWarning("ä»»åŠ¡æ­¥éª¤æ²¡æœ‰å¤„äºæ£€æµ‹çŠ¶æ€ï¼Œä¸æ‰§è¡Œå¼•å¯¼");
                 if (operationPhase == OperationPhase.Execute)
-                    EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("²½ÖèÖ´ĞĞÖĞ,ÇëµÈ´ı"));
+                    EventCenter.Instance.EventTrigger(new TaskTipsInfoEvent("æ­¥éª¤æ‰§è¡Œä¸­,è¯·ç­‰å¾…"));
             }
         }
 
         public void OperationSkip()
         {
+            if (TargetEntity == null) { Debug.LogWarning($"{name} æœªæ‰¾åˆ°ç›®æ ‡å®ä½“ï¼Œè·³è¿‡æ— æ•ˆ"); return; }   // ä¿®å¤ï¼šç©ºå¼•ç”¨ä¿æŠ¤
             TargetEntity.Skip();
+        }
+
+        /// <summary>
+        /// å¤ä½æ“ä½œçŠ¶æ€æœºï¼ˆé‡æ–°å¼€å§‹ä»»åŠ¡æ—¶è°ƒç”¨ï¼‰
+        /// </summary>
+        public virtual void ResetOperation()
+        {
+            operationPhase = OperationPhase.Prepare;
         }
     }
 }

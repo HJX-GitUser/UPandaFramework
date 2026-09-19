@@ -1,0 +1,10 @@
+# 统一 C# 源码行尾为 CRLF，防止跨平台 checkout 造成行尾漂移
+# （Windows 上编辑、Linux/Mac 上构建的混合协作场景尤其重要）
+*.cs text eol=crlf
+
+# 脚本同样使用 CRLF + UTF-8 BOM（PowerShell 5.1 读无 BOM 的 UTF-8 会把中文当 ANSI 解码）
+*.ps1 text eol=crlf
+
+# .editorconfig / .gitattributes 自身由 git 管理为 LF
+.editorconfig text eol=lf
+.gitattributes text eol=lf

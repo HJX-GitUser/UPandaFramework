@@ -8,7 +8,7 @@ using UnityEditor.IMGUI.Controls;
 namespace AssetBundleBrowser.AssetBundleModel
 {
     internal sealed class BundleTreeItem : TreeViewItem
-    {   
+    {
         private BundleInfo m_Bundle;
         internal BundleInfo bundle
         {
@@ -296,7 +296,7 @@ namespace AssetBundleBrowser.AssetBundleModel
             }
         }
         internal override bool HandleRename(string newName, int reverseDepth)
-        { 
+        {
             RefreshAssetList();
             if (!base.HandleRename(newName, reverseDepth))
                 return false;
@@ -333,7 +333,7 @@ namespace AssetBundleBrowser.AssetBundleModel
             }
             m_DependentAssets.Clear();
             m_BundleDependencies.Clear();
-            
+
             bool assetInBundle = false;
             bool sceneError = false;
             var assets = AssetBundleModel.Model.DataSource.GetAssetPathsFromAssetBundle(m_Name.fullNativeName);
@@ -353,14 +353,14 @@ namespace AssetBundleBrowser.AssetBundleModel
                 }
 
                 var bundleName = Model.GetBundleName(assetName);
-                if (System.String.IsNullOrEmpty(bundleName))  
+                if (System.String.IsNullOrEmpty(bundleName))
                 {
                     ///we get here if the current asset is only added due to being in an explicitly added folder
-                    
+
 
                     var partialPath = assetName;
                     while(
-                        !System.String.IsNullOrEmpty(partialPath) && 
+                        !System.String.IsNullOrEmpty(partialPath) &&
                         partialPath != "Assets" &&
                         System.String.IsNullOrEmpty(bundleName))
                     {
@@ -404,7 +404,7 @@ namespace AssetBundleBrowser.AssetBundleModel
                     }
                 }
             }
-            
+
             if(sceneError)
             {
                 foreach (var asset in m_ConcreteAssets)
@@ -520,7 +520,7 @@ namespace AssetBundleBrowser.AssetBundleModel
         {
             foreach(var asset in m_DependentAssets)
             {
-                if (asset != null && asset.IsMessageSet(MessageSystem.MessageFlag.AssetsDuplicatedInMultBundles)) 
+                if (asset != null && asset.IsMessageSet(MessageSystem.MessageFlag.AssetsDuplicatedInMultBundles))
                 {
                     SetDuplicateWarning();
                     return true;
@@ -573,7 +573,7 @@ namespace AssetBundleBrowser.AssetBundleModel
                 Model.LogWarning("An item named '" + newName + "' already exists at this level in hierarchy.  If your desire is to merge bundles, drag one on top of the other.");
                 return;
             }
-            
+
             foreach (var asset in m_ConcreteAssets)
             {
                 Model.MoveAssetToBundle(asset, newName, m_Name.variant);
@@ -734,7 +734,7 @@ namespace AssetBundleBrowser.AssetBundleModel
         {
             m_Children = new Dictionary<string, BundleInfo>();
         }
-        
+
         internal BundleFolderInfo(List<string> path, int depth, BundleFolderInfo parent) : base("", parent)
         {
             m_Children = new Dictionary<string, BundleInfo>();

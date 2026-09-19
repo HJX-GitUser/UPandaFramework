@@ -111,7 +111,7 @@ namespace AssetBundleBrowser.AssetBundleModel
         }
         internal string bundleName
         { get { return System.String.IsNullOrEmpty(m_BundleName) ? "auto" : m_BundleName; } }
-        
+
         internal Color GetColor()
         {
             if (System.String.IsNullOrEmpty(m_BundleName))
@@ -172,7 +172,7 @@ namespace AssetBundleBrowser.AssetBundleModel
                 }
                 message = message.Substring(0, message.Length - 2);//remove trailing comma.
                 messages.Add(new MessageSystem.Message(message, MessageType.Info));
-            }            
+            }
 
             if (m_dependencies != null && m_dependencies.Count > 0)
             {
@@ -191,7 +191,7 @@ namespace AssetBundleBrowser.AssetBundleModel
                     message = message.Substring(0, message.Length - 1);//remove trailing line break.
                     messages.Add(new MessageSystem.Message(message, MessageType.Info));
                 }
-            }            
+            }
 
             messages.Add(new MessageSystem.Message(displayName + "\n" + "Path: " + fullAssetName, MessageType.Info));
 

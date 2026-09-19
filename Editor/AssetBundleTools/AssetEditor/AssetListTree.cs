@@ -152,9 +152,9 @@ namespace AssetBundleBrowser
                         if(item.icon != null)
                             GUI.DrawTexture(iconRect, item.icon, ScaleMode.ScaleToFit);
                         DefaultGUI.Label(
-                            new Rect(cellRect.x + iconRect.xMax + 1, cellRect.y, cellRect.width - iconRect.width, cellRect.height), 
-                            item.displayName, 
-                            args.selected, 
+                            new Rect(cellRect.x + iconRect.xMax + 1, cellRect.y, cellRect.width - iconRect.width, cellRect.height),
+                            item.displayName,
+                            args.selected,
                             args.focused);
                     }
                     break;
@@ -251,13 +251,13 @@ namespace AssetBundleBrowser
         {
             DragAndDrop.PrepareStartDrag();
             DragAndDrop.objectReferences = m_EmptyObjectList.ToArray();
-            List<AssetBundleModel.AssetTreeItem> items = 
+            List<AssetBundleModel.AssetTreeItem> items =
                 new List<AssetBundleModel.AssetTreeItem>(args.draggedItemIDs.Select(id => FindItem(id, rootItem) as AssetBundleModel.AssetTreeItem));
             DragAndDrop.paths = items.Select(a => a.asset.fullAssetName).ToArray();
             DragAndDrop.SetGenericData("AssetListTreeSource", this);
             DragAndDrop.StartDrag("AssetListTree");
         }
-        
+
         protected override DragAndDropVisualMode HandleDragAndDrop(DragAndDropArgs args)
         {
             if(IsValidDragDrop())
@@ -286,7 +286,7 @@ namespace AssetBundleBrowser
             //can't drag onto none or >1 bundles
             if (m_SourceBundles.Count == 0 || m_SourceBundles.Count > 1)
                 return false;
-            
+
             //can't drag nothing
             if (DragAndDrop.paths == null || DragAndDrop.paths.Length == 0)
                 return false;
@@ -303,7 +303,7 @@ namespace AssetBundleBrowser
             var thing = DragAndDrop.GetGenericData("AssetListTreeSource") as AssetListTree;
             if (thing != null)
                 return false;
-            
+
             if(data.IsEmpty())
                 return true;
 
@@ -436,7 +436,7 @@ namespace AssetBundleBrowser
                 default:
                     return myTypes.Order(l => l.asset.bundleName, ascending);
             }
-            
+
         }
 
         private void ReloadAndSelect(IList<int> hashCodes)
