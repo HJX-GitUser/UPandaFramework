@@ -110,11 +110,8 @@ namespace UPandaGF
 
         protected override void OnAwake()
         {
-            // 基类 Awake 处理"重复实例"的方式是 Destroy(gameObject)，但之后仍然会调用 OnAwake()。
-            // 若继续往下跑，InitAsync 的 await 链照样会跑完并再广播一次 GFLoadedEvent
-            // （表现为：加载界面 / 首场景流程走两遍 + 一堆 MissingReference 日志）
-            if (Instance != this) return;
-
+            // 重复实例不会走到这里：基类 Awake 已改为对重复实例 Destroy + return，不再执行 OnAwake。
+            // （原补丁 `if (Instance != this) return;` 于 2026-09-24 移除，历史故障见基类 Awake 注释。）
             SetComponent();
             InitAsync();
         }
@@ -576,9 +573,9 @@ namespace UPandaGF
             return sourcesLoadMgr;
         }
 
-        protected override void OnDestroy()
+        protected override void OnDestroyed()
         {
-            base.OnDestroy();
+            base.OnDestroyed();
             PLogger.LogWarning("UPGameRoot Destory!!!");
         }
     }

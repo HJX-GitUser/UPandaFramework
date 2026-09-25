@@ -89,11 +89,11 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
         CancelAllJobs("PublicMono 被停用或销毁");
     }
 
-    protected override void OnDestroy()
+    protected override void OnDestroyed()
     {
         CancelAllJobs("PublicMono 被销毁");
         ClearAllListeners();
-        base.OnDestroy();
+        base.OnDestroyed();
     }
 
     #endregion
