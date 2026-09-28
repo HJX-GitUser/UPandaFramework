@@ -50,6 +50,10 @@ public static class StreamingAssetsLoader
 
     private static string CombineRelativePath(string relativePath)
     {
+        if (string.IsNullOrEmpty(relativePath))
+        {
+            return streamingAssetsPath;
+        }
         if (relativePath[0] != '/')
         {
             //Debug.LogWarning($"path[0] is not '/'.  path[0]:{relativePath[0]}");
@@ -242,9 +246,13 @@ public static class StreamingAssetsLoader
     /// </summary>
     public static async Task<byte[]> LoadBinaryDataAsync(string relativePath)
     {
+        // 【Android/WebGL 陷阱】包内文件不能用 File.Exists 判定：
+        // Android 的 StreamingAssets 在 apk 里（jar:file:///.../base.apk!/assets），
+        // File.Exists 恒为 false。所以 CheckFile 在这两个平台上直接返回 true（见其注释），
+        // 由下面的实际加载来发现失败，否则会「没加载就报文件不存在」。
         if (!CheckFile(relativePath))
         {
-            Debug.LogWarning($"加载失败:{relativePath} ");
+            PLogger.LogError($"[StreamingAssetsLoader] 文件不存在：{CombineRelativePath(relativePath)}");
             return null;
         }
         string fullPath = CombineRelativePath(relativePath);
@@ -263,7 +271,10 @@ public static class StreamingAssetsLoader
 
                 if (!IsRequestSuccess(www))
                 {
-                    Debug.LogError($"{fullPath} 加载失败: \n{www.error}");
+                    // 失败时要返回 null：DownloadHandlerBuffer.data 在失败时是空数组，
+                    // 直接返回会让调用方误以为「读到了 0 字节的文件」而不是「加载失败」。
+                    PLogger.LogError($"[StreamingAssetsLoader] 加载失败：{fullPath}\n{www.error}");
+                    return null;
                 }
 
                 return www.downloadHandler.data;
@@ -310,7 +321,9 @@ public static class StreamingAssetsLoader
                 }
                 else
                 {
-                    PLogger.Log($"Failed to load binary data at {fullPath}: {www.error}");
+                    // 与 Task 版保持一致：失败返回 null，不要返回空数组
+                    bytes = null;
+                    PLogger.LogError($"Failed to load binary data at {fullPath}: {www.error}");
                 }
             }
         }
@@ -339,11 +352,31 @@ public static class StreamingAssetsLoader
     }
 
     /// <summary>
-    /// 检查路径是否存在
+    /// 当前平台能否用 System.IO 同步探测 StreamingAssets 下的文件。
+    /// <para>Android：StreamingAssets 在 apk 内（jar:file:///.../base.apk!/assets）；
+    /// WebGL：在虚拟文件系统 / 内存中。两者用 File.Exists 一律得到 false。</para>
+    /// </summary>
+    public static bool CanSyncCheckFile =>
+        Application.platform != RuntimePlatform.Android &&
+        Application.platform != RuntimePlatform.WebGLPlayer;
+
+    /// <summary>
+    /// 检查路径是否存在。
+    /// <para>【注意】只在桌面 / 编辑器返回真实结果。Android / WebGL 上无法同步探测包内文件，
+    /// 一律返回 true（即「不拦」），交给实际加载去发现并报告失败——
+    /// 否则会出现「文件明明在包里却判定为不存在」的假失败。</para>
     /// </summary>
     /// <returns></returns>
     public static bool CheckFile(string relativePath)
     {
+        if (string.IsNullOrEmpty(relativePath))
+        {
+            return false;
+        }
+        if (!CanSyncCheckFile)
+        {
+            return true;
+        }
         return File.Exists(CombineRelativePath(relativePath));
     }
 

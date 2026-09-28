@@ -620,6 +620,15 @@ namespace UPandaGF
             catch (Exception e)
             {
                 item.error = $"发起请求失败：{e.Message}";
+                // Unity 自己的开关（Player Settings → Other Settings → Configuration → Allow downloads over HTTP）
+                // 会在 SendWebRequest 处直接抛这个异常，编辑器和真机一样，跟 Android manifest 无关。
+                if (!string.IsNullOrEmpty(e.Message)
+                    && e.Message.IndexOf("Insecure connection", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    PLogger.LogError("[Downloader] 明文 HTTP 被 Unity 拦下：Player Settings → Other Settings → Configuration → "
+                                     + "\"Allow downloads over HTTP\" 设为 Always allowed（PlayerSettings.insecureHttpOption = 2），"
+                                     + "或把服务端改成 https。");
+                }
             }
 
             // accountingResume：用于"进度分母"和"大小校验"的续传起点。

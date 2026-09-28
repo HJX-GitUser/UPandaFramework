@@ -25,6 +25,16 @@ namespace UPandaGF
 
         //存储 AB包对象(AB包不能够重复加载 否则会报错)
         private Dictionary<string, AssetBundle> _loadedBundles = new Dictionary<string, AssetBundle>();
+        /// <summary>
+        /// 记录每个包是用哪种模式加载的。缓存键只有包名，不带加载路径，
+        /// 同一会话里切换模式时会直接命中旧包 —— 表现为"新模式加载不到资源"，实际是复用了旧包。
+        /// </summary>
+        private readonly Dictionary<string, ABLoadPath> _loadedBundlePaths = new Dictionary<string, ABLoadPath>();
+        /// <summary>
+        /// 最近一次 AB 加载失败的根因（模式 / 路径 / HTTP 状态 / 原始错误）。
+        /// 写在这里是为了让 Init 的失败汇总能带出真正的原因，而不用去翻前面几行日志。
+        /// </summary>
+        private string _lastLoadFailReason;
         private HashSet<string> _loadingBundles = new HashSet<string>();
 
         /// <summary>
@@ -70,8 +80,22 @@ namespace UPandaGF
             {
                 // 加载主包 和 配置文件
                 // 加载所有包是 通过它才能得到依赖信息
+                PLogger.Log($"AB包加载模式：{MainPackageLoadPath}，主包路径：{GetFullPath(MainPackageLoadPath, MainName)}");
                 mainAB = await LoadAssetBundle(MainName, MainPackageLoadPath);
+                if (mainAB == null)
+                {
+                    PLogger.LogError($"主包加载失败：{MainName}（模式 {MainPackageLoadPath}，路径 {GetFullPath(MainPackageLoadPath, MainName)}）"
+                                     + $"\n根因：{(_lastLoadFailReason ?? "无详细记录（可能命中缓存中的空包）")}"
+                                     + "\n对照：PersistentDataPath 模式要求文件已经被热更下载到 persistentDataPath；"
+                                     + "RemotePath 模式要求 remoteURL 可访问（Android 还需允许明文 HTTP）");
+                    return;
+                }
                 manifest = mainAB.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+                if (manifest == null)
+                {
+                    PLogger.LogError($"主包 {MainName} 中没有 AssetBundleManifest：确认加载的是 AB 清单主包（不是普通资源包）");
+                    return;
+                }
                 Debug.Log($"AB包加载路径：{PathUrl}\n资源包主包：{MainName}");
             }
             catch (System.Exception e)
@@ -87,24 +111,104 @@ namespace UPandaGF
         #endregion
 
         #region 加载AssetBundle
-        private string GetFullPath(ABLoadPath loodPath)
+        /// <summary>
+        /// 取得 AB 包的完整读取路径。
+        /// <para>三种模式必须用各自的拼接规则，不能共用一个 Path.Combine：</para>
+        /// <list type="bullet">
+        /// <item>RemotePath 是 URL —— Path.Combine 在 base 没有尾斜杠时会插入平台分隔符 '\\'，
+        /// 而 PathUrl 若以 '/' 开头又会被当成"根路径"，把 remoteURL 整段丢掉（Windows 上 IsPathRooted("/x") == true）。</item>
+        /// <item>PersistentDataPath 是文件路径 —— 同理，PathUrl 以 '/' 开头会丢掉 Application.persistentDataPath，
+        /// 变成 "/AssetBundles/Android/xxx" 这种落到盘符根的路径。</item>
+        /// </list>
+        /// </summary>
+        /// <param name="loadPath">加载模式</param>
+        /// <param name="abName">包名（文件名）</param>
+        private string GetFullPath(ABLoadPath loadPath, string abName)
         {
-            string fullPath = "";
-            switch (loodPath)
+            switch (loadPath)
             {
                 case ABLoadPath.StreamingAssetsPath:
-                    fullPath = StreamingAssetsLoader.CombinePath(PathUrl);
-                    break;
+                    return Path.Combine(StreamingAssetsLoader.CombinePath(PathUrl), abName);
+
                 case ABLoadPath.PersistentDataPath:
-                    //fullPath = Application.persistentDataPath + "/" + PathUrl;
-                    fullPath = Path.Combine(Application.persistentDataPath, PathUrl); ;
-                    break;
+                    return CombineLocalPath(Application.persistentDataPath, PathUrl, abName);
+
                 case ABLoadPath.RemotePath:
-                    //fullPath = remoteURL + "/" + PathUrl;
-                    fullPath = Path.Combine(remoteURL, PathUrl); ; ;
-                    break;
+                    if (string.IsNullOrEmpty(remoteURL))
+                    {
+                        PLogger.LogError("[ABLoadMgr] RemotePath 模式要求 remoteURL 非空（检查 UPGameRoot 配置里的 remoteURL）");
+                        return string.Empty;
+                    }
+                    return CombineUrl(remoteURL, PathUrl, abName);
+
+                default:
+                    return Path.Combine(StreamingAssetsLoader.CombinePath(PathUrl), abName);
             }
-            return fullPath;
+        }
+
+        /// <summary>
+        /// 拼接 URL。不要用 Path.Combine：它是文件系统 API，不适用于 URL。
+        /// </summary>
+        public static string CombineUrl(params string[] segments)
+        {
+            string url = string.Empty;
+            foreach (string segment in segments)
+            {
+                if (string.IsNullOrEmpty(segment))
+                    continue;
+
+                url = url.Length == 0 ? segment : url.TrimEnd('/') + "/" + segment.TrimStart('/');
+            }
+            return url;
+        }
+
+        /// <summary>
+        /// 拼接本地文件路径。会自动去掉后续段的前导 '/'、'\\'，
+        /// 避免 Path.Combine 把以分隔符开头的段当成绝对路径而丢弃前面的 basePath。
+        /// </summary>
+        public static string CombineLocalPath(params string[] segments)
+        {
+            string path = string.Empty;
+            foreach (string segment in segments)
+            {
+                if (string.IsNullOrEmpty(segment))
+                    continue;
+
+                path = path.Length == 0
+                    ? segment
+                    : Path.Combine(path, segment.TrimStart('/', '\\'));
+            }
+            return path;
+        }
+
+        /// <summary>
+        /// http 请求失败时给出方向性提示。
+        /// <para>先判定错误文本：只有真的像明文策略拦载才提 manifest，否则会拿 "404" 去说"明文被拦"。
+        /// （Android 9+ / targetSdk>=28）</para>
+        /// </summary>
+        private static void LogRemoteFailureHint(string fullPath, string error)
+        {
+            if (string.IsNullOrEmpty(fullPath) || string.IsNullOrEmpty(error))
+                return;
+            if (!fullPath.StartsWith("http://", System.StringComparison.OrdinalIgnoreCase))
+                return;
+
+            string lower = error.ToLowerInvariant();
+            if (lower.Contains("insecure") || lower.Contains("cleartext") || lower.Contains("not allowed") || lower.Contains("non-secure"))
+            {
+                // 注意顺序：Unity 自己的开关在所有平台（含编辑器）都会拦，且早于 Android 平台策略——先查它。
+                PLogger.LogError($"[ABLoadMgr] 「{error}」= 明文 HTTP 被拦。按顺序处理：\n"
+                                 + "  ① Unity 自己的开关（编辑器也会拦，最容易被漏查）：Player Settings → Other Settings → Configuration → "
+                                 + "\"Allow downloads over HTTP\" 设为 [Always allowed]（PlayerSettings.insecureHttpOption：NotAllowed=0 / DevelopmentOnly=1 / AlwaysAllowed=2）；\n"
+                                 + "  ② Android 平台策略（targetSdk≥28）：AndroidManifest.xml 的 <application> 上加 android:usesCleartextTraffic=\"true\"，改完必须重新打包；\n"
+                                 + "  ③ 根治：服务端改成 https。");
+                return;
+            }
+
+            PLogger.LogError("[ABLoadMgr] http 请求失败但不是明文策略问题，按这个顺序查："
+                             + "① 设备能不能访问到该地址（拿设备浏览器直接打开这个 URL 试，PC 能打开不代表设备能）；"
+                             + "② 服务器上文件是否真的存在（目录层级、大小写）；"
+                             + "③ 是否命中旧的 AssetBundle 缓存（同一 URL 不传 hash 时会复用缓存，换包后必须带 hash 或清缓存）。");
         }
         /// <summary>
         /// 加载AssetBundle
@@ -116,11 +220,19 @@ namespace UPandaGF
 
         private async Task<AssetBundle> LoadAssetBundle(string abName, ABLoadPath loadPath)
         {
-            string fullPath = Path.Combine(GetFullPath(loadPath), abName);
+            string fullPath = GetFullPath(loadPath, abName);
 
             // ✅ 已加载
             if (_loadedBundles.TryGetValue(abName, out var loadedAb))
+            {
+                // 缓存只有包名这一层键：切换加载模式时会复用旧模式加载出来的包
+                if (_loadedBundlePaths.TryGetValue(abName, out ABLoadPath cachedLoadPath) && cachedLoadPath != loadPath)
+                {
+                    PLogger.LogWarning($"[ABLoadMgr] 包 {abName} 已按 {cachedLoadPath} 模式加载过，本次请求的是 {loadPath} 模式，"
+                                       + "将复用已加载的包。要真正切换模式请先 ClearAB() 或重启应用。");
+                }
                 return loadedAb;
+            }
 
             // ✅ 防并发
             while (_loadingBundles.Contains(abName))
@@ -156,7 +268,9 @@ namespace UPandaGF
                             if (request.isNetworkError || request.isHttpError)
 #endif
                             {
-                                Debug.LogError($"AssetBundle加载失败\n{fullPath}\n{request.error}");
+                                _lastLoadFailReason = $"模式 {loadPath}，URL {fullPath}，HTTP {request.responseCode}，结果 {request.result}，错误：{request.error}";
+                                Debug.LogError($"AssetBundle加载失败\n模式：{loadPath}\nURL：{fullPath}\nHTTP：{request.responseCode} 结果：{request.result}\n错误：{request.error}");
+                                LogRemoteFailureHint(fullPath, request.error);
                                 return null;
                             }
 
@@ -168,7 +282,8 @@ namespace UPandaGF
                         var createRequest = AssetBundle.LoadFromFileAsync(fullPath);
                         if (createRequest == null)
                         {
-                            Debug.LogError($"AssetBundle加载失败\n{fullPath}");
+                            _lastLoadFailReason = $"模式 {loadPath}，路径 {fullPath}，异常：AssetBundle.LoadFromFileAsync 未创建请求";
+                            Debug.LogError($"AssetBundle加载失败：模式 {loadPath}，路径 {fullPath}（LoadFromFileAsync 未创建请求）");
                             return null;
                         }
 
@@ -185,11 +300,20 @@ namespace UPandaGF
 
                 if (ab == null)
                 {
-                    Debug.LogError($"AssetBundle加载失败\n{fullPath}");
+                    _lastLoadFailReason = loadPath == ABLoadPath.PersistentDataPath
+                        ? $"模式 {loadPath}，路径 {fullPath}，异常：该文件读不出有效 AB（文件不存在 / 不是 AB / 内容不完整）"
+                        : $"模式 {loadPath}，路径 {fullPath}，异常：请求成功但 DownloadHandlerAssetBundle.GetContent 返回 null（内容不是有效 AB，或命中了损坏的缓存）";
+                    Debug.LogError($"AssetBundle加载失败：模式 {loadPath}，路径 {fullPath}");
+                    if (loadPath == ABLoadPath.PersistentDataPath)
+                    {
+                        PLogger.LogError("[ABLoadMgr] PersistentDataPath 模式要求该文件已经存在于 persistentDataPath："
+                                         + "先确认热更下载真的成功过（enableAssetUpdate 打开、下载日志无报错），否则这个目录是空的。");
+                    }
                     return null;
                 }
 
                 _loadedBundles[abName] = ab;
+                _loadedBundlePaths[abName] = loadPath;
 
                 progressEvent.progress = 1;
                 progressEvent.isDown = true;
@@ -199,7 +323,10 @@ namespace UPandaGF
             }
             catch (System.Exception e)
             {
+                _lastLoadFailReason = $"模式 {loadPath}，路径 {fullPath}，异常 {e.GetType().Name}: {e.Message}";
                 Debug.LogError($"AssetBundle加载失败 特殊异常 '{abName}'\n{e}");
+                // SendWebRequest() 对 http:// 会直接抛异常（不走 request.error），这里同样给出方向
+                LogRemoteFailureHint(fullPath, e.Message);
                 return null;
             }
             finally
@@ -213,12 +340,17 @@ namespace UPandaGF
             // 已成功加载过：直接回调，避免重复加载（重复 Add 会抛 ArgumentException）
             if (_loadedBundles.TryGetValue(abName, out AssetBundle cached) && cached != null)
             {
+                if (_loadedBundlePaths.TryGetValue(abName, out ABLoadPath cachedLoadPath) && cachedLoadPath != loodPath)
+                {
+                    PLogger.LogWarning($"[ABLoadMgr] 包 {abName} 已按 {cachedLoadPath} 模式加载过，本次请求的是 {loodPath} 模式，"
+                                       + "将复用已加载的包。要真正切换模式请先 ClearAB() 或重启应用。");
+                }
                 callback(cached);
                 yield break;
             }
 
             // string fullPath = Path.Combine(PathUrl, abName);
-            string fullPath = Path.Combine(GetFullPath(loodPath), abName);
+            string fullPath = GetFullPath(loodPath, abName);
             AssetBundle ab = null;
             ABLoadProgressEvent aBLoadProgessEvent = new ABLoadProgressEvent(abName, loodPath, 0, false);
             switch (loodPath)
@@ -243,7 +375,8 @@ namespace UPandaGF
                         if (webRequest.isNetworkError || webRequest.isHttpError)
 #endif
                         {
-                            Debug.LogError($"AssetBundle加载失败\n{fullPath}\n{webRequest.error}");
+                            Debug.LogError($"AssetBundle加载失败\n模式：{loodPath}\nURL：{fullPath}\nHTTP：{webRequest.responseCode} 结果：{webRequest.result}\n错误：{webRequest.error}");
+                            LogRemoteFailureHint(fullPath, webRequest.error);
                             callback.Invoke(null);
                             yield break;
                         }
@@ -284,6 +417,8 @@ namespace UPandaGF
             aBLoadProgessEvent.progress = 1;
             aBLoadProgessEvent.isDown = true;
             //PLogger.Log_yellow($"{aBLoadProgessEvent.abName}：{aBLoadProgessEvent.progress}");
+            _loadedBundles[abName] = ab;
+            _loadedBundlePaths[abName] = loodPath;
             eventCenter.EventTrigger(aBLoadProgessEvent);
             callback(ab);
         }
@@ -519,6 +654,7 @@ namespace UPandaGF
                 }
                 _loadedBundles[name].Unload(false);
                 _loadedBundles.Remove(name);
+                _loadedBundlePaths.Remove(name);
             }
             return true;
         }
@@ -530,6 +666,7 @@ namespace UPandaGF
             StopAllCoroutines();
             AssetBundle.UnloadAllAssetBundles(false);
             _loadedBundles.Clear();
+            _loadedBundlePaths.Clear();
             _loadingBundles.Clear();
             //卸载主包
             mainAB = null;
