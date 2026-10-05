@@ -21,8 +21,11 @@
 //    4) 关闭 occlusion culling：中心点常在建筑内部，遮挡数据是按别的视角烘焙的，
 //       开着会把本该出现在贴图里的物体整片剔掉。
 //    5) 格式必须成对，否则颜色整体偏亮/偏暗：
-//         HDR → RT 用 ARGBHalf + RenderTextureReadWrite.Linear，回读贴图与 Cubemap 都 linear=true；
-//         LDR → RT 用 ARGB32 + RenderTextureReadWrite.Default，两边都按工程色彩空间的 sRGB 约定走。
+//         HDR → RT 用 ARGBHalf + RenderTextureReadWrite.Linear，回读贴图 linear=true；
+//         LDR → RT 用 ARGB32 + RenderTextureReadWrite.Default，回读贴图 linear=false（按 sRGB）。
+//       注意 Cubemap 构造函数**没有** linear 参数可用：Unity 2021 只有 (size, format, mipChain)，
+//       2022+ 的第 4 个参数是 createUninitialized（也不是 linear）。色彩空间只能靠格式本身决定，
+//       RGBAHalf 天生线性，RGBA32 走工程默认色彩空间。
 //    6) 一次性建出来的原生 Cubemap 资产（AssetDatabase.CreateAsset）没有 Importer，
 //       所以 wrapMode / filterMode / mip 都要在创建时就设好。
 //    7) **面图像必须上下翻转**（FlipVertically）。Cubemap 的面数据按图形 API 的立方图约定存放，
@@ -335,7 +338,10 @@ namespace UPandaGF.GFEditor
                     throw new Exception("RenderTexture 创建失败，可能是显卡不支持当前格式/分辨率。");
                 }
 
-                cubemap = new Cubemap(size, textureFormat, mipmap, linear)
+                // 这里**不能**传第 4 个参数：Unity 2021 的 Cubemap 构造函数只有 (size, format, mipChain)
+                // 这一个重载，多传会导致 CS1501 编译报错；而 2022+ 新增的第 4 个参数是 createUninitialized
+                // 而非 linear，传了也只会被误解成「不初始化数据」。HDR(RGBAHalf) 本身即线性格式，无需标记。
+                cubemap = new Cubemap(size, textureFormat, mipmap)
                 {
                     wrapMode = TextureWrapMode.Clamp,   // 原生 Cubemap 资产没有 Importer，设置只能在这里写
                     filterMode = FilterMode.Bilinear
