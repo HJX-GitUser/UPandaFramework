@@ -6,7 +6,7 @@
 
 | 文件 | 说明 |
 |---|---|
-| `AudioMgr.cs` | 全部实现（含两个私有内部类型 `PlayingClip` / `SoundHandle`） |
+| `AudioMgr.cs` | 音频实现，含播放记录与在途请求管理 |
 
 依赖：`ResourcesLoader`（Resources 模式）、`IAssetsLoader`（AssetBundle 模式）、`PublicMono`（帧更新驱动）、`PLogger`（日志）。
 
@@ -31,7 +31,7 @@
 
 **③ 资源引用计数**
 
-`ResourcesLoader` 按"路径 + 类型"缓存并计数。本类每成功加载一次音频，就记一条 `PlayingClip { path, needRelease }`，在**切歌 / 回收 / 停止 / 释放**时调用 `UnLoadAsset<AudioClip>(path, isDel: true)` 归还一次计数；否则 `AudioClip` 会被缓存永久占用（旧实现的引用计数只增不减）。
+`ResourcesLoader` 按"路径 + 类型"缓存并计数。本类每成功加载一次音频，就记一条 绑定原加载记录的 `AssetLease<AudioClip>`，在**切歌 / 回收 / 停止 / 释放**时释放持有凭据，向原缓存记录归还一次计数；否则 `AudioClip` 会被缓存永久占用（旧实现的引用计数只增不减）。
 
 释放顺序固定为：**先 `Stop()` + `clip = null` 解除引用 → 再归还计数**（否则 `Resources.UnloadAsset` 时资源仍被 `AudioSource` 引用）。
 
@@ -50,7 +50,7 @@ AudioRoot (DontDestroyOnLoad)
   └── SFX     ← 唯一音效 + 所有叠加音效都挂在这个节点上
 ```
 
-节点在**首次调用对外 API 时**惰性创建（`EnsureSetup()`），并 `DontDestroyOnLoad`：切场景不销毁，避免 `soundList` / `bgmSources` 里的引用变成"假 null"，进而在 `Update` 里每帧抛异常。所有 `AudioSource` 都显式设置 `playOnAwake = false`、`spatialBlend = 0`（2D）。
+节点在**首次播放时**惰性创建（`EnsureSetup()`），并 `DontDestroyOnLoad`：切场景不销毁。所有 `AudioSource` 都显式设置 `playOnAwake = false`、`spatialBlend = 0`（2D）。
 
 ## 4. API 参考
 
@@ -115,7 +115,7 @@ AudioMgr.Instance.PlayBKMusic("Assets/ArtAssets/Audio/Bgm_Main.wav", AssetLoadMe
 
 ## 7. 与框架的关系
 
-- **更新驱动**：帧更新通过 `PublicMono.Instance.AddUpdateListener(Update)` 注册，注册时机是"首次使用"（不在构造函数里，因为 `PublicMono.Instance` 在退出播放时返回 `null`）。`Update` 内部整体 `try/catch` —— `PublicMono` 的 `updateEvent` 是多播委托，任一监听器抛异常会让排在它后面的所有模块这一帧的 Update 全被跳过。
+- **更新驱动**：按实际 PublicMono 宿主身份注册，宿主重建后再次调用播放入口会重新绑定；Dispose 从原宿主解绑，不为清理而新建调度器。PublicMono 对每个监听器隔离异常，并区分无 owner 的强引用监听与已销毁 owner。
 - **释放**：实现 `IDisposable`，`LazySingletonBase.Release()` 会调用 `Dispose()` 解绑更新、停掉音频、归还引用计数并销毁 `AudioRoot`。
 - **Resources 模式不依赖 `UPGameRoot`**；只有 AssetBundle 模式才会惰性去取 `UPGameRoot.GetAssetsLoader()`。
 - **日志**：常规错误走 `PLogger`（与框架其它模块一致）；`Update` 内的"框架级异常"用 `Debug.LogException` —— `PLogger` 带 `[Conditional("OPEN_PLOG")]`，未定义宏时会被静默丢弃。
@@ -126,3 +126,13 @@ AudioMgr.Instance.PlayBKMusic("Assets/ArtAssets/Audio/Bgm_Main.wav", AssetLoadMe
 - 归还引用计数前一定先 `clip = null`，否则 `Resources.UnloadAsset` 会卸载仍被引用着的资源。
 - 修改 `EnsureSetup()` 的节点结构时，注意它同时承担"节点被外部销毁后重建"的职责（重建前会先归还旧记录的资源引用）。
 - 改动后建议用工程外的真实编译校验（Unity 生成的 `.csproj` 未必包含新文件，`get_errors` 可能是假阴性）：用 `Library/EditorInstance.json` 里的 `app_contents_path` 找到 `Managed` / `MonoBleedingEdge\lib\mono\4.7.1-api` 作参考程序集，跑 `dotnet <sdk>\Roslyn\bincore\csc.dll` 编译 `Runtime/` 下的全部源码。
+
+## 本轮生命周期调整
+
+- 字符串、直接 AudioClip 和同曲提前返回入口都会先使更早请求失效，最后一次有效播放意图优先。
+- StopAllSound 同时结束当前音效和待加载的叠加/唯一音效；待加载叠加音效的用户回调恰好以 null 完成一次。
+- 停止时先提交状态，再批量通知取消；取消回调中发起的新音效不属于旧请求批次。
+- Dispose 是终止状态，会立即完成待处理回调；旧实例不能重建 AudioRoot。使用 AudioMgr.Release 后重新获取 Instance。
+- Resources 的持有绑定到原加载器及原缓存记录；ClearDic/重建之后，旧释放不会扣除新一代同路径的引用。成功/取消的迟到资源都只归还一次。
+- AudioRoot 被外部销毁后再次使用会清理旧 BGM、唯一及叠加音效持有，并使旧请求失效。
+- AB 资源保留托管持有关系，但包仍按 ABLoadMgr 的显式生命周期管理，不自动卸包。

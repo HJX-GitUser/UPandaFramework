@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UPandaGF;
@@ -69,6 +70,38 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
             try { callback(value); }
             catch (Exception e) { Debug.LogException(e); }
         }
+    }
+
+    // 内部持有接口绑定到原始缓存记录，ClearDic/重建后不会误减新一代同路径的引用。
+    internal AssetLease<T> Acquire<T>(string path) where T : UnityEngine.Object
+    {
+        if (destroyed) return null;
+        string key = Key(path, typeof(T), true);
+        var info = GetLeaseEntry<T>(key);
+        T asset = LoadCore<T>(path, typeof(T), key);
+        return asset != null ? new AssetLease<T>(asset, () => ReleaseExact(key, info)) : null;
+    }
+    internal Task<AssetLease<T>> AcquireAsync<T>(string path) where T : UnityEngine.Object
+    {
+        var done = new TaskCompletionSource<AssetLease<T>>();
+        if (destroyed) { done.SetResult(null); return done.Task; }
+        string key = Key(path, typeof(T), true);
+        var info = GetLeaseEntry<T>(key);
+        LoadAsyncCore<T>(path, typeof(T), key, asset => done.TrySetResult(asset != null
+            ? new AssetLease<T>(asset, () => ReleaseExact(key, info)) : null));
+        return done.Task;
+    }
+    private ResInfo<T> GetLeaseEntry<T>(string key)
+    {
+        ResInfoBase entry;
+        if (resDic.TryGetValue(key, out entry)) return (ResInfo<T>)entry;
+        var info = new ResInfo<T>(); resDic.Add(key, info); return info;
+    }
+    private void ReleaseExact<T>(string key, ResInfo<T> info)
+    {
+        ResInfoBase current;
+        if (!destroyed && resDic.TryGetValue(key, out current) && ReferenceEquals(current, info))
+            Release<T>(key, true, null);
     }
 
     public T Load<T>(string path) where T : UnityEngine.Object

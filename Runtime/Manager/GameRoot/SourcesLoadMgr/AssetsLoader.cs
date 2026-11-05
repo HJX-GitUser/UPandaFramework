@@ -14,7 +14,9 @@ namespace UPandaGF
     /// </summary>
     public class AssetsLoader : MonoBehaviour, IAssetsLoader
     {
-        public bool IsInitialized { get; private set; }
+        private int initializationGeneration;
+        private bool initialized;
+        public bool IsInitialized => initialized && (method != AssetLoaddingMethod.Assetbundles || (abLoadMgr != null && abLoadMgr.IsInitialized));
         private AssetLoaddingMethod method;
         private ABLoadMgr abLoadMgr;
         private EditorSourcesMgr editorSourcesMgr;
@@ -39,9 +41,11 @@ namespace UPandaGF
 
         public async Task Init(AssetLoaddingMethod arg0, string remoteURL, string LoadAssetPath, ABSourcesRelated sourceRefArgBytes)
         {
+            int epoch = ++initializationGeneration;
             PLogger.Log("AssetsLoader Init");
-            IsInitialized = false;
+            initialized = false;
             method = arg0;
+            sourceRef = null;
             editorSourcesMgr = EditorSourcesMgr.Instance;
             sceneMgr = SceneMgr.Instance;
             if (method == AssetLoaddingMethod.Editor)
@@ -49,7 +53,7 @@ namespace UPandaGF
 #if !UNITY_EDITOR
                 throw new System.InvalidOperationException("Player 中不能使用 Editor 资源加载模式。");
 #else
-                IsInitialized = true;
+                initialized = true;
                 return;
 #endif
             }
@@ -62,6 +66,7 @@ namespace UPandaGF
                 //资源关联数据
                 string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
                 byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
+                if (epoch != initializationGeneration || this == null) return;
                 if (b != null) sourceRef = LoadABSourcesRelated(b);
             }
 
@@ -82,10 +87,10 @@ namespace UPandaGF
                 abLoadMgr.remoteURL = remoteURL;
                 PLogger.Log($"主包：{sourceRef.mainBundleInfo.bundleName}，加载方式：{sourceRef.mainBundleInfo.loadPath}");
                 await abLoadMgr.Init(LoadAssetPath, sourceRef.mainBundleInfo.bundleName, sourceRef.mainBundleInfo.loadPath);
-                if (!abLoadMgr.IsInitialized) return;
+                if (epoch != initializationGeneration || this == null || !abLoadMgr.IsInitialized) return;
                 abLoadMgr.SetABSourcesRelated(sourceRef);
             }
-            IsInitialized = true;
+            initialized = true;
             PLogger.Log("AssetsLoader Inited !!!");
         }
 
@@ -307,8 +312,12 @@ namespace UPandaGF
             return isUnload;
         }
 
+        private void OnDestroy() { initializationGeneration++; initialized = false; }
+
         public void ClearAB()
         {
+            initializationGeneration++;
+            if (method == AssetLoaddingMethod.Assetbundles) initialized = false;
             if (method == AssetLoaddingMethod.Assetbundles)
             {
                 abLoadMgr.ClearAB();

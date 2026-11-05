@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="50" result="Passed" total="50" passed="50" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:44Z" duration="2.621967">
+  <test-suite type="TestSuite" id="1000" name="LifecycleFixVerification" fullname="LifecycleFixVerification" runstate="Runnable" testcasecount="50" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:44Z" duration="2.621967" total="50" passed="50" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <test-suite type="Assembly" id="1055" name="UPandaGF.Tests.dll" fullname="D:/UnityProject/TestProject/Temp/LifecycleAuditProject/Library/ScriptAssemblies/UPandaGF.Tests.dll" runstate="Runnable" testcasecount="50" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:44Z" duration="2.617809" total="50" passed="50" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="45704" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+      </properties>
+      <test-suite type="TestFixture" id="1002" name="FrameworkRegressionTests" fullname="FrameworkRegressionTests" classname="FrameworkRegressionTests" runstate="Runnable" testcasecount="15" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.239456" total="15" passed="15" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1017" name="AssetInitializationFailureDoesNotReportReady" fullname="FrameworkRegressionTests.AssetInitializationFailureDoesNotReportReady" methodname="AssetInitializationFailureDoesNotReportReady" classname="FrameworkRegressionTests" runstate="Runnable" seed="1491355361" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.028129" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[<###>  18:30:42.265  ThreadID:1
+AssetsLoader Init
+[LazySingleton] 创建 EditorSourcesMgr 实例
+[LazySingleton] 创建 SceneMgr 实例
+<###>  18:30:42.269  ThreadID:1
+资源关联数据缺少主包信息 mainBundleInfo
+<###>  18:30:42.275  ThreadID:1
+该资源不存在：missing
+]]></output>
+        </test-case>
+        <test-case id="1015" name="CanceledDownloadCompletesWithTimeoutDisabled" fullname="FrameworkRegressionTests.CanceledDownloadCompletesWithTimeoutDisabled" methodname="CanceledDownloadCompletesWithTimeoutDisabled" classname="FrameworkRegressionTests" runstate="Runnable" seed="1849279832" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.039417" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1005" name="ClearCancelsWaiterAndDoesNotCorruptNewLoad" fullname="FrameworkRegressionTests.ClearCancelsWaiterAndDoesNotCorruptNewLoad" methodname="ClearCancelsWaiterAndDoesNotCorruptNewLoad" classname="FrameworkRegressionTests" runstate="Runnable" seed="1693615936" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.013699" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1008" name="CloseWhileLoadingPreventsLatePanelCreation" fullname="FrameworkRegressionTests.CloseWhileLoadingPreventsLatePanelCreation" methodname="CloseWhileLoadingPreventsLatePanelCreation" classname="FrameworkRegressionTests" runstate="Runnable" seed="132788787" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.016764" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1007" name="ConcurrentPanelRequestsShareInstanceAndReleaseReference" fullname="FrameworkRegressionTests.ConcurrentPanelRequestsShareInstanceAndReleaseReference" methodname="ConcurrentPanelRequestsShareInstanceAndReleaseReference" classname="FrameworkRegressionTests" runstate="Runnable" seed="1330443497" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.007148" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1011" name="CorruptReplayReturnsNull" fullname="FrameworkRegressionTests.CorruptReplayReturnsNull" methodname="CorruptReplayReturnsNull" classname="FrameworkRegressionTests" runstate="Runnable" seed="751227526" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.011831" asserts="0">
+          <properties />
+          <output><![CDATA[[ReplaySystem] 读取失败：End of Stream encountered before parsing was completed.
+[ReplaySystem] 读取失败：回放时间戳无效或未排序
+]]></output>
+        </test-case>
+        <test-case id="1016" name="DestroyedDownloaderCompletesPendingTask" fullname="FrameworkRegressionTests.DestroyedDownloaderCompletesPendingTask" methodname="DestroyedDownloaderCompletesPendingTask" classname="FrameworkRegressionTests" runstate="Runnable" seed="762112189" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.027924" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1010" name="LegacyReplayDtoRemainsReadable" fullname="FrameworkRegressionTests.LegacyReplayDtoRemainsReadable" methodname="LegacyReplayDtoRemainsReadable" classname="FrameworkRegressionTests" runstate="Runnable" seed="748388100" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.025347" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1003" name="MissingResourceCanBeRequestedAgain" fullname="FrameworkRegressionTests.MissingResourceCanBeRequestedAgain" methodname="MissingResourceCanBeRequestedAgain" classname="FrameworkRegressionTests" runstate="Runnable" seed="1157571301" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.003922" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[资源加载失败：__missing_framework_test___T_UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+资源加载失败：__missing_framework_test___T_UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+]]></output>
+        </test-case>
+        <test-case id="1009" name="ReplayRoundTripPreservesComponentState" fullname="FrameworkRegressionTests.ReplayRoundTripPreservesComponentState" methodname="ReplayRoundTripPreservesComponentState" classname="FrameworkRegressionTests" runstate="Runnable" seed="493007376" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.011525" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1014" name="SeekRestoresObjectsAbsentFromAdjacentSparseFrames" fullname="FrameworkRegressionTests.SeekRestoresObjectsAbsentFromAdjacentSparseFrames" methodname="SeekRestoresObjectsAbsentFromAdjacentSparseFrames" classname="FrameworkRegressionTests" runstate="Runnable" seed="1009034033" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.006301" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1004" name="ThrowingResourceCallbackDoesNotBlockOtherWaiters" fullname="FrameworkRegressionTests.ThrowingResourceCallbackDoesNotBlockOtherWaiters" methodname="ThrowingResourceCallbackDoesNotBlockOtherWaiters" classname="FrameworkRegressionTests" runstate="Runnable" seed="1256272275" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.005455" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[InvalidOperationException: expected callback failure
+]]></output>
+        </test-case>
+        <test-case id="1006" name="TypeAndGenericReleaseKeepCacheUntilRequested" fullname="FrameworkRegressionTests.TypeAndGenericReleaseKeepCacheUntilRequested" methodname="TypeAndGenericReleaseKeepCacheUntilRequested" classname="FrameworkRegressionTests" runstate="Runnable" seed="943054185" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.002037" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1013" name="UpdateBatchCommitsFilesAndManifest" fullname="FrameworkRegressionTests.UpdateBatchCommitsFilesAndManifest" methodname="UpdateBatchCommitsFilesAndManifest" classname="FrameworkRegressionTests" runstate="Runnable" seed="2020317585" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.011271" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1012" name="UpdateBatchRollsBackIfLaterFileIsLocked" fullname="FrameworkRegressionTests.UpdateBatchRollsBackIfLaterFileIsLocked" methodname="UpdateBatchRollsBackIfLaterFileIsLocked" classname="FrameworkRegressionTests" runstate="Runnable" seed="1161341737" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.020142" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1018" name="LifecycleRegressionTests" fullname="LifecycleRegressionTests" classname="LifecycleRegressionTests" runstate="Runnable" testcasecount="26" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:44Z" duration="2.346648" total="26" passed="26" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1042" name="AssetsLoaderReadinessTracksClearAndCanceledInitialization" fullname="LifecycleRegressionTests.AssetsLoaderReadinessTracksClearAndCanceledInitialization" methodname="AssetsLoaderReadinessTracksClearAndCanceledInitialization" classname="LifecycleRegressionTests" runstate="Runnable" seed="1609887520" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.025302" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 创建 EventCenter 实例
+<###>  18:30:42.548  ThreadID:1
+AssetsLoader Init
+<###>  18:30:42.548  ThreadID:1
+主包：AuditBundles，加载方式：PersistentDataPath
+<###>  18:30:42.551  ThreadID:1
+AssetsLoader Inited !!!
+<###>  18:30:42.551  ThreadID:1
+AssetsLoader Init
+<###>  18:30:42.551  ThreadID:1
+主包：AuditBundles，加载方式：PersistentDataPath
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1031" name="AudioRebindsToRecreatedPublicMono" fullname="LifecycleRegressionTests.AudioRebindsToRecreatedPublicMono" methodname="AudioRebindsToRecreatedPublicMono" classname="LifecycleRegressionTests" runstate="Runnable" seed="1834530316" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.013051" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1032" name="BorrowedInstancesKeepOnePrefabReferenceUntilDestroyed" fullname="LifecycleRegressionTests.BorrowedInstancesKeepOnePrefabReferenceUntilDestroyed" methodname="BorrowedInstancesKeepOnePrefabReferenceUntilDestroyed" classname="LifecycleRegressionTests" runstate="Runnable" seed="651253581" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.011474" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1036" name="CallbackReentryDoesNotDuplicatePoolMembership" fullname="LifecycleRegressionTests.CallbackReentryDoesNotDuplicatePoolMembership" methodname="CallbackReentryDoesNotDuplicatePoolMembership" classname="LifecycleRegressionTests" runstate="Runnable" seed="630692148" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.006704" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[<###>  18:30:42.586  ThreadID:1
+忽略重复或重入归还：key
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1041" name="ClearDuringAssetLoadCompletesWaiterAndSupportsReinitialization" fullname="LifecycleRegressionTests.ClearDuringAssetLoadCompletesWaiterAndSupportsReinitialization" methodname="ClearDuringAssetLoadCompletesWaiterAndSupportsReinitialization" classname="LifecycleRegressionTests" runstate="Runnable" seed="1114598320" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:42Z" duration="0.035574" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1021" name="ClearInvalidatesRemoteTaskAndPreventsCacheWrite" fullname="LifecycleRegressionTests.ClearInvalidatesRemoteTaskAndPreventsCacheWrite" methodname="ClearInvalidatesRemoteTaskAndPreventsCacheWrite" classname="LifecycleRegressionTests" runstate="Runnable" seed="1557538269" result="Passed" start-time="2026-11-05 10:30:42Z" end-time="2026-11-05 10:30:43Z" duration="0.615119" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1023" name="ClearPreservesIndependentlyOwnedBundles" fullname="LifecycleRegressionTests.ClearPreservesIndependentlyOwnedBundles" methodname="ClearPreservesIndependentlyOwnedBundles" classname="LifecycleRegressionTests" runstate="Runnable" seed="1056863465" result="Passed" start-time="2026-11-05 10:30:43Z" end-time="2026-11-05 10:30:43Z" duration="0.012516" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1022" name="DestroyedCallbackHostCompletesCallerExactlyOnce" fullname="LifecycleRegressionTests.DestroyedCallbackHostCompletesCallerExactlyOnce" methodname="DestroyedCallbackHostCompletesCallerExactlyOnce" classname="LifecycleRegressionTests" runstate="Runnable" seed="1614687862" result="Passed" start-time="2026-11-05 10:30:43Z" end-time="2026-11-05 10:30:44Z" duration="1.262560" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1039" name="DisposeCompletesStackedWaiterAndLateResultCannotReachNewAudioInstance" fullname="LifecycleRegressionTests.DisposeCompletesStackedWaiterAndLateResultCannotReachNewAudioInstance" methodname="DisposeCompletesStackedWaiterAndLateResultCannotReachNewAudioInstance" classname="LifecycleRegressionTests" runstate="Runnable" seed="1185848444" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.009418" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+[LazySingleton] 创建 AudioMgr 实例
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1025" name="DisposePreventsPendingPrewarmFromRecreatingOldPool" fullname="LifecycleRegressionTests.DisposePreventsPendingPrewarmFromRecreatingOldPool" methodname="DisposePreventsPendingPrewarmFromRecreatingOldPool" classname="LifecycleRegressionTests" runstate="Runnable" seed="1599076614" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.005449" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1028" name="LaterDirectBgmInvalidatesDelayedRequest" fullname="LifecycleRegressionTests.LaterDirectBgmInvalidatesDelayedRequest" methodname="LaterDirectBgmInvalidatesDelayedRequest" classname="LifecycleRegressionTests" runstate="Runnable" seed="893154909" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.005868" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1029" name="LaterDirectUniqueSoundInvalidatesDelayedRequest" fullname="LifecycleRegressionTests.LaterDirectUniqueSoundInvalidatesDelayedRequest" methodname="LaterDirectUniqueSoundInvalidatesDelayedRequest" classname="LifecycleRegressionTests" runstate="Runnable" seed="1457848834" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.004592" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1019" name="MixedDependencyLocationsLoadSuccessfully" fullname="LifecycleRegressionTests.MixedDependencyLocationsLoadSuccessfully" methodname="MixedDependencyLocationsLoadSuccessfully" classname="LifecycleRegressionTests" runstate="Runnable" seed="1667872708" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.017925" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1044" name="NewPoolCanRetireBorrowerFromDisposedOwner" fullname="LifecycleRegressionTests.NewPoolCanRetireBorrowerFromDisposedOwner" methodname="NewPoolCanRetireBorrowerFromDisposedOwner" classname="LifecycleRegressionTests" runstate="Runnable" seed="311974048" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.005375" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1033" name="OldInstanceReleaseCannotDecrementNewResourcesGeneration" fullname="LifecycleRegressionTests.OldInstanceReleaseCannotDecrementNewResourcesGeneration" methodname="OldInstanceReleaseCannotDecrementNewResourcesGeneration" classname="LifecycleRegressionTests" runstate="Runnable" seed="1926632079" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.008548" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1040" name="OwnerlessFrameListenerSurvivesWhileDestroyedOwnerIsRemoved" fullname="LifecycleRegressionTests.OwnerlessFrameListenerSurvivesWhileDestroyedOwnerIsRemoved" methodname="OwnerlessFrameListenerSurvivesWhileDestroyedOwnerIsRemoved" classname="LifecycleRegressionTests" runstate="Runnable" seed="2024995242" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.183175" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1024" name="PoolReturnsResourcesCountAfterAllIdleInstancesAreCleared" fullname="LifecycleRegressionTests.PoolReturnsResourcesCountAfterAllIdleInstancesAreCleared" methodname="PoolReturnsResourcesCountAfterAllIdleInstancesAreCleared" classname="LifecycleRegressionTests" runstate="Runnable" seed="1616945208" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.004110" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1037" name="PoolTimeoutDiscardsLateResultAndAllowsRetry" fullname="LifecycleRegressionTests.PoolTimeoutDiscardsLateResultAndAllowsRetry" methodname="PoolTimeoutDiscardsLateResultAndAllowsRetry" classname="LifecycleRegressionTests" runstate="Runnable" seed="1003283347" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.024502" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[<###>  18:30:44.782  ThreadID:1
+对象池资源加载超时：fixture
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1038" name="SameBgmEarlyReturnStillCancelsOlderPendingIntent" fullname="LifecycleRegressionTests.SameBgmEarlyReturnStillCancelsOlderPendingIntent" methodname="SameBgmEarlyReturnStillCancelsOlderPendingIntent" classname="LifecycleRegressionTests" runstate="Runnable" seed="2033378825" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.004450" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1027" name="SharedClipReleaseCrossCheck" fullname="LifecycleRegressionTests.SharedClipReleaseCrossCheck" methodname="SharedClipReleaseCrossCheck" classname="LifecycleRegressionTests" runstate="Runnable" seed="900805547" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.007183" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1034" name="StaleBorrowerReturnIsDestroyedInsteadOfRepopulatingPool" fullname="LifecycleRegressionTests.StaleBorrowerReturnIsDestroyedInsteadOfRepopulatingPool" methodname="StaleBorrowerReturnIsDestroyedInsteadOfRepopulatingPool" classname="LifecycleRegressionTests" runstate="Runnable" seed="1344357875" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.004926" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1030" name="StopAllSoundCancelsPendingStackedSoundExactlyOnce" fullname="LifecycleRegressionTests.StopAllSoundCancelsPendingStackedSoundExactlyOnce" methodname="StopAllSoundCancelsPendingStackedSoundExactlyOnce" classname="LifecycleRegressionTests" runstate="Runnable" seed="1410959912" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.004210" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1043" name="StopCancellationCallbackMayStartANewUniqueRequest" fullname="LifecycleRegressionTests.StopCancellationCallbackMayStartANewUniqueRequest" methodname="StopCancellationCallbackMayStartANewUniqueRequest" classname="LifecycleRegressionTests" runstate="Runnable" seed="1353284864" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.004007" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1020" name="TaskAndCallbackShareNativeInflightRequest" fullname="LifecycleRegressionTests.TaskAndCallbackShareNativeInflightRequest" methodname="TaskAndCallbackShareNativeInflightRequest" classname="LifecycleRegressionTests" runstate="Runnable" seed="1179262672" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.014930" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1026" name="ThrowingDespawnAllowsLaterReturn" fullname="LifecycleRegressionTests.ThrowingDespawnAllowsLaterReturn" methodname="ThrowingDespawnAllowsLaterReturn" classname="LifecycleRegressionTests" runstate="Runnable" seed="2028375186" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.005268" asserts="0">
+          <properties />
+          <output><![CDATA[InvalidOperationException: Audit expected OnDespawn error
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1035" name="ThrowingSpawnDestroysFailedInstanceWithoutPoisoningPool" fullname="LifecycleRegressionTests.ThrowingSpawnDestroysFailedInstanceWithoutPoisoningPool" methodname="ThrowingSpawnDestroysFailedInstanceWithoutPoisoningPool" classname="LifecycleRegressionTests" runstate="Runnable" seed="500753067" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.004580" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[InvalidOperationException: Audit expected OnSpawn error
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1045" name="ReporterRegressionTests" fullname="ReporterRegressionTests" classname="ReporterRegressionTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.030400" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1047" name="CollapseCountOnlyIncludesRetainedRecords" fullname="ReporterRegressionTests.CollapseCountOnlyIncludesRetainedRecords" methodname="CollapseCountOnlyIncludesRetainedRecords" classname="ReporterRegressionTests" runstate="Runnable" seed="2109058737" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.007201" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1049" name="MemoryLimitEvictsOldestInsteadOfClearingEverything" fullname="ReporterRegressionTests.MemoryLimitEvictsOldestInsteadOfClearingEverything" methodname="MemoryLimitEvictsOldestInsteadOfClearingEverything" classname="ReporterRegressionTests" runstate="Runnable" seed="921273888" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.001852" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1050" name="OpenAndInitializeAreIdempotentAndDisablingStopsCapture" fullname="ReporterRegressionTests.OpenAndInitializeAreIdempotentAndDisablingStopsCapture" methodname="OpenAndInitializeAreIdempotentAndDisablingStopsCapture" classname="ReporterRegressionTests" runstate="Runnable" seed="1983524020" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.007272" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1054" name="PendingQueueAlsoHasAByteBudget" fullname="ReporterRegressionTests.PendingQueueAlsoHasAByteBudget" methodname="PendingQueueAlsoHasAByteBudget" classname="ReporterRegressionTests" runstate="Runnable" seed="309496861" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.001410" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1046" name="RetentionEvictsGroupsAndCountsTogether" fullname="ReporterRegressionTests.RetentionEvictsGroupsAndCountsTogether" methodname="RetentionEvictsGroupsAndCountsTogether" classname="ReporterRegressionTests" runstate="Runnable" seed="1466101498" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.001299" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1048" name="SeverityIsPartOfTheCollapseKeyAndStackIsSearchable" fullname="ReporterRegressionTests.SeverityIsPartOfTheCollapseKeyAndStackIsSearchable" methodname="SeverityIsPartOfTheCollapseKeyAndStackIsSearchable" classname="ReporterRegressionTests" runstate="Runnable" seed="14723025" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.001308" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1052" name="VisibleRangeIsBoundedByViewport" fullname="ReporterRegressionTests.VisibleRangeIsBoundedByViewport" methodname="VisibleRangeIsBoundedByViewport" classname="ReporterRegressionTests" runstate="Runnable" seed="1933248567" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.001022" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1053" name="VisibleReporterWorksWithoutAssignedImages" fullname="ReporterRegressionTests.VisibleReporterWorksWithoutAssignedImages" methodname="VisibleReporterWorksWithoutAssignedImages" classname="ReporterRegressionTests" runstate="Runnable" seed="1392159126" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.004793" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1051" name="WorkerThreadBurstIsBoundedAndDrainedInBatches" fullname="ReporterRegressionTests.WorkerThreadBurstIsBoundedAndDrainedInBatches" methodname="WorkerThreadBurstIsBoundedAndDrainedInBatches" classname="ReporterRegressionTests" runstate="Runnable" seed="1294657521" result="Passed" start-time="2026-11-05 10:30:44Z" end-time="2026-11-05 10:30:44Z" duration="0.003132" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

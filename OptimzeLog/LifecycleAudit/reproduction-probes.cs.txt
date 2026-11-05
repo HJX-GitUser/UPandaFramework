@@ -1,0 +1,246 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
+using UnityEngine.TestTools;
+using UPandaGF;
+using Object = UnityEngine.Object;
+
+// These probes assert the observed defect, not the desired future behavior.
+// Passing probes are evidence that the current implementation reproduces the issue.
+public class LifecycleAuditProbes
+{
+    private string relative, directory;
+    private readonly List<GameObject> objects = new List<GameObject>();
+    private readonly List<AudioClip> clips = new List<AudioClip>();
+    private readonly List<GameObjectPoolMgr> pools = new List<GameObjectPoolMgr>();
+    private bool previousIgnore;
+    private bool suiteIgnore;
+    private const string ResourceClip = "LifecycleAudit/Clip";
+    private static BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+    [OneTimeSetUp] public void Begin() { suiteIgnore=LogAssert.ignoreFailingMessages; LogAssert.ignoreFailingMessages=true; File.WriteAllText(Path.GetFullPath("../lifecycle-observations.jsonl"), ""); }
+    [OneTimeTearDown] public void End() { LogAssert.ignoreFailingMessages=suiteIgnore; }
+    [SetUp] public void SetUp()
+    {
+        previousIgnore = LogAssert.ignoreFailingMessages;
+        LogAssert.ignoreFailingMessages = true; // Probes intentionally exercise native loading failures.
+        relative = "UPandaLifecycleAudit/" + Guid.NewGuid().ToString("N");
+        directory = Path.Combine(Application.persistentDataPath, relative);
+        Directory.CreateDirectory(directory);
+    }
+    [TearDown] public void TearDown()
+    {
+        AudioMgr.Release();
+        foreach (var pool in pools) pool.Dispose();
+        foreach (var go in objects) if (go != null) Object.DestroyImmediate(go);
+        foreach (var clip in clips) if (clip != null) Object.DestroyImmediate(clip);
+        AssetBundle.UnloadAllAssetBundles(true);
+        var loaders = Object.FindObjectsByType<ABLoadMgr>(FindObjectsSortMode.None);
+        foreach (var loader in loaders) Object.DestroyImmediate(loader.gameObject);
+        foreach (var loader in Object.FindObjectsByType<ResourcesLoader>(FindObjectsSortMode.None)) Object.DestroyImmediate(loader.gameObject);
+        foreach (var mono in Object.FindObjectsByType<PublicMono>(FindObjectsSortMode.None)) Object.DestroyImmediate(mono.gameObject);
+        // Only the explicitly created random fixture directory may be removed.
+        if (Directory.Exists(directory) && Path.GetFullPath(directory).StartsWith(Path.GetFullPath(Path.Combine(Application.persistentDataPath,"UPandaLifecycleAudit")) + Path.DirectorySeparatorChar))
+            Directory.Delete(directory, true);
+        pools.Clear(); objects.Clear(); clips.Clear();
+        LogAssert.ignoreFailingMessages = previousIgnore;
+    }
+    private static void Observe(string id, string value)
+    {
+        string line = "{\"id\":\"" + id + "\",\"observation\":\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"}";
+        File.AppendAllText(Path.GetFullPath("../lifecycle-observations.jsonl"), line + "\n");
+        Debug.Log("LIFECYCLE_PROBE " + line);
+    }
+    private static T Get<T>(object target, string field) { return (T)target.GetType().GetField(field, Private).GetValue(target); }
+    private static void Set(object target, string field, object value) { target.GetType().GetField(field, Private).SetValue(target, value); }
+    private GameObject Go(string name) { var go=new GameObject(name); objects.Add(go); return go; }
+    private AudioClip Clip(string name) { var clip=AudioClip.Create(name,22050,1,22050,false); clips.Add(clip); return clip; }
+    private GameObjectPoolMgr Pool(DelayedAssets loader = null)
+    {
+        var pool=new GameObjectPoolMgr(); pools.Add(pool);
+        if(loader!=null)Set(pool,"assetsLoader",loader);
+        return pool;
+    }
+    private AudioMgr Audio(DelayedAssets loader=null)
+    {
+        var audio=AudioMgr.Instance;
+        if(loader!=null)Set(audio,"assetsLoader",loader);
+        return audio;
+    }
+    private static IEnumerator Wait(Task task, float seconds=10)
+    {
+        float until=Time.realtimeSinceStartup+seconds;
+        while(!task.IsCompleted&&Time.realtimeSinceStartup<until)yield return null;
+        Assert.IsTrue(task.IsCompleted,"Probe timeout");
+    }
+    private IEnumerator NativeSetup(bool mixed=false)
+    {
+        string source=Path.GetFullPath("AuditBundles");
+        foreach(string name in new[]{"AuditBundles","audit_target","audit_shared"})
+            if(!mixed||name!="audit_shared")File.Copy(Path.Combine(source,name),Path.Combine(directory,name),true);
+        if(mixed)
+        {
+            string streaming=Path.Combine(Application.streamingAssetsPath,relative); Directory.CreateDirectory(streaming);
+            File.Copy(Path.Combine(source,"audit_shared"),Path.Combine(streaming,"audit_shared"),true);
+        }
+        var task=ABLoadMgr.Instance.Init(relative,"AuditBundles",ABLoadPath.PersistentDataPath);
+        yield return Wait(task);
+        Assert.IsFalse(task.IsFaulted);Assert.IsTrue(ABLoadMgr.Instance.IsInitialized,"Native AB baseline initialization failed");
+        var references=new ABSourcesRelated();
+        references.bundleInfo["audit_target"]=new AssetBundleLoadInfo{bundleName="audit_target",loadPath=ABLoadPath.PersistentDataPath};
+        references.bundleInfo["audit_shared"]=new AssetBundleLoadInfo{bundleName="audit_shared",loadPath=mixed?ABLoadPath.StreamingAssetsPath:ABLoadPath.PersistentDataPath};
+        ABLoadMgr.Instance.SetABSourcesRelated(references);
+    }
+    [UnityTest] public IEnumerator MixedDependencyLocationUsesWrongParentLocation()
+    {
+        yield return NativeSetup(true);
+        var manager=ABLoadMgr.Instance;
+        string sharedPath=Path.Combine(Application.streamingAssetsPath,relative,"audit_shared");
+        var baseline=AssetBundle.LoadFromFile(sharedPath);Assert.IsNotNull(baseline,"Dependency fixture is valid");baseline.Unload(true);
+        for(int i=0;i<3;i++)LogAssert.Expect(LogType.Error,new Regex("(?s).*audit_shared.*"));
+        var task=manager.GetAssetBundle("audit_target",ABLoadPath.PersistentDataPath);
+        yield return Wait(task);Assert.IsFalse(task.IsFaulted);Assert.IsNull(task.Result);
+        Observe("AB-01","Valid dependency exists in StreamingAssets and is configured there, but persistent parent load returns null.");
+    }
+    [UnityTest] public IEnumerator TaskAndCallbackDoNotShareNativeInflightRequest()
+    {
+        yield return NativeSetup();var manager=ABLoadMgr.Instance;
+        for(int i=0;i<3;i++)LogAssert.Expect(LogType.Error,new Regex("(?s).*audit_shared.*"));
+        var task=manager.GetAssetBundle("audit_target",ABLoadPath.PersistentDataPath);
+        bool called=false;AssetBundle callbackResult=null;
+        manager.GetAssetBundle("audit_target",ABLoadPath.PersistentDataPath,b=>{called=true;callbackResult=b;});
+        float until=Time.realtimeSinceStartup+10;
+        while((!called||!task.IsCompleted)&&Time.realtimeSinceStartup<until)yield return null;
+        Assert.IsTrue(called&&task.IsCompleted);
+        bool taskOk=!task.IsFaulted&&task.Result!=null;
+        Assert.IsFalse(taskOk&&callbackResult!=null,"If both requests succeed this race was not reproduced.");
+        Observe("AB-02","Concurrent native requests: Task success="+taskOk+", callback success="+(callbackResult!=null)+".");
+    }
+    [UnityTest] public IEnumerator ClearDoesNotInvalidateTaskAwaitingRemoteBundle()
+    {
+        yield return NativeSetup();var manager=ABLoadMgr.Instance;
+        manager.remoteURL="http://127.0.0.1:18843";manager.PathUrl="";
+        var task=manager.GetAssetBundle("audit_target",ABLoadPath.RemotePath);
+        manager.ClearAB();
+        yield return Wait(task);
+        int cached=Get<Dictionary<string,AssetBundle>>(manager,"_loadedBundles").Count;
+        Assert.Greater(cached,0,"No post-clear cache write observed.");
+        Assert.IsFalse(manager.IsInitialized);
+        Observe("AB-03","After ClearAB, old remote Task completed; cache repopulated with "+cached+" bundle(s) while IsInitialized=false.");
+    }
+    [UnityTest] public IEnumerator DestroyedCallbackHostLeavesCallerWithoutCompletion()
+    {
+        yield return NativeSetup();var manager=ABLoadMgr.Instance;
+        manager.remoteURL="http://127.0.0.1:18843";manager.PathUrl="";
+        bool called=false;manager.GetAssetBundle("audit_target",ABLoadPath.RemotePath,b=>called=true);
+        Object.DestroyImmediate(manager.gameObject);
+        yield return new WaitForSecondsRealtime(1.25f);
+        Assert.IsFalse(called);
+        Observe("AB-04","Destroying the coroutine host produces no result/cancellation callback after remote request delay.");
+    }
+    [UnityTest] public IEnumerator ClearUnloadsBundleOwnedOutsideThisManager()
+    {
+        yield return NativeSetup();var manager=ABLoadMgr.Instance;
+        var external=AssetBundle.LoadFromFile(Path.GetFullPath("AuditBundles/audit_external"));Assert.IsNotNull(external);
+        manager.ClearAB();Assert.IsTrue(external==null);
+        Observe("AB-05","An independently loaded audit_external AssetBundle was also unloaded by manager.ClearAB().");
+    }
+    [UnityTest] public IEnumerator PoolRetainsResourcesCountsAfterAllIdleInstancesAreCleared()
+    {
+        var pool=Pool(); var task=pool.GetObjAsync("LifecycleAudit/AudioPrefab");yield return Wait(task);
+        Assert.IsNotNull(task.Result);pool.PushObj("LifecycleAudit/AudioPrefab",task.Result);
+        var loader=ResourcesLoader.Instance;int before=loader.GetAssetsRefCount<GameObject>("LifecycleAudit/AudioPrefab");
+        pool.Clear();yield return null;
+        Assert.AreEqual(0,pool.TotalPooledCount);Assert.AreEqual(before,loader.GetAssetsRefCount<GameObject>("LifecycleAudit/AudioPrefab"));Assert.Greater(before,0);
+        Observe("POOL-01","After Clear, idle count=0 but prefab Resources reference count remains "+before+" (documented ownership gap).");
+    }
+    [UnityTest] public IEnumerator DisposeDoesNotPreventPendingPrewarmFromRecreatingOldPool()
+    {
+        var loader=new DelayedAssets();var pool=Pool(loader);var prefab=Go("delayed prefab");
+        var task=pool.Prewarm("fixture.prefab",2,AssetLoadMethod.AssetBundle);
+        pool.Dispose();loader.Complete(prefab);yield return Wait(task);
+        Assert.AreEqual(2,pool.TotalPooledCount);
+        Observe("POOL-02","Prewarm completed after Dispose and repopulated the old manager with 2 idle instances.");
+    }
+    [Test] public void ThrowingDespawnLeavesDuplicateGuardPoisoned()
+    {
+        var pool=Pool();var go=Go("throwing pool item");var callback=go.AddComponent<AuditPoolable>();callback.throwOnDespawn=true;
+        Assert.Throws<InvalidOperationException>(()=>pool.PushObj("key",go));callback.throwOnDespawn=false;pool.PushObj("key",go);
+        Assert.AreEqual(0,pool.TotalPooledCount);Assert.IsTrue(Get<HashSet<GameObject>>(pool,"pooledObjects").Contains(go));
+        Observe("POOL-03","OnDespawn exception leaves an active item in duplicate guard; a later valid return is rejected and pool count remains zero.");
+    }
+    [UnityTest] public IEnumerator SharedClipReleaseCrossCheck()
+    {
+        var pool=Pool();var task=pool.GetObjAsync("LifecycleAudit/AudioPrefab");yield return Wait(task);
+        Assert.IsNotNull(task.Result);objects.Add(task.Result);
+        var source=task.Result.GetComponent<AudioSource>();var clip=source.clip;Assert.IsNotNull(clip);
+        var audio=Audio();audio.PlayUniqueSound(ResourceClip);
+        float until=Time.realtimeSinceStartup+5;while(Get<AudioSource>(audio,"uniqueSound").clip==null&&Time.realtimeSinceStartup<until)yield return null;
+        Assert.AreSame(clip,Get<AudioSource>(audio,"uniqueSound").clip,"Both modules must share the native clip before release.");
+        audio.StopUniqueSound();
+        bool originalAlive=clip!=null;
+        bool dependentAlive=source.clip!=null;
+        int count=ResourcesLoader.Instance.GetAssetsRefCount<AudioClip>(ResourceClip);
+        yield return null;yield return null;
+        Observe("CROSS-CHECK","After stopping audio: direct refcount="+count+", original AudioClip alive="+originalAlive+", pool AudioSource clip alive="+dependentAlive+", after 2 frames alive="+(source.clip!=null)+". Invalidation hypothesis not reproduced when alive=true.");
+    }
+    [Test] public void DelayedBgmOverridesLaterDirectClip()
+    {
+        var loader=new DelayedAssets();var audio=Audio(loader);var direct=Clip("direct");var old=Clip("old delayed");
+        audio.PlayBKMusic("old",AssetLoadMethod.AssetBundle,0);audio.PlayBKMusic(direct,0);loader.Complete(old);
+        Assert.AreSame(old,Get<AudioSource>(audio,"bgmCurrent").clip);
+        Observe("AUDIO-01","Old async BGM replaced a later direct AudioClip request.");
+    }
+    [Test] public void DelayedUniqueOverridesLaterDirectClip()
+    {
+        var loader=new DelayedAssets();var audio=Audio(loader);var direct=Clip("direct");var old=Clip("old delayed");
+        audio.PlayUniqueSound("old",AssetLoadMethod.AssetBundle);audio.PlayUniqueSound(direct);loader.Complete(old);
+        Assert.AreSame(old,Get<AudioSource>(audio,"uniqueSound").clip);
+        Observe("AUDIO-02","Old async unique sound replaced a later direct AudioClip request.");
+    }
+    [Test] public void StopAllSoundDoesNotInvalidatePendingStackedSound()
+    {
+        var loader=new DelayedAssets();var audio=Audio(loader);var clip=Clip("delayed");AudioSource received=null;
+        audio.LoadSoundAndPlay("old",true,AssetLoadMethod.AssetBundle,s=>received=s);audio.StopAllSound();loader.Complete(clip);
+        Assert.IsNotNull(received);Assert.AreEqual(1,audio.PlayingSoundCount);
+        Observe("AUDIO-03","A pending stacked sound started after StopAllSound; PlayingSoundCount=1.");
+    }
+    [UnityTest] public IEnumerator AudioDoesNotRebindToRecreatedPublicMono()
+    {
+        var audio=Audio();audio.PlayBKMusic(Clip("one"),0);
+        Object.DestroyImmediate(PublicMono.Instance.gameObject);var mono=PublicMono.Instance;
+        audio.PlayBKMusic(Clip("two"),1);
+        Assert.AreEqual(0,mono.UpdateListenerCount);
+        yield return null;yield return null;yield return null;
+        Assert.AreEqual(0f,Get<float>(audio,"bgmFadeElapsed"));
+        Observe("AUDIO-04","New PublicMono has 0 audio listeners; requested crossfade elapsed remains zero.");
+    }
+}
+public class AuditPoolable : MonoBehaviour,IPoolable
+{
+    public bool throwOnDespawn;
+    public void OnSpawn() { }
+    public void OnDespawn() { if(throwOnDespawn)throw new InvalidOperationException("Audit expected OnDespawn error"); }
+}
+public class DelayedAssets : IAssetsLoader
+{
+    private readonly List<Action<Object>> pending=new List<Action<Object>>();
+    public void Complete(Object asset) { var list=pending.ToArray();pending.Clear();foreach(var callback in list)callback(asset); }
+    public Task<T> LoadAsync<T>(string path)where T:Object{var tcs=new TaskCompletionSource<T>();pending.Add(o=>tcs.TrySetResult(o as T));return tcs.Task;}
+    public void LoadAsync<T>(string path,UnityAction<T> callback)where T:Object{pending.Add(o=>callback(o as T));}
+    public Task<Object> LoadAsync(string path,Type type){var tcs=new TaskCompletionSource<Object>();pending.Add(o=>tcs.TrySetResult(o));return tcs.Task;}
+    public void LoadAsync(string path,Type type,UnityAction<Object> callback){pending.Add(o=>callback(o));}
+    public void LoadSceneAsync(string path,UnityAction a=null,UnityAction b=null){throw new NotSupportedException();}
+    public void LoadSceneAsync(string path,LoadSceneMode mode,UnityAction a=null,UnityAction b=null){throw new NotSupportedException();}
+    public void LoadAssemblyAsync(string path,UnityAction<Assembly> callback){throw new NotSupportedException();}
+    public Task<Assembly> LoadAssemblyAsync(string path){throw new NotSupportedException();}
+    public bool UnLoadAB(string name){return true;}
+    public void ClearAB(){}
+}

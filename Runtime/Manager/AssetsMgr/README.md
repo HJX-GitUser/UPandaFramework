@@ -11,3 +11,7 @@
 - ClearDic 是全局清理，会重置全部引用记录；业务模块通常应逐项释放。
 
 `FileUpdateTransaction` 是不依赖 Unity 的文件批次提交实现，由启动热更和二进制存档共用。仅用于应用独占的本地目录，不支持多进程并发提交。
+
+## 内部持有凭据
+
+对象池和音频使用内部 Acquire/AcquireAsync 与 AssetLease：保留对原缓存记录的身份校验，多个实例可共享一次加载。最后一个持有者释放时才归还计数；ClearDic 或加载器重建后旧凭据不能误减新记录。现有公开 Load/UnLoadAsset API 保留，业务仍需对这些手动 API 成对使用。

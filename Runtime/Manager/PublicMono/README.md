@@ -95,3 +95,7 @@ catch (Exception e) { /* 协程内部出错 */ }
 - `FinishJob` 的顺序不能变：先置 `finished`（防重入）→ 移除出表 → 释放取消注册 → `StopCoroutine` → 最后才 `Set` 结果（`Set` 可能同步内联执行调用方的续体，续体里若再操作协程表必须看到一致状态）。
 - `Awake` 之前不保证字段初始化器执行过：所有托管字段都通过 `EnsureInitialized()`（在 `OnAwake` 和每个注册入口调用）兜底，新增字段时请沿用这个习惯。
 - 改动后建议用工程外的真实编译校验（`get_errors` 在 Unity 工程里可能是假阴性）：从 `Library/EditorInstance.json` 的 `app_contents_path` 取 `Managed` / `MonoBleedingEdge\lib\mono\4.7.1-api` 作参考程序集，用 `dotnet <sdk>\Roslyn\bincore\csc.dll` 编译 `Runtime/` 下全部源码。注意**不要**把 `NetStandard\ref\2.1.0\netstandard.dll` 加进响应文件（会让 corlib 解析崩掉，出现上千个 CS0518）。
+
+## 生命周期联合回归补充
+
+监听记录显式区分“没有提供 owner”与“owner 的 Unity 对象已销毁”。前者持续更新直到主动注销；后者才自动移除。本轮通过实际帧回调验证强引用监听存活与销毁 owner 的清理，并验证音频在调度器重建后的重新绑定。

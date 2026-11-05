@@ -19,8 +19,7 @@
 //  生命周期 / 线程注意：
 //      · 纯 C# 单例（LazySingletonBase）。帧更新由 PublicMono 驱动，
 //        注册时机是"首次使用"而不是构造函数 —— PublicMono.Instance 在退出播放时返回 null。
-//      · Update 内部整体 try/catch：PublicMono 的 updateEvent 是多播委托，
-//        任一监听器抛异常会让排在它后面所有模块这一帧的 Update 全被跳过。
+//      · Update 内部兜底记录异常；PublicMono 对监听器分别隔离异常。
 //      · 本类实现 IDisposable，LazySingletonBase.Release() 会调 Dispose() 解绑更新。
 //
 //  使用示例：
@@ -32,6 +31,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -82,6 +82,17 @@ namespace UPandaGF
 
         // ---------- 其它 ----------
         private IAssetsLoader assetsLoader;             // 惰性获取（仅 AssetBundle 模式使用）
+        private PublicMono registeredMono;
+        private bool disposed;
+        private int soundGeneration;
+        private enum ClipKind { Bgm, Unique, Stacked, Sounds, All }
+        private sealed class ClipRequest
+        {
+            public ClipKind kind;
+            public readonly TaskCompletionSource<AssetLease<AudioClip>> result = new TaskCompletionSource<AssetLease<AudioClip>>();
+            public readonly TaskCompletionSource<bool> canceled = new TaskCompletionSource<bool>();
+        }
+        private readonly List<ClipRequest> clipRequests = new List<ClipRequest>();
         private bool updateRegistered;                  // 是否已注册到 PublicMono
 
         #endregion
@@ -119,26 +130,29 @@ namespace UPandaGF
 
         /// <summary>
         /// 按需创建常驻节点与播放组件、注册帧更新。
-        /// 所有对外 API 的第一行都会调用它，因此不存在"构造函数里碰 Unity API"的问题。
+        /// 播放入口调用它；构造函数不访问 Unity API。
         /// </summary>
-        private void EnsureSetup()
+        private bool EnsureSetup()
         {
+            if (disposed) return false;
             EnsureUpdateRegistered();
 
-            if (audioRoot != null) return;
+            if (audioRoot != null) return true;
 
             // 节点被外部销毁过（例如手动 Destroy）：先把旧记录的资源引用还回去，再重建
+            bgmRequestId++; uniqueRequestId++; soundGeneration++;
             ReleaseAllBgmClips();
+            uniqueClip.Release();
             ClearAllSounds();
             bgmCurrent = null;
             bgmIncoming = null;
-            bgmIsFading = false;
+            bgmIsFading = false; bgmPaused = false; CurrentBgmPath = null;
 
             audioRoot = new GameObject(AudioRootName);
             if (Application.isPlaying)
             {
                 // 切场景不销毁：否则 soundList / bgmSources 里的引用会变成"假 null"，
-                // 每帧访问它们会抛异常（并连带跳过 PublicMono 其它监听者的 Update）
+                // 更新逻辑需处理 Unity 对象被外部销毁的情况。
                 UnityEngine.Object.DontDestroyOnLoad(audioRoot);
             }
 
@@ -157,6 +171,8 @@ namespace UPandaGF
             soundNode.transform.SetParent(audioRoot.transform);
             soundObj = soundNode;
             uniqueSound = CreateSource(soundObj);
+            CancelRequests(ClipKind.All);
+            return true;
         }
 
         /// <summary>统一的 AudioSource 创建：2D 播放、不自动播放</summary>
@@ -171,19 +187,19 @@ namespace UPandaGF
         /// <summary>注册帧更新（惰性，避免在构造函数里触碰 Unity API）</summary>
         private void EnsureUpdateRegistered()
         {
-            if (updateRegistered) return;
-
-            PublicMono mono = PublicMono.Instance;   // 退出播放时为 null
+            PublicMono mono = PublicMono.Instance;
             if (mono == null) return;
-
+            if (updateRegistered && registeredMono == mono) return;
+            if (registeredMono != null) registeredMono.RemoveUpdateListener(Update);
             mono.AddUpdateListener(Update);
+            registeredMono = mono;
             updateRegistered = true;
         }
 
         /// <summary>帧更新：推进 BGM 淡变 + 回收播放完的音效</summary>
         private void Update()
         {
-            // 整体兜异常：PublicMono 的 updateEvent 是多播委托，这里抛出去会中断其它模块的更新
+            // 帧更新兜底，保留音频内部异常的日志。
             try
             {
                 UpdateBgmFade();
@@ -203,41 +219,20 @@ namespace UPandaGF
         /// </summary>
         public void Dispose()
         {
-            if (updateRegistered)
-            {
-                PublicMono mono = PublicMono.Instance;
-                if (mono != null) mono.RemoveUpdateListener(Update);
-                updateRegistered = false;
-            }
-
-            bgmRequestId++;      // 让还在加载中的回调作废
-            uniqueRequestId++;
-
-            bgmIsFading = false;
-            bgmPaused = false;
-            bgmCurrent = null;
-            bgmIncoming = null;
-            CurrentBgmPath = null;
-
-            ReleaseAllBgmClips();
-            ClearAllSounds();
-
-            if (uniqueSound != null)
-            {
-                uniqueSound.Stop();
-                uniqueSound.clip = null;
-            }
-            uniqueClip.Release();
-
-            if (audioRoot != null)
-            {
-                UnityEngine.Object.Destroy(audioRoot);
-                audioRoot = null;
-                soundObj = null;
-                uniqueSound = null;
-                bgmSources = null;
-                bgmClips = null;
-            }
+            if (disposed) return;
+            disposed = true;
+            if (registeredMono != null) registeredMono.RemoveUpdateListener(Update);
+            registeredMono = null; updateRegistered = false;
+            bgmRequestId++; uniqueRequestId++; soundGeneration++;
+            bgmIsFading = false; bgmPaused = false; CurrentBgmPath = null;
+            if (bgmSources != null)
+                foreach (var source in bgmSources) StopAndClearBgmSource(source);
+            ReleaseAllBgmClips(); ClearAllSounds(); StopUniqueSource(); uniqueClip.Release();
+            bgmCurrent = bgmIncoming = null;
+            if (audioRoot != null) UnityEngine.Object.Destroy(audioRoot);
+            audioRoot = null; soundObj = null; uniqueSound = null; bgmSources = null; bgmClips = null;
+            // 状态全部清理后再通知等待者，避免取消回调重入复活旧实例。
+            CancelRequests(ClipKind.All);
         }
 
         #endregion
@@ -254,13 +249,16 @@ namespace UPandaGF
         public void PlayBKMusic(string AcPath, AssetLoadMethod method = AssetLoadMethod.Resources,
                                 float fadeDuration = -1f, bool restartIfSame = false)
         {
-            EnsureSetup();
+            if (!EnsureSetup()) return;
 
             if (string.IsNullOrEmpty(AcPath))
             {
                 PLogger.LogError("[AudioMgr] PlayBKMusic 收到空路径");
                 return;
             }
+
+            int requestId = ++bgmRequestId;
+            CancelRequests(ClipKind.Bgm);
 
             // 同一首且没有正在进行的淡变：默认不重复加载（避免白白 AddRefCount、也避免从头重播）
             if (!restartIfSame && !bgmIsFading && bgmCurrent != null && CurrentBgmPath == AcPath)
@@ -269,23 +267,23 @@ namespace UPandaGF
                 return;
             }
 
-            int requestId = ++bgmRequestId;      // 让更早的请求作废
-            RequestClip(AcPath, method, (clip, needRelease) =>
+            RequestClip(AcPath, method, ClipKind.Bgm, lease =>
             {
+                var clip = lease?.Asset;
                 if (requestId != bgmRequestId || audioRoot == null)
                 {
-                    ReleaseClipRef(AcPath, needRelease);   // 过期请求：把自己加上的引用计数还回去
+                    lease?.Dispose();   // 过期请求：把自己加上的引用计数还回去
                     return;
                 }
 
                 if (clip == null)
                 {
                     PLogger.LogError($"[AudioMgr] 背景音乐加载失败，当前 BGM 保持不变：{AcPath}");
-                    ReleaseClipRef(AcPath, needRelease);
+                    lease?.Dispose();
                     return;
                 }
 
-                SwitchBgm(clip, AcPath, needRelease, fadeDuration);
+                SwitchBgm(clip, AcPath, lease, fadeDuration);
             });
         }
 
@@ -294,7 +292,7 @@ namespace UPandaGF
         /// </summary>
         public void PlayBKMusic(AudioClip clip, float fadeDuration = -1f, bool restartIfSame = false)
         {
-            EnsureSetup();
+            if (!EnsureSetup()) return;
 
             if (clip == null)
             {
@@ -302,13 +300,15 @@ namespace UPandaGF
                 return;
             }
 
+            bgmRequestId++;
+            CancelRequests(ClipKind.Bgm);
             if (!restartIfSame && !bgmIsFading && bgmCurrent != null && bgmCurrent.clip == clip)
             {
                 if (!bgmCurrent.isPlaying && !bgmPaused) bgmCurrent.Play();
                 return;
             }
 
-            SwitchBgm(clip, null, false, fadeDuration);
+            SwitchBgm(clip, null, null, fadeDuration);
         }
 
         /// <summary>
@@ -318,6 +318,7 @@ namespace UPandaGF
         public void StopBKMusic(float fadeDuration = -1f)
         {
             bgmRequestId++;      // 丢弃还在加载中的请求
+            CancelRequests(ClipKind.Bgm);
             bgmPaused = false;
 
             // 交叉淡变进行到一半时停止：以"正在淡入的那路"为当前，另一路直接收掉
@@ -368,7 +369,7 @@ namespace UPandaGF
         }
 
         /// <summary>真正切换 BGM：把 clip 放到"空闲的那一路"，两路交叉淡入淡出</summary>
-        private void SwitchBgm(AudioClip clip, string path, bool needRelease, float fadeDuration)
+        private void SwitchBgm(AudioClip clip, string path, AssetLease<AudioClip> lease, float fadeDuration)
         {
             float duration = fadeDuration < 0f ? bgmDefaultFade : Mathf.Max(0f, fadeDuration);
 
@@ -386,7 +387,7 @@ namespace UPandaGF
             target.loop = true;
             target.volume = duration > 0f ? 0f : bgmValue;
             target.Play();
-            SetBgmSourceClip(target, path, needRelease);
+            SetBgmSourceClip(target, lease);
 
             bgmPaused = false;                  // 明确要求播放 → 解除暂停
             CurrentBgmPath = path;
@@ -468,10 +469,10 @@ namespace UPandaGF
             return -1;
         }
 
-        private void SetBgmSourceClip(AudioSource source, string path, bool needRelease)
+        private void SetBgmSourceClip(AudioSource source, AssetLease<AudioClip> lease)
         {
             int index = IndexOfBgmSource(source);
-            if (index >= 0 && bgmClips[index] != null) bgmClips[index].Set(path, needRelease);
+            if (index >= 0 && bgmClips[index] != null) bgmClips[index].Set(lease);
         }
 
         private void ReleaseAllBgmClips()
@@ -494,7 +495,7 @@ namespace UPandaGF
         /// </summary>
         public void PlayUniqueSound(string AcPath, AssetLoadMethod method = AssetLoadMethod.Resources)
         {
-            EnsureSetup();
+            if (!EnsureSetup()) return;
 
             if (string.IsNullOrEmpty(AcPath))
             {
@@ -503,18 +504,20 @@ namespace UPandaGF
             }
 
             int requestId = ++uniqueRequestId;
-            RequestClip(AcPath, method, (clip, needRelease) =>
+            CancelRequests(ClipKind.Unique);
+            RequestClip(AcPath, method, ClipKind.Unique, lease =>
             {
+                var clip = lease?.Asset;
                 if (requestId != uniqueRequestId || audioRoot == null)
                 {
-                    ReleaseClipRef(AcPath, needRelease);
+                    lease?.Dispose();
                     return;
                 }
 
                 if (clip == null)
                 {
                     PLogger.LogError($"[AudioMgr] 唯一音效加载失败，保持上一个音效：{AcPath}");
-                    ReleaseClipRef(AcPath, needRelease);
+                    lease?.Dispose();
                     return;
                 }
 
@@ -523,14 +526,14 @@ namespace UPandaGF
                 StopUniqueSource();
                 uniqueClip.Release();
                 PlayOnSource(uniqueSound, clip, false);
-                uniqueClip.Set(AcPath, needRelease);
+                uniqueClip.Set(lease);
             });
         }
 
         /// <summary>播放唯一音效（直接给 AudioClip，资源由外部管理）</summary>
         public void PlayUniqueSound(AudioClip clip)
         {
-            EnsureSetup();
+            if (!EnsureSetup()) return;
 
             if (clip == null)
             {
@@ -538,6 +541,8 @@ namespace UPandaGF
                 return;
             }
 
+            uniqueRequestId++;
+            CancelRequests(ClipKind.Unique);
             StopUniqueSource();
             uniqueClip.Release();       // 同样：先解除 clip 引用再归还引用计数
             PlayOnSource(uniqueSound, clip, false);
@@ -559,6 +564,7 @@ namespace UPandaGF
 
             StopUniqueSource();
             uniqueClip.Release();
+            CancelRequests(ClipKind.Unique);
         }
 
         /// <summary>停播唯一音效并解除它持有的 clip 引用（释放顺序：先解除引用，再归还引用计数）</summary>
@@ -586,23 +592,25 @@ namespace UPandaGF
                                      AssetLoadMethod method = AssetLoadMethod.Resources,
                                      UnityAction<AudioSource> callBack = null)
         {
-            EnsureSetup();
+            if (!EnsureSetup()) { ResourcesLoader.InvokeCallbacks(callBack, (AudioSource)null); return; }
 
             if (string.IsNullOrEmpty(AcPath))
             {
                 PLogger.LogError("[AudioMgr] LoadSoundAndPlay 收到空路径");
-                if (callBack != null) callBack(null);
+                ResourcesLoader.InvokeCallbacks(callBack, (AudioSource)null);
                 return;
             }
 
-            RequestClip(AcPath, method, (clip, needRelease) =>
+            int epoch = soundGeneration;
+            RequestClip(AcPath, method, ClipKind.Stacked, lease =>
             {
+                var clip = lease?.Asset;
                 // 加载失败，或本类已经被 Dispose：明确以 null 回调，不给调用方"马上会被回收的空壳"
-                if (clip == null || audioRoot == null)
+                if (epoch != soundGeneration || clip == null || audioRoot == null || disposed)
                 {
-                    if (clip == null) PLogger.LogError($"[AudioMgr] 音效加载失败：{AcPath}");
-                    ReleaseClipRef(AcPath, needRelease);
-                    if (callBack != null) callBack(null);
+                    if (epoch == soundGeneration && !disposed && clip == null) PLogger.LogError($"[AudioMgr] 音效加载失败：{AcPath}");
+                    lease?.Dispose();
+                    ResourcesLoader.InvokeCallbacks(callBack, (AudioSource)null);
                     return;
                 }
 
@@ -610,10 +618,10 @@ namespace UPandaGF
                 PlayOnSource(source, clip, isLoop);
 
                 SoundHandle handle = new SoundHandle(source);
-                handle.clip.Set(AcPath, needRelease);
+                handle.clip.Set(lease);
                 soundList.Add(handle);
 
-                if (callBack != null) callBack(source);
+                ResourcesLoader.InvokeCallbacks(callBack, source);
             });
         }
 
@@ -672,11 +680,13 @@ namespace UPandaGF
         /// <summary>停止所有音效（含唯一音效）；背景音乐不受影响</summary>
         public void StopAllSound()
         {
+            soundGeneration++;
             ClearAllSounds();
 
             uniqueRequestId++;
             StopUniqueSource();
             uniqueClip.Release();
+            CancelRequests(ClipKind.Sounds);
         }
 
         /// <summary>回收播放完的音效</summary>
@@ -741,68 +751,65 @@ namespace UPandaGF
         #region 内部：加载与资源引用
 
         /// <summary>
-        /// 按加载方式异步加载 AudioClip。
-        /// 回调第二个参数表示"这次加载是否需要在用完后归还 ResourcesLoader 的引用计数"
-        /// （AssetBundle 模式按包整体卸载，不做单资源释放，所以传 false）。
-        /// 加载失败时会以 clip = null 回调。
+        /// 注册异步音频请求，完成时交付绑定原资源记录的持有凭据。
+        /// 失败或取消以 null 完成；迟到资源在后台归还，AB 包仍显式卸载。
         /// </summary>
-        private void RequestClip(string path, AssetLoadMethod method, UnityAction<AudioClip, bool> callback)
+        private void RequestClip(string path, AssetLoadMethod method, ClipKind kind, UnityAction<AssetLease<AudioClip>> callback)
         {
-            switch (method)
-            {
-                case AssetLoadMethod.Resources:
-                    ResourcesLoader loader = ResourcesLoader.Instance;
-                    if (loader == null)
-                    {
-                        PLogger.LogError($"[AudioMgr] ResourcesLoader 不可用（可能正在退出播放）：{path}");
-                        callback(null, false);
-                        return;
-                    }
-                    loader.LoadAsync<AudioClip>(path, clip => callback(clip, true));
-                    break;
-
-                case AssetLoadMethod.AssetBundle:
-                    IAssetsLoader bundleLoader = GetAssetsLoader();
-                    if (bundleLoader == null)
-                    {
-                        callback(null, false);      // 内部已经打过错误日志
-                        return;
-                    }
-                    bundleLoader.LoadAsync<AudioClip>(path, clip => callback(clip, false));
-                    break;
-
-                default:
-                    PLogger.LogError($"[AudioMgr] 不支持的加载方式：{method}（path:{path}）");
-                    callback(null, false);
-                    break;
-            }
+            var request = new ClipRequest { kind = kind };
+            clipRequests.Add(request);
+            _ = DeliverClip(request, callback);
+            _ = LoadClip(request, path, method);
         }
-
-        /// <summary>
-        /// AssetBundle 资源加载器（惰性获取）。
-        /// 注意：UPGameRoot 是饿汉单例，缺失时会自动创建实例，
-        /// 因此只有真正用到 AssetBundle 模式时才会去取它。
-        /// </summary>
+        private async Task DeliverClip(ClipRequest request, UnityAction<AssetLease<AudioClip>> callback)
+        {
+            var lease = await request.result.Task;
+            try { callback(lease); }
+            catch (Exception e) { lease?.Dispose(); Debug.LogException(e); }
+        }
+        private async Task<AssetLease<AudioClip>> AcquireClip(string path, AssetLoadMethod method)
+        {
+            if (method == AssetLoadMethod.Resources)
+            {
+                var loader = ResourcesLoader.Instance;
+                return loader != null ? await loader.AcquireAsync<AudioClip>(path) : null;
+            }
+            if (method != AssetLoadMethod.AssetBundle) return null;
+            var loaderAB = GetAssetsLoader();
+            var clip = loaderAB != null ? await loaderAB.LoadAsync<AudioClip>(path) : null;
+            return clip != null ? new AssetLease<AudioClip>(clip, null) : null;
+        }
+        private async Task LoadClip(ClipRequest request, string path, AssetLoadMethod method)
+        {
+            AssetLease<AudioClip> lease = null;
+            try
+            {
+                var native = AcquireClip(path, method);
+                if (await Task.WhenAny(native, request.canceled.Task) != native)
+                { _ = DisposeLateClip(native); return; }
+                lease = await native;
+                clipRequests.Remove(request);
+                if (request.result.TrySetResult(lease)) lease = null;
+            }
+            catch (Exception e) { Debug.LogException(e); }
+            finally { lease?.Dispose(); clipRequests.Remove(request); request.result.TrySetResult(null); }
+        }
+        private static async Task DisposeLateClip(Task<AssetLease<AudioClip>> task)
+        {
+            try { (await task)?.Dispose(); } catch (Exception e) { Debug.LogException(e); }
+        }
+        private void CancelRequests(ClipKind kind)
+        {
+            var canceled = clipRequests.FindAll(request => kind == ClipKind.All || request.kind == kind || (kind == ClipKind.Sounds && request.kind != ClipKind.Bgm));
+            foreach (var request in canceled) clipRequests.Remove(request);
+            foreach (var request in canceled) { request.canceled.TrySetResult(true); request.result.TrySetResult(null); }
+        }
         private IAssetsLoader GetAssetsLoader()
         {
+            if (assetsLoader is UnityEngine.Object unity && unity == null) assetsLoader = null;
             if (assetsLoader != null) return assetsLoader;
-
-            UPGameRoot root = UPGameRoot.Instance;
-            assetsLoader = root != null ? root.GetAssetsLoader() : null;
-            if (assetsLoader == null)
-            {
-                PLogger.LogError("[AudioMgr] 资源加载器不可用（UPGameRoot 未初始化或资源系统尚未就绪），AssetBundle 模式无法加载音频");
-            }
-            return assetsLoader;
-        }
-
-        /// <summary>归还一次 ResourcesLoader 的引用计数（AB 资源由 AB 管理器整体卸载，不在这里处理）</summary>
-        private static void ReleaseClipRef(string path, bool needRelease)
-        {
-            if (!needRelease || string.IsNullOrEmpty(path)) return;
-
-            ResourcesLoader loader = ResourcesLoader.Instance;
-            if (loader != null) loader.UnLoadAsset<AudioClip>(path, true);
+            var root = UPGameRoot.Instance;
+            return root != null && root.IsInited ? (assetsLoader = root.GetAssetsLoader()) : null;
         }
 
         #endregion
@@ -816,24 +823,9 @@ namespace UPandaGF
         /// </summary>
         private sealed class PlayingClip
         {
-            private string path;
-            private bool needRelease;
-
-            public void Set(string newPath, bool newNeedRelease)
-            {
-                path = newPath;
-                needRelease = newNeedRelease;
-            }
-
-            /// <summary>归还引用计数：isDel = true 表示引用归零时真正从缓存里移除</summary>
-            public void Release()
-            {
-                if (!needRelease || string.IsNullOrEmpty(path)) return;
-
-                ReleaseClipRef(path, true);
-                path = null;
-                needRelease = false;
-            }
+            private AssetLease<AudioClip> lease;
+            public void Set(AssetLease<AudioClip> value) { Release(); lease = value; }
+            public void Release() { var old = lease; lease = null; old?.Dispose(); }
         }
 
         /// <summary>一个正在播放的叠加音效</summary>

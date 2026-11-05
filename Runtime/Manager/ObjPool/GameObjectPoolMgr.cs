@@ -6,534 +6,327 @@ using UnityEngine.Events;
 
 namespace UPandaGF
 {
-    /// <summary>
-    /// 对象池容器：按 key（资源路径）归类保存同一类对象的空闲实例。
-    /// 内部使用 LIFO 栈（最近归还的最先被复用），可选在 Hierarchy 中按层级收纳。
-    /// </summary>
+    /// <summary>空闲实例容器。管理器使用原始出入栈，在状态提交后统一分发业务回调。</summary>
     public class PoolData
     {
-        private readonly string containerName;                     // 容器名（即池的 key）
+        private readonly string containerName;
         private readonly Stack<GameObject> poolList = new Stack<GameObject>();
-
-        private GameObject fatherObj;                              // 层级收纳用的父节点（开启收纳时惰性创建）
-
-        /// <summary>当前缓存的空闲对象数量</summary>
-        public int Count { get { return poolList.Count; } }
-
-        /// <summary>层级收纳节点（未开启收纳或尚未创建时为 null）</summary>
-        public GameObject FatherObj { get { return fatherObj; } }
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="containerName">容器名（一般为资源路径）</param>
-        public PoolData(string containerName)
+        private GameObject fatherObj;
+        public int Count => poolList.Count;
+        public GameObject FatherObj => fatherObj;
+        public PoolData(string containerName) { this.containerName = string.IsNullOrEmpty(containerName) ? "Pool" : containerName; }
+        internal void PushRaw(GameObject obj, GameObject root, bool layout)
         {
-            this.containerName = string.IsNullOrEmpty(containerName) ? "Pool" : containerName;
+            obj.SetActive(false);
+            if (layout && root != null)
+            {
+                if (fatherObj == null) { fatherObj = new GameObject(containerName + "_F"); fatherObj.transform.SetParent(root.transform); }
+                obj.transform.SetParent(fatherObj.transform);
+            }
+            poolList.Push(obj);
         }
-
-        /// <summary>
-        /// 对象入池：回调 OnDespawn -> 失活 -> 压栈 ->（开启收纳时）挂到容器节点下。
-        /// 超出上限时直接销毁对象。
-        /// </summary>
-        /// <param name="obj">要回收的对象</param>
-        /// <param name="poolRoot">对象池根节点（仅收纳模式需要，可为 null）</param>
-        /// <param name="openLayout">是否按层级收纳</param>
-        /// <param name="maxCount">允许缓存的空闲对象上限，0 = 不限（每次入池实时读取）</param>
-        /// <returns>是否真的放进了池子（false 表示超出上限已被销毁）</returns>
+        internal GameObject PopRaw()
+        {
+            while (poolList.Count > 0)
+            {
+                var obj = poolList.Pop();
+                if (obj == null) continue;
+                if (fatherObj != null && obj.transform.parent == fatherObj.transform) obj.transform.SetParent(null);
+                return obj;
+            }
+            return null;
+        }
+        internal void Remove(GameObject obj)
+        {
+            if (poolList.Count == 0) return;
+            var items = poolList.ToArray(); poolList.Clear();
+            for (int i = items.Length - 1; i >= 0; i--)
+                if (items[i] != null && !ReferenceEquals(items[i], obj)) poolList.Push(items[i]);
+        }
         public bool PushObj(GameObject obj, GameObject poolRoot, bool openLayout, int maxCount)
         {
             if (obj == null) return false;
-
-            // 超出上限：不缓存，直接销毁，避免池无限膨胀
-            if (maxCount > 0 && poolList.Count >= maxCount)
-            {
-                UnityEngine.Object.Destroy(obj);
-                return false;
-            }
-
-            NotifyDespawn(obj);          // 先给业务一次复位机会（此时对象还是激活状态）
-            obj.SetActive(false);
-            poolList.Push(obj);
-
-            if (openLayout)
-            {
-                GameObject father = EnsureFatherObj(poolRoot);
-                if (father != null)
-                {
-                    obj.transform.SetParent(father.transform);
-                }
-            }
-
-            return true;
+            try { NotifyDespawn(obj); }
+            catch (Exception e) { Debug.LogException(e); return false; }
+            if (maxCount > 0 && Count >= maxCount) { UnityEngine.Object.Destroy(obj); return false; }
+            PushRaw(obj, poolRoot, openLayout); return true;
         }
-
-        /// <summary>
-        /// 对象出池：弹栈 -> 必要的话脱离父节点 -> 激活 -> 回调 OnSpawn。
-        /// 池为空（或对象已被外部销毁）时返回 null。
-        /// </summary>
         public GameObject GetObj()
         {
-            while (poolList.Count > 0)
-            {
-                GameObject obj = poolList.Pop();
-
-                // 对象可能在池里被外部 Destroy 掉了，跳过
-                if (obj == null) continue;
-
-                // 只脱离"本容器挂上去的"父节点：不再依赖布局开关，
-                // 避免开关在运行期被改动后对象一直留在池节点下
-                if (fatherObj != null && obj.transform.parent == fatherObj.transform)
-                {
-                    obj.transform.SetParent(null);
-                }
-
-                obj.SetActive(true);
-                NotifySpawn(obj);
-                return obj;
-            }
-
-            return null;
+            var obj = PopRaw(); if (obj == null) return null;
+            try { obj.SetActive(true); NotifySpawn(obj); return obj; }
+            catch (Exception e) { Debug.LogException(e); UnityEngine.Object.Destroy(obj); return null; }
         }
-
-        /// <summary>
-        /// 销毁容器内所有空闲对象与容器节点。
-        /// 注意：已经取出、正在使用中的对象不属于池，不会被销毁（由调用方负责）。
-        /// </summary>
         public void Dispose()
         {
-            while (poolList.Count > 0)
-            {
-                GameObject obj = poolList.Pop();
-                if (obj != null) UnityEngine.Object.Destroy(obj);
-            }
-
-            if (fatherObj != null)
-            {
-                UnityEngine.Object.Destroy(fatherObj);
-                fatherObj = null;
-            }
+            while (poolList.Count > 0) { var obj = poolList.Pop(); if (obj != null) UnityEngine.Object.Destroy(obj); }
+            if (fatherObj != null) UnityEngine.Object.Destroy(fatherObj);
+            fatherObj = null;
         }
-
-        /// <summary>按需创建层级收纳节点</summary>
-        private GameObject EnsureFatherObj(GameObject poolRoot)
-        {
-            if (fatherObj != null) return fatherObj;
-            if (poolRoot == null) return null;
-
-            fatherObj = new GameObject(containerName + "_F");
-            fatherObj.transform.SetParent(poolRoot.transform);
-            return fatherObj;
-        }
-
-        /// <summary>回调根节点上的 IPoolable（不递归子物体）</summary>
-        private static void NotifySpawn(GameObject obj)
-        {
-            IPoolable poolable = obj.GetComponent<IPoolable>();
-            if (poolable != null) poolable.OnSpawn();
-        }
-
-        /// <summary>回调根节点上的 IPoolable（不递归子物体）</summary>
-        private static void NotifyDespawn(GameObject obj)
-        {
-            IPoolable poolable = obj.GetComponent<IPoolable>();
-            if (poolable != null) poolable.OnDespawn();
-        }
+        internal static void NotifySpawn(GameObject obj) { obj.GetComponent<IPoolable>()?.OnSpawn(); }
+        internal static void NotifyDespawn(GameObject obj) { obj.GetComponent<IPoolable>()?.OnDespawn(); }
     }
 
-    /// <summary>
-    /// GameObject 对象池（纯 C# 懒加载单例）。
-    ///
-    /// 特性：
-    ///   - 按资源路径分容器缓存对象，池中有货时零加载、零分配（除出池本身）
-    ///   - 支持 Resources / AssetBundle 两种加载方式；池空时自动加载并实例化
-    ///   - 异步取对象提供 Task 与回调两种形式；同步取对象仅支持 Resources（已标记过时）
-    ///   - 可选层级收纳（isOpenLayout），开发期便于在 Hierarchy 查看
-    ///   - 支持单个容器的缓存上限（maxCountPerKey）与预热（Prewarm）
-    ///   - 可选的 IPoolable 回调，用于复用对象时复位状态
-    ///
-    /// 详细说明与示例见同目录 README.md。
-    /// </summary>
+    /// <summary>主线程对象池。一个条目持有一份预制体加载引用，实例共享凭据直到各自销毁。</summary>
     public class GameObjectPoolMgr : LazySingletonBase<GameObjectPoolMgr>, IDisposable
     {
-        /// <summary>
-        /// 对象放回池后是否在 Hierarchy 中按层级收纳（<key>_F 容器挂到 Pool 节点下）。
-        /// 开发期方便查看；打包时可设为 false 省一点开销。
-        /// 说明：该开关只影响"收纳"，运行期开关切换不会再导致对象取不出来（出池时按实际父节点判断）。
-        /// </summary>
-        public static bool isOpenLayout = true;
-
-        /// <summary>单个容器允许缓存的空闲对象上限，0 = 不限；超出上限的对象会被直接销毁</summary>
-        public int maxCountPerKey = 0;
-
-        /// <summary>Resources 异步加载超时（秒），超时视为加载失败</summary>
-        public float loadTimeout = 15f;
-
-        private Dictionary<string, PoolData> poolDic;
-        private readonly HashSet<GameObject> pooledObjects = new HashSet<GameObject>();   // 已在池中的对象，防止重复入池导致"一个实例被取两次"
-        private GameObject poolObj;                 // 池根节点（仅收纳模式需要）
-
-        private ResourcesLoader resourcesLoader;    // 惰性获取
-        private IAssetsLoader assetsLoader;         // 惰性获取（仅 AssetBundle 模式使用）
-
-        protected override void OnInit()
+        private sealed class Entry
         {
-            poolDic = new Dictionary<string, PoolData>();
+            public string path;
+            public AssetLoadMethod method;
+            public int generation;
+            public PoolData data;
+            public AssetLease<GameObject> prefab;
+            public TaskCompletionSource<AssetLease<GameObject>> loading;
+            public readonly TaskCompletionSource<bool> canceled = new TaskCompletionSource<bool>();
         }
-
-        // ==================== 查询 ====================
-
-        /// <summary>所有容器中缓存的空闲对象总数</summary>
+        public static bool isOpenLayout = true;
+        public int maxCountPerKey;
+        public float loadTimeout = 15f;
+        private readonly Dictionary<string, Entry> entries = new Dictionary<string, Entry>();
+        private readonly HashSet<GameObject> pooledObjects = new HashSet<GameObject>();
+        private readonly HashSet<PoolInstanceLease> instances = new HashSet<PoolInstanceLease>();
+        private GameObject poolObj;
+        private ResourcesLoader resourcesLoader;
+        private IAssetsLoader assetsLoader;
+        private int generation, creating;
+        private bool disposed;
+        private static string Key(string path, AssetLoadMethod method) { return (int)method + ":" + path; }
         public int TotalPooledCount
         {
-            get
-            {
-                int total = 0;
-                if (poolDic == null) return total;
-
-                foreach (KeyValuePair<string, PoolData> pair in poolDic)
-                {
-                    total += pair.Value.Count;
-                }
-                return total;
-            }
+            get { int count = 0; foreach (var entry in entries.Values) count += entry.data.Count; return count; }
         }
-
-        /// <summary>取指定 key 的容器中空闲对象数量（没有该容器时返回 0）</summary>
         public int PooledCount(string path)
         {
-            PoolData data;
-            return TryGetPool(path, out data) ? data.Count : 0;
+            int count = 0; foreach (var entry in entries.Values) if (entry.path == path) count += entry.data.Count; return count;
         }
-
-        /// <summary>是否已经存在该 key 的容器</summary>
         public bool Contains(string path)
         {
-            return poolDic != null && !string.IsNullOrEmpty(path) && poolDic.ContainsKey(path);
+            foreach (var entry in entries.Values) if (entry.path == path) return true; return false;
         }
-
-        // ==================== 取对象 ====================
-
-        /// <summary>
-        /// 异步取对象（推荐）
-        /// </summary>
-        /// <param name="path">路径【Resources 路径下不需要后缀，AssetBundle 需要后缀】</param>
-        /// <param name="loadMethod">加载方式</param>
-        /// <returns>池中有货直接返回；否则加载并实例化。失败（含超时）返回 null</returns>
+        private Entry EntryFor(string path, AssetLoadMethod method)
+        {
+            Entry entry; string key = Key(path, method);
+            if (!entries.TryGetValue(key, out entry))
+            {
+                entry = new Entry { path = path, method = method, generation = generation, data = new PoolData(path) };
+                entries.Add(key, entry);
+            }
+            return entry;
+        }
+        private bool Current(Entry entry) { return !disposed && entry.generation == generation; }
         public async Task<GameObject> GetObjAsync(string path, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                PLogger.LogError("[GameObjectPoolMgr] path 为空，无法取对象");
-                return null;
-            }
-
-            GameObject pooled;
-            if (TryGetFromPool(path, out pooled)) return pooled;
-
-            GameObject prefab = await LoadObjAsync(path, loadMethod);
-            return CreateInstance(path, prefab);
+            if (disposed || string.IsNullOrEmpty(path)) return null;
+            var entry = EntryFor(path, loadMethod);
+            if (entry.data.Count > 0) return SpawnCached(entry);
+            var prefab = await Prefab(entry);
+            return Current(entry) && prefab != null ? Create(entry, prefab) : null;
         }
-
-        /// <summary>
-        /// 异步取对象（回调形式，与框架其它异步 API 风格一致）。
-        /// 失败时同样会以 null 回调，调用方需判空。
-        /// </summary>
-        /// <param name="path">路径【Resources 路径下不需要后缀，AssetBundle 需要后缀】</param>
-        /// <param name="callback">结果回调（失败传 null）</param>
-        /// <param name="loadMethod">加载方式</param>
         public void GetObjAsync(string path, UnityAction<GameObject> callback, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                PLogger.LogError("[GameObjectPoolMgr] path 为空，无法取对象");
-                if (callback != null) callback(null);
-                return;
-            }
-
-            GameObject pooled;
-            if (TryGetFromPool(path, out pooled))
-            {
-                if (callback != null) callback(pooled);
-                return;
-            }
-
-            switch (loadMethod)
-            {
-                case AssetLoadMethod.Resources:
-                    ResourcesLoaderRef.LoadAsync<GameObject>(path, (asset) =>
-                    {
-                        if (callback != null) callback(CreateInstance(path, asset));
-                    });
-                    break;
-
-                case AssetLoadMethod.AssetBundle:
-                    IAssetsLoader loader = AssetsLoaderRef;
-                    if (loader == null)
-                    {
-                        if (callback != null) callback(null);
-                        return;
-                    }
-                    loader.LoadAsync<GameObject>(path, (asset) =>
-                    {
-                        if (callback != null) callback(CreateInstance(path, asset));
-                    });
-                    break;
-
-                default:
-                    PLogger.LogError($"[GameObjectPoolMgr] 不支持的加载方式：{loadMethod}");
-                    if (callback != null) callback(null);
-                    break;
-            }
+            if (callback != null) _ = Deliver(GetObjAsync(path, loadMethod), callback);
         }
-
-        /// <summary>
-        /// 取对象【同步】—— 仅支持 Editor/Resources 模式；AssetBundle 必须用异步。
-        /// 内部走 ResourcesLoader，与框架的缓存/引用计数保持一致。
-        /// </summary>
-        /// <param name="path">Resources 路径（不需要后缀）</param>
-        /// <param name="loadMethod">加载方式，传 AssetBundle 会直接失败返回 null</param>
-        [Obsolete("使用AssetBundle时不支持该方法，请改用 GetObjAsync")]
+        private static async Task Deliver(Task<GameObject> task, UnityAction<GameObject> callback)
+        {
+            GameObject result = null;
+            try { result = await task; } catch (Exception e) { Debug.LogException(e); }
+            ResourcesLoader.InvokeCallbacks(callback, result);
+        }
+        [Obsolete("使用 AssetBundle 时请改用 GetObjAsync")]
         public GameObject GetObj(string path, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
         {
-            if (string.IsNullOrEmpty(path))
+            if (disposed || string.IsNullOrEmpty(path) || loadMethod != AssetLoadMethod.Resources) return null;
+            var entry = EntryFor(path, loadMethod);
+            if (entry.data.Count > 0) return SpawnCached(entry);
+            if (entry.prefab != null && entry.prefab.Asset == null) { entry.prefab.Dispose(); entry.prefab = null; }
+            if (entry.prefab == null)
             {
-                PLogger.LogError("[GameObjectPoolMgr] path 为空，无法取对象");
-                return null;
+                var loader = ResourcesLoaderRef;
+                var acquired = loader != null ? loader.Acquire<GameObject>(path) : null;
+                // 同步接管异步 Resources 请求时，异步续体可能已先提交同一条目。
+                if (entry.prefab == null) entry.prefab = acquired;
+                else acquired?.Dispose();
             }
-
-            GameObject pooled;
-            if (TryGetFromPool(path, out pooled)) return pooled;
-
-            if (loadMethod == AssetLoadMethod.AssetBundle)
-            {
-                PLogger.LogError("使用AssetBundle加载不支持同步方式获取，请使用异步方法加载:【GetObjAsync(path, AssetLoadMethod.AssetBundle);】");
-                return null;
-            }
-
-            return CreateInstance(path, ResourcesLoaderRef.Load<GameObject>(path));
+            return Current(entry) && entry.prefab != null ? Create(entry, entry.prefab) : null;
         }
-
-        // ==================== 回收 / 预热 / 清空 ====================
-
-        /// <summary>
-        /// 把对象放回对象池。
-        /// </summary>
-        /// <param name="name">池的 key（必须是当初取对象时用的同一个 path）</param>
-        /// <param name="obj">要回收的对象；同一个对象重复入池会被忽略并给出警告</param>
-        public void PushObj(string name, GameObject obj)
-        {
-            if (obj == null)
-            {
-                PLogger.LogError($"[GameObjectPoolMgr] PushObj 收到 null 对象，key:{name}");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(name))
-            {
-                PLogger.LogError($"[GameObjectPoolMgr] PushObj 的 key 为空，对象：{obj.name}");
-                return;
-            }
-
-            // 同一个对象不允许重复入池（否则两次出池会拿到同一个实例）
-            if (!pooledObjects.Add(obj))
-            {
-                PLogger.LogWarning($"[GameObjectPoolMgr] 对象 {obj.name} 已经在池中，忽略重复入池");
-                return;
-            }
-
-            PoolData data;
-            if (!poolDic.TryGetValue(name, out data))
-            {
-                data = new PoolData(name);
-                poolDic.Add(name, data);
-            }
-
-            // 超出上限时 PoolData 会直接销毁对象，此时要把标记撤掉
-            if (!data.PushObj(obj, GetPoolRoot(), isOpenLayout, maxCountPerKey))
-            {
-                pooledObjects.Remove(obj);
-            }
-        }
-
-        /// <summary>
-        /// 预热：提前加载并实例化若干个对象放入池中，避免首次取对象时的加载尖峰。
-        /// </summary>
-        /// <param name="path">路径【Resources 路径下不需要后缀，AssetBundle 需要后缀】</param>
-        /// <param name="count">预实例化数量</param>
-        /// <param name="loadMethod">加载方式</param>
         public async Task Prewarm(string path, int count, AssetLoadMethod loadMethod = AssetLoadMethod.Resources)
         {
-            if (string.IsNullOrEmpty(path) || count <= 0) return;
-
-            GameObject prefab = await LoadObjAsync(path, loadMethod);
-            if (prefab == null)
+            if (disposed || string.IsNullOrEmpty(path) || count <= 0) return;
+            var entry = EntryFor(path, loadMethod);
+            if (maxCountPerKey > 0) count = Math.Min(count, Math.Max(0, maxCountPerKey - entry.data.Count));
+            if (count == 0) return;
+            var prefab = await Prefab(entry);
+            if (prefab == null || !Current(entry)) return;
+            for (int i = 0; i < count && Current(entry); i++)
             {
-                PLogger.LogError($"[GameObjectPoolMgr] 预热失败，资源加载不出来。path:{path}");
+                if (maxCountPerKey > 0 && entry.data.Count >= maxCountPerKey) break;
+                var obj = Create(entry, prefab);
+                if (obj == null) break;
+                PushObj(path, obj);
+            }
+        }
+        private Task<AssetLease<GameObject>> Prefab(Entry entry)
+        {
+            if (!Current(entry)) return Task.FromResult<AssetLease<GameObject>>(null);
+            if (entry.prefab != null && entry.prefab.Asset != null) return Task.FromResult(entry.prefab);
+            entry.prefab?.Dispose(); entry.prefab = null;
+            if (entry.loading != null) return entry.loading.Task;
+            var completion = new TaskCompletionSource<AssetLease<GameObject>>();
+            entry.loading = completion;
+            _ = LoadPrefab(entry, completion);
+            return completion.Task;
+        }
+        private async Task LoadPrefab(Entry entry, TaskCompletionSource<AssetLease<GameObject>> completion)
+        {
+            AssetLease<GameObject> lease = null;
+            try
+            {
+                Task<AssetLease<GameObject>> native = LoadLease(entry.path, entry.method);
+                Task winner = loadTimeout > 0
+                    ? await Task.WhenAny(native, entry.canceled.Task, Task.Delay(TimeSpan.FromSeconds(loadTimeout)))
+                    : await Task.WhenAny(native, entry.canceled.Task);
+                if (winner != native)
+                {
+                    _ = DisposeLate(native);
+                    if (Current(entry) && winner != entry.canceled.Task) PLogger.LogError("对象池资源加载超时：" + entry.path);
+                    return;
+                }
+                lease = await native;
+                if (!Current(entry)) return;
+                if (entry.prefab == null) { entry.prefab = lease; lease = null; }
+                completion.TrySetResult(entry.prefab);
+            }
+            catch (Exception e) { Debug.LogException(e); }
+            finally
+            {
+                lease?.Dispose();
+                if (ReferenceEquals(entry.loading, completion)) entry.loading = null;
+                completion.TrySetResult(null);
+            }
+        }
+        private static async Task DisposeLate(Task<AssetLease<GameObject>> task)
+        {
+            try { (await task)?.Dispose(); } catch (Exception e) { Debug.LogException(e); }
+        }
+        private async Task<AssetLease<GameObject>> LoadLease(string path, AssetLoadMethod method)
+        {
+            if (method == AssetLoadMethod.Resources)
+            {
+                var loader = ResourcesLoaderRef;
+                return loader != null ? await loader.AcquireAsync<GameObject>(path) : null;
+            }
+            if (method != AssetLoadMethod.AssetBundle) return null;
+            var assets = AssetsLoaderRef;
+            var prefab = assets != null ? await assets.LoadAsync<GameObject>(path) : null;
+            return prefab != null ? new AssetLease<GameObject>(prefab, null) : null;
+        }
+        private GameObject Create(Entry entry, AssetLease<GameObject> prefab)
+        {
+            var retained = prefab.Retain();
+            GameObject obj = null;
+            try
+            {
+                if (retained == null || retained.Asset == null) return null;
+                creating++;
+                try { obj = UnityEngine.Object.Instantiate(retained.Asset); }
+                finally { creating--; }
+                if (!Current(entry)) { UnityEngine.Object.Destroy(obj); return null; }
+                var tag = obj.AddComponent<PoolInstanceLease>(); tag.hideFlags = HideFlags.HideInInspector;
+                tag.owner = this; tag.path = entry.path; tag.method = entry.method; tag.generation = generation;
+                tag.lease = retained; retained = null; tag.transitioning = true;
+                instances.Add(tag);
+                obj.SetActive(true); PoolData.NotifySpawn(obj);
+                if (!Current(entry) || obj == null) { if (obj != null) UnityEngine.Object.Destroy(obj); return null; }
+                tag.transitioning = false;
+                return obj;
+            }
+            catch (Exception e) { Debug.LogException(e); if (obj != null) UnityEngine.Object.Destroy(obj); return null; }
+            finally { retained?.Dispose(); }
+        }
+        private GameObject SpawnCached(Entry entry)
+        {
+            var obj = entry.data.PopRaw();
+            if (obj == null) return null;
+            if (!Current(entry)) { UnityEngine.Object.Destroy(obj); return null; }
+            var tag = obj.GetComponent<PoolInstanceLease>();
+            pooledObjects.Remove(obj);
+            tag.container = null; tag.cached = false; tag.transitioning = true;
+            try
+            {
+                obj.SetActive(true); PoolData.NotifySpawn(obj);
+                if (!Current(entry) || obj == null) { if (obj != null) UnityEngine.Object.Destroy(obj); return null; }
+                tag.transitioning = false; return obj;
+            }
+            catch (Exception e) { Debug.LogException(e); if (obj != null) UnityEngine.Object.Destroy(obj); return null; }
+        }
+        public void PushObj(string name, GameObject obj)
+        {
+            if (obj == null || string.IsNullOrEmpty(name)) return;
+            var tag = obj.GetComponent<PoolInstanceLease>();
+            if (tag != null && tag.owner != this)
+            {
+                if (tag.owner != null && tag.owner.disposed) UnityEngine.Object.Destroy(obj);
+                else PLogger.LogWarning("实例属于另一个对象池，拒绝归还");
                 return;
             }
-
-            for (int i = 0; i < count; i++)
+            if (tag != null && tag.path != name) { PLogger.LogWarning("归还路径与实例来源不一致：" + name); return; }
+            if (disposed || (tag != null && tag.generation != generation))
+            { if (tag != null && tag.owner == this) UnityEngine.Object.Destroy(obj); return; }
+            if (tag == null)
             {
-                PushObj(path, GameObject.Instantiate(prefab));
+                if (creating > 0) { PLogger.LogWarning("实例化期间不能归还尚未交付的对象"); return; }
+                tag = obj.AddComponent<PoolInstanceLease>(); tag.hideFlags = HideFlags.HideInInspector;
+                tag.owner = this; tag.path = name; tag.method = AssetLoadMethod.Resources; tag.generation = generation; instances.Add(tag);
             }
+            if (tag.cached || tag.transitioning) { PLogger.LogWarning("忽略重复或重入归还：" + name); return; }
+            var entry = EntryFor(name, tag.method);
+            tag.transitioning = true;
+            try
+            {
+                PoolData.NotifyDespawn(obj);
+                if (!Current(entry) || obj == null) { if (obj != null) UnityEngine.Object.Destroy(obj); return; }
+                if (maxCountPerKey > 0 && entry.data.Count >= maxCountPerKey) { UnityEngine.Object.Destroy(obj); return; }
+                entry.data.PushRaw(obj, GetPoolRoot(), isOpenLayout);
+                if (!Current(entry) || obj == null) { if (obj != null) UnityEngine.Object.Destroy(obj); return; }
+                tag.container = entry.data; tag.cached = true; pooledObjects.Add(obj);
+            }
+            catch (Exception e) { Debug.LogException(e); } // 未提交入池，仍由调用方持有，可以重试归还。
+            finally { if (tag != null) tag.transitioning = false; }
         }
-
-        /// <summary>
-        /// 清空对象池：销毁所有容器中缓存的空闲对象、容器节点与池根节点。
-        /// 主要用于场景切换；已经取出、正在使用中的对象不会被销毁（由调用方负责）。
-        /// </summary>
+        internal void Forget(PoolInstanceLease tag)
+        {
+            pooledObjects.Remove(tag.gameObject); instances.Remove(tag);
+        }
         public void Clear()
         {
-            if (poolDic != null)
+            generation++;
+            var old = new List<Entry>(entries.Values); entries.Clear(); pooledObjects.Clear();
+            var root = poolObj; poolObj = null;
+            foreach (var entry in old)
             {
-                foreach (KeyValuePair<string, PoolData> pair in poolDic)
-                {
-                    if (pair.Value != null) pair.Value.Dispose();
-                }
-                poolDic.Clear();
+                entry.canceled.TrySetResult(true);
+                entry.loading?.TrySetResult(null);
+                entry.data.Dispose(); entry.prefab?.Dispose(); entry.prefab = null;
             }
-
-            pooledObjects.Clear();
-
-            if (poolObj != null)
-            {
-                UnityEngine.Object.Destroy(poolObj);
-                poolObj = null;
-            }
+            if (root != null) UnityEngine.Object.Destroy(root);
         }
-
-        /// <summary>供 LazySingletonBase.Release() 调用，等价于 Clear()</summary>
-        public void Dispose()
-        {
-            Clear();
-        }
-
-        // ==================== 内部实现 ====================
-
-        /// <summary>从池中取出一个对象；池中没有可用对象时返回 false</summary>
-        private bool TryGetFromPool(string path, out GameObject obj)
-        {
-            obj = null;
-
-            PoolData data;
-            if (!TryGetPool(path, out data) || data.Count == 0) return false;
-
-            obj = data.GetObj();
-            if (obj == null) return false;
-
-            pooledObjects.Remove(obj);
-            return true;
-        }
-
-        /// <summary>取容器（顺带兜底 poolDic 未初始化的情况）</summary>
-        private bool TryGetPool(string path, out PoolData data)
-        {
-            data = null;
-            if (string.IsNullOrEmpty(path)) return false;
-
-            if (poolDic == null) poolDic = new Dictionary<string, PoolData>();
-            return poolDic.TryGetValue(path, out data) && data != null;
-        }
-
-        /// <summary>按需创建池根节点（关闭收纳时不需要）</summary>
+        public void Dispose() { if (disposed) return; disposed = true; Clear(); }
         private GameObject GetPoolRoot()
         {
             if (!isOpenLayout) return null;
-
             if (poolObj == null) poolObj = new GameObject("Pool");
             return poolObj;
         }
-
-        /// <summary>实例化预制体；prefab 为 null（加载失败）时打印错误并返回 null</summary>
-        private GameObject CreateInstance(string path, GameObject prefab)
-        {
-            if (prefab == null)
-            {
-                PLogger.LogError($"[GameObjectPoolMgr] 加载失败，无法创建对象。path:{path}");
-                return null;
-            }
-
-            // Instantiate 会自动复制预制体的名字，无需（也不应该）去改共享资源的名字
-            return GameObject.Instantiate(prefab);
-        }
-
-        /// <summary>按加载方式加载预制体（不实例化）</summary>
-        private async Task<GameObject> LoadObjAsync(string path, AssetLoadMethod loadMethod)
-        {
-            switch (loadMethod)
-            {
-                case AssetLoadMethod.Resources:
-                    return await LoadByResourcesAsync(path);
-
-                case AssetLoadMethod.AssetBundle:
-                    IAssetsLoader loader = AssetsLoaderRef;
-                    if (loader == null) return null;
-                    return await loader.LoadAsync<GameObject>(path);
-
-                default:
-                    PLogger.LogError($"[GameObjectPoolMgr] 不支持的加载方式：{loadMethod}");
-                    return null;
-            }
-        }
-
-        /// <summary>
-        /// Resources 异步加载：ResourcesLoader 只提供回调形式，
-        /// 这里用 Task + 超时包一层，避免回调迟迟不来时永久等待。
-        /// </summary>
-        private async Task<GameObject> LoadByResourcesAsync(string path)
-        {
-            GameObject asset = null;
-            bool isLoaded = false;
-
-            ResourcesLoaderRef.LoadAsync<GameObject>(path, (obj) =>
-            {
-                asset = obj;
-                isLoaded = true;
-            });
-
-            float deadline = Time.realtimeSinceStartup + Mathf.Max(0.1f, loadTimeout);
-            while (!isLoaded && Time.realtimeSinceStartup < deadline)
-            {
-                await Task.Yield();
-            }
-
-            if (!isLoaded)
-            {
-                PLogger.LogError($"[GameObjectPoolMgr] 加载超时（{loadTimeout} 秒）。path:{path}");
-            }
-
-            return asset;
-        }
-
-        /// <summary>资源加载器（惰性获取，Resources 模式不会触碰 UPGameRoot）</summary>
-        private ResourcesLoader ResourcesLoaderRef
-        {
-            get
-            {
-                if (resourcesLoader == null) resourcesLoader = ResourcesLoader.Instance;
-                return resourcesLoader;
-            }
-        }
-
-        /// <summary>
-        /// AssetBundle 资源加载器（惰性获取）。
-        /// 注意：UPGameRoot 是饿汉单例，缺失时会自动创建实例，
-        /// 因此只有真正用到 AssetBundle 模式时才会去取它。
-        /// </summary>
+        private ResourcesLoader ResourcesLoaderRef => resourcesLoader != null ? resourcesLoader : (resourcesLoader = ResourcesLoader.Instance);
         private IAssetsLoader AssetsLoaderRef
         {
             get
             {
+                if (assetsLoader is UnityEngine.Object unity && unity == null) assetsLoader = null;
                 if (assetsLoader != null) return assetsLoader;
-
-                UPGameRoot root = UPGameRoot.Instance;
-                assetsLoader = root != null ? root.GetAssetsLoader() : null;
-                if (assetsLoader == null)
-                {
-                    PLogger.LogError("[GameObjectPoolMgr] 资源加载器不可用（UPGameRoot 未初始化或资源系统尚未就绪），AssetBundle 模式无法加载");
-                }
-                return assetsLoader;
+                var root = UPGameRoot.Instance;
+                return root != null && root.IsInited ? (assetsLoader = root.GetAssetsLoader()) : null;
             }
         }
     }

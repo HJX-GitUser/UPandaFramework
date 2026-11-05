@@ -1,0 +1,13 @@
+{"id":"AUDIO-04","observation":"New PublicMono has 0 audio listeners; requested crossfade elapsed remains zero."}
+{"id":"AB-03","observation":"After ClearAB, old remote Task completed; cache repopulated with 2 bundle(s) while IsInitialized=false."}
+{"id":"AB-05","observation":"An independently loaded audit_external AssetBundle was also unloaded by manager.ClearAB()."}
+{"id":"AUDIO-01","observation":"Old async BGM replaced a later direct AudioClip request."}
+{"id":"AUDIO-02","observation":"Old async unique sound replaced a later direct AudioClip request."}
+{"id":"AB-04","observation":"Destroying the coroutine host produces no result/cancellation callback after remote request delay."}
+{"id":"POOL-02","observation":"Prewarm completed after Dispose and repopulated the old manager with 2 idle instances."}
+{"id":"AB-01","observation":"Valid dependency exists in StreamingAssets and is configured there, but persistent parent load returns null."}
+{"id":"POOL-01","observation":"After Clear, idle count=0 but prefab Resources reference count remains 1 (documented ownership gap)."}
+{"id":"CROSS-CHECK","observation":"After stopping audio: direct refcount=0, original AudioClip alive=True, pool AudioSource clip alive=True, after 2 frames alive=True. Invalidation hypothesis not reproduced when alive=true."}
+{"id":"AUDIO-03","observation":"A pending stacked sound started after StopAllSound; PlayingSoundCount=1."}
+{"id":"AB-02","observation":"Concurrent native requests: Task success=True, callback success=False."}
+{"id":"POOL-03","observation":"OnDespawn exception leaves an active item in duplicate guard; a later valid return is rejected and pool count remains zero."}
