@@ -51,24 +51,12 @@ public class SimpleLoadUI : BasePanel
     private void SetSlieder(float value, bool closeTag = false)
     {
         value = Mathf.Clamp01(value);
-        if (coroutine != null)
-        {
-            StopCoroutine(coroutine);
-        }
-        coroutine = StartCoroutine(ISetSlider(value, closeTag));
+        SetSlider(value, closeTag);
     }
 
-    private IEnumerator ISetSlider(float targetValue, bool closeTag)
+    private void SetSlider(float targetValue, bool closeTag)
     {
-        if (progressSlider.value > targetValue)
-        {
-            progressSlider.value = 0;
-        }
-        while (progressSlider.value < targetValue)
-        {
-            progressSlider.value += Time.deltaTime;
-            yield return null;
-        }
+        progressSlider.value = targetValue;
         if (closeTag)
         {
             canvasGroup.alpha = 0f;
