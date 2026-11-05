@@ -169,9 +169,16 @@ namespace UPandaGF
                 BinaryFormatter bf = new BinaryFormatter();
                 bf.Serialize(ms, obj);
 
-                byte[] bytes = ms.GetBuffer();
+                byte[] bytes = ms.ToArray();
                 //ToDo:..在这里可以做一些加密的工作
-                File.WriteAllBytes(SAVE_PATH + fileName + FILE_EXTENSION, bytes);
+                string target = Path.Combine(SAVE_PATH, fileName + FILE_EXTENSION);
+                string temporary = target + ".tmp";
+                try
+                {
+                    File.WriteAllBytes(temporary, bytes);
+                    FileUpdateTransaction.Commit(new[] { temporary }, new[] { target }, target + ".recovery");
+                }
+                finally { if (File.Exists(temporary)) File.Delete(temporary); }
                 ms.Close();
             }
 
@@ -184,31 +191,22 @@ namespace UPandaGF
         /// <returns>数据对象</returns>
         public T Load<T>(string fileName) where T : class
         {
-            //如果不存在这个文件 就直接返回泛型对象的默认值
-            if (!File.Exists(SAVE_PATH + fileName + FILE_EXTENSION))
+            string path = Path.Combine(SAVE_PATH, fileName + FILE_EXTENSION);
+            try
             {
+                FileUpdateTransaction.Recover(path + ".recovery");
+                if (!File.Exists(path)) return default(T);
+                using (var stream = File.OpenRead(path))
+                {
+                    var formatter = new BinaryFormatter();
+                    return formatter.Deserialize(stream) as T;
+                }
+            }
+            catch (Exception e)
+            {
+                PLogger.LogError("读取存档失败：" + path + "\n" + e.Message);
                 return default(T);
             }
-            T obj = null;
-
-            /*这是用文件流的方式读数据，
-            using (FileStream fs = File.Open(SAVE_PATH + fileName + FILE_EXTENSION, FileMode.Open, FileAccess.Read))
-            {
-                BinaryFormatter bf = new BinaryFormatter();
-                obj = bf.Deserialize(fs) as T;
-                fs.Close();
-            }
-            */
-
-            byte[] bytes = File.ReadAllBytes(SAVE_PATH + fileName + FILE_EXTENSION);
-            //ToDo..这里可以根据规则做解密的工作
-            using (MemoryStream ms = new MemoryStream(bytes))
-            {
-                BinaryFormatter bf = new BinaryFormatter();
-                obj = bf.Deserialize(ms) as T;
-                ms.Close();
-            }
-            return obj;
         }
     }
 

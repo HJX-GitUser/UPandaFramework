@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ReplaySystem
@@ -35,6 +36,15 @@ namespace ReplaySystem
         private readonly Dictionary<Rigidbody, bool> rbKinematicBackup = new Dictionary<Rigidbody, bool>();
         private readonly List<IRecordableComponent> recordables = new List<IRecordableComponent>();
 
+        private struct TimedSnapshot
+        {
+            public float time;
+            public ObjectSnapshot snapshot;
+        }
+        private readonly Dictionary<int, List<TimedSnapshot>> timelines = new Dictionary<int, List<TimedSnapshot>>();
+        private readonly Dictionary<string, Transform> transformByPath = new Dictionary<string, Transform>();
+        private readonly Dictionary<int, int> lastSnapshotFrame = new Dictionary<int, int>();
+        private bool timelinesDirty = true;
         private State state = State.Idle;
         private float playbackStartTime;
         private float pausedElapsed;
@@ -55,6 +65,11 @@ namespace ReplaySystem
             RegisterRecordable(new RigidbodyVelocityRecorder());
         }
 
+        void OnDisable()
+        {
+            StopPlaybackInternal();
+        }
+
         void OnDestroy()
         {
             // 异常退出兜底：恢复物理与刚体状态
@@ -73,17 +88,21 @@ namespace ReplaySystem
             StopPlaybackInternal();
             frames.Clear();
             lastSnapshots.Clear();
+            lastSnapshotFrame.Clear();
             lastAnimValues.Clear();
             animatorParamNames.Clear();
             transformCache.Clear();
             RebuildNameMap();
+            timelinesDirty = true;
             state = State.Recording;
+            RecordFrame();
             Debug.Log("[ReplaySystem] 开始录制");
         }
 
         public void StopRecording()
         {
             if (state != State.Recording) return;
+            RecordFrame();
             state = State.Idle;
             Debug.Log($"[ReplaySystem] 停止录制：{frames.Count} 帧，时长 {TotalDuration:F2}s");
             if (autoSaveOnStop) Save();
@@ -98,7 +117,7 @@ namespace ReplaySystem
                 return null;
             }
             string path = FileManager.Save(frames);
-            Debug.Log("[ReplaySystem] 已保存到：" + path);
+            if (path != null) Debug.Log("[ReplaySystem] 已保存到：" + path);
             return path;
         }
 
@@ -114,6 +133,7 @@ namespace ReplaySystem
             StopPlaybackInternal();
             frames.Clear();
             frames.AddRange(data);
+            timelinesDirty = true;
             frames.Sort((a, b) => a.time.CompareTo(b.time));
             transformCache.Clear();
             RebuildNameMap();
@@ -294,78 +314,103 @@ namespace ReplaySystem
                     }
                 }
 
-                if (!transformChanged && animParams == null) continue; // 关键优化：无变化不记录
-
                 var snap = new ObjectSnapshot(id, pos, rot, scl)
                 {
                     objectName = go.name,
+                    objectPath = HierarchyPath(tr),
                     animatorParams = animParams
                 };
                 CaptureRecordables(go, snap);
+                bool componentChanged = !ComponentStatesEqual(prev?.componentData, snap.componentData);
+                if (!transformChanged && animParams == null && !componentChanged) continue;
+                // Transform 单独变化时也保留完整 Animator 状态，确保 Seek 不依赖先前的播放顺序。
+                if (animParams == null && prev != null) snap.animatorParams = prev.animatorParams;
 
+                // 长时间静止后首次变化，在前一帧补一个保持状态，避免跨越整段静止期插值。
+                int lastFrame;
+                if (prev != null && frames.Count > 0 && lastSnapshotFrame.TryGetValue(id, out lastFrame)
+                    && lastFrame < frames.Count - 1)
+                    frames[frames.Count - 1].snapshots.Add(prev);
+                lastSnapshotFrame[id] = frames.Count;
                 snapshotList.Add(snap);
                 lastSnapshots[id] = snap;
                 transformCache[id] = tr;
-                transformByName[tr.name] = tr;
+
             }
 
-            if (snapshotList.Count > 0)
-                frames.Add(new RecordFrame(t) { snapshots = snapshotList });
+            if (frames.Count > 0 && frames[frames.Count - 1].time == t && snapshotList.Count == 0) return;
+            frames.Add(new RecordFrame(t) { snapshots = snapshotList });
+            timelinesDirty = true;
+        }
+
+        private static bool ComponentStatesEqual(Dictionary<string, object> a, Dictionary<string, object> b)
+        {
+            if ((a?.Count ?? 0) != (b?.Count ?? 0)) return false;
+            if (a == null || a.Count == 0) return true;
+            foreach (var pair in a)
+            {
+                object value;
+                if (!b.TryGetValue(pair.Key, out value) || !Equals(pair.Value, value)) return false;
+            }
+            return true;
+        }
+
+        private void EnsureTimelines()
+        {
+            if (!timelinesDirty) return;
+            timelines.Clear();
+            foreach (var frame in frames)
+                foreach (var snapshot in frame.snapshots)
+                {
+                    List<TimedSnapshot> track;
+                    if (!timelines.TryGetValue(snapshot.instanceID, out track))
+                        timelines.Add(snapshot.instanceID, track = new List<TimedSnapshot>());
+                    // 兼容旧文件中稀疏 Animator 参数，生成一次完整状态索引。
+                    var complete = new ObjectSnapshot(snapshot.instanceID, snapshot.position, snapshot.rotation, snapshot.localScale) {
+                        objectName = snapshot.objectName, objectPath = snapshot.objectPath, componentData = snapshot.componentData
+                    };
+                    var previous = track.Count > 0 ? track[track.Count - 1].snapshot.animatorParams : null;
+                    if (previous != null) complete.animatorParams = new Dictionary<string, float>(previous);
+                    if (snapshot.animatorParams != null)
+                    {
+                        if (complete.animatorParams == null) complete.animatorParams = new Dictionary<string, float>();
+                        foreach (var pair in snapshot.animatorParams) complete.animatorParams[pair.Key] = pair.Value;
+                    }
+                    track.Add(new TimedSnapshot { time = frame.time, snapshot = complete });
+                }
+            timelinesDirty = false;
         }
 
         private void ApplyAtTime(float time)
         {
-            int idx = FindFrameIndex(time);
-            if (idx < 0) return;
-            int next = idx + 1;
-            if (next >= frames.Count)
+            EnsureTimelines();
+            foreach (var track in timelines.Values)
             {
-                ApplyFrame(frames[idx]);
-                return;
+                int lo = 0, hi = track.Count - 1, index = -1;
+                while (lo <= hi)
+                {
+                    int mid = (lo + hi) >> 1;
+                    if (track[mid].time <= time) { index = mid; lo = mid + 1; }
+                    else hi = mid - 1;
+                }
+                if (index < 0) continue;
+                var a = track[index];
+                ApplySnapshot(a.snapshot);
+                if (index + 1 >= track.Count) continue;
+                var b = track[index + 1];
+                var tr = ResolveTransform(a.snapshot);
+                if (tr == null) continue;
+                float span = b.time - a.time;
+                float t = span > 0f ? Mathf.Clamp01((time - a.time) / span) : 0f;
+                tr.localPosition = Vector3.Lerp(a.snapshot.position, b.snapshot.position, t);
+                tr.localRotation = Quaternion.Slerp(a.snapshot.rotation, b.snapshot.rotation, t);
+                tr.localScale = Vector3.Lerp(a.snapshot.localScale, b.snapshot.localScale, t);
             }
-            // 在相邻两帧之间插值（支持拖动进度条与变速播放的平滑还原）
-            float span = frames[next].time - frames[idx].time;
-            float t = span > 1e-5f ? Mathf.Clamp01((time - frames[idx].time) / span) : 0f;
-            ApplyFrameBlend(frames[idx], frames[next], t);
         }
 
         private void ApplyFrame(RecordFrame frame)
         {
-            for (int i = 0; i < frame.snapshots.Count; i++)
-                ApplySnapshot(frame.snapshots[i]);
-        }
-
-        private void ApplyFrameBlend(RecordFrame a, RecordFrame b, float t)
-        {
-            var mapA = BuildIndex(a);
-            var mapB = BuildIndex(b);
-
-            foreach (var kv in mapA)
-            {
-                var tr = ResolveTransform(kv.Value);
-                if (tr == null) continue;
-                var sa = kv.Value;
-                if (t > 0f && mapB.TryGetValue(kv.Key, out var sb))
-                {
-                    tr.localPosition = Vector3.Lerp(sa.position, sb.position, t);
-                    tr.localRotation = Quaternion.Slerp(sa.rotation, sb.rotation, t);
-                    tr.localScale = Vector3.Lerp(sa.localScale, sb.localScale, t);
-                    var pick = t < 0.5f ? sa : sb;
-                    ApplyAnimatorParams(tr, pick);
-                    ApplyRecordables(tr.gameObject, pick);
-                }
-                else
-                {
-                    ApplySnapshot(sa);
-                }
-            }
-
-            // 处理只在 b 中出现的（新增变化）物体
-            foreach (var kv in mapB)
-            {
-                if (mapA.ContainsKey(kv.Key)) continue;
-                ApplySnapshot(kv.Value);
-            }
+            for (int i = 0; i < frame.snapshots.Count; i++) ApplySnapshot(frame.snapshots[i]);
         }
 
         private void ApplySnapshot(ObjectSnapshot snap)
@@ -388,30 +433,10 @@ namespace ReplaySystem
                 animator.SetFloat(kv.Key, kv.Value);
         }
 
-        private static Dictionary<int, ObjectSnapshot> BuildIndex(RecordFrame frame)
-        {
-            var map = new Dictionary<int, ObjectSnapshot>(frame.snapshots.Count);
-            for (int i = 0; i < frame.snapshots.Count; i++)
-                map[frame.snapshots[i].instanceID] = frame.snapshots[i];
-            return map;
-        }
-
-        /// <summary>二分查找：返回最后一个时间戳 <= time 的帧索引</summary>
-        private int FindFrameIndex(float time)
-        {
-            int lo = 0, hi = frames.Count - 1, ans = -1;
-            while (lo <= hi)
-            {
-                int mid = (lo + hi) >> 1;
-                if (frames[mid].time <= time) { ans = mid; lo = mid + 1; }
-                else hi = mid - 1;
-            }
-            return ans;
-        }
-
         private Transform ResolveTransform(ObjectSnapshot snap)
         {
             if (transformCache.TryGetValue(snap.instanceID, out var tr) && tr != null) return tr;
+            if (!string.IsNullOrEmpty(snap.objectPath) && transformByPath.TryGetValue(snap.objectPath, out tr) && tr != null) return tr;
             if (!string.IsNullOrEmpty(snap.objectName) && transformByName.TryGetValue(snap.objectName, out tr) && tr != null) return tr;
             return null;
         }
@@ -484,14 +509,28 @@ namespace ReplaySystem
             }
         }
 
+        private static string HierarchyPath(Transform tr)
+        {
+            string path = string.Empty;
+            for (var node = tr; node != null; node = node.parent)
+                path = "/" + node.GetSiblingIndex() + ":" + node.name + path;
+            return tr.gameObject.scene.name + path;
+        }
+
         private void RebuildNameMap()
         {
             transformByName.Clear();
+            transformByPath.Clear();
+            var ambiguous = new HashSet<string>();
             var all = GetAllActiveTransforms();
             for (int i = 0; i < all.Length; i++)
             {
                 if (all[i] == transform) continue;
-                transformByName[all[i].name] = all[i];
+                transformByPath[HierarchyPath(all[i])] = all[i];
+                string name = all[i].name;
+                if (ambiguous.Contains(name)) continue;
+                if (transformByName.ContainsKey(name)) { transformByName.Remove(name); ambiguous.Add(name); }
+                else transformByName[name] = all[i];
             }
         }
 

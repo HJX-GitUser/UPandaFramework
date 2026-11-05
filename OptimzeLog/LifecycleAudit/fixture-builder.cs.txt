@@ -1,0 +1,34 @@
+﻿using System;
+using System.IO;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+public static class LifecycleAuditBuilder
+{
+ public static void Build()
+ {
+  PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
+  PlayerSettings.companyName = "UPandaAudit"; PlayerSettings.productName = "LifecycleAudit";
+  AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+  Directory.CreateDirectory("Assets/LifecycleFixtures");
+  var audio = new GameObject("AudioPrefab"); var source=audio.AddComponent<AudioSource>();source.playOnAwake=false;
+  source.clip=AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Resources/LifecycleAudit/Clip.wav");
+  if (source.clip==null) throw new Exception("Fixture audio missing");
+  PrefabUtility.SaveAsPrefabAsset(audio,"Assets/Resources/LifecycleAudit/AudioPrefab.prefab");UnityEngine.Object.DestroyImmediate(audio);
+  var cube=GameObject.CreatePrimitive(PrimitiveType.Cube);
+  var material=new Material(Shader.Find("Standard"));AssetDatabase.CreateAsset(material,"Assets/LifecycleFixtures/Shared.mat");
+  cube.GetComponent<Renderer>().sharedMaterial=material;
+  PrefabUtility.SaveAsPrefabAsset(cube,"Assets/LifecycleFixtures/Box.prefab");UnityEngine.Object.DestroyImmediate(cube);
+  File.WriteAllText("Assets/LifecycleFixtures/External.txt","independently owned bundle");AssetDatabase.Refresh();
+  Directory.CreateDirectory("AuditBundles");
+  var manifest=BuildPipeline.BuildAssetBundles("AuditBundles",new[]{
+   new AssetBundleBuild{assetBundleName="audit_target",assetNames=new[]{"Assets/LifecycleFixtures/Box.prefab"}},
+   new AssetBundleBuild{assetBundleName="audit_shared",assetNames=new[]{"Assets/LifecycleFixtures/Shared.mat"}},
+   new AssetBundleBuild{assetBundleName="audit_external",assetNames=new[]{"Assets/LifecycleFixtures/External.txt"}}
+  },BuildAssetBundleOptions.ChunkBasedCompression,BuildTarget.StandaloneWindows64);
+  if(manifest==null||manifest.GetAllDependencies("audit_target").Length!=1)throw new Exception("Fixture dependencies incorrect");
+  EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
+  EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(),"Assets/AuditEmpty.unity");
+  Debug.Log("LIFECYCLE_FIXTURES_BUILT");
+ }
+}

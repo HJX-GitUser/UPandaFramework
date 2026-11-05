@@ -752,7 +752,7 @@ MonoBehaviour:
   m_horizontalScrollbar:
     m_Name: horizontalscrollbar
     m_Normal:
-      m_Background: {fileID: 2800000, guid: 65382a9375963d842a164495d6431d6d, type: 3}
+      m_Background: {fileID: 2800000, guid: 940844a907a91024d8756b203861ff85, type: 3}
       m_ScaledBackgrounds: []
       m_TextColor: {r: 0, g: 0, b: 0, a: 1}
     m_Hover:
@@ -819,7 +819,7 @@ MonoBehaviour:
   m_horizontalScrollbarThumb:
     m_Name: horizontalscrollbarthumb
     m_Normal:
-      m_Background: {fileID: 2800000, guid: ea91678cb5fa4914d9a87d5882e46bf9, type: 3}
+      m_Background: {fileID: 2800000, guid: fb290dcd73227f54eb024a65b4d5168e, type: 3}
       m_ScaledBackgrounds: []
       m_TextColor: {r: 0, g: 0, b: 0, a: 1}
     m_Hover:
@@ -886,7 +886,7 @@ MonoBehaviour:
   m_horizontalScrollbarLeftButton:
     m_Name: horizontalscrollbarleftbutton
     m_Normal:
-      m_Background: {fileID: 2800000, guid: 2b898d54956773c4ca8dac4becfff81d, type: 3}
+      m_Background: {fileID: 2800000, guid: 6f39d3ab80fa9094fa9ed1b71728d14b, type: 3}
       m_ScaledBackgrounds: []
       m_TextColor: {r: 0, g: 0, b: 0, a: 1}
     m_Hover:
@@ -953,7 +953,7 @@ MonoBehaviour:
   m_horizontalScrollbarRightButton:
     m_Name: horizontalscrollbarrightbutton
     m_Normal:
-      m_Background: {fileID: 2800000, guid: 1054f346b49bc774e84a30b01e173cd8, type: 3}
+      m_Background: {fileID: 2800000, guid: f20928a90e1f1274f8dbb99fe2454175, type: 3}
       m_ScaledBackgrounds: []
       m_TextColor: {r: 0, g: 0, b: 0, a: 1}
     m_Hover:
@@ -1020,7 +1020,7 @@ MonoBehaviour:
   m_verticalScrollbar:
     m_Name: verticalscrollbar
     m_Normal:
-      m_Background: {fileID: 2800000, guid: f44f16dd98d65e74e8001cf19cec1868, type: 3}
+      m_Background: {fileID: 2800000, guid: 0756f25d485805f42b488ce31f83dd0a, type: 3}
       m_ScaledBackgrounds: []
       m_TextColor: {r: 0, g: 0, b: 0, a: 1}
     m_Hover:
@@ -1087,7 +1087,7 @@ MonoBehaviour:
   m_verticalScrollbarThumb:
     m_Name: verticalscrollbarthumb
     m_Normal:
-      m_Background: {fileID: 2800000, guid: 7eafdff7daf79fe4ea883940862a3b9e, type: 3}
+      m_Background: {fileID: 2800000, guid: 0f669eb1bb9f43a41a60a85bd9025b52, type: 3}
       m_ScaledBackgrounds: []
       m_TextColor: {r: 0, g: 0, b: 0, a: 1}
     m_Hover:
@@ -1154,7 +1154,7 @@ MonoBehaviour:
   m_verticalScrollbarUpButton:
     m_Name: verticalscrollbarupbutton
     m_Normal:
-      m_Background: {fileID: 2800000, guid: 844af5f04b57ce841a17503f7e44ac44, type: 3}
+      m_Background: {fileID: 2800000, guid: 1e8e8210db0c8b3458a79ed5fde0957e, type: 3}
       m_ScaledBackgrounds: []
       m_TextColor: {r: 0, g: 0, b: 0, a: 1}
     m_Hover:
@@ -1221,7 +1221,7 @@ MonoBehaviour:
   m_verticalScrollbarDownButton:
     m_Name: verticalscrollbardownbutton
     m_Normal:
-      m_Background: {fileID: 2800000, guid: 564b866f40be55d40bb624f85197535c, type: 3}
+      m_Background: {fileID: 2800000, guid: dd1069ea441deee45ad80aaa4089533d, type: 3}
       m_ScaledBackgrounds: []
       m_TextColor: {r: 0, g: 0, b: 0, a: 1}
     m_Hover:

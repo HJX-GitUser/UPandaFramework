@@ -14,6 +14,9 @@ namespace UPandaGF
     /// </summary>
     public class AssetsLoader : MonoBehaviour, IAssetsLoader
     {
+        private int initializationGeneration;
+        private bool initialized;
+        public bool IsInitialized => initialized && (method != AssetLoaddingMethod.Assetbundles || (abLoadMgr != null && abLoadMgr.IsInitialized));
         private AssetLoaddingMethod method;
         private ABLoadMgr abLoadMgr;
         private EditorSourcesMgr editorSourcesMgr;
@@ -38,10 +41,22 @@ namespace UPandaGF
 
         public async Task Init(AssetLoaddingMethod arg0, string remoteURL, string LoadAssetPath, ABSourcesRelated sourceRefArgBytes)
         {
+            int epoch = ++initializationGeneration;
             PLogger.Log("AssetsLoader Init");
+            initialized = false;
             method = arg0;
+            sourceRef = null;
             editorSourcesMgr = EditorSourcesMgr.Instance;
             sceneMgr = SceneMgr.Instance;
+            if (method == AssetLoaddingMethod.Editor)
+            {
+#if !UNITY_EDITOR
+                throw new System.InvalidOperationException("Player 中不能使用 Editor 资源加载模式。");
+#else
+                initialized = true;
+                return;
+#endif
+            }
             if (sourceRefArgBytes != null)
             {
                 sourceRef = sourceRefArgBytes;
@@ -51,6 +66,7 @@ namespace UPandaGF
                 //资源关联数据
                 string assetRefpath = assetRefSavePath + assetRefName + assetRefextension;
                 byte[] b = await StreamingAssetsLoader.LoadBinaryDataAsync(assetRefpath);
+                if (epoch != initializationGeneration || this == null) return;
                 if (b != null) sourceRef = LoadABSourcesRelated(b);
             }
 
@@ -71,8 +87,10 @@ namespace UPandaGF
                 abLoadMgr.remoteURL = remoteURL;
                 PLogger.Log($"主包：{sourceRef.mainBundleInfo.bundleName}，加载方式：{sourceRef.mainBundleInfo.loadPath}");
                 await abLoadMgr.Init(LoadAssetPath, sourceRef.mainBundleInfo.bundleName, sourceRef.mainBundleInfo.loadPath);
+                if (epoch != initializationGeneration || this == null || !abLoadMgr.IsInitialized) return;
                 abLoadMgr.SetABSourcesRelated(sourceRef);
             }
+            initialized = true;
             PLogger.Log("AssetsLoader Inited !!!");
         }
 
@@ -122,7 +140,10 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Assetbundles:
                     AssetRelatedArg arg;
                     if (!TryGetAssetArg(path, out arg))
+                    {
+                        callback?.Invoke(null);
                         return;
+                    }
                     abLoadMgr.LoadResAsync(arg.bundleName, arg.sourceName, sourceRef.GetABLoadPath(arg), callback);
                     break;
             }
@@ -138,7 +159,10 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Assetbundles:
                     AssetRelatedArg arg;
                     if (!TryGetAssetArg(path, out arg))
+                    {
+                        callback?.Invoke(null);
                         return;
+                    }
                     abLoadMgr.LoadResAsync(arg.bundleName, arg.sourceName, type, sourceRef.GetABLoadPath(arg), callback);
                     break;
             }
@@ -288,8 +312,12 @@ namespace UPandaGF
             return isUnload;
         }
 
+        private void OnDestroy() { initializationGeneration++; initialized = false; }
+
         public void ClearAB()
         {
+            initializationGeneration++;
+            if (method == AssetLoaddingMethod.Assetbundles) initialized = false;
             if (method == AssetLoaddingMethod.Assetbundles)
             {
                 abLoadMgr.ClearAB();
@@ -302,7 +330,9 @@ namespace UPandaGF
         private bool TryGetAssetArg(string path, out AssetRelatedArg arg)
         {
             arg = null;
-            if (sourceRef != null && sourceRef.sourcesDic.TryGetValue(path, out arg))
+            if (IsInitialized && !string.IsNullOrEmpty(path) && sourceRef != null
+                && sourceRef.sourcesDic != null && sourceRef.sourcesDic.TryGetValue(path, out arg)
+                && arg != null && sourceRef.bundleInfo != null && sourceRef.bundleInfo.ContainsKey(arg.bundleName))
                 return true;
             PLogger.LogError("该资源不存在：" + path);
             return false;

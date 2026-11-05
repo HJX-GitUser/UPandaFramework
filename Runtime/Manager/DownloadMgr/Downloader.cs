@@ -242,7 +242,7 @@ namespace UPandaGF
             {
                 item.state = DownloadState.Paused;
                 pausedItems.Add(item);
-                OnDownloadPause?.Invoke(item);
+                InvokeSafely(OnDownloadPause, item);
             }
         }
 
@@ -267,7 +267,7 @@ namespace UPandaGF
 
                 item.state = DownloadState.Paused;
                 pausedItems.Add(item);
-                OnDownloadPause?.Invoke(item);
+                InvokeSafely(OnDownloadPause, item);
             }
         }
 
@@ -382,7 +382,7 @@ namespace UPandaGF
         // ==================== async 接口 ====================
 
         /// <summary>
-        /// 下载单个文件并等待结果（内部用事件完成，返回结果时会自动退订，不会泄漏事件处理器）
+        /// 下载单个文件并等待自己的任务终态；取消或下载器销毁也会结束等待
         /// </summary>
         /// <param name="url">下载地址</param>
         /// <param name="savePath">保存路径（完整文件路径）</param>
@@ -393,60 +393,36 @@ namespace UPandaGF
             DownloadItem item = CreateItem(url, savePath, null);
             if (item == null) return false;
 
-            // RunContinuationsAsynchronously：避免等待方在"完成事件分发"中途同步续跑
-            // （否则 await 之后的热更流程会嵌在下载器的 FinishItem 里执行，容易引发重入）
-            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            Action<DownloadItem> onComplete = (i) => { if (ReferenceEquals(i, item)) tcs.TrySetResult(true); };
-            Action<DownloadItem> onError = (i) => { if (ReferenceEquals(i, item)) tcs.TrySetResult(false); };
-            Action<DownloadItem> onProgress = (i) => { if (ReferenceEquals(i, item)) progress.Report(i.progress); };
-
-            OnDownloadComplete += onComplete;
-            OnDownloadError += onError;
-            if (progress != null) OnDownloadProgress += onProgress;
-
-            try
+            BeginBatchIfIdle();
+            Enqueue(item);
+            int timeout = item.timeout < 0 ? defaultTimeout : item.timeout;
+            int retries = Math.Max(0, item.retryCount < 0 ? defaultRetryCount : item.retryCount);
+            float start = Time.realtimeSinceStartup;
+            float budget = timeout > 0 ? timeout * (retries + 1f) + Math.Max(0f, retryDelay) * retries + 5f : float.PositiveInfinity;
+            while (item.state != DownloadState.Completed && item.state != DownloadState.Failed
+                && item.state != DownloadState.Canceled)
             {
-                BeginBatchIfIdle();
-                Enqueue(item);
-
-                // 兜底：即使传输层超时未生效，也不会让调用方永远挂起
-                int timeout = item.timeout < 0 ? defaultTimeout : item.timeout;
-                if (timeout > 0)
+                if (this == null || destroyed || Time.realtimeSinceStartup - start >= budget)
                 {
-                    float deadline = Time.realtimeSinceStartup + timeout + 5f;
-                    while (!tcs.Task.IsCompleted && Time.realtimeSinceStartup < deadline)
-                    {
-                        await Task.Yield();
-                    }
-
-                    if (!tcs.Task.IsCompleted)
-                    {
-                        PLogger.LogError($"[Downloader] 等待下载完成超时（{timeout + 5} 秒）：{item.url}");
-                        CancelDownload(item);
-                        tcs.TrySetResult(false);
-                    }
+                    if (this != null && !destroyed) CancelDownload(item);
+                    return false;
                 }
-                else
-                {
-                    await tcs.Task;
-                }
-
-                return tcs.Task.Result;
+                if (progress != null)
+                    try { progress.Report(item.progress); } catch (Exception e) { Debug.LogException(e); }
+                await Task.Delay(25);
             }
-            finally
-            {
-                // 必须退订，否则每次调用都会永久堆积事件处理器
-                OnDownloadComplete -= onComplete;
-                OnDownloadError -= onError;
-                if (progress != null) OnDownloadProgress -= onProgress;
-            }
+            if (progress != null && item.state == DownloadState.Completed)
+                try { progress.Report(1f); } catch (Exception e) { Debug.LogException(e); }
+            return item.state == DownloadState.Completed;
         }
 
         // ==================== 生命周期 ====================
 
+        private bool destroyed;
+
         private void OnDestroy()
         {
+            destroyed = true;
             CancelAllDownloads();
 
             // 对象销毁时协程会被强制终止，这里直接释放仍在使用的请求，避免文件句柄泄漏
@@ -456,6 +432,7 @@ namespace UPandaGF
                 if (item == null) continue;
 
                 ReleaseRequest(item);
+                item.state = DownloadState.Canceled;
             }
             activeItems.Clear();
         }
@@ -610,7 +587,7 @@ namespace UPandaGF
                 resumeSize > 0 ? (Func<bool>)(() => request.responseCode == 206) : null);
             item.request = request;
 
-            OnDownloadStart?.Invoke(item);
+            InvokeSafely(OnDownloadStart, item);
 
             UnityWebRequestAsyncOperation operation = null;
             try
@@ -661,7 +638,7 @@ namespace UPandaGF
                     }
 
                     RefreshProgress(item, accountingResume);
-                    OnDownloadProgress?.Invoke(item);
+                    InvokeSafely(OnDownloadProgress, item);
 
                     yield return null;
                 }
@@ -708,7 +685,7 @@ namespace UPandaGF
                 item.state = DownloadState.Paused;
                 RemoveActive(item);
                 pausedItems.Add(item);
-                OnDownloadPause?.Invoke(item);
+                InvokeSafely(OnDownloadPause, item);
                 CheckAllFinished();
                 return;
             }
@@ -748,7 +725,7 @@ namespace UPandaGF
                 batchCompleted++;
 
                 // 先移除当前任务再抛事件，保证回调里看到的队列状态是准确的
-                OnDownloadComplete?.Invoke(item);
+                InvokeSafely(OnDownloadComplete, item);
                 CheckAllFinished();
                 return;
             }
@@ -775,7 +752,7 @@ namespace UPandaGF
             failedItems.Add(item);
 
             PLogger.LogError($"[Downloader] 下载失败（重试已用尽）：{item.url}，原因：{item.error}");
-            OnDownloadError?.Invoke(item);
+            InvokeSafely(OnDownloadError, item);
             CheckAllFinished();
         }
 
@@ -785,8 +762,8 @@ namespace UPandaGF
             if (!IsIdle) return;
 
             bool allSuccess = failedItems.Count == 0;
-            OnAllDownloadsComplete?.Invoke();
-            OnAllDownloadsFinished?.Invoke(allSuccess);
+            InvokeSafely(OnAllDownloadsComplete);
+            InvokeSafely(OnAllDownloadsFinished, allSuccess);
         }
 
         /// <summary>从进行中列表移除并启动后续任务</summary>
@@ -941,6 +918,18 @@ namespace UPandaGF
 
             string name = Path.GetFileName(path);
             return string.IsNullOrEmpty(name) ? "download" : name;
+        }
+        private static void InvokeSafely(Action callbacks)
+        {
+            if (callbacks == null) return;
+            foreach (Action callback in callbacks.GetInvocationList())
+                try { callback(); } catch (Exception e) { Debug.LogException(e); }
+        }
+        private static void InvokeSafely<T>(Action<T> callbacks, T value)
+        {
+            if (callbacks == null) return;
+            foreach (Action<T> callback in callbacks.GetInvocationList())
+                try { callback(value); } catch (Exception e) { Debug.LogException(e); }
         }
     }
 }

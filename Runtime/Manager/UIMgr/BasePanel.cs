@@ -110,7 +110,7 @@ namespace UPandaGF
         /// <typeparam name="T"></typeparam>
         private void FindChildrenUIComponent<T>() where T : UIBehaviour
         {
-            T[] controls = this.GetComponentsInChildren<T>();
+            T[] controls = this.GetComponentsInChildren<T>(true);
             for (int i = 0; i < controls.Length; i++)
             {
                 string objName = controls[i].gameObject.name;
@@ -152,9 +152,9 @@ namespace UPandaGF
                     (controls[i] as InputField).onValueChanged.AddListener((value) =>
                     {
                         InputField_OnValueChanged(objName, value);
-                        InputField_onSubmit(objName, value);
-                        InputField_onEndEdit(objName, value);
                     });
+                    (controls[i] as InputField).onSubmit.AddListener(value => InputField_onSubmit(objName, value));
+                    (controls[i] as InputField).onEndEdit.AddListener(value => InputField_onEndEdit(objName, value));
                 }
             }
         }

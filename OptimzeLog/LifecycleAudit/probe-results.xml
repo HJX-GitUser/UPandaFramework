@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="13" result="Passed" total="13" passed="13" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-05 09:44:35Z" end-time="2026-11-05 09:44:38Z" duration="2.6167777">
+  <test-suite type="TestSuite" id="1000" name="LifecycleAudit" fullname="LifecycleAudit" runstate="Runnable" testcasecount="37" result="Passed" start-time="2026-11-05 09:44:35Z" end-time="2026-11-05 09:44:38Z" duration="2.616778" total="13" passed="13" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <test-suite type="Assembly" id="1016" name="UPandaGF.LifecycleAuditTests.dll" fullname="D:/UnityProject/TestProject/Temp/LifecycleAuditProject/Library/ScriptAssemblies/UPandaGF.LifecycleAuditTests.dll" runstate="Runnable" testcasecount="13" result="Passed" start-time="2026-11-05 09:44:35Z" end-time="2026-11-05 09:44:38Z" duration="2.612916" total="13" passed="13" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="48396" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+      </properties>
+      <test-suite type="TestFixture" id="1002" name="LifecycleAuditProbes" fullname="LifecycleAuditProbes" classname="LifecycleAuditProbes" runstate="Runnable" testcasecount="13" result="Passed" start-time="2026-11-05 09:44:35Z" end-time="2026-11-05 09:44:38Z" duration="2.612042" total="13" passed="13" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <output><![CDATA[
+IgnoreFailingMessages:true
+]]></output>
+        <test-case id="1015" name="AudioDoesNotRebindToRecreatedPublicMono" fullname="LifecycleAuditProbes.AudioDoesNotRebindToRecreatedPublicMono" methodname="AudioDoesNotRebindToRecreatedPublicMono" classname="LifecycleAuditProbes" runstate="Runnable" seed="1947575322" result="Passed" start-time="2026-11-05 09:44:35Z" end-time="2026-11-05 09:44:35Z" duration="0.024956" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+LIFECYCLE_PROBE {"id":"AUDIO-04","observation":"New PublicMono has 0 audio listeners; requested crossfade elapsed remains zero."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1005" name="ClearDoesNotInvalidateTaskAwaitingRemoteBundle" fullname="LifecycleAuditProbes.ClearDoesNotInvalidateTaskAwaitingRemoteBundle" methodname="ClearDoesNotInvalidateTaskAwaitingRemoteBundle" classname="LifecycleAuditProbes" runstate="Runnable" seed="1271929497" result="Passed" start-time="2026-11-05 09:44:35Z" end-time="2026-11-05 09:44:37Z" duration="1.235274" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 创建 EventCenter 实例
+AB包加载路径：UPandaLifecycleAudit/9ef813d49d5f45a893e7204edfaddbc4
+资源包主包：AuditBundles
+LIFECYCLE_PROBE {"id":"AB-03","observation":"After ClearAB, old remote Task completed; cache repopulated with 2 bundle(s) while IsInitialized=false."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1007" name="ClearUnloadsBundleOwnedOutsideThisManager" fullname="LifecycleAuditProbes.ClearUnloadsBundleOwnedOutsideThisManager" methodname="ClearUnloadsBundleOwnedOutsideThisManager" classname="LifecycleAuditProbes" runstate="Runnable" seed="1915453698" result="Passed" start-time="2026-11-05 09:44:37Z" end-time="2026-11-05 09:44:37Z" duration="0.012514" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+AB包加载路径：UPandaLifecycleAudit/34f88f32adc94a908cc3e015c1d25aca
+资源包主包：AuditBundles
+LIFECYCLE_PROBE {"id":"AB-05","observation":"An independently loaded audit_external AssetBundle was also unloaded by manager.ClearAB()."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1012" name="DelayedBgmOverridesLaterDirectClip" fullname="LifecycleAuditProbes.DelayedBgmOverridesLaterDirectClip" methodname="DelayedBgmOverridesLaterDirectClip" classname="LifecycleAuditProbes" runstate="Runnable" seed="683005797" result="Passed" start-time="2026-11-05 09:44:37Z" end-time="2026-11-05 09:44:37Z" duration="0.006378" asserts="0">
+          <properties />
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+LIFECYCLE_PROBE {"id":"AUDIO-01","observation":"Old async BGM replaced a later direct AudioClip request."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1013" name="DelayedUniqueOverridesLaterDirectClip" fullname="LifecycleAuditProbes.DelayedUniqueOverridesLaterDirectClip" methodname="DelayedUniqueOverridesLaterDirectClip" classname="LifecycleAuditProbes" runstate="Runnable" seed="1182029524" result="Passed" start-time="2026-11-05 09:44:37Z" end-time="2026-11-05 09:44:37Z" duration="0.004488" asserts="0">
+          <properties />
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+LIFECYCLE_PROBE {"id":"AUDIO-02","observation":"Old async unique sound replaced a later direct AudioClip request."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1006" name="DestroyedCallbackHostLeavesCallerWithoutCompletion" fullname="LifecycleAuditProbes.DestroyedCallbackHostLeavesCallerWithoutCompletion" methodname="DestroyedCallbackHostLeavesCallerWithoutCompletion" classname="LifecycleAuditProbes" runstate="Runnable" seed="1098998059" result="Passed" start-time="2026-11-05 09:44:37Z" end-time="2026-11-05 09:44:38Z" duration="1.260939" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+AB包加载路径：UPandaLifecycleAudit/0023e06d4f034c8eba6fbabde2724567
+资源包主包：AuditBundles
+加载资源audit_target：RemotePath
+LIFECYCLE_PROBE {"id":"AB-04","observation":"Destroying the coroutine host produces no result/cancellation callback after remote request delay."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1009" name="DisposeDoesNotPreventPendingPrewarmFromRecreatingOldPool" fullname="LifecycleAuditProbes.DisposeDoesNotPreventPendingPrewarmFromRecreatingOldPool" methodname="DisposeDoesNotPreventPendingPrewarmFromRecreatingOldPool" classname="LifecycleAuditProbes" runstate="Runnable" seed="1562023362" result="Passed" start-time="2026-11-05 09:44:38Z" end-time="2026-11-05 09:44:38Z" duration="0.006586" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[
+IgnoreFailingMessages:true
+LIFECYCLE_PROBE {"id":"POOL-02","observation":"Prewarm completed after Dispose and repopulated the old manager with 2 idle instances."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1003" name="MixedDependencyLocationUsesWrongParentLocation" fullname="LifecycleAuditProbes.MixedDependencyLocationUsesWrongParentLocation" methodname="MixedDependencyLocationUsesWrongParentLocation" classname="LifecycleAuditProbes" runstate="Runnable" seed="763055627" result="Passed" start-time="2026-11-05 09:44:38Z" end-time="2026-11-05 09:44:38Z" duration="0.012191" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+AB包加载路径：UPandaLifecycleAudit/8336381aab0f4137b724f18ab8a47a26
+资源包主包：AuditBundles
+Failed to read data for the AssetBundle '8336381aab0f4137b724f18ab8a47a26\audit_shared'.
+AssetBundle加载失败：模式 PersistentDataPath，路径 C:/Users/hejinx/AppData/LocalLow/UPandaAudit/LifecycleAudit\UPandaLifecycleAudit/8336381aab0f4137b724f18ab8a47a26\audit_shared
+依赖包加载失败，中止加载：audit_target -> audit_shared
+LIFECYCLE_PROBE {"id":"AB-01","observation":"Valid dependency exists in StreamingAssets and is configured there, but persistent parent load returns null."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1008" name="PoolRetainsResourcesCountsAfterAllIdleInstancesAreCleared" fullname="LifecycleAuditProbes.PoolRetainsResourcesCountsAfterAllIdleInstancesAreCleared" methodname="PoolRetainsResourcesCountsAfterAllIdleInstancesAreCleared" classname="LifecycleAuditProbes" runstate="Runnable" seed="1623990884" result="Passed" start-time="2026-11-05 09:44:38Z" end-time="2026-11-05 09:44:38Z" duration="0.008198" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[ResourcesLoader] 创建单例实例(Lazy)
+LIFECYCLE_PROBE {"id":"POOL-01","observation":"After Clear, idle count=0 but prefab Resources reference count remains 1 (documented ownership gap)."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1011" name="SharedClipReleaseCrossCheck" fullname="LifecycleAuditProbes.SharedClipReleaseCrossCheck" methodname="SharedClipReleaseCrossCheck" classname="LifecycleAuditProbes" runstate="Runnable" seed="257388112" result="Passed" start-time="2026-11-05 09:44:38Z" end-time="2026-11-05 09:44:38Z" duration="0.007114" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+LIFECYCLE_PROBE {"id":"CROSS-CHECK","observation":"After stopping audio: direct refcount=0, original AudioClip alive=True, pool AudioSource clip alive=True, after 2 frames alive=True. Invalidation hypothesis not reproduced when alive=true."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1014" name="StopAllSoundDoesNotInvalidatePendingStackedSound" fullname="LifecycleAuditProbes.StopAllSoundDoesNotInvalidatePendingStackedSound" methodname="StopAllSoundDoesNotInvalidatePendingStackedSound" classname="LifecycleAuditProbes" runstate="Runnable" seed="977841864" result="Passed" start-time="2026-11-05 09:44:38Z" end-time="2026-11-05 09:44:38Z" duration="0.004703" asserts="0">
+          <properties />
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+LIFECYCLE_PROBE {"id":"AUDIO-03","observation":"A pending stacked sound started after StopAllSound; PlayingSoundCount=1."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1004" name="TaskAndCallbackDoNotShareNativeInflightRequest" fullname="LifecycleAuditProbes.TaskAndCallbackDoNotShareNativeInflightRequest" methodname="TaskAndCallbackDoNotShareNativeInflightRequest" classname="LifecycleAuditProbes" runstate="Runnable" seed="2138830918" result="Passed" start-time="2026-11-05 09:44:38Z" end-time="2026-11-05 09:44:38Z" duration="0.015259" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[
+IgnoreFailingMessages:true
+[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+AB包加载路径：UPandaLifecycleAudit/c704a8b5308649ce888c1659b33f4daf
+资源包主包：AuditBundles
+加载资源audit_target：PersistentDataPath
+The AssetBundle 'c704a8b5308649ce888c1659b33f4daf\audit_shared' can't be loaded because another AssetBundle with the same files is already loaded.
+AssetBundle加载失败
+C:/Users/hejinx/AppData/LocalLow/UPandaAudit/LifecycleAudit\UPandaLifecycleAudit/c704a8b5308649ce888c1659b33f4daf\audit_shared
+依赖包加载失败，中止加载：audit_target -> audit_shared
+LIFECYCLE_PROBE {"id":"AB-02","observation":"Concurrent native requests: Task success=True, callback success=False."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1010" name="ThrowingDespawnLeavesDuplicateGuardPoisoned" fullname="LifecycleAuditProbes.ThrowingDespawnLeavesDuplicateGuardPoisoned" methodname="ThrowingDespawnLeavesDuplicateGuardPoisoned" classname="LifecycleAuditProbes" runstate="Runnable" seed="609679924" result="Passed" start-time="2026-11-05 09:44:38Z" end-time="2026-11-05 09:44:38Z" duration="0.004121" asserts="0">
+          <properties />
+          <output><![CDATA[
+IgnoreFailingMessages:true
+LIFECYCLE_PROBE {"id":"POOL-03","observation":"OnDespawn exception leaves an active item in duplicate guard; a later valid return is rejected and pool count remains zero."}
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

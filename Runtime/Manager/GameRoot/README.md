@@ -28,11 +28,11 @@ sequenceDiagram
     R->>R: await LoadConfigAsync()（优先读 StreamingAssets/Data/GameRootConfig.json，失败则用面板值）
     R->>P: await RunCoroutine(debugerInit.Init())
     R->>R: binaryDataMgr.Init()；sourcesLoadMgr.AssetAESConfig = config.AssetAESConfig
-    opt config.enableAssetUpdate
-        R->>D: 下载远端清单 → 解析 → 首次 / 增量下载 → 决定是否提交清单
+    opt Assetbundles 模式且 config.enableAssetUpdate
+        R->>D: 下载远端清单 → 解析 → 检查本地大小/MD5 → 下载到暂存目录 → 校验 → 批次提交
     end
     R->>A: await sourcesLoadMgr.Init(config.method, config.remoteURL, config.LoadAssetPath, sourceRef)
-    R->>R: _UIManager.SetResourcesLoader(...) → OnInited()
+    R->>R: 检查 AssetsLoader.IsInitialized → 设置 UI 加载器 → OnInited()
     R-->>U: 广播 GFLoadedEvent（IsInited = true）
     Note over R,U: 任一步抛异常 → IsInitFailed = true + 广播 GFLoadedFailedEvent
 ```
@@ -52,7 +52,7 @@ sequenceDiagram
 | `RemotePath` | 直接从 `<remoteURL>/<LoadAssetPath>/<包名>` 加载，**不下载** |
 
 - **主包同理**：只有它的 `loadPath` 为 `PersistentDataPath` 时才会被下载（否则下载到本地也不会用）。
-- **首次全量 / 增量**：没有本地清单 → 全量下载所有 `PersistentDataPath` 包；有本地清单 → 按 `md5` 比对只下变更的，并删除"远端已删、本地还在"的包文件。
+- **增量依据**：检查每个 `PersistentDataPath` 包的实际文件大小与 MD5；缺失、损坏、加载位置变化都会重新下载。暂不删除旧包，避免影响仍由随包清单引用的资源。
 - **清单的路径约定**：远端清单固定 `{remoteURL}/AssetBundles/assetData.assetref`（与平台无关）；包在 `{remoteURL}/{LoadAssetPath}/<包名>`。
 - **清单提交时机（重要）**：只有**全部下载成功**才会把远端清单落地覆盖本地清单。未全部成功时**不提交**，并按以下顺序降级：
 
@@ -68,7 +68,7 @@ flowchart TD
 
 这样避免"清单里声称存在、实际没下载下来的包"在运行时变成零散的"该资源不存在"。
 
-- **下载完整性**：单文件由 `Downloader` 校验（落盘大小 vs 预期 / `Content-Length`，不一致视为失败并重试）；清单里的 `md5` 只用于"是否需要下载"的比较，**不做下载后校验**。
+- **下载完整性与提交**：所有包先写入 `.update-stage/<批次 ID>/`，下载后检查大小和 MD5；全部通过才提交包文件与清单，清单最后写入。`FileUpdateTransaction` 先备份旧文件并写恢复日志，失败回滚；提交中断后的下次 AB 初始化先恢复旧版本。恢复失败会中止初始化，防止加载混合版本。
 
 ## 4. 事件与就绪状态
 
@@ -137,18 +137,17 @@ Inspector 顶部是「UPGameRoot」，底部是配置文件的路径提示 + 三
 
 ## 6. 注意事项与已知限制
 
-- **重复实例**：场景里出现第二个 `UPGameRoot` 时，基类会销毁它并给出警告；`OnAwake()` 里加了 `if (Instance != this) return;`，避免被销毁的那个也跑完整套初始化并**再广播一次** `GFLoadedEvent`（否则加载流程会走两遍）。
+- **重复实例**：场景里出现第二个 `UPGameRoot` 时，基类会销毁它并给出警告；基类不会为重复实例执行 `OnAwake()`，避免被销毁的那个也跑完整套初始化并**再广播一次** `GFLoadedEvent`（否则加载流程会走两遍）。
 - **AES 必须两侧一致**：`AssetAESConfig.enable` 要和打包端（AB 工具窗口「使用加密」）一致。运行端开启但清单是明文 → 解密失败 → AB 模式整体不可用（启动时会打警告）。
 - **AES 有两条来源，别改错**：AB 工具窗口自己的 `Assets/Editor/EditorConfig/AssetBundleBuildConfig.json`（打包端）与 `GameRootConfig.json` 里的 `AssetAESConfig`（运行端）。启动时**以 `GameRootConfig.json` 为准**；`UPGameRootEditor.OnEnable` 会把 AB 窗口那份同步进面板。
 - **配置文件只有一个真源**：Json 存在时，面板上的值在启动时会被覆盖。只改面板不点「保存到 Json」= 改动无效；想删掉 Json 恢复“面板说了算”，直接删除那个文件即可（启动会打一条 Log）。
 - **旧场景数据不再被读取**：配置字段从 `UPGameRoot` 搬到 `config` 对象后，旧场景 / Prefab 里遗留的 `reomoteURL` / `EnableDebugModel: 1` 等键就失效了，需要在面板上重设一次并保存到 Json。
 - **Json 字段名敏感**：`JsonUtility` 按字段名匹配，手改 Json 时字段名写错会被静默忽略（保留默认值，不会报错）；新增配置字段时记得同步 `GameRootConfig.json`。
 - **下载器的事件是全局的**：`OnAllDownloadsFinished` 与 `FailedItems` 属于整个 `Downloader`，别的批次会影响它们。所以本流程的成功与否**按本批次自己的 `DownloadItem.state` 判定**，并且等待带超时（下载器要求"无排队 / 无下载中 / 无暂停"才算结束，一旦有任务被暂停，完成事件永远不会来）。
-- **超时后不会取消下载**：只是不再阻塞启动链（下载器可能仍在后台继续），此时按"热更未完成"处理（不提交清单）。
-- **同步 IO**：清单的读写（几 KB）在主线程完成，可接受。
+- **超时后取消本批次**：不会取消其它调用方的任务。未完成的暂存文件不会覆盖正式包，仍被取消中请求占用的文件留待下次启动清理。
+- **同步 IO**：大小/MD5 校验、备份与提交在主线程执行。大体积更新应实测启动耗时，后续可引入独立文件 IO 调度；当前不把 Unity 对象操作移入后台线程。
 - **`Reset()` 的编辑器副作用**：编辑器里给物体加 `UPGameRoot` 或点 Inspector 的 Reset 会在场景中生成 `DebugerInit / Downloader / AssetsLoader / BinaryDataMgrInit / UIManager` 五个子物体，并执行 `UIManager.Init()`（建 UICamera / Canvas / EventSystem）——会脏场景、可能堆出重复子节点，做 Prefab 时注意。
-- **没做过 md5 校验**：清单 `md5` 只用于差异比较，下载后的文件内容不做哈希校验（只有大小校验）。
-- **`DeleteLocalAsset` 只清当前 `LoadAssetPath`**：历史版本换过 `LoadAssetPath` 时旧文件会残留。
+- **旧版本文件保留**：不自动删除已移出远端清单的包；版本垃圾回收需明确当前清单和随包清单的引用关系后另做。
 - 命名遗留：`AssetLoaddingMethod`（少一个 n）、`EnableDebugModel`（PascalCase 与其他配置字段不一致）—— 都属于序列化/公共 API，改动需要 `[FormerlySerializedAs]` 或同步改多处，暂未动。
 
 ## 7. 与框架的关系
@@ -159,7 +158,7 @@ Inspector 顶部是「UPGameRoot」，底部是配置文件的路径提示 + 三
 
 ## 8. 维护提示
 
-- 改动 `UpdateAssets` 时，务必保留三条不变量：① 清单只在"全部下载成功"时提交；② 任何失败都要走降级（本地清单 → 随包清单），不能把异常抛给 `InitAsync`；③ 日志描述必须与真实行为一致。
+- 改动 `UpdateAssets` 时，务必保留三条不变量：① 清单只在"全部下载成功"时提交；② 下载/校验失败走降级（本地清单 → 随包清单），恢复日志无法完成时必须中止启动；③ 日志描述必须与真实行为一致。
 - 改动 `DownloadBatchAndWait` 时，不要把"成功判定"改回只看下载器的全局事件/失败列表（会被其它批次污染），也不要去掉超时（暂停任务会让完成事件永不触发，启动链会永久挂起）。
 - 新增"初始化阶段"的子系统时，接入 `Init()` 并且失败要能被 `InitAsync` 捕获（保证一定会广播完成或失败事件）。
 - 改动后请用工程外的真实编译校验（`get_errors` 在 Unity 工程里可能是假阴性）：用 `.csproj` 的 `<HintPath>` 作 `/r:`、`<DefineConstants>` 作 `/define:`，`dotnet <sdk>\Roslyn\bincore\csc.dll @"rsp"`。**编辑器程序集要引用刚编译出的 Runtime 程序集**，不能用 `Library/ScriptAssemblies/` 里的旧产物（否则改名/新增成员会报假的 CS1061）。

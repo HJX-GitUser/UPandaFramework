@@ -19,6 +19,7 @@ namespace ReplaySystem
 
         // 物体名称：用于跨会话加载时按名称回退匹配（instanceID 仅在当前会话内稳定）
         public string objectName;
+        public string objectPath;
 
         // 预留：由 IRecordableComponent 扩展写入的额外组件状态（如 Rigidbody.velocity）
         public Dictionary<string, object> componentData;

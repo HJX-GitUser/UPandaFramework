@@ -7,11 +7,11 @@
     /// 使用方式：把实现类挂在**对象根节点**上即可（对象池只查找根节点，不递归子物体）。
     /// 回调时机：
     ///   OnDespawn —— 放回池中、被 SetActive(false) 之前（此时对象仍处于激活状态，可访问）
-    ///   OnSpawn   —— 从池中取出、被 SetActive(true) 之后
+    ///   OnSpawn   —— 首次实例化或从池中取出、被 SetActive(true) 之后
     /// </summary>
     public interface IPoolable
     {
-        /// <summary>从池中取出、激活之后调用</summary>
+        /// <summary>首次实例化或复用、激活之后调用</summary>
         void OnSpawn();
 
         /// <summary>放回池中、失活之前调用</summary>

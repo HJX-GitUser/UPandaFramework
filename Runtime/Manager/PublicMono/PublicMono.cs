@@ -458,6 +458,7 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
     {
         public UnityAction action;
         public UnityEngine.Object owner;    // 可为 null（强引用，需手动注销）
+        public bool hasOwner;               // 区分未提供 owner 与 Unity 对象已销毁
         public bool removed;                // 派发过程中被标记移除，派发结束后统一压缩
     }
 
@@ -498,7 +499,7 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
                 }
             }
 
-            entries.Add(new ListenerEntry { action = action, owner = owner });
+            entries.Add(new ListenerEntry { action = action, owner = owner, hasOwner = !ReferenceEquals(owner, null) });
         }
 
         public bool Remove(UnityAction action)
@@ -553,7 +554,7 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
                     if (entry.removed) continue;
 
                     // owner（Unity 对象）已被销毁：自动注销，避免每帧 MissingReferenceException
-                    if (entry.owner == null)
+                    if (entry.hasOwner && entry.owner == null)
                     {
                         entry.removed = true;
                         needCompact = true;
