@@ -8,6 +8,8 @@
 
 ---
 
+> Reporter 的最新架构、界面、兼容性与验证见 [Reporter/README.md](Reporter/README.md)。
+
 ## 1. 文件与职责
 
 | 文件 | 职责 | 编码 |
@@ -86,7 +88,7 @@ flowchart LR
     B --> C["UnityEngine.Debug.Log"]
     C --> D["Application.logMessageReceivedThreaded"]
     D --> E["PLogHelper：ConcurrentQueue → 后台线程写文件"]
-    D --> F["Reporter：全量驻留内存（IMGUI 面板）"]
+    D --> F["Reporter：有界日志窗口（IMGUI 面板）"]
     C --> G["LogListenerManager：主线程队列 → UGUI 面板"]
 ```
 
@@ -110,7 +112,7 @@ flowchart LR
 
 | 面板 | 类型 | 打开方式 | 上限 |
 | --- | --- | --- | --- |
-| **Reporter**（第三方 LogView） | IMGUI | `UPGameRoot.Config.EnableDebugModel = true` 时点左上角 FPS 角标，或代码 `UPGameRoot.Instance.reporter.ShowLogWindows()` | `maxSize = 20`(MB，超限整体清空) + `maxLogCount = 3000`(条，超限**按批丢弃最旧**) |
+| **Reporter**（第三方 LogView） | IMGUI | `UPGameRoot.Config.EnableDebugModel = true` 时点左上角 FPS 角标，或代码 `UPGameRoot.Instance.reporter.ShowLogWindows()` | `maxSize = 20`(估算 MiB) + `maxLogCount = 3000`(条)，原始/折叠记录统一淘汰；后台队列另限 2048 条 / 4 MiB |
 | **LogListenerManager** | UGUI | 默认 `Ctrl + F12`（可配 `toggleKey`/`ctrlRequired`）；静态入口 `LogListenerManager.Log(...)` | `maxLogLines = 1000`（显示 `maxDisplayLines = 500`） |
 
 - 两者的 UI 偏好都存在 `PlayerPrefs`；
@@ -182,7 +184,7 @@ string report = UPandaGF.EditorTools.PLoggerSelfCheck.RunSilent();
 6. 运行时改 `PLogger.cfg` **不会**写回 `LogConfig.json`；
 7. 落盘是"批次 Drain 后 Flush"，硬崩溃最多丢最后一批日志；
 8. **日志文件不轮转**：不会自动清理旧文件，长期运行请自行清理（诊断窗口可打开目录处理）；
-9. `Reporter` 的 `collapsedLogs` / `logsDic` 仍随唯一日志种类增长（`logs` 本体已有条数上限）；
+9. `Reporter` 已重构为有界缓冲区，当前限制与 API 见 [Reporter 重构文档](Reporter/README.md)；
 10. 部分源文件是 **GBK** 编码，批量改写需按原编码处理。
 
 ---

@@ -40,13 +40,13 @@
 ## 关键实现说明
 
 - **录制优化**：每帧只记录「Transform 或 Animator 参数发生变化」的物体，与上一帧快照比较。
-- **存储**：`List<RecordFrame>`，帧内为 `List<ObjectSnapshot>`，用 `BinaryFormatter` 二进制序列化。
-- **回放**：按时间戳顺序播放，相邻两帧间做 `Lerp/Slerp` 插值；进度条拖拽即 `Seek` 到任意时间点。
+- **存储**：`List<RecordFrame>`，帧内为 `List<ObjectSnapshot>`，新文件使用 `UPANDA_REPLAY:2` 文件头与版本化 JSON DTO；旧二进制文件只读兼容，类型限于原有 DTO。
+- **回放**：首次播放/Seek 建立每个物体的时间索引，逐物体二分查找并插值。跳转不依赖之前是否播放过；不再每帧构造两个临时 Dictionary。静止到运动的转换前补保持关键帧，避免跨整个静止区间插值。
 - **物理**：回放时 `Physics.autoSimulation = false`，并将被记录物体的 `Rigidbody.isKinematic = true`；回放结束恢复。
-- **物体标识**：以 `instanceID` 为主键；同时记录 `objectName`，跨会话加载时按名称回退匹配。
+- **物体标识**：当前会话使用 `instanceID`，跨会话优先使用场景与层级路径；旧存档只回退匹配唯一名称，重名时不任意选择。
 
 ## 注意事项
 
-- `instanceID` 仅在**当前运行会话内**稳定。跨会话（重新打开应用后）加载文件时，依赖 `objectName` 匹配，因此场景中物体名应尽量唯一。
-- `BinaryFormatter` 在较新 .NET 中标记为过时，Unity 2021.3 仍可用；如需在 IL2CPP/Android 上长期维护，可将 `FileManager` 改为 JSON（JsonUtility + 纯字段 DTO）。
+- `instanceID` 仅在**当前运行会话内**稳定。跨会话（重新打开应用后）加载文件时，优先匹配场景/层级路径；层级变化后的旧数据只能回退到唯一名称。
+- 新存档包含 Rigidbody 速度；自定义扩展需在保存和加载前调用 `FileManager.RegisterComponentState<MyState>(key)`，`MyState` 必须可由 JsonUtility 序列化。未注册类型会明确失败，不再静默丢弃。读文件有 128 MiB 上限，并校验时间戳和快照数组。
 - 录制期间若物体被销毁，其缓存条目会失效；本系统面向「录制期间物体集合不变」的常见场景。

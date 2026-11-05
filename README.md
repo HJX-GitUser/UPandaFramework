@@ -215,7 +215,7 @@ upanda-framework/
      - `LoadAssemblyAsync` 可能返回 `null`（内部已对 dll 资源与 `Assembly.Load` 加保护），调用方需判空。
 
 3. **ResourcesLoader**
-   - 封装 Unity 内置的 `Resources.Load`，避免资源重复加载，内置引用计数与异步加载状态管理。
+   - 封装 Unity 内置的 `Resources.Load`，避免资源重复加载，内置引用计数、失败重试与异步等待者清理，详见 `Runtime/Manager/AssetsMgr/README.md`。
 
 4. **StreamingAssetsLoadTool**
    - `StreamingAssets` 路径下的资源加载工具，已处理跨平台兼容性，提供多种加载方式。
@@ -236,6 +236,7 @@ upanda-framework/
 ### UI 系统（Manager/UIMgr）
 
 - **UIManager**：按 `Bot / Mid / Top / System` 四层管理面板，自动创建 `UICamera`、`Canvas`（1920×1080 适配）与 `EventSystem`。
+- 生命周期、并发打开和关闭取消约定见 `Runtime/Manager/UIMgr/README.md`。
 - **BasePanel**：面板基类；**SimpleLoadUI**：加载界面；**WorldSpaceOverlayUI**：世界空间 UI；**DragArea**：拖拽组件。
 - **UICameraRegister / UICanvasRegister**：把场景中的相机 / Canvas 注册给 UI 系统（`Reset()` 时自动填充引用）。
 - **UILoadInfoAttribute**（`UIAttribute`）：标记面板所属层级与资源加载方式，供自动加载使用。
@@ -357,9 +358,13 @@ upanda-framework/
 ## 源码约定
 
 - **程序集划分**：`Runtime/` 属于 `UPandaGF.Runtime`，`Editor/` 属于 `UPandaGF.Editor`。Runtime 程序集**在 Player 构建时不引用 `UnityEditor`**，因此 Runtime 代码里任何 `using UnityEditor;` 或 `UnityEditor.*` 调用都必须用 `#if UNITY_EDITOR ... #endif` 包住，否则会出现 `CS0246` 打包阻断。
-- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**（172/172 文件：Runtime 114 + Editor 58），并由根目录 `.editorconfig`、`.gitattributes` 固化。
+- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**，并由根目录 `.editorconfig`、`.gitattributes` 固化。
 - **命名沿袭**：为兼容既有配置与场景，部分历史命名未做改动（如 `OpearationExecute`、`AddErroTimes`、`erroTimes`、部分接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间）。
 - **改动后自检**：涉及交互式任务评分系统时，改完先跑「任务流程校验器」再跑「运行逻辑自检」，可覆盖绝大多数配置错误与逻辑回归。
+
+## 优化与回归验证
+
+本轮变更、测试与后续计划见 [OPTIMIZATION.md](OPTIMIZATION.md)。
 
 ## 贡献
 

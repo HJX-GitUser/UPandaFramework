@@ -22,6 +22,7 @@ namespace UPandaGF
         private AssetBundle mainAB = null;
         //主包依赖获取配置文件
         private AssetBundleManifest manifest = null;
+        public bool IsInitialized => mainAB != null && manifest != null;
 
         //存储 AB包对象(AB包不能够重复加载 否则会报错)
         private Dictionary<string, AssetBundle> _loadedBundles = new Dictionary<string, AssetBundle>();
@@ -73,6 +74,7 @@ namespace UPandaGF
         /// <returns></returns>
         public async Task Init(string pathUrl, string mainName, ABLoadPath mainLoadPath)
         {
+            manifest = null;
             PathUrl = pathUrl;
             MainName = mainName;
             MainPackageLoadPath = mainLoadPath;

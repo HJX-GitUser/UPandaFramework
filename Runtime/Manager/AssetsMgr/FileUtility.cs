@@ -20,15 +20,12 @@ public static class FileUtility
             return false;
         }
 
-        // 2. 确保目标目录存在
-        string destDir = Path.GetDirectoryName(destPath);
-        if (!Directory.Exists(destDir))
-        {
-            Directory.CreateDirectory(destDir);
-        }
-
         try
         {
+            if (string.Equals(Path.GetFullPath(sourcePath), Path.GetFullPath(destPath), StringComparison.OrdinalIgnoreCase))
+                return true;
+            string destDir = Path.GetDirectoryName(Path.GetFullPath(destPath));
+            Directory.CreateDirectory(destDir);
             // 3. 复制文件（如果目标文件存在且 overwrite 为 false，则 File.Copy 会抛出异常）
             File.Copy(sourcePath, destPath, overwrite);
 

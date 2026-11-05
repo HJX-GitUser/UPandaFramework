@@ -14,6 +14,7 @@ namespace UPandaGF
     /// </summary>
     public class AssetsLoader : MonoBehaviour, IAssetsLoader
     {
+        public bool IsInitialized { get; private set; }
         private AssetLoaddingMethod method;
         private ABLoadMgr abLoadMgr;
         private EditorSourcesMgr editorSourcesMgr;
@@ -39,9 +40,19 @@ namespace UPandaGF
         public async Task Init(AssetLoaddingMethod arg0, string remoteURL, string LoadAssetPath, ABSourcesRelated sourceRefArgBytes)
         {
             PLogger.Log("AssetsLoader Init");
+            IsInitialized = false;
             method = arg0;
             editorSourcesMgr = EditorSourcesMgr.Instance;
             sceneMgr = SceneMgr.Instance;
+            if (method == AssetLoaddingMethod.Editor)
+            {
+#if !UNITY_EDITOR
+                throw new System.InvalidOperationException("Player 中不能使用 Editor 资源加载模式。");
+#else
+                IsInitialized = true;
+                return;
+#endif
+            }
             if (sourceRefArgBytes != null)
             {
                 sourceRef = sourceRefArgBytes;
@@ -71,8 +82,10 @@ namespace UPandaGF
                 abLoadMgr.remoteURL = remoteURL;
                 PLogger.Log($"主包：{sourceRef.mainBundleInfo.bundleName}，加载方式：{sourceRef.mainBundleInfo.loadPath}");
                 await abLoadMgr.Init(LoadAssetPath, sourceRef.mainBundleInfo.bundleName, sourceRef.mainBundleInfo.loadPath);
+                if (!abLoadMgr.IsInitialized) return;
                 abLoadMgr.SetABSourcesRelated(sourceRef);
             }
+            IsInitialized = true;
             PLogger.Log("AssetsLoader Inited !!!");
         }
 
@@ -122,7 +135,10 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Assetbundles:
                     AssetRelatedArg arg;
                     if (!TryGetAssetArg(path, out arg))
+                    {
+                        callback?.Invoke(null);
                         return;
+                    }
                     abLoadMgr.LoadResAsync(arg.bundleName, arg.sourceName, sourceRef.GetABLoadPath(arg), callback);
                     break;
             }
@@ -138,7 +154,10 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Assetbundles:
                     AssetRelatedArg arg;
                     if (!TryGetAssetArg(path, out arg))
+                    {
+                        callback?.Invoke(null);
                         return;
+                    }
                     abLoadMgr.LoadResAsync(arg.bundleName, arg.sourceName, type, sourceRef.GetABLoadPath(arg), callback);
                     break;
             }
@@ -302,7 +321,9 @@ namespace UPandaGF
         private bool TryGetAssetArg(string path, out AssetRelatedArg arg)
         {
             arg = null;
-            if (sourceRef != null && sourceRef.sourcesDic.TryGetValue(path, out arg))
+            if (IsInitialized && !string.IsNullOrEmpty(path) && sourceRef != null
+                && sourceRef.sourcesDic != null && sourceRef.sourcesDic.TryGetValue(path, out arg)
+                && arg != null && sourceRef.bundleInfo != null && sourceRef.bundleInfo.ContainsKey(arg.bundleName))
                 return true;
             PLogger.LogError("该资源不存在：" + path);
             return false;

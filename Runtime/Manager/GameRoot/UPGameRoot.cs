@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -101,6 +102,7 @@ namespace UPandaGF
         public bool IsInitFailed { get; private set; }
 
         private bool warnedNotInited;
+        private bool destroyed;
         #endregion
 
         private void Reset()
@@ -125,6 +127,8 @@ namespace UPandaGF
             }
             catch (Exception e)
             {
+                if (destroyed) return;
+                IsInited = false;
                 IsInitFailed = true;
                 PLogger.LogError($"UPGameRoot 初始化失败：{e}");
 
@@ -138,6 +142,7 @@ namespace UPandaGF
         {
             // ① 配置优先：读 StreamingAssets/Data/GameRootConfig.json（读到就以它为准）
             await LoadConfigAsync();
+            ThrowIfDestroyed();
 
             await PublicMono.Instance.RunCoroutine(debugerInit.Init());
             binaryDataMgr.Init();
@@ -149,12 +154,18 @@ namespace UPandaGF
                                    + "否则清单会因解密失败而整体不可用（随包清单 assetData.assetref 当前是明文，应保持 enable=false）");
             }
 
-            if (config.enableAssetUpdate)
+            if (config.method == AssetLoaddingMethod.Assetbundles)
+                FileUpdateTransaction.Recover(Path.Combine(Application.persistentDataPath, "AssetBundles", ".update-recovery"));
+            if (config.method == AssetLoaddingMethod.Assetbundles && config.enableAssetUpdate)
             {
                 sourceRef = await UpdateAssets();
             }
 
+            ThrowIfDestroyed();
             await sourcesLoadMgr.Init(config.method, config.remoteURL, config.LoadAssetPath, sourceRef);
+            ThrowIfDestroyed();
+            if (!sourcesLoadMgr.IsInitialized)
+                throw new InvalidOperationException("资源系统初始化失败，框架未就绪。请检查清单与主包加载日志。");
             _UIManager.SetResourcesLoader(sourcesLoadMgr, ResourcesLoader.Instance);
             OnInited();
         }
@@ -179,7 +190,13 @@ namespace UPandaGF
                 return;
             }
 
-            string json = await StreamingAssetsLoader.LoadTextFileAsync(UPGameRootConfigFile.RelativePath);
+            string json;
+            try { json = await StreamingAssetsLoader.LoadTextFileAsync(UPGameRootConfigFile.RelativePath); }
+            catch (Exception e)
+            {
+                PLogger.LogWarning("读取配置失败，使用面板配置：" + e.Message);
+                return;
+            }
             if (string.IsNullOrEmpty(json))
             {
                 PLogger.LogWarning($"[UPGameRoot] 配置文件读取失败或内容为空：{UPGameRootConfigFile.AssetPath}，使用面板 / 代码里的配置");
@@ -214,178 +231,116 @@ namespace UPandaGF
         /// </summary>
         private async Task<ABSourcesRelated> UpdateAssets()
         {
-            PLogger.Log("资源更新已启动");
-            string remoteListPath = CombineUrl(config.remoteURL, "AssetBundles/", assetData);
-            string tempFileSavePath = Path.Combine(Application.persistentDataPath, "AssetBundles/", tempAssetData);
-            string localFilePath = Path.Combine(Application.persistentDataPath, "AssetBundles/", assetData);
-
-            if (File.Exists(tempFileSavePath))
-                File.Delete(tempFileSavePath);
-
-            PLogger.Log($"资源配置下载路径：{remoteListPath}\n保存路径：{tempFileSavePath}");
-            bool isDown = await downloader.DownloadAsync(remoteListPath, tempFileSavePath);
-            if (!isDown)
-            {
-                PLogger.Log_red("资源校验目录下载失败，使用本地资源清单");
-                return LoadLocalSourceRef(localFilePath);
-            }
-
-            PLogger.Log_green("校验数据下载成功");
-
-            ABSourcesRelated tempSourceRef;
+            string basePath = Path.Combine(Application.persistentDataPath, "AssetBundles");
+            string recoveryPath = Path.Combine(basePath, ".update-recovery");
+            // 上次在提交途中退出：先恢复完整旧版本，恢复失败则停止启动，避免加载混合版本。
+            FileUpdateTransaction.Recover(recoveryPath);
+            string localFilePath = Path.Combine(basePath, assetData);
+            string stageRoot = Path.GetFullPath(Path.Combine(basePath, ".update-stage"));
+            if (Directory.Exists(stageRoot))
+                foreach (string oldStage in Directory.GetDirectories(stageRoot))
+                    TryDeleteStage(oldStage, stageRoot);
+            string stagePath = Path.Combine(stageRoot, Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(stagePath);
+            string tempFileSavePath = Path.Combine(stagePath, assetData);
             try
             {
-                byte[] tempSourceRefByte = File.ReadAllBytes(tempFileSavePath);
-                tempSourceRef = sourcesLoadMgr.LoadABSourcesRelated(tempSourceRefByte);
+                if (!await downloader.DownloadAsync(CombineUrl(config.remoteURL, "AssetBundles", assetData), tempFileSavePath))
+                    return LoadLocalSourceRef(localFilePath);
+                ThrowIfDestroyed();
+                var remote = sourcesLoadMgr.LoadABSourcesRelated(File.ReadAllBytes(tempFileSavePath));
+                if (remote == null || remote.mainBundleInfo == null || remote.bundleInfo == null)
+                    return LoadLocalSourceRef(localFilePath);
+
+                var downloads = new List<DownloadItem>();
+                var expected = new List<AssetBundleLoadInfo>();
+                var staged = new List<string>();
+                var targets = new List<string>();
+                var bundles = new List<AssetBundleLoadInfo>(remote.bundleInfo.Values);
+                bundles.Add(remote.mainBundleInfo);
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var info in bundles)
+                {
+                    if (info == null) throw new InvalidDataException("清单包含空包信息");
+                    if (info.loadPath != ABLoadPath.PersistentDataPath) continue;
+                    string target = SafeBundlePath(info.bundleName);
+                    if (!seen.Add(target)) throw new InvalidDataException("清单包含重复包路径：" + info.bundleName);
+                    // 直接校验文件，不只比较两份清单，修复缺失/损坏/加载位置变更遗漏下载的问题。
+                    if (VerifyBundle(target, info)) continue;
+                    string stage = Path.Combine(stagePath, downloads.Count + ".bundle");
+                    downloads.Add(new DownloadItem {
+                        url = CombineUrl(config.remoteURL, config.LoadAssetPath, info.bundleName),
+                        savePath = stage, fileName = info.bundleName, fileSize = info.size, enableResume = false
+                    });
+                    expected.Add(info);
+                    staged.Add(stage);
+                    targets.Add(target);
+                }
+                if (!await DownloadBatchAndWait(downloads)) return LoadLocalSourceRef(localFilePath);
+                ThrowIfDestroyed();
+                for (int i = 0; i < downloads.Count; i++)
+                    if (!VerifyBundle(staged[i], expected[i]))
+                        throw new InvalidDataException("下载文件大小或 MD5 不匹配：" + expected[i].bundleName);
+                staged.Add(tempFileSavePath);
+                targets.Add(localFilePath);
+                FileUpdateTransaction.Commit(staged, targets, recoveryPath);
+                // 保留不再使用的旧包，避免删除仍由随包清单引用的文件；后续可单独实现版本垃圾回收。
+                return remote;
             }
             catch (Exception e)
             {
-                // 文件被外部删除 / 写坏 / 读取失败：不能直接抛出去，否则整个初始化失败，
-                // 连下面已经写好的降级逻辑都走不到
-                PLogger.LogError($"读取远端资源清单失败：{e.Message}，使用本地资源清单");
+                if (File.Exists(Path.Combine(recoveryPath, "journal"))) throw; // 回滚未完成，不能降级加载。
+                PLogger.LogError("资源更新失败，保留旧版本：" + e.Message);
                 return LoadLocalSourceRef(localFilePath);
             }
+            finally { TryDeleteStage(stagePath, stageRoot); }
+        }
 
-            if (tempSourceRef == null || tempSourceRef.mainBundleInfo == null)
-            {
-                PLogger.LogError("远端资源清单解析失败，使用本地资源清单");
-                return LoadLocalSourceRef(localFilePath);
-            }
+        private static void TryDeleteStage(string path, string root)
+        {
+            string fullPath = Path.GetFullPath(path);
+            string prefix = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (!fullPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) return;
+            try { if (Directory.Exists(fullPath)) Directory.Delete(fullPath, true); }
+            catch (IOException) { } // 超时取消中的文件仍可能被请求占用，下次启动再清理。
+            catch (UnauthorizedAccessException) { }
+        }
 
-            // 首次全量 / 增量更新
-            bool allSuccess;
-            if (File.Exists(localFilePath))
-            {
-                ABSourcesRelated localSourceRef = LoadLocalSourceRef(localFilePath);
-                if (localSourceRef == null || localSourceRef.mainBundleInfo == null)
-                {
-                    PLogger.LogError("本地资源清单异常，按首次下载处理");
-                    allSuccess = await DownloadFirstTime(tempSourceRef);
-                }
-                else
-                {
-                    allSuccess = await DownloadIncrement(tempSourceRef, localSourceRef);
-                }
-            }
-            else
-            {
-                allSuccess = await DownloadFirstTime(tempSourceRef);
-            }
+        private string SafeBundlePath(string name)
+        {
+            string persistent = Path.GetFullPath(Application.persistentDataPath).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            string root = Path.GetFullPath(Path.Combine(Application.persistentDataPath,
+                config.LoadAssetPath.TrimStart('/', '\\'))).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            string target = Path.GetFullPath(Path.Combine(root, name ?? string.Empty));
+            if (!root.StartsWith(persistent, StringComparison.OrdinalIgnoreCase)
+                || string.IsNullOrWhiteSpace(name) || Path.IsPathRooted(name)
+                || !target.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("非法资源包路径：" + name);
+            return target;
+        }
 
-            if (!allSuccess)
-            {
-                // 关键：下载没全部成功时**不能**提交远端清单。
-                // 否则清单里"声称存在"的包其实没下载下来，运行时只会看到零散的"该资源不存在"，极难定位。
-                PLogger.Log_red("本次热更未全部成功，不提交远端资源清单");
-
-                if (File.Exists(tempFileSavePath))
-                    File.Delete(tempFileSavePath);       // 不提交就清掉临时文件，避免下次误用
-
-                if (File.Exists(localFilePath))
-                {
-                    PLogger.LogWarning("继续使用上一次成功热更的资源清单");
-                    return LoadLocalSourceRef(localFilePath);
-                }
-
-                PLogger.LogWarning("本机没有可用的热更清单，本次改用随包清单（Assets/StreamingAssets/Data/assetData.assetref），下次启动会重试热更");
-                return null;    // 传 null 时 AssetsLoader 会去读 StreamingAssets 里的随包清单
-            }
-
-            if (File.Exists(tempFileSavePath)
-                && !FileUtility.SaveAsAndDeleteOriginal(tempFileSavePath, localFilePath, true))
-            {
-                // 清单落盘失败（被占用 / 磁盘满 / 权限不足）：新下载的包与旧清单不匹配，必须说清楚
-                PLogger.LogError("资源清单落地失败，本次仍使用旧的本地清单，新下载的包可能与本清单不匹配");
-                return LoadLocalSourceRef(localFilePath);
-            }
-
-            return LoadLocalSourceRef(localFilePath);
+        private static bool VerifyBundle(string path, AssetBundleLoadInfo info)
+        {
+            if (!File.Exists(path)) return false;
+            if (info.size > 0 && new FileInfo(path).Length != info.size) return false;
+            if (string.IsNullOrEmpty(info.md5)) return false;
+            using (var md5 = MD5.Create())
+            using (var stream = File.OpenRead(path))
+                return string.Equals(BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", ""),
+                    info.md5, StringComparison.OrdinalIgnoreCase);
         }
 
         private ABSourcesRelated LoadLocalSourceRef(string localFilePath)
         {
-            if (!File.Exists(localFilePath))
-                return null;
-            return sourcesLoadMgr.LoadABSourcesRelated(File.ReadAllBytes(localFilePath));
-        }
-
-        /// <summary>
-        /// 首次下载：主包 + 所有"加载位置为 PersistentDataPath"的包
-        /// </summary>
-        private async Task<bool> DownloadFirstTime(ABSourcesRelated tempSourceRef)
-        {
-            List<DownloadItem> downloadList = new List<DownloadItem>();
-            // 主包只有在"加载位置就是 PersistentDataPath"时才需要下载：
-            // 若主包从 StreamingAssets / 远程加载，下载到本地不会被使用（下载地址需与加载地址一致）
-            if (tempSourceRef.mainBundleInfo.loadPath == ABLoadPath.PersistentDataPath)
-            {
-                downloadList.Add(GetDownInfo(tempSourceRef.mainBundleInfo.bundleName, tempSourceRef.mainBundleInfo.size));
-            }
-            else
-            {
-                PLogger.LogWarning($"主包加载位置为 {tempSourceRef.mainBundleInfo.loadPath}，本次热更不会下载主包");
-            }
-            foreach (var item in tempSourceRef.bundleInfo.Values)
-            {
-                if (item.loadPath == ABLoadPath.PersistentDataPath)
-                    downloadList.Add(GetDownInfo(item.bundleName, item.size));
-            }
-            PLogger.Log($"共有{downloadList.Count}个资源需要下载");
-            return await DownloadBatchAndWait(downloadList);
-        }
-
-        /// <summary>
-        /// 增量更新：按 MD5 对比下载变更资源，并清理远端已删除的本地资源
-        /// </summary>
-        private async Task<bool> DownloadIncrement(ABSourcesRelated tempSourceRef, ABSourcesRelated localSourceRef)
-        {
-            List<DownloadItem> downloadList = new List<DownloadItem>();
-            if (tempSourceRef.mainBundleInfo.loadPath == ABLoadPath.PersistentDataPath
-                && !string.Equals(tempSourceRef.mainBundleInfo.md5, localSourceRef.mainBundleInfo.md5))
-            {
-                downloadList.Add(GetDownInfo(tempSourceRef.mainBundleInfo.bundleName, tempSourceRef.mainBundleInfo.size));
-            }
-
-            foreach (var item in tempSourceRef.bundleInfo)
-            {
-                if (item.Value.loadPath != ABLoadPath.PersistentDataPath)
-                    continue;
-                if (localSourceRef.bundleInfo.TryGetValue(item.Key, out var localInfo))
-                {
-                    if (!string.Equals(item.Value.md5, localInfo.md5))
-                        downloadList.Add(GetDownInfo(item.Key, item.Value.size));
-                }
-                else
-                {
-                    downloadList.Add(GetDownInfo(item.Key, item.Value.size));
-                }
-            }
-
-            // 远端已删除、本地仍存在的资源做清理
-            foreach (var item in localSourceRef.bundleInfo)
-            {
-                if (!tempSourceRef.bundleInfo.ContainsKey(item.Key))
-                    DeleteLocalAsset(item.Key);
-            }
-
-            PLogger.Log($"共有{downloadList.Count}个资源需要更新");
-            return await DownloadBatchAndWait(downloadList);
-        }
-
-        private void DeleteLocalAsset(string fileName)
-        {
-            string delPath = Path.Combine(Application.persistentDataPath, config.LoadAssetPath, fileName);
             try
             {
-                if (File.Exists(delPath))
-                {
-                    File.Delete(delPath);
-                    PLogger.Log($"{delPath} 已删除");
-                }
+                if (!File.Exists(localFilePath)) return null;
+                return sourcesLoadMgr.LoadABSourcesRelated(File.ReadAllBytes(localFilePath));
             }
             catch (Exception e)
             {
-                PLogger.LogWarning($"删除资源失败：{delPath}，{e.Message}");
+                PLogger.LogWarning("读取本地清单失败，尝试随包清单：" + e.Message);
+                return null;
             }
         }
 
@@ -393,8 +348,7 @@ namespace UPandaGF
         /// 批量下载并等待完成。
         /// <para>成功与否**按本批次自己的任务状态**判定：下载器的完成事件与失败列表都是全局的，
         /// 别的批次的任务同样会影响它们（本流程通常只有本批次，但不能假设）。</para>
-        /// <para>带超时：下载器要求"无排队、无下载中、无暂停"才算批次结束，一旦有任务被暂停，
-        /// 完成事件永远不会触发 —— 没有超时就会把整个启动链挂在 await 上且没有任何日志。</para>
+        /// <para>仅轮询本批次任务的终态；超时取消本批次，不依赖全局完成事件。</para>
         /// </summary>
         private async Task<bool> DownloadBatchAndWait(List<DownloadItem> downloadList)
         {
@@ -404,53 +358,31 @@ namespace UPandaGF
                 return true;
             }
 
-            if (!downloader.IsIdle)
-            {
-                PLogger.LogWarning("[UPGameRoot] 下载器上已有其它任务在跑：批次完成事件与失败统计可能受其影响（成功判定仍按本批次任务状态）");
-            }
-
-            // RunContinuationsAsynchronously：避免后续流程在下载器的"完成事件分发"中途同步续跑
-            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            // 用带结果的事件：只要有一个任务重试耗尽，allSuccess 就是 false
-            Action<bool> onFinished = (allSuccess) => tcs.TrySetResult(allSuccess);
-            downloader.OnAllDownloadsFinished += onFinished;
             downloader.AddBatchDownloads(downloadList);
-            try
+            float start = Time.realtimeSinceStartup;
+            while (!AllItemsTerminal(downloadList))
             {
-                bool? allSuccessByEvent = await WaitWithTimeout(tcs.Task, config.downloadBatchTimeout);
-                if (allSuccessByEvent == null)
+                if (destroyed || downloader == null || (config.downloadBatchTimeout > 0f
+                    && Time.realtimeSinceStartup - start >= config.downloadBatchTimeout))
                 {
-                    PLogger.LogError($"[UPGameRoot] 等待下载完成超时（{config.downloadBatchTimeout} 秒）：可能有任务被暂停或下载器异常。"
-                                     + "本次按失败处理，下载器仍可能在后台继续");
+                    if (downloader != null)
+                        foreach (var item in downloadList) downloader.CancelDownload(item);
+                    PLogger.LogError("资源下载批次已取消或超时，保留旧版本。");
                     return false;
                 }
-
-                bool allSuccess = AllItemsCompleted(downloadList);
-                if (allSuccess != allSuccessByEvent.Value)
-                {
-                    PLogger.LogWarning($"[UPGameRoot] 完成事件结果({allSuccessByEvent.Value})与本批次任务状态({allSuccess})不一致，按本批次状态处理");
-                }
-
-                if (!allSuccess)
-                    LogDownloadFailures(downloadList);
-
-                return allSuccess;
+                await Task.Delay(50);
             }
-            finally
-            {
-                downloader.OnAllDownloadsFinished -= onFinished;
-            }
+            bool success = AllItemsCompleted(downloadList);
+            if (!success) LogDownloadFailures(downloadList);
+            return success;
         }
 
-        /// <summary>等待任务完成，带超时；返回 null 表示超时（timeoutSeconds &lt;= 0 表示不超时）</summary>
-        private static async Task<bool?> WaitWithTimeout(Task<bool> task, float timeoutSeconds)
+        private static bool AllItemsTerminal(List<DownloadItem> items)
         {
-            if (timeoutSeconds <= 0f)
-                return await task;
-
-            Task completed = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(timeoutSeconds)));
-            return completed == task ? (bool?)await task : null;
+            foreach (var item in items)
+                if (item != null && item.state != DownloadState.Completed
+                    && item.state != DownloadState.Failed && item.state != DownloadState.Canceled) return false;
+            return true;
         }
 
         /// <summary>本批次的任务是否全部成功（下载器完成后会把 state 置为 Completed）</summary>
@@ -492,18 +424,6 @@ namespace UPandaGF
             }
 
             PLogger.Log_red($"资源下载未全部成功：共 {downloadList.Count} 个任务，未完成 {failedCount} 个");
-        }
-
-        private DownloadItem GetDownInfo(string fileName, long size)
-        {
-            string assetsavePath = Path.Combine(Application.persistentDataPath, config.LoadAssetPath);
-            return new DownloadItem()
-            {
-                url = CombineUrl(config.remoteURL, config.LoadAssetPath, fileName),
-                savePath = Path.Combine(assetsavePath, fileName),
-                fileName = fileName,
-                fileSize = size
-            };
         }
 
         /// <summary>
@@ -552,6 +472,8 @@ namespace UPandaGF
 
         private void OnInited()
         {
+            ThrowIfDestroyed();
+            IsInitFailed = false;
             IsInited = true;
             PLogger.Log_white($"GameRoot Initialization completed!");
             EventCenter.Instance.EventTrigger(new GFLoadedEvent());
@@ -573,8 +495,15 @@ namespace UPandaGF
             return sourcesLoadMgr;
         }
 
+        private void ThrowIfDestroyed()
+        {
+            if (destroyed || this == null) throw new OperationCanceledException("UPGameRoot 已销毁");
+        }
+
         protected override void OnDestroyed()
         {
+            destroyed = true;
+            IsInited = false;
             base.OnDestroyed();
             PLogger.LogWarning("UPGameRoot Destory!!!");
         }

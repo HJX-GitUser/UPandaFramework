@@ -19,504 +19,223 @@ public class AssetBundleClassificationWindowConfig
     public ABLoadPath mainBundleLoadPath = ABLoadPath.StreamingAssetsPath;
 }
 
-/// <summary>
-/// 资源信息基类
-/// </summary>
+/// <summary>资源缓存记录。加载失败不保留记录；引用计数不允许为负。</summary>
 public abstract class ResInfoBase
 {
-    /// <summary>
-    /// 引用计数
-    /// </summary>
     public int refCount;
+    internal virtual UnityEngine.Object AssetObject => null;
+    internal virtual void CancelPending() { }
 }
-/// <summary>
-/// 资源信息
-/// </summary>
-/// <typeparam name="T"></typeparam>
+
 public class ResInfo<T> : ResInfoBase
 {
-    /// <summary>
-    /// 资源
-    /// </summary>
     public T asset;
-    /// <summary>
-    /// 异步加载完成的回调
-    /// </summary>
     public UnityAction<T> callback;
-    /// <summary>
-    /// 存储异步时的协同程序
-    /// </summary>
     public Coroutine coroutine;
-    /// <summary>
-    /// 引用计数为0，该资源是否移除
-    /// </summary>
     public bool isDel;
-    public void AddRefCount()
-    {
-        ++refCount;
-    }
-
+    internal bool loading;
+    internal override UnityEngine.Object AssetObject => asset as UnityEngine.Object;
+    public void AddRefCount() { ++refCount; }
     public void SubRefCount()
     {
-        --refCount;
-        if (refCount < 0) Debug.Log($"{asset}:该资源引用计数小于0！需自行检查加载和卸载的执行次数");
+        if (refCount > 0) --refCount;
+        else Debug.LogWarning("资源引用计数已为 0，请检查重复释放。");
+    }
+    internal override void CancelPending()
+    {
+        var pending = callback;
+        callback = null;
+        coroutine = null;
+        loading = false;
+        ResourcesLoader.InvokeCallbacks(pending, default(T));
     }
 }
 
-/// <summary>
-/// Resources路径资源加载加载
-/// </summary>
+/// <summary>主线程 Resources 加载服务。泛型与 Type API 保留独立的引用计数。</summary>
 public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
 {
-    private const string splicName_T = "_T_";
-    private const string splicName_Object = "_O_";
-    /// <summary>
-    /// 存储 加载过 或 加载中 的资源
-    /// key是资源名 （路径+资源类型）拼接
-    /// </summary>
-    private Dictionary<string, ResInfoBase> resDic = new Dictionary<string, ResInfoBase>();
-    /// <summary>
-    /// 同步加载资源
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="path"></param>
-    /// <returns></returns>
+    private readonly Dictionary<string, ResInfoBase> resDic = new Dictionary<string, ResInfoBase>();
+    private bool destroyed;
+    private static string Key(string path, Type type, bool generic)
+    {
+        return path + (generic ? "_T_" : "_O_") + type.AssemblyQualifiedName;
+    }
+
+    internal static void InvokeCallbacks<T>(UnityAction<T> callbacks, T value)
+    {
+        if (callbacks == null) return;
+        foreach (UnityAction<T> callback in callbacks.GetInvocationList())
+        {
+            try { callback(value); }
+            catch (Exception e) { Debug.LogException(e); }
+        }
+    }
+
     public T Load<T>(string path) where T : UnityEngine.Object
     {
-        string resName = path + splicName_T + typeof(T).Name;
-        ResInfo<T> info;
-        if (!resDic.ContainsKey(resName))
-        {
-            T res = Resources.Load<T>(path);
-            if (res == null)
-            {
-                Debug.LogError($"资源加载失败：{path}");
-                return null;
-            }
-            info = new ResInfo<T>();
-            info.asset = res;
-            info.AddRefCount();
-            resDic.Add(resName, info);
-            return res;
-        }
-        else//如果字典里有这个资源，需要判断是否处于加载中的状态
-        {
-            info = resDic[resName] as ResInfo<T>;
-            info.AddRefCount();
-            if (info.asset == null)
-            {
-                //关掉正在异步加载资源状态的协程，直接用同步的方式加载
-                StopCoroutine(info.coroutine);
-                T res = Resources.Load<T>(path);
-                if (res == null)
-                {
-                    Debug.LogError($"资源加载失败：{path}");
-                    return null;
-                }
-                info.asset = res;
-                info.callback?.Invoke(res);
-                info.callback = null;
-                info.coroutine = null;
-                return res;//如果资源是GameObject，需要自己再实例化
-            }
-            else
-            {
-                //Debug.Log($"{path}资源被引用次数：{info.refCount}");
-                return info.asset;
-            }
-        }
-
+        return LoadCore<T>(path, typeof(T), Key(path, typeof(T), true));
     }
-    /// <summary>
-    /// [Type]同步加载资源
-    /// </summary>
-    /// <param name="path"></param>
-    /// <param name="type"></param>
-    /// <returns></returns>
-    public UnityEngine.Object Load(string path, System.Type type)
+    public UnityEngine.Object Load(string path, Type type)
     {
-        string resName = path + splicName_Object + type.Name;
-        ResInfo<UnityEngine.Object> info;
-        if (!resDic.ContainsKey(resName))
-        {
-            UnityEngine.Object res = Resources.Load(path, type);
-            if (res == null)
-            {
-                Debug.LogError($"资源加载失败：{path}");
-                return null;
-            }
-            info = new ResInfo<UnityEngine.Object>();
-            info.asset = res;
-            info.AddRefCount();
-            resDic.Add(resName, info);
-            return res;
-        }
-        else//如果字典里有这个资源，需要判断是否处于加载中的状态
-        {
-            info = resDic[resName] as ResInfo<UnityEngine.Object>;
-            info.AddRefCount();
-            if (info.asset == null)
-            {
-                //关掉正在异步加载资源状态的协程，直接用同步的方式加载
-                StopCoroutine(info.coroutine);
-                UnityEngine.Object res = Resources.Load(path, type);
-                if (res == null)
-                {
-                    Debug.LogError($"资源加载失败：{path}");
-                    return null;
-                }
-                info.asset = res;
-                info.callback?.Invoke(res);
-                info.callback = null;
-                info.coroutine = null;
-                return res;
-            }
-            else
-            {
-                return info.asset;
-            }
-        }
+        return LoadCore<UnityEngine.Object>(path, type, Key(path, type, false));
     }
-    /// <summary>
-    /// 异步加载资源
-    /// </summary>
-    /// <typeparam name="T">资源类型</typeparam>
-    /// <param name="path">资源路径</param>
-    /// <param name="callback">回调</param>
+    private T LoadCore<T>(string path, Type type, string key) where T : UnityEngine.Object
+    {
+        if (destroyed) return null;
+        ResInfoBase entry;
+        ResInfo<T> info;
+        if (resDic.TryGetValue(key, out entry))
+        {
+            info = (ResInfo<T>)entry;
+            info.AddRefCount();
+            if (info.asset != null) return info.asset;
+            if (info.coroutine != null) StopCoroutine(info.coroutine);
+        }
+        else
+        {
+            info = new ResInfo<T>();
+            info.AddRefCount();
+            resDic.Add(key, info);
+        }
+        T asset = null;
+        try { asset = Resources.Load(path, type) as T; }
+        catch (Exception e) { Debug.LogException(e); }
+        Complete(key, info, asset);
+        return asset;
+    }
+
     public void LoadAsync<T>(string path, UnityAction<T> callback) where T : UnityEngine.Object
     {
-        string resName = path + splicName_T + typeof(T).Name;
+        LoadAsyncCore(path, typeof(T), Key(path, typeof(T), true), callback);
+    }
+    public void LoadAsync(string path, Type type, UnityAction<UnityEngine.Object> callback)
+    {
+        LoadAsyncCore(path, type, Key(path, type, false), callback);
+    }
+    private void LoadAsyncCore<T>(string path, Type type, string key, UnityAction<T> callback) where T : UnityEngine.Object
+    {
+        if (destroyed) { InvokeCallbacks(callback, default(T)); return; }
+        ResInfoBase entry;
         ResInfo<T> info;
-        if (!resDic.ContainsKey(resName))//如果字典里不包含该资源
+        if (resDic.TryGetValue(key, out entry))
+        {
+            info = (ResInfo<T>)entry;
+            info.AddRefCount();
+            if (info.asset != null) { InvokeCallbacks(callback, info.asset); return; }
+        }
+        else
         {
             info = new ResInfo<T>();
             info.AddRefCount();
-            resDic.Add(resName, info);
-
-            info.callback += callback;
-            info.coroutine = StartCoroutine(ReallyLoadAsync<T>(path));
+            resDic.Add(key, info);
         }
-        else
+        info.callback += callback;
+        if (!info.loading)
         {
-            info = resDic[resName] as ResInfo<T>;
-            info.AddRefCount();
-            //等于null 说明资源还没有加载完 还在异步加载中
-            if (info.asset == null)
-            {
-                info.callback += callback;
-            }
-            else//加载完成的资源
-            {
-                callback?.Invoke(info.asset);
-            }
+            info.loading = true;
+            var coroutine = StartCoroutine(LoadRoutine(path, type, key, info));
+            // Unity 会立即执行到第一个 yield，失败时 Complete 可能已经执行。
+            if (info.loading) info.coroutine = coroutine;
         }
     }
-
-    private IEnumerator ReallyLoadAsync<T>(string path) where T : UnityEngine.Object
+    private IEnumerator LoadRoutine<T>(string path, Type type, string key, ResInfo<T> info) where T : UnityEngine.Object
     {
-        ResourceRequest r = Resources.LoadAsync<T>(path);
-        yield return r;
-        string resName = path + splicName_T + typeof(T).Name;
-        if (resDic.ContainsKey(resName))
-        {
-            ResInfo<T> resInfo = resDic[resName] as ResInfo<T>;
-            //记录加载完成的资源
-            resInfo.asset = r.asset as T;
-
-            if (resInfo.refCount == 0)//如果引用为0则删除
-            {
-                Debug.LogError($"[T]资源:{path}，已卸载");
-                UnLoadAsset_NoSubAssetsCount<T>(path, resInfo.isDel);
-                // 通知所有等待的回调加载失败
-                resInfo.callback?.Invoke(null);
-            }
-            else
-            {
-                resInfo.callback?.Invoke(resInfo.asset);//通过委托把加载好的资源传出去
-            }
-            //资源传出去后把回调和协程置空 避免引用占用
-            resInfo.callback = null;
-            resInfo.coroutine = null;
-        }
+        ResourceRequest request = null;
+        try { request = Resources.LoadAsync(path, type); }
+        catch (Exception e) { Debug.LogException(e); }
+        if (request != null) yield return request;
+        ResInfoBase current;
+        // ClearDic 后同路径可重新加载，旧请求不能覆盖新记录。
+        if (resDic.TryGetValue(key, out current) && ReferenceEquals(current, info))
+            Complete(key, info, request != null ? request.asset as T : null);
     }
-
-    public void LoadAsync(string path, Type type, UnityAction<UnityEngine.Object> callback)
+    private void Complete<T>(string key, ResInfo<T> info, T asset) where T : UnityEngine.Object
     {
-        string resName = path + splicName_Object + type.Name;
-        ResInfo<UnityEngine.Object> info;
-        if (!resDic.ContainsKey(resName))//如果字典里不包含该资源
+        info.asset = asset;
+        info.loading = false;
+        info.coroutine = null;
+        var callbacks = info.callback;
+        info.callback = null; // 先提交状态再执行用户回调，允许回调中重入加载/卸载。
+        if (asset == null)
         {
-            info = new ResInfo<UnityEngine.Object>();
-            info.AddRefCount();
-            resDic.Add(resName, info);
-
-            info.callback += callback;
-            info.coroutine = StartCoroutine(ReallyTypeLoadAsync(path, type));
+            resDic.Remove(key);
+            info.refCount = 0;
+            Debug.LogError("资源加载失败：" + key);
         }
-        else
+        else if (info.refCount == 0 && info.isDel)
         {
-            info = resDic[resName] as ResInfo<UnityEngine.Object>;
-            info.AddRefCount();
-            //等于null 说明资源还没有加载完 还在异步加载中
-            if (info.asset == null)
-            {
-                info.callback += callback;
-            }
-            else//加载完成的资源
-            {
-                callback?.Invoke(info.asset);
-            }
+            RemoveAsset(key, asset);
         }
-        //
+        InvokeCallbacks(callbacks, info.refCount > 0 ? asset : null);
     }
-    private IEnumerator ReallyTypeLoadAsync(string path, Type type)
-    {
-        ResourceRequest r = Resources.LoadAsync(path, type);
-        yield return r;
-        string resName = path + splicName_Object + type.Name;
-        if (resDic.ContainsKey(resName))
-        {
-            ResInfo<UnityEngine.Object> resInfo = resDic[resName] as ResInfo<UnityEngine.Object>;
-            //记录加载完成的资源
-            resInfo.asset = r.asset;
 
-            if (resInfo.refCount == 0)//如果引用为0则删除
-            {
-                Debug.LogError($"[Type]资源:{path}，已卸载");
-                UnLoadAsset_NoSubAssetsCount(path, type, resInfo.isDel);
-                // 通知所有等待的回调加载失败
-                resInfo.callback?.Invoke(null);
-            }
-            else
-            {
-                resInfo.callback?.Invoke(resInfo.asset);//通过委托把加载好的资源传出去
-            }
-            //资源传出去后把回调和协程置空 避免引用占用
-            resInfo.callback = null;
-            resInfo.coroutine = null;
-        }
-    }
-    /// <summary>
-    /// 卸载泛型加载的资源
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="path"></param>
-    /// <param name="isDel">引用为0时，是否移除该资源</param>
-    /// <param name="callBack"></param>
     public void UnLoadAsset<T>(string path, bool isDel = false, UnityAction<T> callBack = null)
     {
-        string resName = path + splicName_T + typeof(T).Name;
-        if (resDic.ContainsKey(resName))
-        {
-            ResInfo<T> resInfo = resDic[resName] as ResInfo<T>;
-            resInfo.SubRefCount();
-            resInfo.isDel = isDel;
-            if (resInfo.asset != null && resInfo.refCount == 0 && resInfo.isDel)//资源已加载结束的状态
-            {
-                resDic.Remove(resName);
-                if (resInfo.asset is GameObject)
-                {
-                    // GameObject需要Destroy
-                    Destroy(resInfo.asset as GameObject);
-                }
-                else
-                {
-                    Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
-                }
-            }
-            else if (resInfo.asset == null)//资源异步加载中的状态
-            {
-                //把待移除状态改为true,等异步加载完成再开始卸载
-                //resInfo.isDel = true;
-
-                if (callBack != null)
-                    resInfo.callback -= callBack;
-            }
-        }
+        Release(Key(path, typeof(T), true), isDel, callBack);
     }
-    /// <summary>
-    /// ResMgr私有方法，该方法调用不减少资源计数
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="path"></param>
-    /// <param name="isDel">引用为0时，是否移除该资源</param>
-    /// <param name="callBack"></param>
-    private void UnLoadAsset_NoSubAssetsCount<T>(string path, bool isDel = false, UnityAction<T> callBack = null)
-    {
-        string resName = path + splicName_T + typeof(T).Name;
-        if (resDic.ContainsKey(resName))
-        {
-            ResInfo<T> resInfo = resDic[resName] as ResInfo<T>;
-            //resInfo.SubRefCount();
-            resInfo.isDel = isDel;
-            if (resInfo.asset != null && resInfo.refCount == 0 && resInfo.isDel)//资源已加载结束的状态
-            {
-                resDic.Remove(resName);
-                if (resInfo.asset is GameObject)
-                {
-                    // GameObject需要Destroy
-                    Destroy(resInfo.asset as GameObject);
-                }
-                else
-                {
-                    Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
-                }
-            }
-            else if (resInfo.asset == null)//资源异步加载中的状态
-            {
-                //把待移除状态改为true,等异步加载完成再开始卸载
-                //resInfo.isDel = true;
-
-                if (callBack != null)
-                    resInfo.callback -= callBack;
-            }
-        }
-    }
-
-    /// <summary>
-    /// 卸载[Type]加载的资源
-    /// </summary>
-    /// <param name="path"></param>
-    /// <param name="type"></param>
-    /// <param name="isDel">引用为0时，是否移除该资源</param>
-    /// <param name="callBack"></param>
     public void UnLoadAsset(string path, Type type, bool isDel = false, UnityAction<UnityEngine.Object> callBack = null)
     {
-        string resName = path + splicName_Object + type.Name;
-        if (resDic.ContainsKey(resName))
-        {
-            ResInfo<UnityEngine.Object> resInfo = resDic[resName] as ResInfo<UnityEngine.Object>;
-            resInfo.SubRefCount();
-            resInfo.isDel = isDel;
-            if (resInfo.asset != null && resInfo.refCount == 0)//资源已加载结束的状态
-            {
-                resDic.Remove(resName);
-                if (resInfo.asset is GameObject)
-                {
-                    // GameObject需要Destroy
-                    Destroy(resInfo.asset as GameObject);
-                }
-                else
-                {
-                    Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
-                }
-            }
-            else if (resInfo.asset == null)//资源异步加载中的状态
-            {
-                //resInfo.isDel = true;
-                if (callBack != null)
-                    resInfo.callback -= callBack;
-            }
-        }
+        Release(Key(path, type, false), isDel, callBack);
     }
-    /// <summary>
-    ///  ResMgr私有方法，该方法调用不减少资源计数
-    /// </summary>
-    /// <param name="path"></param>
-    /// <param name="type"></param>
-    /// <param name="isDel">引用为0时，是否移除该资源</param>
-    /// <param name="callBack"></param>
-    private void UnLoadAsset_NoSubAssetsCount(string path, Type type, bool isDel = false, UnityAction<UnityEngine.Object> callBack = null)
+    private void Release<T>(string key, bool isDel, UnityAction<T> callback)
     {
-        string resName = path + splicName_Object + type.Name;
-        if (resDic.ContainsKey(resName))
-        {
-            ResInfo<UnityEngine.Object> resInfo = resDic[resName] as ResInfo<UnityEngine.Object>;
-            //resInfo.SubRefCount();
-            resInfo.isDel = isDel;
-            if (resInfo.asset != null && resInfo.refCount == 0)//资源已加载结束的状态
-            {
-                resDic.Remove(resName);
-                if (resInfo.asset is GameObject)
-                {
-                    // GameObject需要Destroy
-                    Destroy(resInfo.asset as GameObject);
-                }
-                else
-                {
-                    Resources.UnloadAsset(resInfo.asset as UnityEngine.Object);
-                }
-            }
-            else if (resInfo.asset == null)//资源异步加载中的状态
-            {
-                //resInfo.isDel = true;
-                if (callBack != null)
-                    resInfo.callback -= callBack;
-            }
-        }
+        ResInfoBase entry;
+        if (!resDic.TryGetValue(key, out entry)) return;
+        var info = (ResInfo<T>)entry;
+        info.SubRefCount();
+        info.isDel = isDel;
+        if (info.loading && callback != null) info.callback -= callback;
+        if (!info.loading && info.refCount == 0 && isDel) RemoveAsset(key, info.AssetObject);
+    }
+    private void RemoveAsset(string key, UnityEngine.Object asset)
+    {
+        resDic.Remove(key);
+        // Prefab 是资源，不能 Destroy。清除缓存后由 UnloadUnusedAssets 回收。
+        if (asset == null || asset is GameObject || asset is Component) return;
+        foreach (var info in resDic.Values)
+            if (info.AssetObject == asset) return;
+        Resources.UnloadAsset(asset);
+    }
+    public int GetAssetsRefCount<T>(string path) { return RefCount(Key(path, typeof(T), true)); }
+    public int GetAssetsRefCount(string path, Type type) { return RefCount(Key(path, type, false)); }
+    private int RefCount(string key)
+    {
+        ResInfoBase info;
+        return resDic.TryGetValue(key, out info) ? info.refCount : 0;
     }
 
-    /// <summary>
-    /// 卸载没有使用的资源
-    /// </summary>
-    /// <param name="callback"></param>
     public void UnLoadUnUseAssets(UnityAction callback = null)
     {
-        StartCoroutine(IE_UnLoadUnUseAssets(callback));
+        // 加载中的记录必须保留，以便完成请求并通知等待者。
+        var keys = new List<string>();
+        foreach (var pair in resDic)
+            if (pair.Value.refCount == 0 && pair.Value.AssetObject != null) keys.Add(pair.Key);
+        foreach (var key in keys) resDic.Remove(key);
+        StartCoroutine(UnloadUnused(callback));
     }
-    private IEnumerator IE_UnLoadUnUseAssets(UnityAction callback = null)
+    private IEnumerator UnloadUnused(UnityAction callback)
     {
-        List<string> tempList = new List<string>();
-        foreach (string path in resDic.Keys)
-        {
-            if (resDic[path].refCount == 0)
-            {
-                tempList.Add(path);
-            }
-        }
-        foreach (string path in tempList)
-        {
-            resDic.Remove(path);
-        }
-
-        AsyncOperation ao = Resources.UnloadUnusedAssets();
-        yield return ao;
-        callback?.Invoke();
+        yield return Resources.UnloadUnusedAssets();
+        if (callback != null)
+            foreach (UnityAction handler in callback.GetInvocationList())
+                try { handler(); } catch (Exception e) { Debug.LogException(e); }
     }
-    /// <summary>
-    /// 获取泛型加载资源的引用计数
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="path"></param>
-    /// <returns></returns>
-    public int GetAssetsRefCount<T>(string path)
-    {
-        string resName = path + splicName_T + typeof(T).Name;
-        if (resDic.ContainsKey(resName))
-        {
-            return (resDic[resName] as ResInfo<T>).refCount;
-        }
-        return 0;
-    }
-    /// <summary>
-    /// 获取[Type]加载资源的引用计数
-    /// </summary>
-    /// <param name="path"></param>
-    /// <param name="type"></param>
-    /// <returns></returns>
-    public int GetAssetsRefCount(string path, Type type)
-    {
-        string resName = path + splicName_Object + type.Name;
-        if (resDic.ContainsKey(resName))
-        {
-            return (resDic[resName] as ResInfo<UnityEngine.Object>).refCount;
-        }
-        return 0;
-    }
-    /// <summary>
-    /// 清空所有资源记录，并卸载没有使用的资源
-    /// </summary>
-    /// <param name="callBack"></param>
     public void ClearDic(UnityAction callBack = null)
     {
-        resDic.Clear();
-        StartCoroutine(ReallyClearDic(callBack));
+        CancelPendingLoads();
+        if (!destroyed) StartCoroutine(UnloadUnused(callBack));
     }
-
-    private IEnumerator ReallyClearDic(UnityAction callBack)
+    private void CancelPendingLoads()
     {
-        AsyncOperation ao = Resources.UnloadUnusedAssets();
-        yield return ao;
-        callBack?.Invoke();
+        var entries = new List<ResInfoBase>(resDic.Values);
+        resDic.Clear();
+        StopAllCoroutines();
+        foreach (var entry in entries) entry.CancelPending();
+    }
+    protected override void OnDestroyed()
+    {
+        destroyed = true;
+        CancelPendingLoads();
+        base.OnDestroyed();
     }
 }

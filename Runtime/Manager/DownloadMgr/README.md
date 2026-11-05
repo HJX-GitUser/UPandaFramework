@@ -270,7 +270,7 @@ progress             = totalSize > 0 ? clamp01(downloadedSize / totalSize) : 0
 
 - 请求级：`request.timeout = timeout`（`defaultTimeout = 30` 秒，`0` = 不超时）；
 - 协程级：每帧检查 `Time.realtimeSinceStartup - startTime > timeout`，超时写入 `item.error` 并收尾；
-- `DownloadAsync` 级：`timeout + 5` 秒兜底，超时主动取消任务并返回 `false`（即使传输层超时失效也不会挂起）。
+- `DownloadAsync` 级：`timeout × (重试次数 + 1) + 重试间隔 × 重试次数 + 5` 秒兜底，超时主动取消任务并返回 `false`（即使传输层超时失效也不会挂起）。
 
 ### 6.5 请求与句柄的释放
 
@@ -278,7 +278,7 @@ progress             = totalSize > 0 ? clamp01(downloadedSize / totalSize) : 0
 
 ### 6.6 事件不泄漏
 
-`DownloadAsync` 内部订阅 `OnDownloadComplete/OnDownloadError/OnDownloadProgress`，并在 `finally` 中**无条件退订**。旧实现订阅 3 个匿名委托后从不退订，每次调用都会永久堆积（内存泄漏 + 回调被重复触发）。
+`DownloadAsync` 每 25ms 检查自己的任务状态，不订阅全局事件；成功返回 true，失败、取消、下载器销毁返回 false。即使 timeout=0，取消和销毁也能结束等待。事件逐个异常隔离，一个监听者抛异常不会阻断下载器收尾。
 
 ### 6.7 取消计数不再被破坏
 
@@ -288,7 +288,7 @@ progress             = totalSize > 0 ? clamp01(downloadedSize / totalSize) : 0
 
 `CheckAllFinished()` 只在 `pendingItems`、`activeItems`、`pausedItems` **同时为空**时才触发批次事件，并给 `OnAllDownloadsFinished` 传入 `FailedCount == 0` 的判定结果。失败任务不会阻止批次结束（旧实现会把失败也当作"全部完成"且无处查原因，现在可查 `FailedItems`）。
 
-批次回调发出后，`TaskCompletionSource` 使用 `TaskCreationOptions.RunContinuationsAsynchronously`：等待方（如 `UPGameRoot.DownloadBatchAndWait`）的后续流程会在事件分发**结束之后**才继续，不会嵌套在 `FinishItem` 内部同步执行，避免重入（例如在下载器收尾过程中立刻投递新一批任务）。
+`UPGameRoot.DownloadBatchAndWait` 每 50ms 检查本批次的终态，不依赖全局完成事件；超时会取消本批次。等待方不会在下载器的事件调用栈里续跑。
 
 ---
 
@@ -302,7 +302,7 @@ progress             = totalSize > 0 ? clamp01(downloadedSize / totalSize) : 0
 | 🔴 | 全程无超时，`DownloadAsync` 可永久挂起（卡死启动流程） | 请求/协程/`DownloadAsync` 三级超时 |
 | 🔴 | 暂停/取消只 `Abort()`，不关文件流 → 句柄泄漏、文件被占用 | `ReleaseRequest` = Abort + `Close()` + `Dispose()`；`OnDestroy` 兜底 |
 | 🔴 | 分块传输（无 `Content-Length`）时文件根本没打开 → 数据全丢 | 句柄延迟到首块数据时打开文件 |
-| 🟡 | `DownloadAsync` 订阅 3 个匿名委托且从不退订 → 泄漏 | `finally` 中无条件退订 |
+| 🟡 | `DownloadAsync` 订阅 3 个匿名委托且从不退订 → 泄漏 | 不再为 async 请求订阅全局事件 |
 | 🟡 | 批次没有成败信号（失败也算"全部完成"） | 新增 `OnAllDownloadsFinished(bool)` + `FailedItems`，旧事件保留 |
 | 🟡 | 并发是假的（一次只起一个协程，且只起一次） | `TryStartNextDownloads` 按上限循环拉起 |
 | 🟡 | `CancelAllDownloads` 把计数置 0，后续 `--` 变负 | 计数由列表维护 |
@@ -332,7 +332,7 @@ progress             = totalSize > 0 ? clamp01(downloadedSize / totalSize) : 0
 `UPGameRoot` 侧已同步改造（2026-09）：
 
 - `DownloadBatchAndWait` → `Task<bool>`，改订阅 `OnAllDownloadsFinished(bool)` 取真实结果；失败时由 `LogDownloadFailures` 输出红色汇总 + 最多 10 条失败明细（文件名 / url / 原因）。
-- `DownloadFirstTime`、`DownloadIncrement` 一并返回 `Task<bool>`；`UpdateAssets` 用 `if (!await ...)` 判断，未全部成功时输出红色告警（**仍继续启动流程，不回滚**——是否中断启动属于产品决策）。
+- `UpdateAssets` 对暂存文件做大小与 MD5 校验，全部成功后统一提交；提交失败恢复旧文件，详见 `GameRoot/README.md`。
 
 另外注意：`UPGameRoot` 的增量清单是按 **MD5 对比**筛出来的，这正是 §6.2 中「续传默认关闭」的根本原因——修改下载策略时务必保留这个前提。
 

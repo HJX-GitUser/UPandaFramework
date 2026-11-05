@@ -1,16 +1,14 @@
 ﻿using UnityEngine;
-using System.Collections;
 
+/// <summary>单一 IMGUI 入口，显示/隐藏复用组件，不反复创建和销毁。</summary>
+[RequireComponent(typeof(Reporter))]
+[DisallowMultipleComponent]
 public class ReporterGUI : MonoBehaviour
 {
-    Reporter reporter;
-    void Awake()
+    private Reporter reporter;
+    private void Awake() { reporter = GetComponent<Reporter>(); }
+    private void OnGUI()
     {
-        reporter = gameObject.GetComponent<Reporter>();
-    }
-
-    void OnGUI()
-    {
-        reporter.OnGUIDraw();
+        if (reporter != null && reporter.isActiveAndEnabled) reporter.OnGUIDraw();
     }
 }

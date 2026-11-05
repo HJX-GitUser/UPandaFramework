@@ -24,13 +24,13 @@ namespace UPandaGF
         public void OnBeginDrag(PointerEventData eventData)
         {
             // 计算鼠标点击位置到UI中心点的偏移量
-            if (canvas == null) return;
+            if (canvas == null || draggableRectTransform == null) return;
 
             Vector2 mousePos;
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 draggableRectTransform.parent as RectTransform, // 父物体RectTransform
                 eventData.position,
-                canvas.worldCamera,
+                eventData.pressEventCamera,
                 out mousePos))
             {
                 // 偏移量 = UI中心坐标 - 鼠标点击坐标
@@ -41,15 +41,15 @@ namespace UPandaGF
         // 拖拽过程中持续调用
         public void OnDrag(PointerEventData eventData)
         {
-            if (canvas == null) return;
+            if (canvas == null || draggableRectTransform == null) return;
 
-            // 核心代码：将鼠标的屏幕坐标转换为当前 Canvas 下的本地坐标
+            // 与 OnBeginDrag 使用相同的父节点坐标系。
             Vector2 mousePos;
             // RectTransformUtility.ScreenPointToLocalPointInRectangle 是关键的坐标转换方法
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvas.transform as RectTransform, // 目标坐标系（Canvas的RectTransform）
+                draggableRectTransform.parent as RectTransform, // 目标坐标系（拖动对象的父节点）
                 eventData.position,                 // 鼠标的屏幕坐标
-                canvas.worldCamera,                 // 渲染此Canvas的相机（对于Screen Space - Overlay 模式，传null）
+                eventData.pressEventCamera,                 // 渲染此Canvas的相机（对于Screen Space - Overlay 模式，传null）
                 out mousePos))                      // 输出的本地坐标
             {
                 // 直接将UI对象的中心点设置为鼠标位置

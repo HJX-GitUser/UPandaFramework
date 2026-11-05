@@ -1,0 +1,10 @@
+{
+    "name": "UPandaGF.Tests",
+    "references": [
+        "UPandaGF.Runtime"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "autoReferenced": false
+}
