@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -36,19 +35,6 @@ namespace ReplaySystem
                 encode = value => JsonUtility.ToJson(new StateBox<T> { value = (T)value }),
                 decode = json => JsonUtility.FromJson<StateBox<T>>(json).value
             };
-        }
-
-        // 只用于读取已有的旧版 .dat；禁止解析 DTO 白名单以外的类型。
-        private sealed class LegacyBinder : SerializationBinder
-        {
-            public override Type BindToType(string assemblyName, string typeName)
-            {
-                Type[] allowed = { typeof(SerializableRecordFile), typeof(SerializableFrame),
-                    typeof(SerializableSnapshot), typeof(SerializableFrame[]), typeof(SerializableSnapshot[]),
-                    typeof(float[]), typeof(string[]) };
-                foreach (var type in allowed) if (type.FullName == typeName) return type;
-                throw new SerializationException("Unsupported legacy replay type: " + typeName);
-            }
         }
 
         /// <summary>录制文件所在目录（不存在则自动创建）</summary>
@@ -112,10 +98,9 @@ namespace ReplaySystem
                     }
                     else
                     {
-#pragma warning disable SYSLIB0011
-                        var formatter = new BinaryFormatter { Binder = new LegacyBinder() };
-                        file = formatter.Deserialize(stream) as SerializableRecordFile;
-#pragma warning restore SYSLIB0011
+                        bool legacy;
+                        file = UPandaGF.VersionedDataSerializer.Deserialize<SerializableRecordFile>(
+                            UPandaGF.VersionedDataSerializer.ReadFile(path, 128 * 1024 * 1024), "replay", out legacy);
                     }
                 }
                 Validate(file);
@@ -281,7 +266,7 @@ namespace ReplaySystem
         }
     }
 
-    /// <summary>可序列化的录制文件根（纯 .NET [Serializable] 类型，供 BinaryFormatter 使用）</summary>
+    /// <summary>可序列化的录制文件根（纯 .NET [Serializable] 类型，用于历史数据兼容与当前 JSON 持久化）</summary>
     [Serializable]
     public class SerializableRecordFile
     {

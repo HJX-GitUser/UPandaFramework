@@ -1,0 +1,69 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using UnityEngine;
+using UPandaGF;
+
+[Serializable] public class SerializationPlayerRecord
+{
+    private readonly int secret=7;
+    public int Secret=>secret;
+    public string text;
+    public Dictionary<string,int> values;
+    public SerializationPlayerRecord parent;
+    public List<SerializationPlayerRecord> links;
+    public DateTime date;
+    public decimal amount;
+    public static int callbacks;
+    [OnDeserialized] private void Loaded(StreamingContext context){callbacks++;}
+}
+[Serializable] public class SerializationPlayerSpatial { public Vector3 position;public Quaternion rotation; }
+public class SerializationPlayerSmoke:MonoBehaviour
+{
+    private void Start()
+    {
+        string directory=Path.Combine(Application.persistentDataPath,"SerializationSmoke",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+        string output=Path.GetFullPath(Path.Combine(Application.dataPath,"../smoke-result.txt"));
+        string replayPath=null;
+        try
+        {
+            string fixtures=Path.GetFullPath(Path.Combine(Application.dataPath,"../Fixtures"));
+            byte[] original=File.ReadAllBytes(Path.Combine(fixtures,"legacy-record.bin"));bool legacy;
+            var decoded=VersionedDataSerializer.Deserialize<SerializationPlayerRecord>(original,"save",out legacy);
+            Require(legacy&&decoded.Secret==7&&decoded.values["case"]==4,"Legacy record fields/comparer");
+            Require(ReferenceEquals(decoded,decoded.parent)&&ReferenceEquals(decoded,decoded.links[0]),"Legacy reference graph");
+            Require(decoded.date.Ticks==new DateTime(2023,5,6,7,8,9,DateTimeKind.Local).Ticks&&decoded.date.Kind==DateTimeKind.Local,"Legacy local time");
+            Require(SerializationPlayerRecord.callbacks==0,"No deserialization callback execution");
+            string path=Path.Combine(directory,"save.binary");File.WriteAllBytes(path,original);
+            var restored=VersionedDataSerializer.LoadFile<SerializationPlayerRecord>(path,"save");
+            Require(VersionedDataSerializer.IsVersioned(File.ReadAllBytes(path))&&File.ReadAllBytes(path+".legacy.bak").SequenceEqual(original),"Migration and exact backup");
+            restored.text="updated";VersionedDataSerializer.SaveFile(path,restored,"save");Require(VersionedDataSerializer.LoadFile<SerializationPlayerRecord>(path,"save").text=="updated","New save round trip");
+            byte[] spatial=VersionedDataSerializer.Serialize(new SerializationPlayerSpatial{position=Vector3.one,rotation=Quaternion.Euler(10,20,30)},"spatial");
+            Require(VersionedDataSerializer.Deserialize<SerializationPlayerSpatial>(spatial,"spatial",out legacy).position==Vector3.one,"Unity value types");
+            var field=typeof(BinaryDataMgr).GetField("SAVE_PATH",BindingFlags.NonPublic|BindingFlags.Static);object oldPath=field.GetValue(null);field.SetValue(null,directory);
+            try{new BinaryDataMgr().Save(restored,"api");Require(new BinaryDataMgr().Load<SerializationPlayerRecord>("api").Secret==7,"BinaryDataMgr API");}finally{field.SetValue(null,oldPath);}
+            byte[] oldManifest=File.ReadAllBytes(Path.Combine(fixtures,"legacy.assetref"));var manifest=AssetReferenceSerializer.Decode(oldManifest);
+            Require(manifest.sourcesDic["Assets/Box.prefab"].sourceName=="Box","Old manifest");
+            var config=new AssetBundleClassificationWindowConfig{enable=true,AESKEY="1234567890123456",AESIV="6543210987654321"};
+            byte[] encrypted=AssetReferenceSerializer.Encode(manifest,config);
+            var loader=new GameObject("ManifestReader").AddComponent<AssetsLoader>();loader.AssetAESConfig=config;
+            Require(loader.LoadABSourcesRelated(encrypted).bundleInfo["common"].loadPath==ABLoadPath.RemotePath,"Runtime AES manifest");Destroy(loader.gameObject);
+            var replay=ReplaySystem.FileManager.Load(Path.Combine(fixtures,"legacy-replay.dat"));Require(replay!=null&&replay.Count==1,"Legacy replay DTO");
+            replayPath=ReplaySystem.FileManager.Save(replay);Require(replayPath!=null&&File.ReadAllText(replayPath).StartsWith("UPANDA_REPLAY:2"),"Replay remains versioned JSON");
+            byte[] corrupted=File.ReadAllBytes(path);corrupted[corrupted.Length-1]^=1;
+            try{VersionedDataSerializer.Deserialize<SerializationPlayerRecord>(corrupted,"save",out legacy);throw new Exception("Corrupt payload was accepted");}catch(InvalidDataException){}
+            File.WriteAllText(output,"PASS: legacy/new save, exact backup, private readonly fields, reference graph, comparer, local DateTime, Unity value types, BinaryDataMgr API, legacy/AES manifests, legacy/JSON replay, corruption rejection; no serialization callbacks.");Application.Quit(0);
+        }
+        catch(Exception e){File.WriteAllText(output,"FAIL: "+e);Debug.LogException(e);Application.Quit(1);}
+        finally
+        {
+            if(replayPath!=null&&File.Exists(replayPath))File.Delete(replayPath);
+            string prefix=Path.GetFullPath(Path.Combine(Application.persistentDataPath,"SerializationSmoke"))+Path.DirectorySeparatorChar;
+            if(Path.GetFullPath(directory).StartsWith(prefix,StringComparison.OrdinalIgnoreCase)&&Directory.Exists(directory))Directory.Delete(directory,true);
+        }
+    }
+    private static void Require(bool value,string message){if(!value)throw new Exception(message);}
+}

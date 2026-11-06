@@ -263,7 +263,7 @@ upanda-framework/
 ### 数据存储（Manager/StorageDataMgr）
 
 - **PlayerPrefsDataMgr**：基于 PlayerPrefs 的轻量存储。
-- **BinaryDataMgr**：二进制序列化存储。
+- **BinaryDataMgr**：版本化字段图存档，旧 NRBF 兼容与备份迁移；[格式与迁移约定](Runtime/Manager/StorageDataMgr/Serialization/README.md)。
 
 ### 公共 Mono（Manager/PublicMono）
 

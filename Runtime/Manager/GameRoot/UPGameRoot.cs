@@ -248,7 +248,7 @@ namespace UPandaGF
                 if (!await downloader.DownloadAsync(CombineUrl(config.remoteURL, "AssetBundles", assetData), tempFileSavePath))
                     return LoadLocalSourceRef(localFilePath);
                 ThrowIfDestroyed();
-                var remote = sourcesLoadMgr.LoadABSourcesRelated(File.ReadAllBytes(tempFileSavePath));
+                var remote = sourcesLoadMgr.LoadABSourcesRelated(VersionedDataSerializer.ReadFile(tempFileSavePath));
                 if (remote == null || remote.mainBundleInfo == null || remote.bundleInfo == null)
                     return LoadLocalSourceRef(localFilePath);
 
@@ -335,7 +335,7 @@ namespace UPandaGF
             try
             {
                 if (!File.Exists(localFilePath)) return null;
-                return sourcesLoadMgr.LoadABSourcesRelated(File.ReadAllBytes(localFilePath));
+                return sourcesLoadMgr.LoadABSourcesRelated(VersionedDataSerializer.ReadFile(localFilePath));
             }
             catch (Exception e)
             {

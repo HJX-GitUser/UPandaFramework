@@ -10,6 +10,7 @@ public partial class Reporter
     private Texture2D surface, toolbarSurface, alternateSurface, selectedSurface, divider;
     private Vector2 scrollPosition, detailScroll, actionScroll, infoScroll;
     private float styleScale = -1, detailFraction = .36f;
+    private float panelOpacity = 1f;
     private Rect listViewport, detailViewport;
     private string detailText = "", cachedDetailText = "";
     private int detailSample = -1;
@@ -42,6 +43,7 @@ public partial class Reporter
             float margin = safe.width >= 600 ? 12 : 0;
             Rect window = new Rect(safe.x + margin, Screen.height - safe.yMax + margin,
                 Mathf.Max(1, safe.width - margin * 2), Mathf.Max(1, safe.height - margin * 2));
+            GUI.color = new Color(1f, 1f, 1f, panelOpacity);
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), DimTexture);
             GUI.BeginGroup(window);
             try
@@ -106,14 +108,17 @@ public partial class Reporter
         fieldStyle = new GUIStyle(viewSkin.textField) { fontSize = fontSize, richText = false, alignment = TextAnchor.MiddleLeft, padding = new RectOffset(8, 8, 2, 2) };
         fieldStyle.normal.textColor = Rgb("#354B66"); fieldStyle.normal.background = Solid(Color.white);
         fieldStyle.focused.textColor = Rgb("#354B66"); fieldStyle.focused.background = fieldStyle.normal.background;
-        viewSkin.verticalScrollbar.fixedWidth = 12;
+        viewSkin.verticalScrollbar.fixedWidth = 24;
         viewSkin.verticalScrollbar.normal.background = toolbarSurface;
         viewSkin.verticalScrollbarThumb.normal.background = Solid(Rgb("#A9BCD5"));
         viewSkin.verticalScrollbarThumb.hover.background = viewSkin.verticalScrollbarThumb.normal.background;
         viewSkin.verticalScrollbarThumb.active.background = viewSkin.verticalScrollbarThumb.normal.background;
-        viewSkin.verticalScrollbarThumb.fixedWidth = 12;
+        viewSkin.verticalScrollbarThumb.fixedWidth = 24;
         viewSkin.verticalScrollbarUpButton.fixedHeight = viewSkin.verticalScrollbarDownButton.fixedHeight = 0;
-        viewSkin.horizontalScrollbar.fixedHeight = 10;
+        viewSkin.horizontalScrollbar.fixedHeight = 20;
+        viewSkin.horizontalSlider.fixedHeight = 32;
+        viewSkin.horizontalSliderThumb.fixedWidth = 32;
+        viewSkin.horizontalSliderThumb.fixedHeight = 32;
     }
     private void DisposeView()
     {
@@ -122,8 +127,8 @@ public partial class Reporter
         foreach (var texture in ownedTextures) if (texture != null) Destroy(texture);
         ownedTextures.Clear(); dimTexture = null;
     }
-    private float RowHeight => Mathf.Clamp(size.y, 26, 64) + 8;
-    private float ControlHeight => Mathf.Clamp(size.y, 28, 48) + 4;
+    private float RowHeight => Mathf.Max(48, Mathf.Clamp(size.y, 26, 64) + 8);
+    private float ControlHeight => Mathf.Max(48, Mathf.Clamp(size.y, 28, 48) + 4);
     private void HandleKeyboard()
     {
         var e = Event.current;
@@ -136,13 +141,28 @@ public partial class Reporter
     }
     private float DrawHeader(float width)
     {
-        float h = ControlHeight + 14;
-        GUI.DrawTexture(new Rect(0, 0, width, h), toolbarSurface);
-        GUI.Label(new Rect(14, 0, Mathf.Max(1, width - 110), h), currentView == ReportView.Info ? "设备与显示设置" : "运行日志", titleStyle);
-        if (IconButton(new Rect(width - 85, 8, 34, h - 16), currentView == ReportView.Info ? images.backImage : images.infoImage,
-            currentView == ReportView.Info ? "返回日志" : "设备信息", currentView == ReportView.Info))
+        bool compact = width < 600;
+        float h = ControlHeight + 16;
+        float closeWidth = compact ? 72 : 104;
+        float switchWidth = compact ? 112 : 176;
+        float actionsWidth = closeWidth + switchWidth + 28;
+        bool stacked = width - actionsWidth < 180;
+        float buttonY = stacked ? h : 8;
+        float totalHeight = stacked ? h * 2 : h;
+        GUI.DrawTexture(new Rect(0, 0, width, totalHeight), toolbarSurface);
+        GUI.Label(new Rect(14, 0, Mathf.Max(1, stacked ? width - 28 : width - actionsWidth - 14), h),
+            currentView == ReportView.Info ? "设备与显示设置" : "运行日志", titleStyle);
+        if (stacked)
+        {
+            closeWidth = Mathf.Min(closeWidth, (width - 36) * .4f);
+            switchWidth = Mathf.Max(1, width - closeWidth - 36);
+        }
+        if (IconButton(new Rect(width - closeWidth - switchWidth - 20, buttonY, switchWidth, h - 16),
+            currentView == ReportView.Info ? images.backImage : images.infoImage,
+            currentView == ReportView.Info ? "返回日志" : "显示设置", currentView == ReportView.Info, true))
             currentView = currentView == ReportView.Info ? ReportView.Logs : ReportView.Info;
-        if (IconButton(new Rect(width - 44, 8, 34, h - 16), images.closeImage, "关闭 (Esc)", false)) HideLogWindows();
+        if (IconButton(new Rect(width - closeWidth - 12, buttonY, closeWidth, h - 16), images.closeImage, "关闭", false, true)) HideLogWindows();
+        h = totalHeight;
         return h;
     }
     private bool IconButton(Rect rect, Texture2D image, string label, bool active, bool withText = false)
@@ -195,7 +215,7 @@ public partial class Reporter
         int buttons = 4 + (showClearOnNewSceneLoadedButton ? 1 : 0) + (showTimeButton ? 1 : 0) + (showSceneButton ? 1 : 0)
             + (showMemButton ? 1 : 0) + (showFpsButton ? 1 : 0) + (showCopyButton ? 1 : 0) + (showSaveButton ? 1 : 0);
         bool text = width >= 1000;
-        float buttonWidth = text ? Mathf.Max(100, textStyle.fontSize * 4 + 38) : 40;
+        float buttonWidth = text ? Mathf.Max(100, textStyle.fontSize * 4 + 38) : 56;
         Rect viewport = new Rect(8, y, width - 16, h);
         float contentWidth = Mathf.Max(viewport.width, buttons * (buttonWidth + 4));
         HandleDrag(viewport, 2, ref actionScroll, true);
@@ -234,14 +254,14 @@ public partial class Reporter
         Rect splitter;
         if (sideBySide)
         {
-            listViewport = new Rect(body.x, body.y, body.width - part - 5, body.height);
-            splitter = new Rect(listViewport.xMax, body.y, 5, body.height);
+            listViewport = new Rect(body.x, body.y, body.width - part - 16, body.height);
+            splitter = new Rect(listViewport.xMax, body.y, 16, body.height);
             detailViewport = new Rect(splitter.xMax, body.y, part, body.height);
         }
         else
         {
-            listViewport = new Rect(body.x, body.y, body.width, Mathf.Max(1, body.height - part - 5));
-            splitter = new Rect(body.x, listViewport.yMax, body.width, 5);
+            listViewport = new Rect(body.x, body.y, body.width, Mathf.Max(1, body.height - part - 16));
+            splitter = new Rect(body.x, listViewport.yMax, body.width, 16);
             detailViewport = new Rect(body.x, splitter.yMax, body.width, Mathf.Max(1, part));
         }
         GUI.DrawTexture(splitter, divider);
@@ -375,7 +395,7 @@ public partial class Reporter
     private void DrawInformation(Rect rect)
     {
         float line = ControlHeight + 10;
-        float contentHeight = line * 18 + 100;
+        float contentHeight = line * 19 + 100;
         infoScroll = GUI.BeginScrollView(rect, infoScroll, new Rect(0, 0, Mathf.Max(1, rect.width - 16), contentHeight), false, true, GUIStyle.none, viewSkin.verticalScrollbar);
         float y = 8;
         InfoLine(ref y, rect.width, "应用", Application.productName + "  " + Application.version, images.softwareImage);
@@ -389,8 +409,11 @@ public partial class Reporter
         InfoLine(ref y, rect.width, "用户", string.IsNullOrEmpty(UserData) ? "未设置" : UserData, images.userImage);
         InfoLine(ref y, rect.width, "缓冲", store.Count + " 条 / 估算 " + TotalMemUsage.ToString("0.00") + " MB", images.showMemoryImage);
         GUI.Label(new Rect(16, y, 100, line), "界面尺寸", textStyle);
-        float scale = GUI.HorizontalSlider(new Rect(125, y + line / 2 - 6, Mathf.Max(1, rect.width - 165), 20), size.y, 16, 64);
+        float scale = GUI.HorizontalSlider(new Rect(125, y + line / 2 - 16, Mathf.Max(1, rect.width - 165), 32), size.y, 16, 64);
         if (!Mathf.Approximately(scale, size.y)) size = new Vector2(scale, scale);
+        y += line;
+        GUI.Label(new Rect(16, y, 105, line), "不透明度 " + Mathf.RoundToInt(panelOpacity * 100) + "%", textStyle);
+        panelOpacity = GUI.HorizontalSlider(new Rect(125, y + line / 2 - 16, Mathf.Max(1, rect.width - 165), 32), panelOpacity, .2f, 1f);
         y += line;
         GUI.Label(new Rect(16, y, rect.width - 32, line), "工具栏显示", titleStyle); y += line;
         var settings = new[] { "换场清空", "时间", "场景", "内存", "帧率", "搜索", "复制", "导出" };

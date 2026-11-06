@@ -9,7 +9,7 @@
 | `ReplayManager.cs` | 主控制器：录制、回放、变速、暂停/继续/停止、Seek 跳转 |
 | `RecordFrame.cs` | 数据结构：一帧的录制数据（time + 快照列表） |
 | `ObjectSnapshot.cs` | 数据结构：单个物体快照（instanceID / Transform / animatorParams） |
-| `FileManager.cs` | 保存 / 加载本地文件（二进制序列化） |
+| `FileManager.cs` | 保存 / 加载版本化 JSON，兼容旧 NRBF DTO |
 | `ReplayUI.cs` | UI 绑定与事件处理 |
 | `IRecordableComponent.cs` | 扩展接口（预留，用于 Rigidbody / ParticleSystem / AudioSource 等） |
 | `RigidbodyVelocityRecorder.cs` | 扩展示例：录制 Rigidbody 速度 |
@@ -40,7 +40,7 @@
 ## 关键实现说明
 
 - **录制优化**：每帧只记录「Transform 或 Animator 参数发生变化」的物体，与上一帧快照比较。
-- **存储**：`List<RecordFrame>`，帧内为 `List<ObjectSnapshot>`，新文件使用 `UPANDA_REPLAY:2` 文件头与版本化 JSON DTO；旧二进制文件只读兼容，类型限于原有 DTO。
+- **存储**：`List<RecordFrame>`，帧内为 `List<ObjectSnapshot>`，新文件使用 `UPANDA_REPLAY:2` 文件头与版本化 JSON DTO；旧二进制文件只读兼容，通过受限 NRBF 记录读取器恢复原有 DTO，不执行 BinaryFormatter.Deserialize 或序列化回调，不改写源录制文件。
 - **回放**：首次播放/Seek 建立每个物体的时间索引，逐物体二分查找并插值。跳转不依赖之前是否播放过；不再每帧构造两个临时 Dictionary。静止到运动的转换前补保持关键帧，避免跨整个静止区间插值。
 - **物理**：回放时 `Physics.autoSimulation = false`，并将被记录物体的 `Rigidbody.isKinematic = true`；回放结束恢复。
 - **物体标识**：当前会话使用 `instanceID`，跨会话优先使用场景与层级路径；旧存档只回退匹配唯一名称，重名时不任意选择。

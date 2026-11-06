@@ -5,270 +5,167 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UPandaGF;
 
-/// <summary>
-/// HTTP 客户端：维护发送队列并按并发上限发送请求。
-/// 由 HttpManager 在单例物体上动态添加，靠 Update 驱动队列，所有回调都在主线程。
-/// </summary>
+/// <summary>主线程 HTTP 队列。数据包只能提交一次，停用/销毁结束本宿主的全部请求。</summary>
 public class HttpClient : MonoBehaviour
 {
-    /// <summary>并发上限：1 = 串行（默认）；大于 1 时同时发送多个请求</summary>
     public int MaxConcurrentRequests { get; set; } = 1;
-
-    private readonly Queue<HttpPack> _sendQueue = new Queue<HttpPack>();      // 等待发送
-    private readonly HashSet<HttpPack> _runningRequests = new HashSet<HttpPack>();  // 正在发送
+    private readonly Queue<HttpPack> _sendQueue = new Queue<HttpPack>();
+    private readonly HashSet<HttpPack> _runningRequests = new HashSet<HttpPack>();
+    private readonly HashSet<HttpPack> owned = new HashSet<HttpPack>();
     private int _runningCount;
+    private bool destroyed;
 
     private void Update()
     {
-        int limit = Mathf.Max(1, MaxConcurrentRequests);
-
-        while (_runningCount < limit && _sendQueue.Count > 0)
+        while (!destroyed && isActiveAndEnabled && _runningCount < Mathf.Max(1, MaxConcurrentRequests) && _sendQueue.Count > 0)
         {
-            HttpPack pack = _sendQueue.Dequeue();
-            if (pack == null) continue;
-
-            // 排队期间被取消：直接释放，不发送也不回调
-            if (pack.IsCanceled)
-            {
-                pack.DisposeWebRequest();
-                continue;
-            }
-
-            _runningCount++;
-            _runningRequests.Add(pack);
+            var pack = _sendQueue.Dequeue();
+            if (pack.IsCanceled) { Complete(pack); continue; }
+            _runningRequests.Add(pack); _runningCount = _runningRequests.Count;
             StartCoroutine(ProcessRequest(pack));
         }
     }
-
-    /// <summary>
-    /// 请求入队（内部确保底层 UnityWebRequest 已创建）
-    /// </summary>
-    public void SendRequest(HttpPack pack)
+    public void SendRequest(HttpPack pack) { TrySendRequest(pack); }
+    internal bool TrySendRequest(HttpPack pack)
     {
-        if (pack == null) return;
-
-        if (pack.IsCanceled)
+        if (pack == null) return false;
+        if (pack.IsCanceled && !pack.IsSubmitted) { pack.MarkCompleted(); SafeDispose(pack); return false; }
+        if (!pack.TrySubmit()) return false;
+        if (destroyed || this == null || !isActiveAndEnabled)
+        { pack.Cancel(); pack.MarkCompleted(); SafeDispose(pack); return false; }
+        owned.Add(pack);
+        try
         {
-            pack.DisposeWebRequest();
-            return;
+            if (pack.WebRequest == null) pack.CreateWebRequest();
+            if (!Valid(pack)) { Complete(pack); return false; }
+            if (pack.WebRequest == null) throw new InvalidOperationException("CreateWebRequest 未创建请求");
+            _sendQueue.Enqueue(pack); return true;
         }
-
-        if (pack.WebRequest == null) pack.CreateWebRequest();
-
-        _sendQueue.Enqueue(pack);
+        catch (Exception e) { Fail(pack, "HTTP 请求创建失败：" + e.Message); return false; }
     }
-
-    /// <summary>清空等待队列（不影响正在发送的请求，取消它们请用 CancelAll）</summary>
     public void ClearQueue()
     {
-        while (_sendQueue.Count > 0)
-        {
-            HttpPack pack = _sendQueue.Dequeue();
-            if (pack == null) continue;
-
-            pack.Cancel();
-            pack.DisposeWebRequest();
-        }
+        var queued = _sendQueue.ToArray(); _sendQueue.Clear();
+        foreach (var pack in queued) { pack.Cancel(); Complete(pack); }
     }
-
-    /// <summary>取消全部请求：等待队列被清空，进行中的请求会被 Abort（不会触发任何回调）</summary>
     public void CancelAll()
     {
-        ClearQueue();
-
-        if (_runningRequests.Count == 0) return;
-
-        // 复制一份再取消，避免遍历时集合被修改
-        var running = new List<HttpPack>(_runningRequests);
-        for (int i = 0; i < running.Count; i++)
-        {
-            running[i]?.Cancel();
-        }
+        var pending = new List<HttpPack>(owned);
+        // 先提交旧批次状态；清理重入产生的新请求不属于这批取消。
+        owned.Clear(); _sendQueue.Clear(); _runningRequests.Clear(); _runningCount = 0;
+        foreach (var pack in pending) { pack.Cancel(); pack.MarkCompleted(); SafeDispose(pack); }
     }
+    private void OnDisable() { CancelAll(); base.StopAllCoroutines(); }
+    private void OnDestroy() { destroyed = true; CancelAll(); }
 
-    /// <summary>
-    /// 请求协程：等待重试间隔 -> 发起 -> 等待（可选上报进度）-> 统一收尾。
-    /// 注意：迭代器内不能写 try/catch，所以"可能抛异常"的发起动作放在
-    /// TryStartRequest（普通方法）里，保证任何异常都不会跳过收尾流程。
-    /// </summary>
     private IEnumerator ProcessRequest(HttpPack pack)
     {
-        // 重试前等待（首次发送不等待），避免网络异常时瞬间反复重试
-        if (pack.AttemptCount > 0 && pack.RetryDelay > 0f)
+        bool retryQueued = false;
+        try
         {
-            yield return new WaitForSeconds(pack.RetryDelay);
-        }
-
-        pack.AttemptCount++;
-
-        UnityWebRequestAsyncOperation operation;
-        if (TryStartRequest(pack, out operation))
-        {
-            if (pack.OnProgress == null)
-            {
-                yield return operation;
-            }
+            // 游戏暂停不冻结网络重试。等待也可被取消，不额外计为一次发送。
+            while (Valid(pack) && Time.realtimeSinceStartup < pack.NextAttemptAt) yield return null;
+            if (!Valid(pack)) yield break;
+            UnityWebRequestAsyncOperation operation;
+            string startError;
+            if (!TryStart(pack, out operation, out startError))
+            { Fail(pack, startError); yield break; }
+            if (pack.OnProgress == null) yield return operation;
             else
             {
-                // 仅在有进度回调时逐帧轮询，避免无谓开销
-                while (!operation.isDone)
+                while (Valid(pack) && !operation.isDone)
                 {
                     pack.ReportProgress();
+                    if (!Valid(pack)) yield break;
                     yield return null;
                 }
-                pack.ReportProgress();
             }
-        }
-
-        FinishRequest(pack);
-    }
-
-    /// <summary>
-    /// 发起请求（普通方法，内部捕获异常）；返回是否成功拿到异步操作
-    /// </summary>
-    private bool TryStartRequest(HttpPack pack, out UnityWebRequestAsyncOperation operation)
-    {
-        operation = null;
-
-        if (pack == null || pack.WebRequest == null)
-        {
-            PLogger.LogError("[HttpClient] 请求对象为空，无法发送");
-            return false;
-        }
-
-        try
-        {
-            pack.WebRequest.timeout = pack.Timeout;
-            operation = pack.WebRequest.SendWebRequest();
-            return operation != null;
-        }
-        catch (Exception e)
-        {
-            PLogger.LogError($"[HttpClient] 发起请求失败。URL: {pack.Url}, Message: {e}");
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// 统一收尾：判定成功/失败、按需重试、释放请求、复位并发计数。
-    /// 这里绝不能抛异常出去，否则队列会永久停摆，因此整体包在 try/catch/finally 中。
-    /// </summary>
-    private void FinishRequest(HttpPack pack)
-    {
-        if (pack == null)
-        {
-            _runningCount = Mathf.Max(0, _runningCount - 1);
-            return;
-        }
-
-        bool willRetry = false;
-
-        try
-        {
-            // 被取消：静默结束（不回调、不重试）
-            if (pack.IsCanceled) return;
-
-            if (IsRequestSuccess(pack.WebRequest))
-            {
-                pack.HandleResponse();
-            }
-            else
-            {
-                willRetry = TryScheduleRetry(pack);
-            }
-        }
-        catch (Exception e)
-        {
-            PLogger.LogError($"[HttpClient] 处理响应异常。URL: {pack.Url}, Message: {e}");
-            pack.OnFailure?.Invoke($"HTTP Handle Exception. URL: {pack.Url}, Message: {e.Message}");
+            if (!Valid(pack)) yield break;
+            pack.ReportProgress();
+            if (Valid(pack)) retryQueued = FinishAttempt(pack);
         }
         finally
         {
-            if (willRetry)
-            {
-                // 重建请求：上一次的 WebRequest 已不可复用（这也修复了原来重试时
-                // WebRequest 为 null 导致的空引用）
-                pack.CreateWebRequest();
-                _sendQueue.Enqueue(pack);
-            }
-            else
-            {
-                pack.DisposeWebRequest();
-            }
-
-            _runningRequests.Remove(pack);
-            _runningCount = Mathf.Max(0, _runningCount - 1);
+            _runningRequests.Remove(pack); _runningCount = _runningRequests.Count;
+            if (!retryQueued && owned.Contains(pack)) { pack.Cancel(); Complete(pack); }
         }
     }
-
-    /// <summary>
-    /// 成功判定（兼容新旧 Unity 版本）
-    /// </summary>
-    private bool IsRequestSuccess(UnityWebRequest request)
+    private bool Valid(HttpPack pack) { return !destroyed && !pack.IsCanceled && owned.Contains(pack); }
+    private bool TryStart(HttpPack pack, out UnityWebRequestAsyncOperation operation, out string error)
     {
-        if (request == null) return false;
-
-#if UNITY_2020_3_OR_NEWER
-        return request.result == UnityWebRequest.Result.Success;
-#else
-        return !request.isHttpError && !request.isNetworkError;
-#endif
-    }
-
-    /// <summary>
-    /// 失败处理：还有重试次数就返回 true（由调用方重新入队），否则回调一次 OnFailure 并返回 false。
-    /// 注意：OnFailure 只在放弃时触发一次，重试过程通过 OnRetry / 日志体现。
-    /// </summary>
-    private bool TryScheduleRetry(HttpPack pack)
-    {
-        string error = BuildErrorMessage(pack.WebRequest);
-
-        if (pack.RetryCount > 0)
+        operation = null; error = null;
+        try
         {
-            pack.RetryCount--;
-            PLogger.LogWarning($"[HttpClient] 请求失败，准备重试。URL: {pack.Url}, 剩余重试次数: {pack.RetryCount}, 原因: {error}");
-            pack.OnRetry?.Invoke(pack.RetryCount, error);
+            if (pack.WebRequest == null) pack.CreateWebRequest();
+            if (!Valid(pack)) { Complete(pack); error = "HTTP 请求已取消"; return false; }
+            if (pack.WebRequest == null) throw new InvalidOperationException("CreateWebRequest 未创建请求");
+            pack.WebRequest.timeout = pack.Timeout;
+            pack.AttemptCount++;
+            operation = pack.WebRequest.SendWebRequest();
+            if (operation == null) throw new InvalidOperationException("SendWebRequest 未返回操作");
             return true;
         }
-
-        PLogger.LogError($"[HttpClient] 请求失败（重试已用尽）。URL: {pack.Url}, 原因: {error}");
-        pack.OnFailure?.Invoke(error);
-        return false;
+        catch (Exception e) { error = "HTTP 请求启动失败：" + e.Message; return false; }
     }
-
-    /// <summary>
-    /// 组装错误信息：地址、状态码、错误原因，并尽量附上服务端返回的错误体（4xx/5xx 常见）
-    /// </summary>
+    private bool FinishAttempt(HttpPack pack)
+    {
+        if (pack.WebRequest != null && pack.WebRequest.result == UnityWebRequest.Result.Success)
+        {
+            // 原生响应仍在，先撤销管理器所有权与槽位，再进入解析和用户回调。
+            MarkCompleted(pack);
+            try { pack.HandleResponse(); }
+            catch (Exception e) { pack.NotifyFailure("HTTP 响应处理失败：" + e.Message); }
+            finally { SafeDispose(pack); }
+            return false;
+        }
+        string error = BuildErrorMessage(pack.WebRequest);
+        SafeDispose(pack);
+        if (pack.RetryCount <= 0) { Fail(pack, error); return false; }
+        pack.RetryCount--;
+        _runningRequests.Remove(pack); _runningCount = _runningRequests.Count;
+        PLogger.LogWarning("[HttpClient] 请求失败，准备重试。URL: " + pack.Url + ", 原因: " + error);
+        pack.NotifyRetry(pack.RetryCount, error);
+        if (!Valid(pack)) { Complete(pack); return false; }
+        pack.NextAttemptAt = Time.realtimeSinceStartup + Mathf.Max(0, pack.RetryDelay);
+        _sendQueue.Enqueue(pack);
+        return true;
+    }
+    private void Fail(HttpPack pack, string error)
+    {
+        if (!owned.Contains(pack)) return;
+        bool canceled = pack.IsCanceled;
+        Complete(pack);
+        if (canceled) return;
+        PLogger.LogError("[HttpClient] 请求失败（重试已用尽）。URL: " + pack.Url + ", 原因: " + error);
+        pack.NotifyFailure(error);
+    }
+    private void MarkCompleted(HttpPack pack)
+    {
+        owned.Remove(pack); _runningRequests.Remove(pack); _runningCount = _runningRequests.Count;
+        pack.MarkCompleted();
+    }
+    private void Complete(HttpPack pack) { MarkCompleted(pack); SafeDispose(pack); }
+    private static void SafeDispose(HttpPack pack)
+    {
+        try { pack.DisposeWebRequest(); }
+        catch (Exception e)
+        {
+            // 即使扩展数据包的释放方法抛异常，也释放仍暴露的原生请求。
+            var native = pack.WebRequest; pack.WebRequest = null;
+            try { native?.Dispose(); } catch (Exception cleanup) { Debug.LogException(cleanup); }
+            Debug.LogException(e);
+        }
+    }
     private static string BuildErrorMessage(UnityWebRequest request)
     {
         if (request == null) return "请求对象为空";
-
-        string message = $"HTTP Request Failed. URL: {request.url}, Code: {request.responseCode}, Error: {request.error}";
-
+        string error = "HTTP Request Failed. URL: " + request.url + ", Code: " + request.responseCode + ", Error: " + request.error;
         try
         {
-            if (request.downloadHandler != null)
-            {
-                string body = request.downloadHandler.text;
-                if (!string.IsNullOrEmpty(body))
-                {
-                    message += $", Body: {Truncate(body, 512)}";
-                }
-            }
+            string body = request.downloadHandler?.text;
+            if (!string.IsNullOrEmpty(body)) error += ", Body: " + (body.Length > 512 ? body.Substring(0, 512) + "..." : body);
         }
-        catch (Exception)
-        {
-            // 读取响应体失败不影响错误上报
-        }
-
-        return message;
-    }
-
-    /// <summary>按最大长度截断文本（错误体可能很长）</summary>
-    private static string Truncate(string text, int maxLength)
-    {
-        if (string.IsNullOrEmpty(text) || text.Length <= maxLength) return text;
-
-        return text.Substring(0, maxLength) + "...";
+        catch (Exception) { }
+        return error;
     }
 }

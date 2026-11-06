@@ -55,11 +55,12 @@ namespace UPandaGF
             // 派发快照：只存弱引用，因此不会阻止监听者被 GC（若快照里存强引用，等于把弱引用机制废掉）
             private WeakReference<IEventListener<T>>[] _snapshot;
             private bool _snapshotDirty = true;
+            private int generation;
 
             /// <summary>添加订阅（允许重复订阅）</summary>
             public void Add(IEventListener<T> listener)
             {
-                if (listener == null) return;
+                if (!Alive(listener)) return;
                 lock (_lock)
                 {
                     PurgeDead();
@@ -71,7 +72,7 @@ namespace UPandaGF
             /// <summary>取消订阅（按引用比较，一次只移除一个）</summary>
             public void Remove(IEventListener<T> listener)
             {
-                if (listener == null) return;
+                if (ReferenceEquals(listener, null)) return;
                 lock (_lock)
                 {
                     for (int i = _list.Count - 1; i >= 0; i--)
@@ -90,8 +91,11 @@ namespace UPandaGF
             public void Dispatch(T message)
             {
                 WeakReference<IEventListener<T>>[] items;
+                int epoch;
                 lock (_lock)
                 {
+                    PurgeDead();
+                    epoch = generation;
                     if (_snapshotDirty)
                     {
                         _snapshot = _list.ToArray();
@@ -104,7 +108,8 @@ namespace UPandaGF
 
                 for (int i = 0; i < items.Length; i++)
                 {
-                    if (!items[i].TryGetTarget(out IEventListener<T> listener) || listener == null)
+                    lock (_lock) { if (epoch != generation) break; }
+                    if (!items[i].TryGetTarget(out IEventListener<T> listener) || !Alive(listener))
                         continue;   // 已被 GC：留着下次增删订阅时统一清理
 
                     try
@@ -132,7 +137,7 @@ namespace UPandaGF
                     PurgeDead();
                     for (int i = 0; i < _list.Count; i++)
                     {
-                        if (_list[i].TryGetTarget(out IEventListener<T> target) && target != null)
+                        if (_list[i].TryGetTarget(out IEventListener<T> target) && Alive(target))
                             result.Add(target.GetType().Name);
                     }
                 }
@@ -142,18 +147,23 @@ namespace UPandaGF
             {
                 lock (_lock)
                 {
+                    generation++;
                     _list.Clear();
                     _snapshot = null;
                     _snapshotDirty = true;
                 }
             }
 
-            /// <summary>清理已被 GC 回收的订阅项（需在 lock 内调用）</summary>
+            private static bool Alive(IEventListener<T> listener)
+            {
+                return !ReferenceEquals(listener, null) && (!(listener is UnityEngine.Object owner) || owner != null);
+            }
+            /// <summary>清理已被 GC 回收或 Unity 对象已销毁的订阅项。</summary>
             private void PurgeDead()
             {
                 for (int i = _list.Count - 1; i >= 0; i--)
                 {
-                    if (_list[i].TryGetTarget(out IEventListener<T> target) && target != null) continue;
+                    if (_list[i].TryGetTarget(out IEventListener<T> target) && Alive(target)) continue;
                     _list.RemoveAt(i);
                     _snapshotDirty = true;
                 }
@@ -202,7 +212,7 @@ namespace UPandaGF
         /// <summary>订阅事件</summary>
         public void Subscribe<T>(IEventListener<T> listener) where T : struct
         {
-            if (listener == null)
+            if (listener == null || (listener is UnityEngine.Object owner && owner == null))
             {
                 Debug.LogError($"EventBus: 尝试订阅 null 监听器 (Type: {typeof(T)})");
                 return;
@@ -229,7 +239,7 @@ namespace UPandaGF
         /// <summary>取消订阅</summary>
         public void Unsubscribe<T>(IEventListener<T> listener) where T : struct
         {
-            if (listener == null) return;
+            if (ReferenceEquals(listener, null)) return;
             SubscriptionList<T> list = Find<T>();
             if (list != null) list.Remove(listener);
         }

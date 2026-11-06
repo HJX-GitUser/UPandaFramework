@@ -1,0 +1,107 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UPandaGF;
+
+public class CoordinationPlayerSmoke:MonoBehaviour
+{
+    private float started;
+    private bool finished;
+    private string Output=>Path.GetFullPath(Path.Combine(Application.dataPath,"../smoke-result.txt"));
+    private async void Start()
+    {
+        started=Time.realtimeSinceStartup;DontDestroyOnLoad(gameObject);
+        using(var server=new CoordinationPlayerServer())
+        {
+            try
+            {
+                var mono=PublicMono.Instance;bool cleanup=false;
+                Time.timeScale=0;await mono.RunCoroutine(Nested(()=>cleanup=true));Require(cleanup,"Nested iterator cleanup");
+                var token=new CancellationTokenSource();var waiter=mono.RunCoroutine(Forever(),token.Token);token.Cancel();
+                try{await waiter;}catch(OperationCanceledException){}Require(waiter.IsCanceled,"Managed cancellation");token.Dispose();
+                var http=new GameObject("HttpSmoke").AddComponent<HttpClient>();
+                var done=new TaskCompletionSource<bool>();int success=0,retries=0;
+                var pack=new GenericHttpPack<string>{Url=server.Url+"/fail",RetryCount=1,RetryDelay=.02f};
+                pack.OnRetry=(n,e)=>{retries++;pack.Url=server.Url+"/ok";};
+                pack.OnSuccess=(body,code)=>{success++;done.TrySetResult(code==200&&pack.IsCompleted);};pack.OnFailure=e=>done.TrySetException(new Exception(e));
+                http.SendRequest(pack);Require(await done.Task,"HTTP terminal state before callback");
+                Require(success==1&&retries==1&&pack.AttemptCount==2,"Realtime retry while paused");
+                var delayed=new GenericHttpPack<string>{Url=server.Url+"/slow",RetryCount=0};http.SendRequest(delayed);await Task.Delay(30);
+                Destroy(http.gameObject);await Task.Delay(30);Require(delayed.IsCanceled&&delayed.IsCompleted&&delayed.WebRequest==null,"HTTP destroy ownership");
+                Time.timeScale=1;
+                var center=new EventCenter();bool nested=false;int once=0;
+                center.AddEventListener<SmokeEvent>(e=>{if(!nested){nested=true;center.EventTrigger(new SmokeEvent());}});
+                center.AddEventListenerOnce<SmokeEvent>(e=>once++);center.EventTrigger(new SmokeEvent());Require(once==1,"Recursive Once");
+                var bus=new EventBus();var listener=new GameObject("BusOwner").AddComponent<CoordinationSmokeListener>();bus.Subscribe(listener);
+                Destroy(listener.gameObject);await Task.Delay(30);bus.Dispatch(new CoordinationSmokeMessage());Require(bus.GetSubscriptionCount<CoordinationSmokeMessage>()==0,"Destroyed Unity subscriber");
+                var scenes=new SceneMgr();await scenes.LoadSceneAsync("CoordinationSmokeTarget",LoadSceneMode.Additive);
+                Require(SceneManager.GetSceneByName("CoordinationSmokeTarget").isLoaded,"Native scene completion");
+                await PublicMono.Instance.RunCoroutine(Wait(SceneManager.UnloadSceneAsync("CoordinationSmokeTarget")));
+                var canceled=scenes.LoadSceneAsyn("CoordinationSmokeTarget",LoadSceneMode.Additive);DestroyImmediate(PublicMono.Instance.gameObject);
+                try{await canceled;}catch(OperationCanceledException){}Require(canceled.IsCanceled,"Scene observer host cancellation");
+                await Task.Delay(100);var remaining=SceneManager.GetSceneByName("CoordinationSmokeTarget");
+                if(remaining.IsValid()&&remaining.isLoaded)await PublicMono.Instance.RunCoroutine(Wait(SceneManager.UnloadSceneAsync(remaining)));
+                Finish("PASS: native HTTP retry while paused, HTTP destroy cleanup, recursive Once, destroyed EventBus owner, nested coroutine cleanup/cancel, scene completion and observer cancellation.",0);
+            }
+            catch(Exception e){Time.timeScale=1;Finish("FAIL: "+e,1);}
+        }
+    }
+    private void Update(){if(!finished&&Time.realtimeSinceStartup-started>20f)Finish("FAIL: watchdog timeout",2);}
+    private void Finish(string text,int code){if(finished)return;finished=true;File.WriteAllText(Output,text);Application.Quit(code);}
+    private static void Require(bool value,string message){if(!value)throw new Exception(message);}
+    private static IEnumerator Nested(Action cleanup){try{yield return new WaitForSecondsRealtime(.01f);}finally{cleanup();}}
+    private static IEnumerator Forever(){while(true)yield return null;}
+    private static IEnumerator Wait(AsyncOperation operation){yield return operation;}
+    private class SmokeEvent:EventArgBase{}
+}
+public struct CoordinationSmokeMessage{}
+public class CoordinationSmokeListener:MonoBehaviour,IEventListener<CoordinationSmokeMessage>
+{
+    public void OnEvent(CoordinationSmokeMessage message){throw new Exception("Destroyed subscriber was invoked");}
+}
+internal sealed class CoordinationPlayerServer:IDisposable
+{
+    private readonly TcpListener listener=new TcpListener(IPAddress.Loopback,0);
+    private readonly HashSet<TcpClient> clients=new HashSet<TcpClient>();
+    private readonly object gate=new object();private bool disposed;
+    public string Url{get;}
+    public CoordinationPlayerServer(){listener.Start();Url="http://127.0.0.1:"+((IPEndPoint)listener.LocalEndpoint).Port;_=Accept();}
+    private async Task Accept()
+    {
+        while(true)
+        {
+            try{var client=await listener.AcceptTcpClientAsync().ConfigureAwait(false);lock(gate){if(disposed){client.Dispose();return;}clients.Add(client);}_=Serve(client);}
+            catch(ObjectDisposedException){return;}catch(SocketException){return;}
+        }
+    }
+    private async Task Serve(TcpClient client)
+    {
+        using(client)
+        {
+            try
+            {
+                var stream=client.GetStream();
+                using(var reader=new StreamReader(stream,Encoding.ASCII,false,1024,true))
+                {
+                    string first=await reader.ReadLineAsync().ConfigureAwait(false);if(first==null)return;
+                    string line;do{line=await reader.ReadLineAsync().ConfigureAwait(false);}while(!string.IsNullOrEmpty(line));
+                    string path=first.Split(' ')[1];if(path.Contains("slow"))await Task.Delay(500).ConfigureAwait(false);
+                    byte[] body=Encoding.UTF8.GetBytes("{\"value\":1}");
+                    byte[] header=Encoding.ASCII.GetBytes("HTTP/1.1 "+(path.Contains("fail")?"503 Unavailable":"200 OK")+"\r\nContent-Length: "+body.Length+"\r\nConnection: close\r\n\r\n");
+                    await stream.WriteAsync(header,0,header.Length).ConfigureAwait(false);await stream.WriteAsync(body,0,body.Length).ConfigureAwait(false);
+                }
+            }
+            catch(IOException){}catch(ObjectDisposedException){}catch(SocketException){}
+            finally{lock(gate)clients.Remove(client);}
+        }
+    }
+    public void Dispose(){lock(gate){disposed=true;listener.Stop();foreach(var client in clients)client.Dispose();clients.Clear();}}
+}

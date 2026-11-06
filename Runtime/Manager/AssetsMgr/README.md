@@ -15,3 +15,7 @@
 ## 内部持有凭据
 
 对象池和音频使用内部 Acquire/AcquireAsync 与 AssetLease：保留对原缓存记录的身份校验，多个实例可共享一次加载。最后一个持有者释放时才归还计数；ClearDic 或加载器重建后旧凭据不能误减新记录。现有公开 Load/UnLoadAsset API 保留，业务仍需对这些手动 API 成对使用。
+
+## 清单编解码
+
+AB 清单的格式、结构检查与 AES 包裹统一由 AssetReferenceSerializer 处理；新写入使用版本化字段图，旧 NRBF 只读兼容。生成端升级或切换加密配置时保留旧原始文件。规则及 API 见 `Runtime/Manager/StorageDataMgr/Serialization/README.md`。

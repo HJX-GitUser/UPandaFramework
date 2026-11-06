@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Failed(Child)" total="2" passed="0" failed="2" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-06 01:20:34Z" end-time="2026-11-06 01:20:34Z" duration="0.1325615">
+  <test-suite type="TestSuite" id="1000" name="LifecycleFixVerification" fullname="LifecycleFixVerification" runstate="Runnable" testcasecount="91" result="Failed" site="Child" start-time="2026-11-06 01:20:34Z" end-time="2026-11-06 01:20:34Z" duration="0.132562" total="2" passed="0" failed="2" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1097" name="UPandaGF.Tests.dll" fullname="D:/UnityProject/TestProject/Temp/LifecycleAuditProject/Library/ScriptAssemblies/UPandaGF.Tests.dll" runstate="Runnable" testcasecount="91" result="Failed" site="Child" start-time="2026-11-06 01:20:34Z" end-time="2026-11-06 01:20:34Z" duration="0.122937" total="2" passed="0" failed="2" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="54368" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestFixture" id="1002" name="CoordinationRegressionTests" fullname="CoordinationRegressionTests" classname="CoordinationRegressionTests" runstate="Runnable" testcasecount="41" result="Failed" site="Child" start-time="2026-11-06 01:20:34Z" end-time="2026-11-06 01:20:34Z" duration="0.120758" total="2" passed="0" failed="2" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1028" name="CanceledBeforeSubmissionReleasesItsNativeRequest" fullname="CoordinationRegressionTests.CanceledBeforeSubmissionReleasesItsNativeRequest" methodname="CanceledBeforeSubmissionReleasesItsNativeRequest" classname="CoordinationRegressionTests" runstate="Runnable" seed="1108750772" result="Failed" start-time="2026-11-06 01:20:34Z" end-time="2026-11-06 01:20:34Z" duration="0.090188" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: null
+  But was:  <UnityEngine.Networking.UnityWebRequest>
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.CanceledBeforeSubmissionReleasesItsNativeRequest () [0x00029] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:270
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1029" name="PurgedOwnerDoesNotRemainStronglyHeldByCachedSnapshot" fullname="CoordinationRegressionTests.PurgedOwnerDoesNotRemainStronglyHeldByCachedSnapshot" methodname="PurgedOwnerDoesNotRemainStronglyHeldByCachedSnapshot" classname="CoordinationRegressionTests" runstate="Runnable" seed="1192675828" result="Failed" start-time="2026-11-06 01:20:34Z" end-time="2026-11-06 01:20:34Z" duration="0.015897" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: False
+  But was:  True
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.PurgedOwnerDoesNotRemainStronglyHeldByCachedSnapshot () [0x0001a] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:283
+]]></stack-trace>
+          </failure>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

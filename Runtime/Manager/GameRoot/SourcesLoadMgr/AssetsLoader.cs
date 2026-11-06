@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
@@ -347,29 +346,7 @@ namespace UPandaGF
             }
             try
             {
-                if (AssetAESConfig != null && AssetAESConfig.enable)
-                {
-                    string AESKEY = AssetAESConfig.AESKEY;//"111a222aaabbbccc";
-                    string AESIV = AssetAESConfig.AESIV;//"111b222aaabbbccc";
-                    bytes = AESEncryption.AESDecrypt(bytes, AESKEY, AESIV);
-                    if (bytes == null)
-                    {
-                        PLogger.LogError("资源关联数据 AES 解密失败，请检查密钥/IV 配置");
-                        return null;
-                    }
-                }
-                ABSourcesRelated obj;
-#pragma warning disable SYSLIB0011 // BinaryFormatter 过时警告：自产内部数据，且需兼容既有 .assetref（内含 Dictionary，JsonUtility 无法直接序列化）
-                using (MemoryStream ms = new MemoryStream(bytes))
-                {
-                    BinaryFormatter bf = new BinaryFormatter();
-                    obj = bf.Deserialize(ms) as ABSourcesRelated;
-                    ms.Close();
-                }
-#pragma warning restore SYSLIB0011
-                if (obj == null)
-                    PLogger.LogError("资源关联数据反序列化结果为空，请检查数据与 AES 配置");
-                return obj;
+                return AssetReferenceSerializer.Decode(bytes, AssetAESConfig);
             }
             catch (System.Exception e)
             {

@@ -1,0 +1,246 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
+using UnityEngine.TestTools;
+using UPandaGF;
+using Object = UnityEngine.Object;
+
+[PrebuildSetup(typeof(CoordinationFixtures))]
+[PostBuildCleanup(typeof(CoordinationFixtures))]
+public class CoordinationRegressionTests
+{
+    private readonly List<GameObject> objects = new List<GameObject>();
+    private CoordinationHttpServer server;
+    private float previousScale;
+    private LogConfig previousConfig;
+    [SetUp] public void Setup()
+    {
+        previousScale=Time.timeScale; previousConfig=PLogger.cfg; PLogger.cfg=new LogConfig();
+        server=new CoordinationHttpServer();
+    }
+    [UnityTearDown] public IEnumerator Cleanup()
+    {
+        Time.timeScale=previousScale;
+        foreach(var go in objects) if(go!=null) Object.DestroyImmediate(go);
+        objects.Clear();
+        foreach(var mono in Object.FindObjectsByType<PublicMono>(FindObjectsSortMode.None)) Object.DestroyImmediate(mono.gameObject);
+        server.Dispose(); PLogger.cfg=previousConfig;
+        // A canceled observer cannot undo Unity's native additive load. Drain and unload it.
+        for(int i=0;i<4;i++) yield return null;
+        var scene=SceneManager.GetSceneByPath(CoordinationFixtures.ScenePath);
+        if(scene.IsValid()&&scene.isLoaded) yield return SceneManager.UnloadSceneAsync(scene);
+    }
+    private T Component<T>() where T:Component
+    {
+        var go=new GameObject("Coordination_"+typeof(T).Name); objects.Add(go); return go.AddComponent<T>();
+    }
+    private static IEnumerator Until(Func<bool> predicate, float timeout=2f)
+    {
+        float end=Time.realtimeSinceStartup+timeout;
+        while(!predicate()&&Time.realtimeSinceStartup<end) yield return null;
+        Assert.IsTrue(predicate(),"Operation did not reach its expected terminal state");
+    }
+    private GenericHttpPack<string> Pack(string path="/ok") => new GenericHttpPack<string>{Url=server.Url+path,RetryCount=0};
+    private static IEnumerator Never(Action cleanup=null)
+    {
+        try { while(true) yield return null; } finally { cleanup?.Invoke(); }
+    }
+    private static IEnumerator NestedFailure() { yield return ChildFailure(); }
+    private static IEnumerator ChildFailure() { yield return null; throw new InvalidOperationException("coordination nested failure"); }
+    private static IEnumerator Effect(Action effect) { effect(); yield return null; }
+
+    [Test] public void RequestHeadersOverrideGlobalDefaults()
+    {
+        var manager=Component<HttpManager>(); manager.SetGlobalHeader("Authorization","global");
+        var pack=manager.CreateRequest<string>(HttpRequestType.Get,server.Url+"/ok"); pack.Headers["Authorization"]="local";
+        Assert.IsTrue(manager.Send(pack)); Assert.AreEqual("local",pack.Headers["Authorization"]);
+    }
+    [Test] public void SamePackCannotBeQueuedTwice()
+    {
+        var client=Component<HttpClient>(); var pack=Pack(); client.SendRequest(pack); client.SendRequest(pack);
+        var queue=(System.Collections.ICollection)typeof(HttpClient).GetField("_sendQueue",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(client);
+        Assert.AreEqual(1,queue.Count);
+    }
+    [UnityTest] public IEnumerator DestroyCancelsQueuedAndRunningHttpRequests()
+    {
+        var client=Component<HttpClient>(); var running=Pack("/slow"); var queued=Pack(); int callbacks=0;
+        running.OnSuccess=(s,c)=>callbacks++; queued.OnSuccess=(s,c)=>callbacks++;
+        client.SendRequest(running); client.SendRequest(queued); yield return Until(()=>running.AttemptCount==1);
+        Object.DestroyImmediate(client.gameObject);
+        Assert.IsTrue(running.IsCanceled); Assert.IsTrue(queued.IsCanceled);
+        Assert.IsNull(running.WebRequest); Assert.IsNull(queued.WebRequest);
+        yield return new WaitForSecondsRealtime(.2f); Assert.AreEqual(0,callbacks);
+    }
+    [UnityTest] public IEnumerator SuccessCallbackExceptionDoesNotTriggerFailure()
+    {
+        var client=Component<HttpClient>(); var pack=Pack(); int successes=0,failures=0;
+        pack.OnSuccess=(s,c)=>{successes++;throw new InvalidOperationException("coordination success failure");};
+        pack.OnFailure=e=>failures++;
+        #if COORDINATION_BASELINE
+        LogAssert.Expect(LogType.Error,new Regex("处理响应异常"));
+#else
+        LogAssert.Expect(LogType.Exception,new Regex("coordination success failure"));
+#endif
+        client.SendRequest(pack); yield return Until(()=>pack.AttemptCount>0&&pack.WebRequest==null);
+        Assert.AreEqual(1,successes); Assert.AreEqual(0,failures);
+    }
+    [UnityTest] public IEnumerator ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues()
+    {
+        var client=Component<HttpClient>(); var failed=Pack("/fail"); var next=Pack(); int failures=0,successes=0;
+        failed.OnFailure=e=>{failures++;throw new InvalidOperationException("coordination failure callback");}; next.OnSuccess=(s,c)=>successes++;
+        #if OPEN_PLOG
+        LogAssert.Expect(LogType.Error,new Regex("请求失败（重试已用尽）"));
+#if COORDINATION_BASELINE
+        LogAssert.Expect(LogType.Error,new Regex("处理响应异常"));
+#endif
+#endif
+        LogAssert.Expect(LogType.Exception,new Regex("coordination failure callback"));
+        client.SendRequest(failed); client.SendRequest(next); yield return Until(()=>successes==1);
+        Assert.AreEqual(1,failures);
+    }
+    [UnityTest] public IEnumerator RetryCreationFailureDoesNotBlockFollowingRequest()
+    {
+        var client=Component<HttpClient>(); var failed=new CoordinationCountingPack{Url=server.Url+"/fail",RetryCount=1,throwOnSecond=true};
+        var next=Pack(); int failures=0,successes=0; failed.OnFailure=e=>failures++;next.OnSuccess=(s,c)=>successes++;
+        #if COORDINATION_BASELINE
+        LogAssert.Expect(LogType.Exception,new Regex("coordination retry create failure"));
+#else
+#if OPEN_PLOG
+        LogAssert.Expect(LogType.Error,new Regex("coordination retry create failure"));
+#endif
+#endif
+        client.SendRequest(failed);client.SendRequest(next);yield return Until(()=>successes==1);
+        Assert.AreEqual(1,failures);Assert.IsNull(failed.WebRequest);
+    }
+    [UnityTest] public IEnumerator RetryCancellationDoesNotRecreateCanceledRequest()
+    {
+        var client=Component<HttpClient>();var pack=new CoordinationCountingPack{Url=server.Url+"/fail",RetryCount=1};
+        pack.OnRetry=(n,e)=>client.CancelAll(); client.SendRequest(pack);
+        yield return Until(()=>pack.IsCanceled&&pack.WebRequest==null); Assert.AreEqual(1,pack.creates);
+    }
+    [UnityTest] public IEnumerator RetryDelayUsesRealtimeWhenGameIsPaused()
+    {
+        var client=Component<HttpClient>();var pack=Pack("/fail");pack.RetryCount=1;pack.RetryDelay=.05f;int failures=0;
+        pack.OnRetry=(n,e)=>Time.timeScale=0;pack.OnFailure=e=>failures++;
+        #if OPEN_PLOG
+        LogAssert.Expect(LogType.Error,new Regex("请求失败（重试已用尽）"));
+#endif
+        client.SendRequest(pack);yield return Until(()=>failures==1,.8f);Assert.AreEqual(2,pack.AttemptCount);
+    }
+    private class Message:EventArgBase{}
+    [Test] public void OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation()
+    {
+        var center=new EventCenter(); bool nested=false;int once=0;
+        center.AddEventListener<Message>(e=>{if(!nested){nested=true;center.EventTrigger(new Message());}});
+        center.AddEventListenerOnce<Message>(e=>once++);center.EventTrigger(new Message());Assert.AreEqual(1,once);
+    }
+    [Test] public void OwnerDestroyedEarlierInDispatchIsSkipped()
+    {
+        var center=new EventCenter();var owner=new GameObject("EventOwner");objects.Add(owner);int hits=0;
+        center.AddEventListener<Message>(e=>Object.DestroyImmediate(owner),10);
+        center.AddEventListener<Message>(owner,e=>hits++);center.EventTrigger(new Message());Assert.AreEqual(0,hits);
+    }
+    [Test] public void DestroyedOwnerCannotBecomeAnOwnerlessSubscription()
+    {
+        var center=new EventCenter();var owner=new GameObject("DeadOwner");Object.DestroyImmediate(owner);int hits=0;
+        center.AddEventListener<Message>(owner,e=>hits++);center.EventTrigger(new Message());Assert.AreEqual(0,hits);
+    }
+    [Test] public void ClearStopsRemainingEventCenterBatch()
+    {
+        var center=new EventCenter();int hits=0;
+        center.AddEventListener<Message>(e=>center.Clear(),10);center.AddEventListener<Message>(e=>hits++);
+        center.EventTrigger(new Message());Assert.AreEqual(0,hits);
+    }
+    [Test] public void DestroyedUnityEventBusSubscriberIsRemoved()
+    {
+        var bus=new EventBus();var listener=Component<CoordinationBusListener>();bus.Subscribe(listener);
+        Object.DestroyImmediate(listener.gameObject);bus.Dispatch(new CoordinationMessage());
+        Assert.AreEqual(0,listener.hits);Assert.AreEqual(0,bus.GetSubscriptionCount<CoordinationMessage>());
+    }
+    [Test] public void ClearStopsRemainingEventBusBatch()
+    {
+        var bus=new EventBus();var first=new CoordinationPlainListener{action=()=>bus.Clear()};var second=new CoordinationPlainListener();
+        bus.Subscribe(first);bus.Subscribe(second);bus.Dispatch(new CoordinationMessage());Assert.AreEqual(0,second.hits);
+    }
+    [UnityTest] public IEnumerator NestedCoroutineFailureFaultsItsTask()
+    {
+        var mono=Component<PublicMono>();
+#if COORDINATION_BASELINE
+        LogAssert.Expect(LogType.Exception,new Regex("coordination nested failure"));
+#else
+        LogAssert.Expect(LogType.Error,new Regex("coordination nested failure"));
+#endif
+        var task=mono.RunCoroutine(NestedFailure());yield return Until(()=>task.IsCompleted,.3f);Assert.IsTrue(task.IsFaulted);var observed=task.Exception;
+    }
+    [UnityTest] public IEnumerator CancelDisposesNestedIteratorsAndRunsFinally()
+    {
+        var mono=Component<PublicMono>();bool cleaned=false;var token=new CancellationTokenSource();
+        var task=mono.RunCoroutine(NestedNever(()=>cleaned=true),token.Token);token.Cancel();
+        yield return Until(()=>task.IsCompleted);Assert.IsTrue(task.IsCanceled);Assert.IsTrue(cleaned);token.Dispose();
+    }
+    private static IEnumerator NestedNever(Action cleanup) { yield return Never(cleanup); }
+    [UnityTest] public IEnumerator PreCanceledCoroutineDoesNotExecuteUserCode()
+    {
+        var mono=Component<PublicMono>();int hits=0;var token=new CancellationTokenSource();token.Cancel();
+        var task=mono.RunCoroutine(Effect(()=>hits++),token.Token);yield return Until(()=>task.IsCompleted);
+        Assert.IsTrue(task.IsCanceled);Assert.AreEqual(0,hits);token.Dispose();
+    }
+    [Test] public void InactiveHostRejectsCoroutineWithoutDanglingTask()
+    {
+        var mono=Component<PublicMono>();mono.gameObject.SetActive(false);
+#if COORDINATION_BASELINE
+        LogAssert.Expect(LogType.Error,new Regex("Coroutine couldn't be started"));
+#endif
+        var task=mono.RunCoroutine(Never());Assert.IsTrue(task.IsCompleted);Assert.IsTrue(task.IsCanceled||task.IsFaulted);
+    }
+    [UnityTest] public IEnumerator StopAllCoroutinesAlsoCompletesManagedTasks()
+    {
+        var mono=Component<PublicMono>();var task=mono.RunCoroutine(Never());mono.StopAllCoroutines();
+        yield return Until(()=>task.IsCompleted,.3f);Assert.IsTrue(task.IsCanceled);Assert.AreEqual(0,mono.RunningCoroutineCount);
+    }
+    [UnityTest] public IEnumerator DisableDuringFirstMoveCannotLeaveARegisteredJob()
+    {
+        var mono=Component<PublicMono>();var task=mono.RunCoroutine(Effect(()=>mono.gameObject.SetActive(false)));
+        yield return Until(()=>task.IsCompleted,.3f);Assert.IsTrue(task.IsCanceled);Assert.AreEqual(0,mono.RunningCoroutineCount);
+    }
+    [UnityTest] public IEnumerator InvalidSceneFaultsTaskInsteadOfHanging()
+    {
+#if COORDINATION_BASELINE
+        LogAssert.Expect(LogType.Error,new Regex("coordination_missing_scene"));
+        LogAssert.Expect(LogType.Exception,new Regex("NullReferenceException"));
+#else
+        LogAssert.Expect(LogType.Error,new Regex("coordination_missing_scene"));
+#endif
+        var task=new SceneMgr().LoadSceneAsyn("coordination_missing_scene_"+Guid.NewGuid().ToString("N"));
+        yield return Until(()=>task.IsCompleted,.3f);Assert.IsTrue(task.IsFaulted);var observed=task.Exception;
+    }
+    [UnityTest] public IEnumerator SceneWaiterCancelsWhenSchedulerIsDestroyed()
+    {
+        var task=new SceneMgr().LoadSceneAsyn(CoordinationFixtures.ScenePath,LoadSceneMode.Additive);
+        Object.DestroyImmediate(PublicMono.Instance.gameObject);
+        yield return Until(()=>task.IsCompleted,.3f);Assert.IsTrue(task.IsCanceled);
+    }
+}
+
+public struct CoordinationMessage{}
+public class CoordinationBusListener:MonoBehaviour,IEventListener<CoordinationMessage>
+{
+    public int hits;public void OnEvent(CoordinationMessage message){hits++;}
+}
+public class CoordinationPlainListener:IEventListener<CoordinationMessage>
+{
+    public Action action;public int hits;public void OnEvent(CoordinationMessage message){hits++;action?.Invoke();}
+}
+public class CoordinationCountingPack:GenericHttpPack<string>
+{
+    public int creates;public bool throwOnSecond;
+    public override void CreateWebRequest(){creates++;if(throwOnSecond&&creates==2)throw new InvalidOperationException("coordination retry create failure");base.CreateWebRequest();}
+}

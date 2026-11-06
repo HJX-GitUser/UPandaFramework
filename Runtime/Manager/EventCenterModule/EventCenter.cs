@@ -31,6 +31,7 @@ namespace UPandaGF
     internal interface IPDEventInfo
     {
         int ActionCount { get; }
+        void Clear();
         List<EventListenerInfo> GetListenerInfos();
     }
 
@@ -55,13 +56,14 @@ namespace UPandaGF
             public int seq;                                   // 注册序号：同优先级稳定排序用
         }
 
-        private static readonly UnityAction<T>[] Empty = new UnityAction<T>[0];
+        private static readonly Listener[] Empty = new Listener[0];
 
         private readonly List<Listener> listeners = new List<Listener>();
         private readonly object lockObj = new object();
-        private UnityAction<T>[] snapshot = Empty;             // 派发快照：只在变更后重建，派发过程零分配
+        private Listener[] snapshot = Empty;             // 派发快照：只在变更后重建，派发过程零分配
         private bool snapshotDirty = true;
         private int seqSeed;
+        private int generation;
 
         public PD_EventInfo(UnityAction<T> action, UnityEngine.Object owner, int priority)
         {
@@ -75,7 +77,7 @@ namespace UPandaGF
 
         public void AddAction(UnityAction<T> action, UnityEngine.Object owner, int priority)
         {
-            if (action == null) return;
+            if (action == null || (!ReferenceEquals(owner, null) && owner == null)) return;
             lock (lockObj)
             {
                 PurgeDeadOwners();
@@ -91,11 +93,11 @@ namespace UPandaGF
                 listeners.Add(new Listener
                 {
                     action = action,
-                    owner = owner != null ? new WeakReference<UnityEngine.Object>(owner) : null,
+                    owner = !ReferenceEquals(owner, null) ? new WeakReference<UnityEngine.Object>(owner) : null,
                     priority = priority,
                     seq = seqSeed++
                 });
-                snapshotDirty = true;
+                snapshotDirty = true; snapshot = Empty;
             }
         }
 
@@ -108,36 +110,42 @@ namespace UPandaGF
                 {
                     if (listeners[i].action != action) continue;
                     listeners.RemoveAt(i);
-                    snapshotDirty = true;
+                    snapshotDirty = true; snapshot = Empty;
                     return;   // 与原实现一致：一次只移除一个
                 }
             }
         }
 
-        /// <summary>派发：快照 + 锁外调用 + 单个监听者异常隔离</summary>
+        public void Clear()
+        {
+            lock (lockObj) { generation++; listeners.Clear(); snapshot = Empty; snapshotDirty = false; }
+        }
+        private static bool Alive(Listener listener)
+        {
+            return listener.owner == null || (listener.owner.TryGetTarget(out UnityEngine.Object owner) && owner != null);
+        }
+        /// <summary>普通增删遵循本轮快照；owner 销毁和 Clear 则立即使旧记录失效。</summary>
         public void Invoke(T arg)
         {
-            UnityAction<T>[] callbacks;
+            Listener[] callbacks;
+            int epoch;
             lock (lockObj)
             {
                 PurgeDeadOwners();
                 if (snapshotDirty) RebuildSnapshot();
-                callbacks = snapshot;
+                callbacks = snapshot; epoch = generation;
             }
-
-            if (callbacks == null || callbacks.Length == 0) return;
-
-            for (int i = 0; i < callbacks.Length; i++)
+            try
             {
-                try
+                for (int i = 0; i < callbacks.Length; i++)
                 {
-                    callbacks[i].Invoke(arg);
-                }
-                catch (Exception e)
-                {
-                    PLogger.LogError($"[EventCenter] 事件 {typeof(T).Name} 的监听者 {callbacks[i].Method.Name} 抛出异常（已隔离，其余监听者不受影响）：{e}");
+                    lock (lockObj) { if (epoch != generation) break; if (!Alive(callbacks[i])) continue; }
+                    try { callbacks[i].action.Invoke(arg); }
+                    catch (Exception e)
+                    { PLogger.LogError($"[EventCenter] 事件 {typeof(T).Name} 的监听者 {callbacks[i].action.Method.Name} 抛出异常（已隔离，其余监听者不受影响）：{e}"); }
                 }
             }
+            finally { lock (lockObj) { PurgeDeadOwners(); } }
         }
 
         public List<EventListenerInfo> GetListenerInfos()
@@ -174,8 +182,7 @@ namespace UPandaGF
             List<Listener> ordered = new List<Listener>(listeners);
             ordered.Sort((a, b) => a.priority != b.priority ? b.priority.CompareTo(a.priority) : a.seq.CompareTo(b.seq));
 
-            UnityAction<T>[] result = new UnityAction<T>[ordered.Count];
-            for (int i = 0; i < ordered.Count; i++) result[i] = ordered[i].action;
+            Listener[] result = ordered.ToArray();
             snapshot = result;
         }
 
@@ -188,7 +195,7 @@ namespace UPandaGF
                 if (owner == null) continue;
                 if (owner.TryGetTarget(out UnityEngine.Object target) && target != null) continue;
                 listeners.RemoveAt(i);
-                snapshotDirty = true;
+                snapshotDirty = true; snapshot = Empty;
             }
         }
     }
@@ -252,10 +259,12 @@ namespace UPandaGF
         public void AddEventListenerOnce<T>(UnityAction<T> action) where T : EventArgBase
         {
             if (action == null) return;
+            int invoked = 0;
             UnityAction<T> wrapper = null;
             wrapper = arg =>
             {
-                RemoveEventListener<T>(wrapper);   // 先注销再回调，保证「只收一次」
+                if (System.Threading.Interlocked.Exchange(ref invoked, 1) != 0) return;
+                RemoveEventListener<T>(wrapper);   // 递归派发的旧快照也不能重复执行
                 action(arg);
             };
             AddEventListener(wrapper, 0, null);
@@ -263,7 +272,7 @@ namespace UPandaGF
 
         private void AddEventListener<T>(UnityAction<T> action, int priority, UnityEngine.Object owner) where T : EventArgBase
         {
-            if (action == null) return;
+            if (action == null || (!ReferenceEquals(owner, null) && owner == null)) return;
             Type id = typeof(T);
             lock (lockObj)
             {
@@ -380,6 +389,7 @@ namespace UPandaGF
         {
             lock (lockObj)
             {
+                foreach (var entry in eventDic.Values) if (entry is IPDEventInfo info) info.Clear();
                 eventDic.Clear();
                 dispatchCounts.Clear();
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -352,6 +352,7 @@ public partial class Reporter : MonoBehaviour
         showMemButton = Pref("showMemButton", true); showFpsButton = Pref("showFpsButton", true);
         showSearchText = Pref("showSearchText", true); showCopyButton = Pref("showCopyButton", true); showSaveButton = Pref("showSaveButton", true);
         filterText = PlayerPrefs.GetString("Reporter_filterText", "");
+        panelOpacity = Mathf.Clamp(PlayerPrefs.GetFloat("Reporter_opacity", 1f), .2f, 1f);
         float scale = Mathf.Clamp(PlayerPrefs.GetFloat("Reporter_size", size.x), 16, 64);
         size = new Vector2(scale, scale);
     }
@@ -366,6 +367,7 @@ public partial class Reporter : MonoBehaviour
         SavePref("showTimeButton", showTimeButton); SavePref("showSceneButton", showSceneButton); SavePref("showMemButton", showMemButton); SavePref("showFpsButton", showFpsButton);
         SavePref("showSearchText", showSearchText); SavePref("showCopyButton", showCopyButton); SavePref("showSaveButton", showSaveButton);
         PlayerPrefs.SetString("Reporter_filterText", filterText); PlayerPrefs.SetFloat("Reporter_size", size.x);
+        PlayerPrefs.SetFloat("Reporter_opacity", panelOpacity);
         PlayerPrefs.Save();
     }
     private static void SavePref(string name, bool value) { PlayerPrefs.SetInt("Reporter_" + name, value ? 1 : 0); }

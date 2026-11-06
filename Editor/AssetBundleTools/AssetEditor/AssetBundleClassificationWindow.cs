@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UPandaGF;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System;
 using System.Threading;
@@ -468,29 +467,10 @@ namespace AssetBundleBrowser
 
         public void Save(object obj)
         {
-            string SAVE_PATH = Application.streamingAssetsPath + assetRefSavePath;
-            //先判断路径文件夹有没有
-            if (!Directory.Exists(SAVE_PATH))
-            {
-                Directory.CreateDirectory(SAVE_PATH);
-            }
-
-            //可以对数据再做些操作，比如进行加密
-            using (MemoryStream ms = new MemoryStream())
-            {
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(ms, obj);
-                byte[] bytes = ms.GetBuffer();
-                //ToDo:..在这里可以做一些加密的工作
-                //string AESKEY = "111a222aaabbbccc";
-                //string AESIV = "111b222aaabbbccc";
-                if (config.enable)
-                    bytes = AESEncryption.AESEncrypt(bytes, config.AESKEY, config.AESIV);
-
-                File.WriteAllBytes(SAVE_PATH + assetRefName + assetRefextension, bytes);
-                ms.Close();
-            }
-            Debug.Log("资源数据已保存至：" + SAVE_PATH + assetRefName + assetRefextension);
+            var data = obj as ABSourcesRelated;
+            if (data == null) throw new ArgumentException("只能保存 AB 资源清单", nameof(obj));
+            AssetReferenceSerializer.SaveFile(AssetDataFullPath, data, config);
+            Debug.Log("资源数据已保存至：" + AssetDataFullPath);
         }
 
         /// <summary>
@@ -568,17 +548,9 @@ namespace AssetBundleBrowser
 
         private ABSourcesRelated LoadABSourcesRelated(byte[] bytes)
         {
-            ABSourcesRelated obj = null;
-            if (config.enable)
-                bytes = AESEncryption.AESDecrypt(bytes, config.AESKEY, config.AESIV);
-            using (MemoryStream ms = new MemoryStream(bytes))
-            {
-                BinaryFormatter bf = new BinaryFormatter();
-                obj = bf.Deserialize(ms) as ABSourcesRelated;
-                ms.Close();
-            }
-            return obj;
+            return AssetReferenceSerializer.Decode(bytes, config);
         }
+
         #endregion
 
 

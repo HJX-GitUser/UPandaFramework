@@ -47,6 +47,9 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
     private ListenerList lateUpdateListeners;
 
     private List<CoroutineJob> runningJobs = new List<CoroutineJob>();
+    private readonly List<CoroutineJob> processingJobs = new List<CoroutineJob>();
+    private bool processing, destroyed;
+    private int cancellationDepth;
 
     #endregion
 
@@ -91,6 +94,7 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
 
     protected override void OnDestroyed()
     {
+        destroyed = true;
         CancelAllJobs("PublicMono 被销毁");
         ClearAllListeners();
         base.OnDestroyed();
@@ -267,172 +271,133 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
     /// <summary>启动协程：同时支持超时与取消</summary>
     public Task RunCoroutine(IEnumerator routine, float timeoutSeconds, CancellationToken cancellationToken)
     {
-        if (routine == null)
-        {
-            Debug.LogError("[PublicMono] RunCoroutine 收到 null 协程");
-            return Task.FromException(new ArgumentNullException("routine"));
-        }
-
+        if (routine == null) return Task.FromException(new ArgumentNullException(nameof(routine)));
+        if (destroyed || this == null || cancellationDepth > 0 || !isActiveAndEnabled || cancellationToken.IsCancellationRequested)
+            return Task.FromCanceled(new CancellationToken(true));
         EnsureInitialized();
-
-        CoroutineJob job = new CoroutineJob
-        {
-            routine = routine,
-            timeoutSeconds = timeoutSeconds,
-        };
-        // 续体保持"同线程同步执行"（默认），这样 await 之后的代码仍在主线程上跑 Unity API
-        job.completion = new TaskCompletionSource<bool>();
-
+        var job = new CoroutineJob { timeoutSeconds = timeoutSeconds };
+        job.routines.Push(routine);
         if (timeoutSeconds > 0f) job.deadline = Time.realtimeSinceStartup + timeoutSeconds;
-
         if (cancellationToken.CanBeCanceled)
         {
             job.tokenRegistration = cancellationToken.Register(() => job.cancelRequested = true);
             job.hasTokenRegistration = true;
         }
-
+        // StartCoroutine 会立即执行首次 MoveNext；必须先登记，才能覆盖首次迭代里的停用/取消。
+        runningJobs.Add(job);
         try
         {
             job.handle = StartCoroutine(RunCoroutineTracked(job));
+            if (job.finished) job.handle = null;
+            else if (job.handle == null) FinishJob(job, JobEnd.Canceled);
         }
-        catch (Exception e)
-        {
-            // 宿主未激活 / 已销毁时 StartCoroutine 会抛异常，同样要保证 Task 有结果
-            Debug.LogError($"[PublicMono] 协程启动失败：{e.Message}");
-            job.completion.TrySetException(e);
-            if (job.hasTokenRegistration) job.tokenRegistration.Dispose();
-            return job.completion.Task;
-        }
-
-        // 兜底：万一协程在同一帧内就跑完了（FinishJob 里会移除自己），不要再塞回列表
-        if (!job.finished) runningJobs.Add(job);
+        catch (Exception e) { FinishJob(job, JobEnd.Faulted, e); }
         return job.completion.Task;
     }
 
-    /// <summary>
-    /// 托管协程的实际协程体：无论正常结束还是抛异常，都保证 Task 拿到结果。
-    /// <para>⚠ C# 不允许把 <c>yield return</c> 写进"带 catch 的 try"里（CS1626），
-    /// 所以这里手动迭代目标协程：只把 MoveNext() 包进 try，yield 放在 try 外面。
-    /// 顺带的好处是目标协程内部的异常能在这里被真正捕获、回传给 Task。</para>
-    /// </summary>
+    /// <summary>PublicMono 类型上的停止入口同步结束托管任务；基类引用的原始停止 API 不经过此入口。</summary>
+    public new void StopAllCoroutines()
+    {
+        cancellationDepth++;
+        try { CancelAllJobs("StopAllCoroutines"); base.StopAllCoroutines(); }
+        finally { cancellationDepth--; }
+    }
+
     private IEnumerator RunCoroutineTracked(CoroutineJob job)
     {
-        while (true)
+        while (!job.finished)
         {
-            bool hasNext;
-            object current = null;
-
-            try
-            {
-                hasNext = job.routine.MoveNext();
-                if (hasNext) current = job.routine.Current;
-            }
-            catch (Exception e)
-            {
-                FinishJob(job, JobEnd.Faulted, e);
-                yield break;
-            }
-
+            if (job.cancelRequested) { FinishJob(job, JobEnd.Canceled); yield break; }
+            var iterator = job.routines.Peek();
+            bool hasNext = false; object current = null; Exception failure = null;
+            job.executing = true;
+            try { hasNext = iterator.MoveNext(); if (hasNext) current = iterator.Current; }
+            catch (Exception e) { failure = e; }
+            finally { job.executing = false; }
+            // MoveNext 内的 OnDisable 已标记终态；等迭代器退出执行态后再 Dispose 和通知等待者。
+            if (job.finished) { FinalizeJob(job); yield break; }
+            if (failure != null) { FinishJob(job, JobEnd.Faulted, failure); yield break; }
+            if (job.cancelRequested) { FinishJob(job, JobEnd.Canceled); yield break; }
             if (!hasNext)
             {
-                FinishJob(job, JobEnd.Completed);
-                yield break;
+                job.routines.Pop();
+                try { (iterator as IDisposable)?.Dispose(); } catch (Exception e) { failure = e; }
+                if (failure != null) { FinishJob(job, JobEnd.Faulted, failure); yield break; }
+                if (job.routines.Count == 0) { FinishJob(job, JobEnd.Completed); yield break; }
+                continue;
             }
-
+            // Unity 直接执行 yield 出去的 IEnumerator 时，外层无法捕获其异常；由同一驱动接管嵌套栈。
+            if (current is IEnumerator nested)
+            {
+                if (job.routines.Contains(nested))
+                { FinishJob(job, JobEnd.Faulted, new InvalidOperationException("协程不能递归 yield 自己的迭代器")); yield break; }
+                job.routines.Push(nested); continue;
+            }
             yield return current;
         }
     }
-
-    /// <summary>每帧处理超时与取消请求（由 Update 驱动，保证只会在主线程执行）</summary>
     private void ProcessCoroutineJobs()
     {
-        if (runningJobs == null || runningJobs.Count == 0) return;
-
-        float now = Time.realtimeSinceStartup;
-
-        for (int i = runningJobs.Count - 1; i >= 0; i--)
+        if (processing || runningJobs == null || runningJobs.Count == 0) return;
+        processing = true; processingJobs.Clear(); processingJobs.AddRange(runningJobs);
+        try
         {
-            CoroutineJob job = runningJobs[i];
-            if (job == null || job.finished) continue;
-
-            if (job.cancelRequested)
+            float now = Time.realtimeSinceStartup;
+            foreach (var job in processingJobs)
             {
-                FinishJob(job, JobEnd.Canceled);
-                continue;
-            }
-
-            if (job.deadline > 0f && now >= job.deadline)
-            {
-                FinishJob(job, JobEnd.TimedOut);
+                if (job.finished) continue;
+                if (job.cancelRequested) FinishJob(job, JobEnd.Canceled);
+                else if (job.deadline > 0 && now >= job.deadline) FinishJob(job, JobEnd.TimedOut);
             }
         }
+        finally { processingJobs.Clear(); processing = false; }
     }
-
-    private enum JobEnd
-    {
-        Completed,
-        Faulted,
-        Canceled,
-        TimedOut,
-    }
-
-    /// <summary>
-    /// 结束一个协程任务：停止协程、移出待处理列表、给 Task 一个确定的结果。
-    /// <para>顺序很重要：先置 finished（防重入），再移除，最后才 Set 结果
-    /// （Set 可能同步内联执行调用方的续体，续体里若再操作本表必须看到一致状态）。</para>
-    /// </summary>
+    private enum JobEnd { Completed, Faulted, Canceled, TimedOut }
     private void FinishJob(CoroutineJob job, JobEnd end, Exception exception = null)
     {
         if (job == null || job.finished) return;
-
-        job.finished = true;
-
-        if (runningJobs != null) runningJobs.Remove(job);
-        if (job.hasTokenRegistration)
+        job.finished = true; job.end = end; job.exception = exception;
+        runningJobs.Remove(job);
+        if (job.hasTokenRegistration) { job.tokenRegistration.Dispose(); job.hasTokenRegistration = false; }
+        FinalizeJob(job);
+    }
+    private void FinalizeJob(CoroutineJob job)
+    {
+        if (job.executing || job.finalized) return;
+        job.finalized = true;
+        if (job.handle != null) { StopCoroutine(job.handle); job.handle = null; }
+        while (job.routines.Count > 0)
         {
-            job.tokenRegistration.Dispose();
-            job.hasTokenRegistration = false;
+            var iterator = job.routines.Pop();
+            try { (iterator as IDisposable)?.Dispose(); }
+            catch (Exception e)
+            {
+                if (job.end == JobEnd.Completed) { job.end = JobEnd.Faulted; job.exception = e; }
+                else Debug.LogException(e);
+            }
         }
-
-        if (job.handle != null)
+        switch (job.end)
         {
-            StopCoroutine(job.handle);
-            job.handle = null;
-        }
-
-        switch (end)
-        {
-            case JobEnd.Completed:
-                job.completion.TrySetResult(true);
-                break;
-
+            case JobEnd.Completed: job.completion.TrySetResult(true); break;
             case JobEnd.Faulted:
-                Debug.LogError($"[PublicMono] 协程内部抛异常：{exception}");
-                job.completion.TrySetException(exception);
-                break;
-
-            case JobEnd.Canceled:
-                Debug.LogWarning("[PublicMono] 协程被取消（宿主停用/销毁或外部取消）");
-                job.completion.TrySetCanceled();
-                break;
-
+                Debug.LogError("[PublicMono] 协程内部抛异常：" + job.exception);
+                job.completion.TrySetException(job.exception); break;
+            case JobEnd.Canceled: job.completion.TrySetCanceled(); break;
             case JobEnd.TimedOut:
-                TimeoutException timeout = new TimeoutException($"[PublicMono] 协程超时（{job.timeoutSeconds} 秒）");
-                Debug.LogError(timeout.Message);
-                job.completion.TrySetException(timeout);
-                break;
+                var timeout = new TimeoutException($"[PublicMono] 协程超时（{job.timeoutSeconds} 秒）");
+                Debug.LogError(timeout.Message); job.completion.TrySetException(timeout); break;
         }
     }
-
     private void CancelAllJobs(string reason)
     {
         if (runningJobs == null || runningJobs.Count == 0) return;
-
-        Debug.LogWarning($"[PublicMono] 取消 {runningJobs.Count} 个未完成的托管协程：{reason}");
-        for (int i = runningJobs.Count - 1; i >= 0; i--)
+        cancellationDepth++;
+        try
         {
-            FinishJob(runningJobs[i], JobEnd.Canceled);
+            var canceled = runningJobs.ToArray();
+            foreach (var job in canceled) FinishJob(job, JobEnd.Canceled);
         }
+        finally { cancellationDepth--; }
     }
 
     #endregion
@@ -442,15 +407,16 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
     /// <summary>一次托管协程的状态</summary>
     private sealed class CoroutineJob
     {
-        public IEnumerator routine;
-        public TaskCompletionSource<bool> completion;
+        public readonly Stack<IEnumerator> routines = new Stack<IEnumerator>();
+        public readonly TaskCompletionSource<bool> completion = new TaskCompletionSource<bool>();
         public Coroutine handle;
         public CancellationTokenRegistration tokenRegistration;
-        public bool hasTokenRegistration;   // CancellationTokenRegistration 是 struct，用独立标志表示它是否有效
-        public float timeoutSeconds;
-        public float deadline;              // 0 = 不限时（Time.realtimeSinceStartup 基准）
-        public bool cancelRequested;        // 取消令牌回调只置标志，实际停止在主线程的 Update 里做
-        public bool finished;
+        public bool hasTokenRegistration;
+        public float timeoutSeconds, deadline;
+        public volatile bool cancelRequested;
+        public bool finished, executing, finalized;
+        public JobEnd end;
+        public Exception exception;
     }
 
     /// <summary>一条帧监听记录</summary>
@@ -471,7 +437,7 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
     {
         private readonly string channelName;
         private readonly List<ListenerEntry> entries = new List<ListenerEntry>();
-        private bool dispatching;
+        private int dispatchDepth;
         private bool needCompact;
 
         public ListenerList(string channelName)
@@ -508,9 +474,9 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
 
             for (int i = 0; i < entries.Count; i++)
             {
-                if (entries[i].action != action) continue;
+                if (entries[i].removed || entries[i].action != action) continue;
 
-                if (dispatching)
+                if (dispatchDepth > 0)
                 {
                     // 派发中不能直接 RemoveAt（会打乱下标）：先标记，派发结束再压缩
                     entries[i].removed = true;
@@ -527,7 +493,7 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
 
         public void Clear()
         {
-            if (dispatching)
+            if (dispatchDepth > 0)
             {
                 for (int i = 0; i < entries.Count; i++) entries[i].removed = true;
                 needCompact = true;
@@ -543,7 +509,7 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
         {
             if (entries.Count == 0) return;
 
-            dispatching = true;
+            dispatchDepth++;
             try
             {
                 // 用派发开始时的数量做上界：监听器里新注册的回调不会在本帧被立刻调用
@@ -575,8 +541,8 @@ public class PublicMono : EagerMonoSingletonBase<PublicMono>
             }
             finally
             {
-                dispatching = false;
-                if (needCompact) Compact();
+                dispatchDepth--;
+                if (needCompact && dispatchDepth == 0) Compact();
             }
         }
 

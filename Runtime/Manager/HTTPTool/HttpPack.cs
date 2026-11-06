@@ -48,7 +48,7 @@ public abstract class HttpPack
     public int AttemptCount { get; set; }
 
     /// <summary>本次请求的请求头（发送时会与全局请求头合并，同名单次优先）</summary>
-    public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
+    public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>底层请求对象：由 CreateWebRequest 创建，重试时会重建，请求结束后置空</summary>
     public UnityWebRequest WebRequest { get; set; }
@@ -56,7 +56,29 @@ public abstract class HttpPack
     /// <summary>是否已被取消；取消后不再回调、不再重试</summary>
     public bool IsCanceled { get; private set; }
 
-    /// <summary>失败回调（仅在重试次数耗尽后触发一次，参数为错误信息）</summary>
+    /// <summary>客户端已结束本请求（成功、失败或取消）；不允许再次提交同一数据包。</summary>
+    public bool IsCompleted { get; private set; }
+    internal bool IsSubmitted { get; private set; }
+    internal float NextAttemptAt;
+    internal bool TrySubmit()
+    {
+        if (IsSubmitted || IsCanceled || IsCompleted) return false;
+        IsSubmitted = true; return true;
+    }
+    internal void MarkCompleted() { IsCompleted = true; }
+    internal void NotifyFailure(string error) { InvokeSafely(OnFailure, callback => callback(error)); }
+    internal void NotifyRetry(int remaining, string error) { InvokeSafely(OnRetry, callback => callback(remaining, error)); }
+    protected void InvokeSafely<TDelegate>(TDelegate callbacks, Action<TDelegate> invoke) where TDelegate : Delegate
+    {
+        if (callbacks == null) return;
+        foreach (var callback in callbacks.GetInvocationList())
+        {
+            if (IsCanceled) break;
+            try { invoke((TDelegate)callback); } catch (Exception e) { Debug.LogException(e); }
+        }
+    }
+
+    /// <summary>最终失败回调（网络重试耗尽、创建或解析失败；参数为错误信息）</summary>
     public Action<string> OnFailure { get; set; }
 
     /// <summary>下载进度回调（0~1）；仅当设置了该回调时才会逐帧轮询，不影响无回调时的性能</summary>
@@ -123,7 +145,7 @@ public abstract class HttpPack
     /// </summary>
     public void Cancel()
     {
-        if (IsCanceled) return;
+        if (IsCanceled || IsCompleted) return;
 
         IsCanceled = true;
 
@@ -142,16 +164,9 @@ public abstract class HttpPack
     /// <summary>上报当前下载进度（0~1）；回调内抛异常不会影响请求流程</summary>
     public void ReportProgress()
     {
-        if (OnProgress == null || WebRequest == null) return;
-
-        try
-        {
-            OnProgress(WebRequest.downloadProgress);
-        }
-        catch (Exception e)
-        {
-            PLogger.LogError($"[HttpPack] 进度回调异常：{e.Message}");
-        }
+        if (OnProgress == null || WebRequest == null || IsCanceled) return;
+        float value = WebRequest.downloadProgress;
+        InvokeSafely(OnProgress, callback => callback(value));
     }
 
     /// <summary>处理服务器响应（子类实现：解析响应体并回调）</summary>
@@ -160,8 +175,8 @@ public abstract class HttpPack
     /// <summary>取请求体字节：BodyRaw 优先，其次 UTF-8 编码的 Parameters；GET 无请求体</summary>
     private byte[] GetBodyBytes()
     {
-        if (BodyRaw != null && BodyRaw.Length > 0) return BodyRaw;
         if (Type == HttpRequestType.Get) return null;
+        if (BodyRaw != null && BodyRaw.Length > 0) return BodyRaw;
         if (string.IsNullOrEmpty(Parameters)) return null;
 
         return Encoding.UTF8.GetBytes(Parameters);
@@ -199,27 +214,17 @@ public class GenericHttpPack<T> : HttpPack where T : class
     {
         int code = (int)WebRequest.responseCode;
         string text = WebRequest.downloadHandler != null ? WebRequest.downloadHandler.text : null;
-
-        if (typeof(T) == typeof(string))
+        T data;
+        if (typeof(T) == typeof(string)) data = text as T;
+        else
         {
-            OnSuccess?.Invoke(text as T, code);
-            return;
+            if (string.IsNullOrEmpty(text))
+            { NotifyFailure($"HTTP Response Empty. URL: {Url}, Code: {code}, 无法反序列化为 {typeof(T).Name}"); return; }
+            try { data = JsonUtility.FromJson<T>(text); }
+            catch (Exception e)
+            { NotifyFailure($"JSON Parse Error. URL: {Url}, Code: {code}, Message: {e.Message}"); return; }
         }
-
-        if (string.IsNullOrEmpty(text))
-        {
-            OnFailure?.Invoke($"HTTP Response Empty. URL: {Url}, Code: {code}, 无法反序列化为 {typeof(T).Name}");
-            return;
-        }
-
-        try
-        {
-            T data = JsonUtility.FromJson<T>(text);
-            OnSuccess?.Invoke(data, code);
-        }
-        catch (Exception e)
-        {
-            OnFailure?.Invoke($"JSON Parse Error. URL: {Url}, Code: {code}, Message: {e.Message}");
-        }
+        // 解析与业务异常分别处理：成功回调抛异常不能再转成失败回调。
+        InvokeSafely(OnSuccess, callback => callback(data, code));
     }
 }

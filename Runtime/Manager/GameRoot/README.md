@@ -163,3 +163,9 @@ Inspector 顶部是「UPGameRoot」，底部是配置文件的路径提示 + 三
 - 新增"初始化阶段"的子系统时，接入 `Init()` 并且失败要能被 `InitAsync` 捕获（保证一定会广播完成或失败事件）。
 - 改动后请用工程外的真实编译校验（`get_errors` 在 Unity 工程里可能是假阴性）：用 `.csproj` 的 `<HintPath>` 作 `/r:`、`<DefineConstants>` 作 `/define:`，`dotnet <sdk>\Roslyn\bincore\csc.dll @"rsp"`。**编辑器程序集要引用刚编译出的 Runtime 程序集**，不能用 `Library/ScriptAssemblies/` 里的旧产物（否则改名/新增成员会报假的 CS1061）。
 - 新增 / 改名配置字段时，要同步三处：① `UPGameRootConfig` 字段；② `UPGameRootEditor` 里的 `ShowArg("config.xxx", …)` 字符串（写错会在面板上报“字段不存在”而不是抛异常，很容易漏）；③ `Assets/StreamingAssets/Data/GameRootConfig.json` 默认值。
+
+## 序列化迁移补充（2026-11-06）
+
+清单生成与加载共用 AssetReferenceSerializer。新清单使用带类别/版本/类型/长度/SHA-256 的字段图，保留 Dictionary 和原加载位置；旧 NRBF 清单只读兼容，不再执行 BinaryFormatter.Deserialize。AES 配置仍需生成端/运行端配对。热更本地/远程清单读取增加 64 MiB 上限。
+
+新客户端兼容旧清单；旧客户端不兼容新清单，生成工具和发布渠道需安排对应版本。详见 `OptimzeLog/SerializationMigration/README.md`。

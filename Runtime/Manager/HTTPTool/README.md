@@ -4,10 +4,10 @@
 
 - 路径：`Assets/Scripts/upanda-framework/Runtime/Manager/HTTPTool/`
 - 依赖：仅 Unity 内置 API（`UnityEngine.Networking`），无第三方库
-- 编码：源码为 **GBK/ANSI**（与框架其它源码一致），如需修改请用 GBK 读写
+- 编码：C# 源码为 **UTF-8 BOM + CRLF**
 
-> **当前状态**：功能已完整可用（2026-09 修复并加固，见第 6 节），但项目内**暂无调用点** —— 首个接入方直接按第 5 节示例使用即可。
-> 源码为 **GBK** 编码，修改时请按 GBK 读写；本文件为 UTF-8。
+> **使用入口**：便捷请求与高级配置见第 5 节；2026-09 的历史修复保留在第 6 节。
+> 2026-11-06 联合生命周期修复已落地，当前行为以本文件末尾的补充约定为准。
 
 ---
 
@@ -76,12 +76,12 @@ sequenceDiagram
 | 创建请求 | `HttpPack.CreateWebRequest` | `new UnityWebRequest(url, verb)` + UTF-8 `UploadHandlerRaw` + `DownloadHandlerBuffer`；仅在有请求体且未显式指定时才补默认 `Content-Type`；**首次发送与每次重试都会调用** |
 | 入队 | `HttpClient.SendRequest` | 已取消的包直接丢弃；未创建的请求先创建 |
 | 出队 | `HttpClient.Update` | 在飞请求数 &lt; `MaxConcurrentRequests` 时逐个出队 |
-| 发起 | `HttpClient.TryStartRequest` | 普通方法内设置 `timeout` 并 `SendWebRequest()`，异常在此捕获并转入失败分支（不会跳过收尾） |
+| 发起 | `HttpClient.TryStart` | 普通方法内设置 `timeout` 并 `SendWebRequest()`，异常在此捕获并转入失败分支（不会跳过收尾） |
 | 进度 | `HttpClient.ProcessRequest` | 仅当设置了 `OnProgress` 时才逐帧轮询 `downloadProgress`；回调内抛异常不影响请求流程 |
-| 成功判定 | `HttpClient.IsRequestSuccess` | 2020.3+ 用 `Result.Success`；旧版本用 `!isHttpError && !isNetworkError` |
+| 成功判定 | `HttpClient.FinishAttempt` | 使用 `UnityWebRequest.Result.Success` |
 | 解析响应 | `GenericHttpPack<T>.HandleResponse` | `T == string` 返回响应原文；响应体为空、JSON 解析失败都会走 `OnFailure`（不向调用方抛异常） |
-| 失败处理 | `HttpClient.TryScheduleRetry` | 错误信息含 URL / 状态码 / `error` / 截断后的响应体；若还有重试次数则回调 `OnRetry` 并返回 `true`，用尽则**只回调一次** `OnFailure` |
-| 收尾 | `HttpClient.FinishRequest` | `try/catch/finally`：重试则重建请求并重新入队，否则 `Dispose`；被取消的请求静默结束（不触发任何回调）；最后复位并发计数 |
+| 失败处理 | `HttpClient.FinishAttempt` | 错误信息含 URL / 状态码 / `error` / 截断后的响应体；若还有重试次数则回调 `OnRetry` 并返回 `true`，用尽则**只回调一次** `OnFailure` |
+| 收尾 | `HttpClient.Complete / MarkCompleted` | 回调前提交终态与并发槽位；成功响应解析后释放原生请求。重试在下次实际发送前重建；取消静默结束 |
 
 ---
 
@@ -156,10 +156,10 @@ public bool Send<T>(GenericHttpPack<T> pack) where T : class;
 | `CancelAll()` | 清空队列并中断所有进行中的请求 |
 | `Update()` | 队列驱动：在飞数 &lt; 并发上限时逐个出队 |
 | `ProcessRequest(HttpPack)` | 协程：重试等待 → 发起 → 等待并上报进度 → 收尾 |
-| `TryStartRequest(...)` | 设置超时并 `SendWebRequest()`，异常在此捕获后转入失败分支 |
-| `FinishRequest(HttpPack)` | 收尾：成功/失败分流、重试重建、释放请求、复位计数（`try/catch/finally` 保证不泄漏） |
-| `IsRequestSuccess(...)` | 跨 Unity 版本的成功判定 |
-| `TryScheduleRetry(...)` | 重试决策（含错误信息组装） |
+| `TryStart(...)` | 必要时创建原生请求，检查取消状态，设置超时并发送；异常转入失败分支 |
+| `FinishAttempt(HttpPack)` | 判定响应、决定重试或终态，隔离业务回调 |
+| `MarkCompleted / Complete` | 提交终态、释放槽位及原生请求；成功解析期间保留响应句柄 |
+| `Valid(HttpPack)` | 检查宿主、取消状态与本客户端所有权 |
 
 ---
 
@@ -323,7 +323,20 @@ HttpManager.Instance.MaxConcurrentRequests = 3;
 
 ## 9. 维护提示
 
-- 本目录源码为 **GBK**，修改时请以 GBK 读写（否则中文注释会损坏）；本 README 为 UTF-8。
+- 本目录 C# 为 **UTF-8 BOM + CRLF**；本 README 为 UTF-8。
 - **新增请求方法**：在 `HttpManager` 里构造 `GenericHttpPack<T>` 并走 `SendInternal`，即可自动获得全局请求头 / 重试 / 取消 / 进度等全部能力。
 - **扩展二进制传输**：上传用 `HttpPack.BodyRaw`；下载则继承 `HttpPack` 并重写 `HandleResponse()`，读取 `WebRequest.downloadHandler.data`。
 - **排查问题**：`HttpClient` 会在重试与最终失败时输出 `PLogger` 日志，错误信息里含 URL、状态码、`error` 与响应体片段。
+
+## 2026-11-06 联合生命周期约定
+
+- 数据包只能提交一次，包括向不同客户端重复提交。HttpManager.Send 对重复、取消或已结束的数据包返回 false；重新请求应创建新包。
+- 新增 IsCompleted，只表示客户端已结束请求，不表示请求一定成功。成功/失败回调开始前已释放并发槽位并设置终态；回调中可安全发起新请求。
+- 请求级 Headers 优先于同名全局默认值，Headers 的键不区分大小写。重试前释放旧原生请求，下次真正发送时重建，重建失败也会结束请求并让队列继续。
+- 成功响应的解析异常与业务回调异常分开处理。成功回调抛异常只记录 Debug.LogException，不转成 OnFailure；成功、失败、重试与进度的多播委托逐个隔离异常。
+- RetryDelay 使用非缩放时间。OnRetry 内取消或销毁宿主后，不再创建旧请求；创建请求的扩展方法重入销毁宿主时也不重新入队。
+- CancelAll、停用或销毁 HttpClient 结束其排队、发送、重试等待请求并释放原生句柄。ClearQueue 只处理等待队列。停用后重新启用可提交新包；销毁后应获取新宿主。
+- 取消仍保持原合同：不触发 OnSuccess / OnFailure / OnRetry。不要仅用成功/失败回调包装一个没有取消处理的 Task；可结合 IsCanceled / IsCompleted 观察结束。
+- HttpClient 的原始 MonoBehaviour 协程 API 不属于公开请求控制接口；取消请求使用 pack.Cancel / CancelAll / ClearQueue。
+
+验证与证据见 `OptimzeLog/CoordinationAudit/README.md`。

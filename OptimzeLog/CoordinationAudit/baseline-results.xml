@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="22" result="Failed(Child)" total="22" passed="0" failed="22" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:39Z" duration="4.4580839">
+  <test-suite type="TestSuite" id="1000" name="LifecycleFixVerification" fullname="LifecycleFixVerification" runstate="Runnable" testcasecount="72" result="Failed" site="Child" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:39Z" duration="4.458084" total="22" passed="0" failed="22" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1078" name="UPandaGF.Tests.dll" fullname="D:/UnityProject/TestProject/Temp/LifecycleAuditProject/Library/ScriptAssemblies/UPandaGF.Tests.dll" runstate="Runnable" testcasecount="72" result="Failed" site="Child" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:39Z" duration="4.452129" total="22" passed="0" failed="22" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="54696" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestFixture" id="1002" name="CoordinationRegressionTests" fullname="CoordinationRegressionTests" classname="CoordinationRegressionTests" runstate="Runnable" testcasecount="22" result="Failed" site="Child" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:39Z" duration="4.449776" total="22" passed="0" failed="22" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1018" name="CancelDisposesNestedIteratorsAndRunsFinally" fullname="CoordinationRegressionTests.CancelDisposesNestedIteratorsAndRunsFinally" methodname="CancelDisposesNestedIteratorsAndRunsFinally" classname="CoordinationRegressionTests" runstate="Runnable" seed="1241843256" result="Failed" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:35Z" duration="0.054425" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<CancelDisposesNestedIteratorsAndRunsFinally>d__29.MoveNext () [0x000cd] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:187
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 协程被取消（宿主停用/销毁或外部取消）
+]]></output>
+        </test-case>
+        <test-case id="1016" name="ClearStopsRemainingEventBusBatch" fullname="CoordinationRegressionTests.ClearStopsRemainingEventBusBatch" methodname="ClearStopsRemainingEventBusBatch" classname="CoordinationRegressionTests" runstate="Runnable" seed="338970268" result="Failed" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:35Z" duration="0.007006" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: 0
+  But was:  1
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.ClearStopsRemainingEventBusBatch () [0x0005b] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:171
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1014" name="ClearStopsRemainingEventCenterBatch" fullname="CoordinationRegressionTests.ClearStopsRemainingEventCenterBatch" methodname="ClearStopsRemainingEventCenterBatch" classname="CoordinationRegressionTests" runstate="Runnable" seed="1240077502" result="Failed" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:35Z" duration="0.003535" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: 0
+  But was:  1
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.ClearStopsRemainingEventCenterBatch () [0x00058] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:160
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1005" name="DestroyCancelsQueuedAndRunningHttpRequests" fullname="CoordinationRegressionTests.DestroyCancelsQueuedAndRunningHttpRequests" methodname="DestroyCancelsQueuedAndRunningHttpRequests" classname="CoordinationRegressionTests" runstate="Runnable" seed="1867488376" result="Failed" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:35Z" duration="0.007124" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<DestroyCancelsQueuedAndRunningHttpRequests>d__15.MoveNext () [0x00118] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:78
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1013" name="DestroyedOwnerCannotBecomeAnOwnerlessSubscription" fullname="CoordinationRegressionTests.DestroyedOwnerCannotBecomeAnOwnerlessSubscription" methodname="DestroyedOwnerCannotBecomeAnOwnerlessSubscription" classname="CoordinationRegressionTests" runstate="Runnable" seed="1355649474" result="Failed" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:35Z" duration="0.001274" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: 0
+  But was:  1
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.DestroyedOwnerCannotBecomeAnOwnerlessSubscription () [0x00041] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:154
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1015" name="DestroyedUnityEventBusSubscriberIsRemoved" fullname="CoordinationRegressionTests.DestroyedUnityEventBusSubscriberIsRemoved" methodname="DestroyedUnityEventBusSubscriberIsRemoved" classname="CoordinationRegressionTests" runstate="Runnable" seed="911403187" result="Failed" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:35Z" duration="0.001348" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: 0
+  But was:  1
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.DestroyedUnityEventBusSubscriberIsRemoved () [0x0002e] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:166
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1022" name="DisableDuringFirstMoveCannotLeaveARegisteredJob" fullname="CoordinationRegressionTests.DisableDuringFirstMoveCannotLeaveARegisteredJob" methodname="DisableDuringFirstMoveCannotLeaveARegisteredJob" classname="CoordinationRegressionTests" runstate="Runnable" seed="1761382061" result="Failed" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:35Z" duration="0.302659" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Operation did not reach its expected terminal state
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<Until>d__7.MoveNext () [0x0005c] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:49
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 取消 1 个未完成的托管协程：PublicMono 被销毁
+[PublicMono] 协程被取消（宿主停用/销毁或外部取消）
+]]></output>
+        </test-case>
+        <test-case id="1020" name="InactiveHostRejectsCoroutineWithoutDanglingTask" fullname="CoordinationRegressionTests.InactiveHostRejectsCoroutineWithoutDanglingTask" methodname="InactiveHostRejectsCoroutineWithoutDanglingTask" classname="CoordinationRegressionTests" runstate="Runnable" seed="1608806637" result="Failed" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:35Z" duration="0.003796" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.InactiveHostRejectsCoroutineWithoutDanglingTask () [0x0002e] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:202
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+Coroutine couldn't be started because the the game object 'Coordination_PublicMono' is inactive!
+[PublicMono] 取消 1 个未完成的托管协程：PublicMono 被销毁
+[PublicMono] 协程被取消（宿主停用/销毁或外部取消）
+]]></output>
+        </test-case>
+        <test-case id="1023" name="InvalidSceneFaultsTaskInsteadOfHanging" fullname="CoordinationRegressionTests.InvalidSceneFaultsTaskInsteadOfHanging" methodname="InvalidSceneFaultsTaskInsteadOfHanging" classname="CoordinationRegressionTests" runstate="Runnable" seed="591592295" result="Failed" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:35Z" duration="0.306564" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Operation did not reach its expected terminal state
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<Until>d__7.MoveNext () [0x0005c] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:49
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+Scene 'coordination_missing_scene_ed72874a6ccd45ba98d772da06093582' couldn't be loaded because it has not been added to the build settings or the AssetBundle has not been loaded.
+To add a scene to the build settings use the menu File->Build Settings...
+NullReferenceException: Object reference not set to an instance of an object
+]]></output>
+        </test-case>
+        <test-case id="1017" name="NestedCoroutineFailureFaultsItsTask" fullname="CoordinationRegressionTests.NestedCoroutineFailureFaultsItsTask" methodname="NestedCoroutineFailureFaultsItsTask" classname="CoordinationRegressionTests" runstate="Runnable" seed="1192165607" result="Failed" start-time="2026-11-06 01:11:35Z" end-time="2026-11-06 01:11:36Z" duration="0.302589" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Operation did not reach its expected terminal state
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<Until>d__7.MoveNext () [0x0005c] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:49
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+InvalidOperationException: coordination nested failure
+[PublicMono] 取消 1 个未完成的托管协程：PublicMono 被停用或销毁
+[PublicMono] 协程被取消（宿主停用/销毁或外部取消）
+]]></output>
+        </test-case>
+        <test-case id="1011" name="OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation" fullname="CoordinationRegressionTests.OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation" methodname="OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation" classname="CoordinationRegressionTests" runstate="Runnable" seed="1621019740" result="Failed" start-time="2026-11-06 01:11:36Z" end-time="2026-11-06 01:11:36Z" duration="0.002018" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: 1
+  But was:  2
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation () [0x0005d] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:143
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1012" name="OwnerDestroyedEarlierInDispatchIsSkipped" fullname="CoordinationRegressionTests.OwnerDestroyedEarlierInDispatchIsSkipped" methodname="OwnerDestroyedEarlierInDispatchIsSkipped" classname="CoordinationRegressionTests" runstate="Runnable" seed="1481958777" result="Failed" start-time="2026-11-06 01:11:36Z" end-time="2026-11-06 01:11:36Z" duration="0.001385" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: 0
+  But was:  1
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.OwnerDestroyedEarlierInDispatchIsSkipped () [0x0006a] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:149
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1019" name="PreCanceledCoroutineDoesNotExecuteUserCode" fullname="CoordinationRegressionTests.PreCanceledCoroutineDoesNotExecuteUserCode" methodname="PreCanceledCoroutineDoesNotExecuteUserCode" classname="CoordinationRegressionTests" runstate="Runnable" seed="788824384" result="Failed" start-time="2026-11-06 01:11:36Z" end-time="2026-11-06 01:11:36Z" duration="0.002204" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 0
+  But was:  1
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<PreCanceledCoroutineDoesNotExecuteUserCode>d__31.MoveNext () [0x000cd] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:194
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 协程被取消（宿主停用/销毁或外部取消）
+]]></output>
+        </test-case>
+        <test-case id="1003" name="RequestHeadersOverrideGlobalDefaults" fullname="CoordinationRegressionTests.RequestHeadersOverrideGlobalDefaults" methodname="RequestHeadersOverrideGlobalDefaults" classname="CoordinationRegressionTests" runstate="Runnable" seed="1861934964" result="Failed" start-time="2026-11-06 01:11:36Z" end-time="2026-11-06 01:11:36Z" duration="0.003001" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected string length 5 but was 6. Strings differ at index 0.
+  Expected: "local"
+  But was:  "global"
+  -----------^
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.RequestHeadersOverrideGlobalDefaults () [0x00054] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:64
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1009" name="RetryCancellationDoesNotRecreateCanceledRequest" fullname="CoordinationRegressionTests.RetryCancellationDoesNotRecreateCanceledRequest" methodname="RetryCancellationDoesNotRecreateCanceledRequest" classname="CoordinationRegressionTests" runstate="Runnable" seed="341970470" result="Failed" start-time="2026-11-06 01:11:36Z" end-time="2026-11-06 01:11:36Z" duration="0.020002" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 1
+  But was:  2
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<RetryCancellationDoesNotRecreateCanceledRequest>d__19.MoveNext () [0x000dc] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:127
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[<###>  09:11:36.033  ThreadID:1
+[HttpClient] 请求失败，准备重试。URL: http://127.0.0.1:53090/fail, 剩余重试次数: 0, 原因: HTTP Request Failed. URL: http://127.0.0.1:53090/fail, Code: 503, Error: HTTP/1.1 503 Service Unavailable, Body: {"value":1}
+]]></output>
+        </test-case>
+        <test-case id="1008" name="RetryCreationFailureDoesNotBlockFollowingRequest" fullname="CoordinationRegressionTests.RetryCreationFailureDoesNotBlockFollowingRequest" methodname="RetryCreationFailureDoesNotBlockFollowingRequest" classname="CoordinationRegressionTests" runstate="Runnable" seed="133485532" result="Failed" start-time="2026-11-06 01:11:36Z" end-time="2026-11-06 01:11:38Z" duration="2.001917" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Operation did not reach its expected terminal state
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<Until>d__7.MoveNext () [0x0005c] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:49
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[<###>  09:11:36.041  ThreadID:1
+[HttpClient] 请求失败，准备重试。URL: http://127.0.0.1:53092/fail, 剩余重试次数: 0, 原因: HTTP Request Failed. URL: http://127.0.0.1:53092/fail, Code: 503, Error: HTTP/1.1 503 Service Unavailable, Body: {"value":1}
+InvalidOperationException: coordination retry create failure
+]]></output>
+        </test-case>
+        <test-case id="1010" name="RetryDelayUsesRealtimeWhenGameIsPaused" fullname="CoordinationRegressionTests.RetryDelayUsesRealtimeWhenGameIsPaused" methodname="RetryDelayUsesRealtimeWhenGameIsPaused" classname="CoordinationRegressionTests" runstate="Runnable" seed="1446982801" result="Failed" start-time="2026-11-06 01:11:38Z" end-time="2026-11-06 01:11:38Z" duration="0.802643" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[Expected log did not appear: [Error] Regex: 请求失败（重试已用尽）]]></message>
+          </failure>
+          <output><![CDATA[<###>  09:11:38.041  ThreadID:1
+[HttpClient] 请求失败，准备重试。URL: http://127.0.0.1:53095/fail, 剩余重试次数: 0, 原因: HTTP Request Failed. URL: http://127.0.0.1:53095/fail, Code: 503, Error: HTTP/1.1 503 Service Unavailable, Body: {"value":1}
+]]></output>
+        </test-case>
+        <test-case id="1004" name="SamePackCannotBeQueuedTwice" fullname="CoordinationRegressionTests.SamePackCannotBeQueuedTwice" methodname="SamePackCannotBeQueuedTwice" classname="CoordinationRegressionTests" runstate="Runnable" seed="306727172" result="Failed" start-time="2026-11-06 01:11:38Z" end-time="2026-11-06 01:11:38Z" duration="0.001397" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: 1
+  But was:  2
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests.SamePackCannotBeQueuedTwice () [0x00043] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:70
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1024" name="SceneWaiterCancelsWhenSchedulerIsDestroyed" fullname="CoordinationRegressionTests.SceneWaiterCancelsWhenSchedulerIsDestroyed" methodname="SceneWaiterCancelsWhenSchedulerIsDestroyed" classname="CoordinationRegressionTests" runstate="Runnable" seed="2135164562" result="Failed" start-time="2026-11-06 01:11:38Z" end-time="2026-11-06 01:11:39Z" duration="0.303860" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Operation did not reach its expected terminal state
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<Until>d__7.MoveNext () [0x0005c] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:49
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 创建 EventCenter 实例
+]]></output>
+        </test-case>
+        <test-case id="1021" name="StopAllCoroutinesAlsoCompletesManagedTasks" fullname="CoordinationRegressionTests.StopAllCoroutinesAlsoCompletesManagedTasks" methodname="StopAllCoroutinesAlsoCompletesManagedTasks" classname="CoordinationRegressionTests" runstate="Runnable" seed="387664392" result="Failed" start-time="2026-11-06 01:11:39Z" end-time="2026-11-06 01:11:39Z" duration="0.302614" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Operation did not reach its expected terminal state
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<Until>d__7.MoveNext () [0x0005c] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:49
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 取消 1 个未完成的托管协程：PublicMono 被停用或销毁
+[PublicMono] 协程被取消（宿主停用/销毁或外部取消）
+]]></output>
+        </test-case>
+        <test-case id="1006" name="SuccessCallbackExceptionDoesNotTriggerFailure" fullname="CoordinationRegressionTests.SuccessCallbackExceptionDoesNotTriggerFailure" methodname="SuccessCallbackExceptionDoesNotTriggerFailure" classname="CoordinationRegressionTests" runstate="Runnable" seed="366992376" result="Failed" start-time="2026-11-06 01:11:39Z" end-time="2026-11-06 01:11:39Z" duration="0.004360" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 0
+  But was:  1
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<SuccessCallbackExceptionDoesNotTriggerFailure>d__16.MoveNext () [0x0010e] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:93
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[<###>  09:11:39.452  ThreadID:1
+[HttpClient] 处理响应异常。URL: http://127.0.0.1:61648/ok, Message: System.InvalidOperationException: coordination success failure
+  at CoordinationRegressionTests+<>c__DisplayClass16_0.<SuccessCallbackExceptionDoesNotTriggerFailure>b__0 (System.String s, System.Int32 c) [0x00010] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:85 
+  at GenericHttpPack`1[T].HandleResponse () [0x00049] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Runtime\Manager\HTTPTool\HttpPack.cs:205 
+  at HttpClient.FinishRequest (HttpPack pack) [0x00035] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Runtime\Manager\HTTPTool\HttpClient.cs:173 
+]]></output>
+        </test-case>
+        <test-case id="1007" name="ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues" fullname="CoordinationRegressionTests.ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues" methodname="ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues" classname="CoordinationRegressionTests" runstate="Runnable" seed="2022573428" result="Failed" start-time="2026-11-06 01:11:39Z" end-time="2026-11-06 01:11:39Z" duration="0.004824" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Expected: 1
+  But was:  2
+]]></message>
+            <stack-trace><![CDATA[at CoordinationRegressionTests+<ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues>d__17.MoveNext () [0x00103] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:107
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[<###>  09:11:39.455  ThreadID:1
+[HttpClient] 请求失败（重试已用尽）。URL: http://127.0.0.1:60668/fail, 原因: HTTP Request Failed. URL: http://127.0.0.1:60668/fail, Code: 503, Error: HTTP/1.1 503 Service Unavailable, Body: {"value":1}
+<###>  09:11:39.455  ThreadID:1
+[HttpClient] 处理响应异常。URL: http://127.0.0.1:60668/fail, Message: System.InvalidOperationException: coordination failure callback
+  at CoordinationRegressionTests+<>c__DisplayClass17_0.<ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues>b__0 (System.String e) [0x00010] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:98 
+  at HttpClient.TryScheduleRetry (HttpPack pack) [0x0007b] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Runtime\Manager\HTTPTool\HttpClient.cs:235 
+  at HttpClient.FinishRequest (HttpPack pack) [0x0003d] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\upanda-framework\Runtime\Manager\HTTPTool\HttpClient.cs:177 
+InvalidOperationException: coordination failure callback
+]]></output>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

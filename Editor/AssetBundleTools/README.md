@@ -130,7 +130,7 @@ flowchart TB
 3. **主包未构建时不写清单**：直接报错返回，避免用一份空清单覆盖上一次可用的 `assetData.assetref`（必须先 `Build All` 或右键构建）；
 4. 遍历 `AssetDatabase.GetAllAssetPaths()`（排除 `Assets/Plugins` 与 `.cs`），把每个被分配到**已构建**包里的资源登记为 `资源路径 -> {包名, 资源名}`；所属包未构建的资源同样跳过（否则运行时 `GetABLoadPath` 会因查不到包信息抛 `KeyNotFoundException`）；
 5. 与上一次清单比对，控制台打印「已更改 / 新增 / 已被移除」（未构建的包会被当作"已被移除"，属预期）；
-6. 序列化 → 可选 AES 加密 → 写入 `Assets/StreamingAssets/Data/assetData.assetref`。
+6. 结构验证 → 版本化字段图 → 可选 AES 加密 → 保留旧原文备份并可恢复提交至 `Assets/StreamingAssets/Data/assetData.assetref`。
 
 ### 3.5 上传（UpLoadAB 页签）
 
@@ -163,7 +163,7 @@ public class AssetRelatedArg    { string bundleName; string sourceName; }   // s
 public enum ABLoadPath { StreamingAssetsPath, PersistentDataPath, RemotePath }
 ```
 
-> 清单是 `BinaryFormatter` 序列化的产物（内含 `Dictionary`，无法直接用 `JsonUtility`），可再经 AES 加密。更换格式必须 Editor 写入端与运行时读取端同步迁移。
+> 清单由共享 AssetReferenceSerializer 编码，包含类别、版本、根类型、长度与 SHA-256，可再经 AES 加密。运行端兼容旧 NRBF 清单，旧运行端不兼容新产物；生成工具与客户端应配套升级。见 `OptimzeLog/SerializationMigration/README.md`。
 
 ### 4.2 磁盘 / 远端路径约定
 
@@ -282,7 +282,7 @@ flowchart TB
 | 1 | 包名本身含 `.` 时 Unity 无法区分"基础包名"与"变体名"（官方 AB Browser 有同样提示）；本工具按 Unity 规则取"最后一个 `/` 之后的短名里最后一个 `.`"之后作为变体 | 仅影响列表里的"变体"显示；包内资源 / 依赖统计与打包均不受影响（`GetAllAssetBundleNames()` 返回的就是含变体的全名，直接传给 `GetAssetPathsFromAssetBundle` 是正确用法） |
 | 2 | 未构建的包**不会**写入清单；主包未构建时本次「更新配置」不落盘 | 忘了打包时清单会缺包，运行时报"该资源不存在"；控制台会给告警，请先 `Build All` 再生成清单 |
 | 3 | **单包 / 含依赖构建会用只含这些包的 manifest 覆盖输出目录里的主包** | 其它包的依赖信息会丢；正式出包/上传前请用 `Build All` 全量打包再「更新配置」 |
-| 4 | 清单为 `BinaryFormatter` 序列化 | 换 JSON 需 Editor 端与运行时同步迁移（`sourcesDic` 含 `Dictionary`） |
+| 4 | 清单已迁移为版本化字段图 | 旧运行端无法读取新清单，发布时需配套客户端升级 |
 | 5 | `ClearAB()` 后必须重新 `Init` | 已一并清理 `manifest`，之后 `GetAssetBundle` 会以"主包未加载"报错，属预期行为 |
 | 6 | AES 配置实际有三处：`AssetBundleBuildConfig.json`（打包端）、`UPGameRoot.Config.AssetAESConfig`（场景）、`GameRootConfig.json`（**运行时真源**） | 工具能检测「打包端 vs 场景」是否一致并一键同步（见 3.3）；但启动时以 `GameRootConfig.json` 为准，同步后需在 UPGameRoot 面板再点一次「保存到 Json」，否则仍会按旧 Json 运行 |
 | 7 | 打包期间编辑器阻塞、没有真实进度 | `BuildPipeline` 是同步调用，只给"正在构建…"提示（不再假装有百分比） |
