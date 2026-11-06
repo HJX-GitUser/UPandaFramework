@@ -134,8 +134,11 @@ namespace UPandaGF
             else if (kind == 24)
             {
                 var dictionary = (IDictionary)value; Type key = type.GetGenericArguments()[0];
-                object comparer = type.GetProperty("Comparer").GetValue(value);
-                object normal = typeof(EqualityComparer<>).MakeGenericType(key).GetProperty("Default").GetValue(null);
+                var comparerProperty = type.GetProperty("Comparer");
+                var defaultProperty = typeof(EqualityComparer<>).MakeGenericType(key).GetProperty("Default");
+                if (comparerProperty == null || defaultProperty == null) throw new InvalidDataException("字典反射元数据缺失，请保留框架 Serialization/link.xml 并检查裁剪配置");
+                object comparer = comparerProperty.GetValue(value);
+                object normal = defaultProperty.GetValue(null);
                 byte comparison = 0;
                 if (!ReferenceEquals(comparer, normal))
                 {

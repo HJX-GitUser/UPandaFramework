@@ -42,6 +42,8 @@ namespace UPandaGF
         [Tooltip("等待一批下载完成的超时（秒）；<= 0 表示不超时")]
         public float downloadBatchTimeout = 300f;
 
+        public HotUpdateSettings hotUpdate = new HotUpdateSettings();
+
         [Tooltip("启用运行时日志窗口（Reporter），正式包建议关闭")]
         public bool EnableDebugModel = false;
 
@@ -83,7 +85,10 @@ namespace UPandaGF
         public static UPGameRootConfig FromJson(string json)
         {
             if (string.IsNullOrEmpty(json)) return null;
-            return JsonUtility.FromJson<UPGameRootConfig>(json);
+            var result = new UPGameRootConfig();
+            JsonUtility.FromJsonOverwrite(json, result);
+            if (result.hotUpdate == null) result.hotUpdate = new HotUpdateSettings();
+            return result;
         }
     }
 }

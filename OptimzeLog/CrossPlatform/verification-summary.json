@@ -1,0 +1,55 @@
+{
+  "unity": "2022.3.48f1c1",
+  "tests": {
+    "total": "248",
+    "passed": "248",
+    "failed": "0",
+    "skipped": "0"
+  },
+  "newTests": 18,
+  "windows": {
+    "backend": "IL2CPP",
+    "stripping": "High",
+    "build": "Succeeded",
+    "runtimeStepsPassed": 12
+  },
+  "webgl": {
+    "backend": "IL2CPP",
+    "stripping": "High",
+    "build": "Succeeded",
+    "browser": "Microsoft Edge headless / SwiftShader",
+    "runtimeStepsPassed": 12,
+    "reloadVerified": true
+  },
+  "android": {
+    "backend": "IL2CPP",
+    "stripping": "High",
+    "build": "Succeeded",
+    "architecture": "ARM64",
+    "minSdk": 23,
+    "targetSdk": 34,
+    "runtime": "Not tested; no device connected",
+    "apkBytes": 33296122
+  },
+  "ios": "Not built; no macOS/Xcode/iOS module",
+  "dotnet": "Succeeded, 0 errors; existing 7 warnings on full rebuild",
+  "sourceSHA256": {
+    "Runtime/Manager/AssetsMgr/AssetLocation.cs": "519f1f840bfec26e578825a3b0b31cdda18687ddd5e76e8c6a9b9c45d6a6c217",
+    "Runtime/Manager/AssetsMgr/PlatformStorage.cs": "eaae593151f513e85e5d4d67f3dbb87ac790ab51136100bb69d2010d6c568e1a",
+    "Runtime/Manager/AssetsMgr/PlatformTasks.cs": "e1afe64bc52dde7ab0881e867e1433c28eb9dbaad08b55e04d151a505140e81a",
+    "Runtime/Manager/AssetsMgr/StreamingAssetsLoadTool.cs": "fafa82f9b329a3ff9a14c4bc2cd6d30b1e8b4f496dc82c23dd3766e385e753a2",
+    "Runtime/Manager/AssetsMgr/AssetBundleMgr/ABLoadMgr.cs": "21b73ba01116547dfebff0773715631fa715533024d861ea49b1958569ca087b",
+    "Runtime/Manager/DebugSystem/PLogHelper.cs": "aa0cfd62a3eb8b3049489c1d01f442b6e947d323041e42423f44cf15c9265c5e",
+    "Runtime/Manager/DebugSystem/UGUIDebug/LogListenerManager.cs": "e620e3b6b93479cd12acc1f403eaa44173a5f4dd4ad7bca4af18b1905ca1e2e4",
+    "Runtime/Manager/Extend/GetComponentExtend.cs": "618f0d4e9fc4e34da5ff731e47051610e0c91298bbb356560636dff65d161530",
+    "Runtime/Manager/StorageDataMgr/Serialization/FieldGraphCodec.cs": "a260686cc8caa9feebb061622e135953db87b2e86079e119153082e5b1c3d91e",
+    "Runtime/Manager/StorageDataMgr/Serialization/link.xml": "5adf3c71fdd8f0aceaccdf3a0535c6a724805d3e3d8516e7d153583b78facfa0",
+    "Runtime/Manager/GameRoot/UPGameRoot.cs": "184efd229ca6f767e1958797ea96dc2a8df4cf1c375c02eebf34ac8c8e5b3a1e",
+    "Runtime/Manager/GameRoot/HotUpdate/HotUpdateStorage.cs": "93ca6467774a16be408c849c98acabe866f56679d45892ca962d4bc3ed2c97d7",
+    "Runtime/Manager/DownloadMgr/Downloader.cs": "e1bd88b6eb3eb7cc8cb61ae6466740c26fb869eccb72a4098f5031a575e9c509",
+    "Runtime/Manager/ObjPool/GameObjectPoolMgr.cs": "376f294742cfd04fe8f519c9758f4c4cd52f02d3381680ac9b43e16896f5bbb2",
+    "Runtime/Game/ReplaySystem/Runtime/FileManager.cs": "e9314b4a0458dc0e9721c7d92f57d36fd9c673561aadb3a0a9c75717b0a0e2e9",
+    "Runtime/Plugins/WebGL/UPandaStorage.jslib": "52bc89479968c75628e844f0c6a00bc28e95cff081c811c5e7c5ef341cf0842d",
+    "Tests/PlayMode/PlatformCompatibilityTests.cs": "b21c669ff0bd7005b2a77057bd89e4adb062dc36e2a55f968564cd80e3e9d2c8"
+  }
+}

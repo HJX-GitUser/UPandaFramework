@@ -1,0 +1,5 @@
+package: name='com.upanda.crossplatformprobe' versionCode='1' versionName='1.0' platformBuildVersionName='14' platformBuildVersionCode='34' compileSdkVersion='34' compileSdkVersionCodename='14'
+sdkVersion:'23'
+targetSdkVersion:'34'
+native-code: 'arm64-v8a'
+SHA256 476e112c9a2fd7dc8d99bf5303815f68811bc22049f7353016a29b638b4dad92

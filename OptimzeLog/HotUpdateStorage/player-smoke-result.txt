@@ -1,0 +1,8 @@
+PASS root manifest+bundle download, worker verification and commit
+PASS native manifest+TextAsset load; live bundle maintenance refused
+PASS obsolete owned bundle reclaimed; unknown user file preserved
+PASS staging quota fails before AB download and validates local fallback
+PASS invalid downloaded MD5 preserves previous manifest and bundle
+PASS root destroy cancels native writer and removes owned partial stage
+MEASURE bytes=33554432 previousSyncHashMs=107 previousSyncAdvancedFrames=0 workerVerifyMs=75 workerAdvancedFrames=8302
+HOTUPDATE_PLAYER_SMOKE_PASSED

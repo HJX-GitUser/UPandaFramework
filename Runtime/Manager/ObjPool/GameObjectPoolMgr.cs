@@ -180,11 +180,12 @@ namespace UPandaGF
         private async Task LoadPrefab(Entry entry, TaskCompletionSource<AssetLease<GameObject>> completion)
         {
             AssetLease<GameObject> lease = null;
+            var timeoutCancellation = new System.Threading.CancellationTokenSource();
             try
             {
                 Task<AssetLease<GameObject>> native = LoadLease(entry.path, entry.method);
                 Task winner = loadTimeout > 0
-                    ? await Task.WhenAny(native, entry.canceled.Task, Task.Delay(TimeSpan.FromSeconds(loadTimeout)))
+                    ? await Task.WhenAny(native, entry.canceled.Task, PlatformTasks.Delay(TimeSpan.FromSeconds(loadTimeout), timeoutCancellation.Token))
                     : await Task.WhenAny(native, entry.canceled.Task);
                 if (winner != native)
                 {
@@ -200,6 +201,7 @@ namespace UPandaGF
             catch (Exception e) { Debug.LogException(e); }
             finally
             {
+                timeoutCancellation.Cancel(); timeoutCancellation.Dispose();
                 lease?.Dispose();
                 if (ReferenceEquals(entry.loading, completion)) entry.loading = null;
                 completion.TrySetResult(null);

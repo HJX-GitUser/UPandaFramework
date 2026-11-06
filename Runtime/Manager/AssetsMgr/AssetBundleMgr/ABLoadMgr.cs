@@ -69,23 +69,18 @@ namespace UPandaGF
                 case ABLoadPath.PersistentDataPath: return CombineLocalPath(Application.persistentDataPath, PathUrl, name);
                 case ABLoadPath.RemotePath: return CombineUrl(remoteURL, PathUrl, name);
                 default:
-                    string local = CombineLocalPath(Application.streamingAssetsPath, PathUrl, name);
-                    return local.Contains("://") ? local : new Uri(Path.GetFullPath(local)).AbsoluteUri;
+                    return AssetLocation.AsUrl(AssetLocation.Combine(Application.streamingAssetsPath, PathUrl, name));
             }
         }
         public static string CombineUrl(params string[] segments)
         {
-            string result = "";
-            foreach (var segment in segments)
-                if (!string.IsNullOrEmpty(segment)) result = result.Length == 0 ? segment : result.TrimEnd('/') + "/" + segment.TrimStart('/');
-            return result;
+            if (segments == null || segments.Length == 0) return string.Empty;
+            return AssetLocation.Combine(segments[0] ?? string.Empty, System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Skip(segments, 1)));
         }
         public static string CombineLocalPath(params string[] segments)
         {
-            string result = "";
-            foreach (var segment in segments)
-                if (!string.IsNullOrEmpty(segment)) result = result.Length == 0 ? segment : Path.Combine(result, segment.TrimStart('/', '\\'));
-            return result;
+            if (segments == null || segments.Length == 0) return string.Empty;
+            return AssetLocation.Combine(segments[0] ?? string.Empty, System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Skip(segments, 1)));
         }
         private Task<AssetBundle> LoadBundle(string name, ABLoadPath path)
         {
@@ -112,10 +107,13 @@ namespace UPandaGF
         private async Task RunBundle(BundleOperation operation, Task preceding)
         {
             AssetBundle bundle = null;
+            IDisposable fileLease = null;
             try
             {
                 // 已取消的文件加载不能中途停止；同名新请求先等它完成清理，避免原生重复加载。
                 if (preceding != null) await preceding;
+                if (!Current(operation.generation)) return;
+                fileLease = await HotUpdateFileGate.EnterLoad();
                 if (!Current(operation.generation)) return;
                 if (operation.path == ABLoadPath.PersistentDataPath)
                 {
@@ -148,6 +146,7 @@ namespace UPandaGF
             finally
             {
                 operation.request = null;
+                fileLease?.Dispose();
                 BundleOperation current;
                 if (operations.TryGetValue(operation.name, out current) && ReferenceEquals(current, operation)) operations.Remove(operation.name);
                 // 原生收尾完成后才允许下一代同名加载启动。

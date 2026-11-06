@@ -21,6 +21,7 @@ namespace UPandaGF
     {
         /// <summary>落盘路径</summary>
         private readonly string filePath;
+        private readonly long maximumBytes;
 
         /// <summary>是否允许以追加方式续传（最终是否追加还要看 shouldAppend 的返回值）</summary>
         private readonly bool append;
@@ -56,6 +57,10 @@ namespace UPandaGF
         /// <param name="append">是否允许续传（追加写入）</param>
         /// <param name="shouldAppend">续传确认回调，返回 false 时改为覆盖写入；为 null 表示不校验</param>
         public DownloadHandlerFile(string path, bool append = false, Func<bool> shouldAppend = null)
+            : this(path, append, shouldAppend, 0) { }
+
+        /// <param name="maximumBytes">文件总字节上限（含续传部分）；0 不限</param>
+        public DownloadHandlerFile(string path, bool append, Func<bool> shouldAppend, long maximumBytes)
             : base(new byte[1024 * 8])
         {
             if (string.IsNullOrEmpty(path))
@@ -64,6 +69,7 @@ namespace UPandaGF
             }
 
             this.filePath = path;
+            this.maximumBytes = Math.Max(0, maximumBytes);
             this.append = append;
             this.shouldAppend = shouldAppend;
         }
@@ -71,7 +77,8 @@ namespace UPandaGF
         /// <summary>服务端给出 Content-Length 时记录（注意：分块传输不会触发此回调）</summary>
         protected override void ReceiveContentLengthHeader(ulong contentLength)
         {
-            ContentLength = (long)contentLength;
+            ContentLength = contentLength > long.MaxValue ? long.MaxValue : (long)contentLength;
+            if (maximumBytes > 0 && contentLength > (ulong)maximumBytes) FailLimit();
         }
 
         /// <summary>收到数据块：首次收到时才打开文件，然后写入</summary>
@@ -84,6 +91,8 @@ namespace UPandaGF
 
             try
             {
+                if (maximumBytes > 0 && dataLength > maximumBytes - fileStream.Position)
+                { FailLimit(); return false; }
                 fileStream.Write(data, 0, dataLength);
                 WrittenBytes += dataLength;
                 return true;
@@ -96,6 +105,9 @@ namespace UPandaGF
                 return false;   // 返回 false 会让 Unity 中断下载
             }
         }
+
+        private void FailLimit()
+        { WriteFailed = true; LastError = "下载超过文件字节预算：" + maximumBytes; }
 
         /// <summary>下载正常结束</summary>
         protected override void CompleteContent()

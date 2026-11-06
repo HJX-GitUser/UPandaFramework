@@ -1,0 +1,8 @@
+PASS scoped capture; static 200 targets remain 2 frames and 200 snapshots
+MEASURE samples=100 oldGCBlocks=161200 newGCBlocks=0 oldMs=49 newMs=6
+PASS stationary-to-moving interpolation, reverse Seek and real Animator parameters
+PASS bounded async JSON v2 save/load, component values, complete clear and native scene binding
+PASS real historical NRBF replay without new completeness field
+PASS destroyed manager cancels in-flight writer and removes its temporary file
+PASS 20 bounded record/clear cycles, 12000 synthetic samples; memoryAfterClear=2940928,724992,724992,724992
+REPLAY_PLAYER_SMOKE_PASSED

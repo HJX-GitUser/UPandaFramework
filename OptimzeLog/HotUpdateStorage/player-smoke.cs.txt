@@ -1,0 +1,124 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+using UPandaGF;
+
+public class HotUpdatePlayerSmoke : MonoBehaviour
+{
+    private static readonly BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+    private readonly List<string> checks = new List<string>();
+    private static void Require(bool value, string name) { if (!value) throw new Exception(name); }
+    private static string Md5(byte[] bytes) { using (var md5 = MD5.Create()) return BitConverter.ToString(md5.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant(); }
+    private static AssetBundleLoadInfo Info(string name, byte[] bytes) { return new AssetBundleLoadInfo { bundleName = name, size = bytes.Length, md5 = Md5(bytes), loadPath = ABLoadPath.PersistentDataPath }; }
+    private static ABSourcesRelated Manifest(Dictionary<string, byte[]> files, string name)
+    {
+        var data = new ABSourcesRelated { mainBundleInfo = Info("HotUpdateBundles", files["HotUpdateBundles"]) };
+        if (name != null) { data.bundleInfo.Add(name, Info(name, files[name])); data.sourcesDic.Add("fixture/" + name, new AssetRelatedArg(name, name)); } return data;
+    }
+    private static Task<ABSourcesRelated> Update(UPGameRoot root) { return (Task<ABSourcesRelated>)typeof(UPGameRoot).GetMethod("UpdateAssets", Private).Invoke(root, null); }
+    private UPGameRoot MakeRoot(Downloader downloader, string relative, string url)
+    {
+        var go = new GameObject("InactiveRootHarness"); go.SetActive(false); var root = go.AddComponent<UPGameRoot>();
+        root.SetConfig(new UPGameRootConfig { method = AssetLoaddingMethod.Assetbundles, enableAssetUpdate = true, LoadAssetPath = relative,
+            remoteURL = url, hotUpdate = new HotUpdateSettings { minimumFreeSpaceMB = 1, retainedManifestCount = 1 }, downloadBatchTimeout = 10 });
+        typeof(UPGameRoot).GetField("downloader", Private).SetValue(root, downloader); return root;
+    }
+    private async void Start()
+    {
+        string output = Path.GetFullPath(Path.Combine(Application.dataPath, "../smoke-result.txt"));
+        string relative = "HotUpdatePlayer_" + Guid.NewGuid().ToString("N"), directory = Path.Combine(Application.persistentDataPath, relative);
+        try
+        {
+            PLogger.cfg = new LogConfig();
+            string fixture = Path.GetFullPath(Path.Combine(Application.dataPath, "../Fixtures"));
+            var files = new Dictionary<string, byte[]>(); foreach (string name in new[] { "HotUpdateBundles", "one", "two" }) files.Add(name, File.ReadAllBytes(Path.Combine(fixture, name)));
+            files["large"] = new byte[2 * 1024 * 1024]; files["bad"] = Encoding.UTF8.GetBytes("bad-data"); files["cancel"] = new byte[32 * 1024];
+            using (var server = new HotUpdateSmokeServer(files))
+            {
+                var downloader = new GameObject("Downloader").AddComponent<Downloader>(); var root = MakeRoot(downloader, relative, server.Url);
+                server.SetManifest(Manifest(files, "one")); var first = await Update(root);
+                Require(first.bundleInfo.ContainsKey("one") && root.LastHotUpdateStatistics.committed, "First update commit");
+                checks.Add("PASS root manifest+bundle download, worker verification and commit");
+                var loader = new GameObject("AssetsLoader").AddComponent<AssetsLoader>(); await loader.Init(AssetLoaddingMethod.Assetbundles, server.Url, relative, first);
+                var asset = await loader.LoadAsync<TextAsset>("fixture/one"); Require(asset != null && asset.text == "one-value", "Native AB load after update");
+                bool refused = false; try { await Update(root); } catch (InvalidOperationException) { refused = true; } Require(refused, "Live AB overwrite refused");
+                ABLoadMgr.Instance.ClearAB(); await Task.Yield(); checks.Add("PASS native manifest+TextAsset load; live bundle maintenance refused");
+                File.WriteAllText(Path.Combine(directory, "manual-file"), "user");
+                server.SetManifest(Manifest(files, "two")); var second = await Update(root);
+                Require(second.bundleInfo.ContainsKey("two") && !File.Exists(Path.Combine(directory, "one")) && File.Exists(Path.Combine(directory, "manual-file")), "Owned GC and unknown ownership protection");
+                checks.Add("PASS obsolete owned bundle reclaimed; unknown user file preserved");
+                root.Config.hotUpdate.maximumStagingMB = 1; server.SetManifest(Manifest(files, "large")); int prior = server.LargeRequests;
+                var fallback = await Update(root); Require(fallback.bundleInfo.ContainsKey("two") && !root.LastHotUpdateStatistics.committed && server.LargeRequests == prior, "Budget fails before large download");
+                checks.Add("PASS staging quota fails before AB download and validates local fallback");
+                root.Config.hotUpdate.maximumStagingMB = 0; var bad = Manifest(files, "bad"); bad.bundleInfo["bad"].md5 = Md5(Encoding.UTF8.GetBytes("expected")); server.SetManifest(bad);
+                fallback = await Update(root); Require(fallback.bundleInfo.ContainsKey("two") && !File.Exists(Path.Combine(directory, "bad")), "Corrupt download retains previous version");
+                checks.Add("PASS invalid downloaded MD5 preserves previous manifest and bundle");
+                server.SetManifest(Manifest(files, "cancel")); server.SlowCancel = true;
+                bool partial = false; downloader.OnDownloadProgress += item => { if (item.fileName == "cancel" && item.downloadedSize > 0) partial = true; };
+                var pending = Update(root); float deadline = Time.realtimeSinceStartup + 5;
+                while (!partial && !pending.IsCompleted && Time.realtimeSinceStartup < deadline) await Task.Yield(); Require(partial, "Partial download started");
+                typeof(UPGameRoot).GetMethod("OnDestroyed", Private).Invoke(root, null);
+                try { await pending; throw new Exception("Destroyed update did not cancel"); } catch (OperationCanceledException) { }
+                string stages = Path.Combine(Application.persistentDataPath, "AssetBundles/.update-stage");
+                Require(!Directory.Exists(stages) || Directory.GetFiles(stages, ".owner", SearchOption.AllDirectories).Length == 0, "Canceled stage released");
+                checks.Add("PASS root destroy cancels native writer and removes owned partial stage");
+                await MeasureFiles();
+            }
+            File.WriteAllText(output, string.Join("\n", checks) + "\nHOTUPDATE_PLAYER_SMOKE_PASSED\n"); Application.Quit(0);
+        }
+        catch (Exception e) { File.WriteAllText(output, string.Join("\n", checks) + "\nFAILED " + e); Debug.LogException(e); Application.Quit(2); }
+    }
+    private async Task MeasureFiles()
+    {
+        string perf = Path.Combine(Application.persistentDataPath, "Perf_" + Guid.NewGuid().ToString("N")); string bundles = Path.Combine(perf, "Bundles"); Directory.CreateDirectory(bundles);
+        byte[] bytes = new byte[32 * 1024 * 1024]; for (int i = 0; i < bytes.Length; i++) bytes[i] = (byte)i; string path = Path.Combine(bundles, "large"); File.WriteAllBytes(path, bytes);
+        var data = new ABSourcesRelated { mainBundleInfo = new AssetBundleLoadInfo { bundleName = "Main", loadPath = ABLoadPath.StreamingAssetsPath } }; data.bundleInfo.Add("large", Info("large", bytes));
+        var clock = System.Diagnostics.Stopwatch.StartNew(); int frame = Time.frameCount;
+        using (var hash = MD5.Create()) using (var stream = File.OpenRead(path)) hash.ComputeHash(stream);
+        long oldMs = clock.ElapsedMilliseconds; int blockedFrames = Time.frameCount - frame;
+        var store = await HotUpdateStorage.OpenAsync(perf, "Bundles", new HotUpdateSettings { minimumFreeSpaceMB = 0 });
+        try
+        {
+            await store.BeginStageAsync(); File.WriteAllBytes(store.StagedManifestPath, AssetReferenceSerializer.Encode(data)); frame = Time.frameCount;
+            var plan = await store.PrepareAsync(null, new ABSourcesRelated { mainBundleInfo = new AssetBundleLoadInfo { bundleName = "Main", loadPath = ABLoadPath.StreamingAssetsPath } });
+            int progressed = Time.frameCount - frame; Require(plan.Downloads.Count == 0 && progressed > 0, "Background hash allows frames");
+            checks.Add("MEASURE bytes=" + bytes.Length + " previousSyncHashMs=" + oldMs + " previousSyncAdvancedFrames=" + blockedFrames + " workerVerifyMs=" + store.Statistics.verifyMilliseconds + " workerAdvancedFrames=" + progressed);
+        }
+        finally { await store.DisposeAsync(); if (Path.GetFullPath(perf).StartsWith(Path.GetFullPath(Application.persistentDataPath) + Path.DirectorySeparatorChar)) Directory.Delete(perf, true); }
+    }
+}
+public sealed class HotUpdateSmokeServer : IDisposable
+{
+    private readonly TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
+    private readonly Dictionary<string, byte[]> files;
+    private volatile byte[] manifest; private volatile bool disposed;
+    public volatile bool SlowCancel; public int LargeRequests;
+    public string Url { get; }
+    public HotUpdateSmokeServer(Dictionary<string, byte[]> files) { this.files = files; listener.Start(); Url = "http://127.0.0.1:" + ((IPEndPoint)listener.LocalEndpoint).Port; _ = Accept(); }
+    public void SetManifest(ABSourcesRelated data) { manifest = AssetReferenceSerializer.Encode(data); }
+    private async Task Accept() { while (!disposed) { try { var client = await listener.AcceptTcpClientAsync().ConfigureAwait(false); _ = Serve(client); } catch (Exception) { if (!disposed) throw; } } }
+    private async Task Serve(TcpClient client)
+    {
+        using (client) try
+        {
+            var stream = client.GetStream(); using (var reader = new StreamReader(stream, Encoding.ASCII, false, 1024, true))
+            {
+                string first = await reader.ReadLineAsync().ConfigureAwait(false); if (first == null) return; string line; do { line = await reader.ReadLineAsync().ConfigureAwait(false); } while (!string.IsNullOrEmpty(line));
+                string name = Path.GetFileName(first.Split(' ')[1]); byte[] body = name == UPGameRoot.assetData ? manifest : files[name]; if (name == "large") System.Threading.Interlocked.Increment(ref LargeRequests);
+                byte[] header = Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\nContent-Length: " + body.Length + "\r\nConnection: close\r\n\r\n"); await stream.WriteAsync(header, 0, header.Length).ConfigureAwait(false);
+                if (name == "cancel" && SlowCancel) { await stream.WriteAsync(body, 0, 4096).ConfigureAwait(false); await Task.Delay(750).ConfigureAwait(false); await stream.WriteAsync(body, 4096, body.Length - 4096).ConfigureAwait(false); }
+                else await stream.WriteAsync(body, 0, body.Length).ConfigureAwait(false);
+            }
+        }
+        catch (IOException) { } catch (SocketException) { } catch (ObjectDisposedException) { }
+    }
+    public void Dispose() { disposed = true; listener.Stop(); }
+}

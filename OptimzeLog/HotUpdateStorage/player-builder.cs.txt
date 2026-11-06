@@ -1,0 +1,24 @@
+using System;
+using System.IO;
+using UnityEditor;
+using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UPandaGF;
+public static class HotUpdatePlayerBuild
+{
+    public static void Build()
+    {
+        string assets = "Assets/HotUpdatePlayerFixtures", bundles = "Temp/HotUpdateBundles"; Directory.CreateDirectory(assets); Directory.CreateDirectory(bundles);
+        File.WriteAllText(assets + "/one.txt", "one-value"); File.WriteAllText(assets + "/two.txt", "two-value"); AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+        var manifest = BuildPipeline.BuildAssetBundles(bundles, new[] { new AssetBundleBuild { assetBundleName = "one", assetNames = new[] { assets + "/one.txt" } }, new AssetBundleBuild { assetBundleName = "two", assetNames = new[] { assets + "/two.txt" } } }, BuildAssetBundleOptions.ChunkBasedCompression, BuildTarget.StandaloneWindows64);
+        if (manifest == null) throw new Exception("Fixture bundle build failed");
+        Directory.CreateDirectory(Application.streamingAssetsPath + "/Data"); File.WriteAllBytes(Application.streamingAssetsPath + "/Data/assetData.assetref", AssetReferenceSerializer.Encode(new ABSourcesRelated { mainBundleInfo = new AssetBundleLoadInfo { bundleName = "Main", loadPath = ABLoadPath.StreamingAssetsPath } }));
+        EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single); new GameObject("HotUpdateSmoke").AddComponent<HotUpdatePlayerSmoke>(); EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), "Assets/HotUpdateSmoke.unity");
+        PlayerSettings.companyName = "UPandaAudit"; PlayerSettings.productName = "HotUpdateVerification"; PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
+        var result = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = new[] { "Assets/HotUpdateSmoke.unity" }, target = BuildTarget.StandaloneWindows64, locationPathName = "HotUpdateBuild/HotUpdateSmoke.exe", options = BuildOptions.Development });
+        if (result.summary.result != BuildResult.Succeeded) throw new Exception("Hot update player build failed");
+        Directory.CreateDirectory("HotUpdateBuild/Fixtures"); foreach (string name in new[] { "HotUpdateBundles", "one", "two" }) File.Copy(Path.Combine(bundles, name), "HotUpdateBuild/Fixtures/" + name, true);
+        Debug.Log("HOTUPDATE_PLAYER_BUILD_SUCCEEDED");
+    }
+}

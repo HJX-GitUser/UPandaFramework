@@ -1,0 +1,127 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+using ReplaySystem;
+using UnityEngine;
+using UnityEngine.Networking;
+using UPandaGF;
+using Object = UnityEngine.Object;
+
+[Serializable] public class PlatformProbeRecord
+{
+    private readonly int secret = 17;
+    public int Secret => secret;
+    public Dictionary<string, int> values = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) { { "Case", 9 } };
+    public List<PlatformProbeRecord> children = new List<PlatformProbeRecord>();
+    public PlatformProbeRecord parent;
+    [NonSerialized] public Vector3 position = new Vector3(1, 2, 3);
+    public int[,] matrix = new int[,] { { 1, 2 }, { 3, 4 } };
+}
+public class PlatformProbeComponent : MonoBehaviour { public int value = 8; }
+public class CrossPlatformPlayerProbe : MonoBehaviour
+{
+    [Serializable] public class StepResult { public string name; public bool passed; public string detail; }
+    [Serializable] public class Results { public string platform, backend; public bool passed, existingCheckpoint; public List<StepResult> steps = new List<StepResult>(); }
+    private Results results = new Results(); private float began; private bool finished;
+    private string directory;
+#if UNITY_WEBGL && !UNITY_EDITOR
+    [DllImport("__Internal")] private static extern void PlatformProbeReport(string json);
+#endif
+    private static void Require(bool value, string message) { if (!value) throw new Exception(message); }
+    private void Update() { if (!finished && Time.realtimeSinceStartup - began > 90) { results.steps.Add(new StepResult { name = "watchdog", detail = "Main async flow did not finish" }); Finish(); } }
+    private async Task Step(string name, Func<Task> action)
+    {
+        try { await action(); results.steps.Add(new StepResult { name = name, passed = true }); Debug.Log("PLATFORM_STEP_PASS " + name); }
+        catch (Exception e) { results.steps.Add(new StepResult { name = name, detail = e.ToString() }); Debug.LogWarning("PLATFORM_STEP_FAIL " + name + " " + e); }
+    }
+    private static async Task Within(Task task, float seconds = 8)
+    { float until = Time.realtimeSinceStartup + seconds; while (!task.IsCompleted && Time.realtimeSinceStartup < until) await Task.Yield(); if (!task.IsCompleted) throw new TimeoutException("Async flow exceeded frame deadline"); await task; }
+    private async void Start()
+    {
+        began = Time.realtimeSinceStartup; results.platform = Application.platform.ToString();
+#if ENABLE_IL2CPP
+        results.backend = "IL2CPP";
+#else
+        results.backend = "Mono";
+#endif
+        directory = Path.Combine(Application.persistentDataPath, "CrossPlatformProbe_" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(directory);
+        await Step("streaming-ascii", async () => { var text = await StreamingAssetsLoader.LoadTextFileAsync("/Probe/value.txt"); Require(text == "platform-data", "StreamingAssets text"); });
+        await Step("streaming-unicode-fragment", async () => { var text = await StreamingAssetsLoader.LoadTextFileAsync("/Probe/空 格/内容#1.txt"); Require(text == "unicode-data", "URI space/fragment should be escaped without changing file name"); });
+        await Step("aot-component-add", () => { var go = new GameObject("DynamicComponent"); var component = go.AddHotFixComponent(typeof(PlatformProbeComponent).Assembly, typeof(PlatformProbeComponent).FullName) as PlatformProbeComponent; Require(component != null && component.value == 8, "Runtime type AddComponent"); Object.Destroy(go); return Task.CompletedTask; });
+        await Step("versioned-private-generics-cycle", async () =>
+        {
+            var bytes = await StreamingAssetsLoader.LoadBinaryDataAsync("/Probe/versioned.bin"); bool legacy;
+            var value = VersionedDataSerializer.Deserialize<PlatformProbeRecord>(bytes, "platform-probe", out legacy);
+            Require(!legacy && value.Secret == 17 && value.values["case"] == 9 && value.matrix[1, 1] == 4, "Fields, readonly, comparer, array and Unity value");
+            Require(ReferenceEquals(value, value.parent) && ReferenceEquals(value, value.children[0]), "Reference graph");
+            var vectorBytes = VersionedDataSerializer.Serialize(new Vector3(1, 2, 3), "unity-value");
+            Require((Vector3)VersionedDataSerializer.Deserialize(vectorBytes, typeof(Vector3), "unity-value", out legacy) == new Vector3(1, 2, 3), "Unity value layout");
+            string file = Path.Combine(directory, "save.binary"); VersionedDataSerializer.SaveFile(file, value, "platform-probe"); Require(VersionedDataSerializer.LoadFile<PlatformProbeRecord>(file, "platform-probe").Secret == 17, "File save/load");
+        });
+        await Step("legacy-migration", async () =>
+        {
+            byte[] bytes = await StreamingAssetsLoader.LoadBinaryDataAsync("/Probe/legacy.bin"); string file = Path.Combine(directory, "legacy.binary"); File.WriteAllBytes(file, bytes);
+            var value = VersionedDataSerializer.LoadFile<PlatformProbeRecord>(file, "platform-probe"); Require(value.Secret == 17 && value.values["case"] == 9 && File.Exists(file + ".legacy.bak"), "Legacy migration and backup");
+        });
+        await Step("timer-and-download", async () =>
+        {
+            await Within(PlatformTasks.Delay(TimeSpan.FromMilliseconds(30)), 2);
+            var go = new GameObject("Downloader"); var downloader = go.AddComponent<Downloader>();
+            string source = StreamingAssetsLoader.StreamingAssetsPath.TrimEnd('/') + "/Probe/value.txt";
+            if (!source.Contains("://")) source = new Uri(source).AbsoluteUri;
+            string file = Path.Combine(directory, "download.txt"); var task = downloader.DownloadAsync(source, file); await Within(task); Require(await task && File.ReadAllText(file) == "platform-data", "DownloadAsync completion"); Object.Destroy(go);
+        });
+        await Step("log-file-writer", async () =>
+        {
+            var go = new GameObject("LogWriter"); var helper = go.AddComponent<PLogHelper>();
+            try { helper.InitLogFileModule(directory, "probe.log"); Debug.Log("CROSS_PLATFORM_LOG_MARKER"); await Task.Yield(); helper.StopSafely(); Require(File.ReadAllText(Path.Combine(directory, "probe.log")).Contains("CROSS_PLATFORM_LOG_MARKER"), "Log writer drained"); }
+            finally { Object.Destroy(go); }
+        });
+        await Step("hotupdate-default-disk-policy", async () =>
+        {
+            var store = await HotUpdateStorage.OpenAsync(Path.Combine(directory, "HotUpdate"), "Bundles", new HotUpdateSettings());
+            try { await store.BeginStageAsync(); Require(store.ManifestDownloadLimit > 0, "Manifest cap"); } finally { await store.DisposeAsync(); }
+        });
+        await Step("hotupdate-ledger-roundtrip", async () =>
+        {
+            string root = Path.Combine(directory, "Ledger");
+            var data = new ABSourcesRelated { mainBundleInfo = new AssetBundleLoadInfo { bundleName = "Main", loadPath = ABLoadPath.StreamingAssetsPath } };
+            var store = await HotUpdateStorage.OpenAsync(root, "Bundles", new HotUpdateSettings { minimumFreeSpaceMB = 0 });
+            try { await store.BeginStageAsync(); File.WriteAllBytes(store.StagedManifestPath, AssetReferenceSerializer.Encode(data)); var plan = await store.PrepareAsync(null, data); await store.CommitAsync(plan); Require(store.Statistics.committed, "Manifest and reflection ledger commit"); } finally { await store.DisposeAsync(); }
+            store = await HotUpdateStorage.OpenAsync(root, "Bundles", new HotUpdateSettings { minimumFreeSpaceMB = 0 });
+            try { Require(await store.ReadLocalAsync(null, true) != null && store.Warnings.Count == 0, "Ledger preserved under high stripping"); } finally { await store.DisposeAsync(); }
+        });
+        await Step("replay-async-roundtrip", async () =>
+        {
+            var snapshot = new ObjectSnapshot(1, Vector3.one, Quaternion.identity, Vector3.one); snapshot.SetComponentData("RigidbodyVelocity", Vector3.right);
+            var frames = new List<RecordFrame> { new RecordFrame(0) { snapshots = new List<ObjectSnapshot> { snapshot } } };
+            string file = await ReplaySystem.FileManager.SaveAsync(frames); Require(file != null, "Replay save"); var restored = await ReplaySystem.FileManager.LoadAsync(file); Require(restored[0].snapshots[0].position == Vector3.one && (Vector3)restored[0].snapshots[0].componentData["RigidbodyVelocity"] == Vector3.right, "Replay restore"); File.Delete(file);
+        });
+        await Step("bundles-native-platform", async () =>
+        {
+            var loader = ABLoadMgr.Instance; await loader.Init("Probe/Bundles", "Bundles", ABLoadPath.StreamingAssetsPath); Require(loader.IsInitialized, "Native main bundle"); var asset = await loader.LoadResAsync<TextAsset>("probe", "value", ABLoadPath.StreamingAssetsPath); Require(asset != null && asset.text == "platform-data", "Native target bundle"); loader.ClearAB();
+        });
+        await Step("storage-checkpoint", async () =>
+        {
+            string checkpoint = Path.Combine(Application.persistentDataPath, "UPandaPlatformCheckpoint.dat");
+            results.existingCheckpoint = File.Exists(checkpoint) && File.ReadAllText(checkpoint) == "platform-checkpoint";
+            File.WriteAllText(checkpoint, "platform-checkpoint"); await PlatformStorage.FlushAsync();
+        });
+        Finish();
+    }
+    private void Finish()
+    {
+        if (finished) return; finished = true; results.passed = results.steps.Count == 12 && results.steps.TrueForAll(step => step.passed);
+        string json = JsonUtility.ToJson(results, true); Debug.Log("CROSS_PLATFORM_RESULT " + json);
+#if UNITY_WEBGL && !UNITY_EDITOR
+        PlatformProbeReport(json);
+#else
+        string output = Application.isMobilePlatform ? Path.Combine(Application.persistentDataPath, "platform-result.json") : Path.GetFullPath(Path.Combine(Application.dataPath, "../platform-result.json"));
+        File.WriteAllText(output, json); Application.Quit(results.passed ? 0 : 2);
+#endif
+    }
+}

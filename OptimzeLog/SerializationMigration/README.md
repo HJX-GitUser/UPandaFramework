@@ -60,3 +60,7 @@ Runtime / Editor 的生产源码已不再调用 BinaryFormatter.Serialize / Dese
 正式测试源码：`Tests/PlayMode/SerializationMigrationTests.cs`。项目根目录最终临时记录：`Temp/serialization-verified.log`、`Temp/serialization-player-build-verified.log`、`Temp/serialization-player-smoke-verified.log`。Player 在 `Temp/LifecycleAuditProject/SerializationBuild/`，以 `-batchmode -nographics` 运行。真实缓存验证优先使用编辑器已保留的旧 `.legacy.bak` 作为只读来源，在临时副本上转换；不改写该来源。
 
 尚未验证 IL2CPP、Android/iOS/WebGL、全部第三方 DTO 布局、长期磁盘/内存曲线与断电耐久性。备份没有自动回收；继续遵守 FileUpdateTransaction 的单应用独占目录约定。
+
+## 后续跨平台验证（2026-11-06）
+
+本阶段之后已完成 Windows/WebGL 的 IL2CPP High 核心探针运行，以及 Android ARM64 构建；Android 真机、iOS 等仍未验证。修复和详细矩阵见 [跨平台记录](../CrossPlatform/README.md)。

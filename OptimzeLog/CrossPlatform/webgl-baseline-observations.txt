@@ -1,0 +1,66 @@
+log: PLATFORM_STEP_PASS streaming-ascii
+
+error: http://127.0.0.1:64184/StreamingAssets/Probe/空 格/内容#1.txt 加载失败:
+HTTP/1.1 404 Not Found
+
+warning: PLATFORM_STEP_FAIL streaming-unicode-fragment System.Exception: URI space/fragment should be escaped without changing file name
+  at CrossPlatformPlayerProbe.Require (System.Boolean value, System.String message) [0x00000] in <00000000000000000000000000000000>:0 
+--- End of stack trace from previous location where exception was thrown ---
+
+log: 成功添加热更组件: PlatformProbeComponent
+
+log: PLATFORM_STEP_PASS aot-component-add
+
+log: Invoking error handler due to
+RuntimeError: memory access out of bounds
+at PropertyInfo_GetValue_m89576462107E2A4DF5B7775216AEC29D74FF6088 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[65070]:0xea5d0a)
+    at FieldGraphCodec_Write_m239A0FFFDD7814F6C896A77AC47D830551FFCCF5 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[22011]:0x55fd0e)
+    at FieldGraphCodec_Write_m239A0FFFDD7814F6C896A77AC47D830551FFCCF5 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[22011]:0x5603fb)
+    at dynCall_viiiii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[119917]:0x1beb64f)
+    at http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:1899:22
+    at invoke_viiiii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:17811:5)
+    at FieldGraphCodec_Encode_m2837D2BD7FCD1BFBD8B5E1F32CD2326CB24AB8F7 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[22010]:0x55e6b6)
+    at VersionedDataSerializer_Serialize_mEAF3465529332037A020398FA77EC45A1E9F60FB (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[22894]:0x5906c7)
+    at VersionedDataSerializer_SaveFile_mDF23B253C393CC39E6781C9FBC12BBD972C3CF96 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[22906]:0x593608)
+    at dynCall_viiii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[119915]:0x1beb629)
+    at http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:1899:22
+    at invoke_viiii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:17745:5)
+    at U3CU3CStartU3Eb__11_3U3Ed_MoveNext_m156AF52496C2996E5EF0FBD5B6DD4565A84BBA94 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[72966]:0x1019126)
+    at MoveNextRunner_InvokeMoveNext_m4B7F4130C989B244668A0A57017A6C308E54D215 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[64877]:0xea1f5e)
+    at ContextCallback_Invoke_m872CCCD40428B88C2612772491BE5157895B5F61_OpenStatic(ContextCallback_tE8AFBDBFCC040FDA8DA8C1EEFE9BD66B16BDA007*, Il2CppObject*, MethodInfo const*) (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[71009]:0xfcbc55)
+    at dynCall_viii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[119914]:0x1beb619)
+    at http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:1899:22
+    at invoke_viii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:17723:5)
+    at ExecutionContext_RunInternal_mC37E85D6FC972DF219A00FE1EE34329D1D63CC94 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[71016]:0xfcc275)
+    at ExecutionContext_Run_m6E5E07E0131DA97C6BC235754A0682CFFACE7BF8 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[71132]:0xfd28c7)
+    at dynCall_viiiii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[119917]:0x1beb64f)
+    at http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:1899:22
+    at invoke_viiiii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:17811:5)
+    at MoveNextRunner_Run_m86395F123FB453F2B5FF89CE1E98532F7426F9DE (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[64875]:0xea1ce7)
+    at AwaitTaskContinuation_InvokeAction_m431BD1BCC74DB24B6C034C45F2E44DE9C52516AC (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[58223]:0xd67fbb)
+    at ContextCallback_Invoke_m872CCCD40428B88C2612772491BE5157895B5F61_OpenStatic(ContextCallback_tE8AFBDBFCC040FDA8DA8C1EEFE9BD66B16BDA007*, Il2CppObject*, MethodInfo const*) (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[71009]:0xfcbc55)
+    at dynCall_viii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[119914]:0x1beb619)
+    at http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:1899:22
+    at invoke_viii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:17723:5)
+    at AwaitTaskContinuation_RunCallback_m37C4A227BA403A3D28CC94369A8770F1C16AE4E5 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[58203]:0xd66f45)
+    at SynchronizationContextAwaitTaskContinuation_Run_mE56D2F76E570D6E0DA92816F6121B3F478219B7D (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[58202]:0xd66e5c)
+    at Task_FinishContinuations_m21B540B556CDABD76F5985DF83079F7F30C78174 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[71544]:0xfe1fce)
+    at Task_FinishStageThree_mEAE9C06EC2CCA8C43E8AD7A0227521D285EB80EF (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[71496]:0xfdfb17)
+    at Task_1_TrySetResult_m2EE766FD3F76F4824990F4A93ED1F7253ECE014C_gshared (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[53214]:0xc563db)
+    at AsyncTaskMethodBuilder_1_SetResult_m0D83195F995F9825D7A6DCDC3835D6917C43B5A6_gshared (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[36885]:0x943e8a)
+    at U3CLoadBinaryDataAsyncU3Ed__9_MoveNext_m943AE0F81693869DE51DD99BAEEAF7E7F92E9DD2 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[23309]:0x5ac2e6)
+    at MoveNextRunner_InvokeMoveNext_m4B7F4130C989B244668A0A57017A6C308E54D215 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[64877]:0xea1f5e)
+    at ContextCallback_Invoke_m872CCCD40428B88C2612772491BE5157895B5F61_OpenStatic(ContextCallback_tE8AFBDBFCC040FDA8DA8C1EEFE9BD66B16BDA007*, Il2CppObject*, MethodInfo const*) (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[71009]:0xfcbc55)
+    at dynCall_viii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[119914]:0x1beb619)
+    at http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:1899:22
+    at invoke_viii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:17723:5)
+    at ExecutionContext_RunInternal_mC37E85D6FC972DF219A00FE1EE34329D1D63CC94 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[71016]:0xfcc275)
+    at ExecutionContext_Run_m6E5E07E0131DA97C6BC235754A0682CFFACE7BF8 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[71132]:0xfd28c7)
+    at dynCall_viiiii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[119917]:0x1beb64f)
+    at http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:1899:22
+    at invoke_viiiii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.framework.js:17811:5)
+    at MoveNextRunner_Run_m86395F123FB453F2B5FF89CE1E98532F7426F9DE (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[64875]:0xea1ce7)
+    at YieldAwaiter_RunAction_mC611EE7A89483B65F4CA6D5362789551201309E0 (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[64891]:0xea23ae)
+    at SendOrPostCallback_Invoke_m23B949AF9D78E8635F84E1E7775A50472B4F9C28_OpenStatic(SendOrPostCallback_t5C292A12062F24027A98492F52ECFE9802AA6F0E*, Il2CppObject*, MethodInfo const*) (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[70819]:0xfc3f07)
+    at dynCall_viii (http://127.0.0.1:64184/Build/CrossPlatformWebGL.wasm:wasm-function[119914]:0x1beb619)
+[67520:67028:1106/141856.826:ERROR:components\named_mojo_ipc_server\named_mojo_server_endpoint_connector_win.cc:210] Failed to get peer PID: 找不到元素。 (0x490)

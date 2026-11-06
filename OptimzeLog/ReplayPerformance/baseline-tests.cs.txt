@@ -1,0 +1,26 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using NUnit.Framework;
+using ReplaySystem;
+using UnityEngine;
+using UnityEngine.TestTools;
+using Object=UnityEngine.Object;
+public class ReplayBaselineTests
+{
+    private readonly List<GameObject> objects=new List<GameObject>();
+    private static readonly BindingFlags Private=BindingFlags.NonPublic|BindingFlags.Instance;
+    private ReplayManager Make(){var go=new GameObject("ReplayBaseline");objects.Add(go);return go.AddComponent<ReplayManager>();}
+    private Transform Target(){var go=new GameObject("Target");objects.Add(go);return go.transform;}
+    private static int Count(ReplayManager manager,string field){return ((ICollection)typeof(ReplayManager).GetField(field,Private).GetValue(manager)).Count;}
+    [TearDown]public void Cleanup(){foreach(var go in objects)if(go!=null)Object.DestroyImmediate(go);objects.Clear();}
+    [UnityTest]public IEnumerator StaticRecordingCoalescesEmptyFrames()
+    {var manager=Make();Target();manager.StartRecording();for(int i=0;i<8;i++)yield return null;manager.StopRecording();Assert.LessOrEqual(manager.FrameCount,2,"Static recording should keep a start and final hold, not an empty allocation per frame");}
+    [Test]public void RestartDropsPreviousPlaybackIndex()
+    {var manager=Make();var tr=Target();var frames=(List<RecordFrame>)typeof(ReplayManager).GetField("frames",Private).GetValue(manager);frames.Add(new RecordFrame(0){snapshots=new List<ObjectSnapshot>{new ObjectSnapshot(tr.gameObject.GetInstanceID(),Vector3.zero,Quaternion.identity,Vector3.one){objectName=tr.name}}});manager.Seek(0);Assert.Greater(Count(manager,"timelines"),0);manager.StartRecording();Assert.AreEqual(0,Count(manager,"timelines"),"Old playback index retains previous recording objects");}
+    [Test]public void DisableDropsCaptureSnapshots()
+    {var manager=Make();Target();manager.StartRecording();manager.enabled=false;Assert.AreEqual(ReplayManager.State.Idle,manager.CurrentState);Assert.AreEqual(0,Count(manager,"lastSnapshots"),"Disabled recorder retains capture state");}
+    [Test]public void StaticSceneDoesNotAllocateSnapshotsForEachObject()
+    {var manager=Make();for(int i=0;i<200;i++)Target();manager.StartRecording();var capture=typeof(ReplayManager).GetMethod("RecordFrame",Private);capture.Invoke(manager,null);var allocation=UnityEngine.Profiling.Recorder.Get("GC.Alloc");allocation.enabled=false;allocation.FilterToCurrentThread();allocation.enabled=true;var timer=System.Diagnostics.Stopwatch.StartNew();for(int i=0;i<100;i++)capture.Invoke(manager,null);allocation.enabled=false;long allocated=allocation.sampleBlockCount;allocation.CollectFromAllThreads();Debug.Log("REPLAY_BASELINE staticObjects=200 calls=100 allocationBlocks="+allocated+" ms="+timer.ElapsedMilliseconds);Assert.Less(allocated,1000,"Static capture should not build per-object snapshots and hierarchy strings");}
+}

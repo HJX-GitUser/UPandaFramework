@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -79,6 +80,7 @@ namespace UPandaGF
         private void EnsureConfigValid()
         {
             if (config == null) config = new UPGameRootConfig();
+            if (config.hotUpdate == null) config.hotUpdate = new HotUpdateSettings();
             if (config.AssetAESConfig == null)
                 config.AssetAESConfig = new AssetBundleClassificationWindowConfig { enable = false };
             if (string.IsNullOrEmpty(config.LoadAssetPath))
@@ -103,6 +105,10 @@ namespace UPandaGF
 
         private bool warnedNotInited;
         private bool destroyed;
+        private readonly CancellationTokenSource hotUpdateLifetime = new CancellationTokenSource();
+        private readonly List<DownloadItem> hotUpdateDownloads = new List<DownloadItem>();
+        /// <summary>最近一次热更的文件阶段统计（下载等待时间另计）。</summary>
+        public HotUpdateStatistics LastHotUpdateStatistics { get; private set; }
         #endregion
 
         private void Reset()
@@ -155,11 +161,7 @@ namespace UPandaGF
             }
 
             if (config.method == AssetLoaddingMethod.Assetbundles)
-                FileUpdateTransaction.Recover(Path.Combine(Application.persistentDataPath, "AssetBundles", ".update-recovery"));
-            if (config.method == AssetLoaddingMethod.Assetbundles && config.enableAssetUpdate)
-            {
                 sourceRef = await UpdateAssets();
-            }
 
             ThrowIfDestroyed();
             await sourcesLoadMgr.Init(config.method, config.remoteURL, config.LoadAssetPath, sourceRef);
@@ -231,117 +233,95 @@ namespace UPandaGF
         /// </summary>
         private async Task<ABSourcesRelated> UpdateAssets()
         {
-            string basePath = Path.Combine(Application.persistentDataPath, "AssetBundles");
-            string recoveryPath = Path.Combine(basePath, ".update-recovery");
-            // 上次在提交途中退出：先恢复完整旧版本，恢复失败则停止启动，避免加载混合版本。
-            FileUpdateTransaction.Recover(recoveryPath);
-            string localFilePath = Path.Combine(basePath, assetData);
-            string stageRoot = Path.GetFullPath(Path.Combine(basePath, ".update-stage"));
-            if (Directory.Exists(stageRoot))
-                foreach (string oldStage in Directory.GetDirectories(stageRoot))
-                    TryDeleteStage(oldStage, stageRoot);
-            string stagePath = Path.Combine(stageRoot, Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(stagePath);
-            string tempFileSavePath = Path.Combine(stagePath, assetData);
+            var totalClock = System.Diagnostics.Stopwatch.StartNew();
+            ThrowIfDestroyed();
+            // Unity 路径、配置和原生 AB 状态只在主线程读取；工作线程只接收快照。
+            string persistent = Application.persistentDataPath, relativeRoot = config.LoadAssetPath, remoteUrl = config.remoteURL;
+            bool updateEnabled = config.enableAssetUpdate;
+            if (!updateEnabled && !await HotUpdateStorage.RecoveryRequiredAsync(persistent)) return null;
+            ThrowIfDestroyed();
+            var maintenance = HotUpdateFileGate.TryMaintenance();
+            if (maintenance == null) throw new InvalidOperationException("已有 AB 加载或其他热更维护，不能覆盖正在使用的文件");
+            if (AssetBundle.GetAllLoadedAssetBundles().Any())
+            { maintenance.Dispose(); throw new InvalidOperationException("启动热更前已有已加载 AB；请在资源系统初始化前完成更新"); }
+            var aes = new AssetBundleClassificationWindowConfig { enable = config.AssetAESConfig.enable,
+                AESKEY = config.AssetAESConfig.AESKEY, AESIV = config.AssetAESConfig.AESIV };
+            // 打开/恢复失败不得降级：可能仍有未恢复的混合版本。
+            var store = await HotUpdateStorage.OpenAsync(persistent, relativeRoot, config.hotUpdate,
+                hotUpdateLifetime.Token, maintenanceScope: maintenance);
             try
             {
-                if (!await downloader.DownloadAsync(CombineUrl(config.remoteURL, "AssetBundles", assetData), tempFileSavePath))
-                    return LoadLocalSourceRef(localFilePath);
                 ThrowIfDestroyed();
-                var remote = sourcesLoadMgr.LoadABSourcesRelated(VersionedDataSerializer.ReadFile(tempFileSavePath));
-                if (remote == null || remote.mainBundleInfo == null || remote.bundleInfo == null)
-                    return LoadLocalSourceRef(localFilePath);
-
-                var downloads = new List<DownloadItem>();
-                var expected = new List<AssetBundleLoadInfo>();
-                var staged = new List<string>();
-                var targets = new List<string>();
-                var bundles = new List<AssetBundleLoadInfo>(remote.bundleInfo.Values);
-                bundles.Add(remote.mainBundleInfo);
-                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var info in bundles)
-                {
-                    if (info == null) throw new InvalidDataException("清单包含空包信息");
-                    if (info.loadPath != ABLoadPath.PersistentDataPath) continue;
-                    string target = SafeBundlePath(info.bundleName);
-                    if (!seen.Add(target)) throw new InvalidDataException("清单包含重复包路径：" + info.bundleName);
-                    // 直接校验文件，不只比较两份清单，修复缺失/损坏/加载位置变更遗漏下载的问题。
-                    if (VerifyBundle(target, info)) continue;
-                    string stage = Path.Combine(stagePath, downloads.Count + ".bundle");
-                    downloads.Add(new DownloadItem {
-                        url = CombineUrl(config.remoteURL, config.LoadAssetPath, info.bundleName),
-                        savePath = stage, fileName = info.bundleName, fileSize = info.size, enableResume = false
-                    });
-                    expected.Add(info);
-                    staged.Add(stage);
-                    targets.Add(target);
-                }
-                if (!await DownloadBatchAndWait(downloads)) return LoadLocalSourceRef(localFilePath);
+                if (!updateEnabled) return null;
+                var bundled = await LoadBundledSourceRef(aes);
                 ThrowIfDestroyed();
-                for (int i = 0; i < downloads.Count; i++)
-                    if (!VerifyBundle(staged[i], expected[i]))
-                        throw new InvalidDataException("下载文件大小或 MD5 不匹配：" + expected[i].bundleName);
-                staged.Add(tempFileSavePath);
-                targets.Add(localFilePath);
-                FileUpdateTransaction.Commit(staged, targets, recoveryPath);
-                // 保留不再使用的旧包，避免删除仍由随包清单引用的文件；后续可单独实现版本垃圾回收。
-                return remote;
+                await store.BeginStageAsync();
+                var manifest = new DownloadItem { url = CombineUrl(remoteUrl, "AssetBundles", assetData),
+                    savePath = store.StagedManifestPath, fileName = assetData, enableResume = false, maximumBytes = store.ManifestDownloadLimit };
+                var downloadClock = System.Diagnostics.Stopwatch.StartNew();
+                bool manifestReady = await DownloadBatchAndWait(new List<DownloadItem> { manifest });
+                store.Statistics.manifestDownloadMilliseconds = downloadClock.ElapsedMilliseconds;
+                if (!manifestReady) return await LoadLocalSourceRef(store, aes);
+                ThrowIfDestroyed();
+                var plan = await store.PrepareAsync(aes, bundled);
+                ThrowIfDestroyed();
+                var downloads = plan.Downloads.Select(item => new DownloadItem {
+                    url = CombineUrl(remoteUrl, relativeRoot, item.Name), savePath = item.StagedPath, fileName = item.Name,
+                    fileSize = item.Size, maximumBytes = item.Size, enableResume = false }).ToList();
+                downloadClock.Restart();
+                bool bundlesReady = await DownloadBatchAndWait(downloads);
+                store.Statistics.bundleDownloadMilliseconds = downloadClock.ElapsedMilliseconds;
+                if (!bundlesReady) return await LoadLocalSourceRef(store, aes);
+                ThrowIfDestroyed();
+                await store.CommitAsync(plan);
+                if (store.RecoveryPending) throw new IOException("缓存维护恢复未完成，停止资源初始化");
+                ThrowIfDestroyed();
+                return plan.Manifest;
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception e)
             {
-                if (File.Exists(Path.Combine(recoveryPath, "journal"))) throw; // 回滚未完成，不能降级加载。
+                if (store.RecoveryPending || store.Statistics.committed) throw;
                 PLogger.LogError("资源更新失败，保留旧版本：" + e.Message);
-                return LoadLocalSourceRef(localFilePath);
+                return await LoadLocalSourceRef(store, aes);
             }
-            finally { TryDeleteStage(stagePath, stageRoot); }
+            finally
+            {
+                CancelHotUpdateDownloads();
+                await store.DisposeAsync();
+                store.Statistics.totalMilliseconds = totalClock.ElapsedMilliseconds;
+                LastHotUpdateStatistics = store.Statistics;
+                foreach (string warning in store.Warnings) if (!destroyed) PLogger.LogWarning(warning);
+                if (!destroyed) PLogger.Log($"热更文件处理：校验 {store.Statistics.verifyMilliseconds}ms，提交 {store.Statistics.commitMilliseconds}ms，"
+                    + $"回收 {store.Statistics.reclaimedBytes} 字节，更新 {store.Statistics.downloadedBundles} 个包，提交={store.Statistics.committed}");
+            }
         }
 
-        private static void TryDeleteStage(string path, string root)
-        {
-            string fullPath = Path.GetFullPath(path);
-            string prefix = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            if (!fullPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) return;
-            try { if (Directory.Exists(fullPath)) Directory.Delete(fullPath, true); }
-            catch (IOException) { } // 超时取消中的文件仍可能被请求占用，下次启动再清理。
-            catch (UnauthorizedAccessException) { }
-        }
-
-        private string SafeBundlePath(string name)
-        {
-            string persistent = Path.GetFullPath(Application.persistentDataPath).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            string root = Path.GetFullPath(Path.Combine(Application.persistentDataPath,
-                config.LoadAssetPath.TrimStart('/', '\\'))).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            string target = Path.GetFullPath(Path.Combine(root, name ?? string.Empty));
-            if (!root.StartsWith(persistent, StringComparison.OrdinalIgnoreCase)
-                || string.IsNullOrWhiteSpace(name) || Path.IsPathRooted(name)
-                || !target.StartsWith(root, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("非法资源包路径：" + name);
-            return target;
-        }
-
-        private static bool VerifyBundle(string path, AssetBundleLoadInfo info)
-        {
-            if (!File.Exists(path)) return false;
-            if (info.size > 0 && new FileInfo(path).Length != info.size) return false;
-            if (string.IsNullOrEmpty(info.md5)) return false;
-            using (var md5 = MD5.Create())
-            using (var stream = File.OpenRead(path))
-                return string.Equals(BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", ""),
-                    info.md5, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private ABSourcesRelated LoadLocalSourceRef(string localFilePath)
+        private async Task<ABSourcesRelated> LoadBundledSourceRef(AssetBundleClassificationWindowConfig aes)
         {
             try
             {
-                if (!File.Exists(localFilePath)) return null;
-                return sourcesLoadMgr.LoadABSourcesRelated(VersionedDataSerializer.ReadFile(localFilePath));
+                if (Application.platform != RuntimePlatform.Android && Application.platform != RuntimePlatform.WebGLPlayer
+                    && !File.Exists(Path.Combine(Application.streamingAssetsPath, "Data", assetData))) return null;
+                var bytes = await StreamingAssetsLoader.LoadBinaryDataAsync("/Data/" + assetData);
+                return bytes == null ? null : await HotUpdateStorage.DecodeManifestAsync(bytes, aes);
             }
-            catch (Exception e)
-            {
-                PLogger.LogWarning("读取本地清单失败，尝试随包清单：" + e.Message);
-                return null;
-            }
+            catch (Exception e) { PLogger.LogWarning("随包清单不可用，本轮跳过旧包回收：" + e.Message); return null; }
+        }
+        private async Task<ABSourcesRelated> LoadLocalSourceRef(HotUpdateStorage store, AssetBundleClassificationWindowConfig aes)
+        {
+            ThrowIfDestroyed();
+            try { return await store.ReadLocalAsync(aes, verifyFiles: true); }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception e) { PLogger.LogWarning("本地清单或文件不可用，尝试随包清单：" + e.Message); return null; }
+        }
+        private void CancelHotUpdateDownloads()
+        {
+            if (downloader != null)
+                foreach (var item in hotUpdateDownloads)
+                    if (item.state != DownloadState.Completed && item.state != DownloadState.Failed && item.state != DownloadState.Canceled)
+                        downloader.CancelDownload(item);
+            hotUpdateDownloads.Clear();
         }
 
         /// <summary>
@@ -358,19 +338,22 @@ namespace UPandaGF
                 return true;
             }
 
+            hotUpdateDownloads.AddRange(downloadList);
+            if (downloader == null || !downloader.isActiveAndEnabled) return false;
             downloader.AddBatchDownloads(downloadList);
+            float batchTimeout = config.downloadBatchTimeout;
             float start = Time.realtimeSinceStartup;
             while (!AllItemsTerminal(downloadList))
             {
-                if (destroyed || downloader == null || (config.downloadBatchTimeout > 0f
-                    && Time.realtimeSinceStartup - start >= config.downloadBatchTimeout))
+                if (destroyed || downloader == null || (batchTimeout > 0f
+                    && Time.realtimeSinceStartup - start >= batchTimeout))
                 {
                     if (downloader != null)
                         foreach (var item in downloadList) downloader.CancelDownload(item);
                     PLogger.LogError("资源下载批次已取消或超时，保留旧版本。");
                     return false;
                 }
-                await Task.Delay(50);
+                await PlatformTasks.Delay(TimeSpan.FromMilliseconds(50));
             }
             bool success = AllItemsCompleted(downloadList);
             if (!success) LogDownloadFailures(downloadList);
@@ -431,16 +414,7 @@ namespace UPandaGF
         /// </summary>
         private static string CombineUrl(params string[] segments)
         {
-            string url = string.Empty;
-            foreach (string segment in segments)
-            {
-                if (string.IsNullOrEmpty(segment))
-                    continue;
-                url = url.Length == 0
-                    ? segment
-                    : url.TrimEnd('/') + "/" + segment.TrimStart('/');
-            }
-            return url;
+            return ABLoadMgr.CombineUrl(segments);
         }
 
         private void SetComponent()
@@ -503,6 +477,9 @@ namespace UPandaGF
         protected override void OnDestroyed()
         {
             destroyed = true;
+            CancelHotUpdateDownloads();
+            hotUpdateLifetime.Cancel(); // 后台文件阶段自行恢复并关闭，不依赖销毁后的 Unity 续体。
+            hotUpdateLifetime.Dispose();
             IsInited = false;
             base.OnDestroyed();
             PLogger.LogWarning("UPGameRoot Destory!!!");

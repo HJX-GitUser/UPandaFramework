@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="4" result="Failed(Child)" total="4" passed="0" failed="4" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-06 04:16:37Z" end-time="2026-11-06 04:16:37Z" duration="0.1737075">
+  <test-suite type="TestSuite" id="1000" name="HotUpdateVerification" fullname="HotUpdateVerification" runstate="Runnable" testcasecount="195" result="Failed" site="Child" start-time="2026-11-06 04:16:37Z" end-time="2026-11-06 04:16:37Z" duration="0.173708" total="4" passed="0" failed="4" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1007" name="UPandaGF.ReplayBaselineTests.dll" fullname="D:/UnityProject/TestProject/Temp/LifecycleAuditProject/Library/ScriptAssemblies/UPandaGF.ReplayBaselineTests.dll" runstate="Runnable" testcasecount="4" result="Failed" site="Child" start-time="2026-11-06 04:16:37Z" end-time="2026-11-06 04:16:37Z" duration="0.169332" total="4" passed="0" failed="4" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="22364" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestFixture" id="1002" name="ReplayBaselineTests" fullname="ReplayBaselineTests" classname="ReplayBaselineTests" runstate="Runnable" testcasecount="4" result="Failed" site="Child" start-time="2026-11-06 04:16:37Z" end-time="2026-11-06 04:16:37Z" duration="0.168479" total="4" passed="0" failed="4" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1005" name="DisableDropsCaptureSnapshots" fullname="ReplayBaselineTests.DisableDropsCaptureSnapshots" methodname="DisableDropsCaptureSnapshots" classname="ReplayBaselineTests" runstate="Runnable" seed="1344543616" result="Failed" start-time="2026-11-06 04:16:37Z" end-time="2026-11-06 04:16:37Z" duration="0.020253" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Disabled recorder retains capture state
+  Expected: 0
+  But was:  1
+]]></message>
+            <stack-trace><![CDATA[at ReplayBaselineTests.DisableDropsCaptureSnapshots () [0x00031] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\ReplayBaselineTests\ReplayBaselineTests.cs:23
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[ReplaySystem] 开始录制
+]]></output>
+        </test-case>
+        <test-case id="1004" name="RestartDropsPreviousPlaybackIndex" fullname="ReplayBaselineTests.RestartDropsPreviousPlaybackIndex" methodname="RestartDropsPreviousPlaybackIndex" classname="ReplayBaselineTests" runstate="Runnable" seed="900963110" result="Failed" start-time="2026-11-06 04:16:37Z" end-time="2026-11-06 04:16:37Z" duration="0.003668" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Old playback index retains previous recording objects
+  Expected: 0
+  But was:  1
+]]></message>
+            <stack-trace><![CDATA[at ReplayBaselineTests.RestartDropsPreviousPlaybackIndex () [0x0009f] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\ReplayBaselineTests\ReplayBaselineTests.cs:21
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[ReplaySystem] 开始录制
+]]></output>
+        </test-case>
+        <test-case id="1003" name="StaticRecordingCoalescesEmptyFrames" fullname="ReplayBaselineTests.StaticRecordingCoalescesEmptyFrames" methodname="StaticRecordingCoalescesEmptyFrames" classname="ReplayBaselineTests" runstate="Runnable" seed="1971196020" result="Failed" start-time="2026-11-06 04:16:37Z" end-time="2026-11-06 04:16:37Z" duration="0.006511" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <failure>
+            <message><![CDATA[  Static recording should keep a start and final hold, not an empty allocation per frame
+  Expected: less than or equal to 2
+  But was:  9
+]]></message>
+            <stack-trace><![CDATA[at ReplayBaselineTests+<StaticRecordingCoalescesEmptyFrames>d__6.MoveNext () [0x00080] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\ReplayBaselineTests\ReplayBaselineTests.cs:19
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in .\Library\PackageCache\com.unity.test-framework@1.1.33\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:46
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[ReplaySystem] 开始录制
+[ReplaySystem] 停止录制：9 帧，时长 0.00s
+]]></output>
+        </test-case>
+        <test-case id="1006" name="StaticSceneDoesNotAllocateSnapshotsForEachObject" fullname="ReplayBaselineTests.StaticSceneDoesNotAllocateSnapshotsForEachObject" methodname="StaticSceneDoesNotAllocateSnapshotsForEachObject" classname="ReplayBaselineTests" runstate="Runnable" seed="1234914480" result="Failed" start-time="2026-11-06 04:16:37Z" end-time="2026-11-06 04:16:37Z" duration="0.131624" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Static capture should not build per-object snapshots and hierarchy strings
+  Expected: less than 1000
+  But was:  240401
+]]></message>
+            <stack-trace><![CDATA[at ReplayBaselineTests.StaticSceneDoesNotAllocateSnapshotsForEachObject () [0x000ca] in D:\UnityProject\TestProject\Temp\LifecycleAuditProject\Assets\ReplayBaselineTests\ReplayBaselineTests.cs:25
+]]></stack-trace>
+          </failure>
+          <output><![CDATA[[ReplaySystem] 开始录制
+REPLAY_BASELINE staticObjects=200 calls=100 allocationBlocks=240401 ms=125
+]]></output>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

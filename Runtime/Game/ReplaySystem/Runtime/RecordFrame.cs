@@ -14,10 +14,8 @@ namespace ReplaySystem
 
         public RecordFrame() { }
 
-        public RecordFrame(float time)
-        {
-            this.time = time;
-            this.snapshots = new List<ObjectSnapshot>();
-        }
+        public RecordFrame(float time) : this(time, 0) { }
+        public RecordFrame(float time, int capacity)
+        { this.time = time; snapshots = new List<ObjectSnapshot>(capacity); }
     }
 }
