@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace UPandaGF.RunTime.TaskSystem
 {
@@ -7,25 +7,30 @@ namespace UPandaGF.RunTime.TaskSystem
     /// 依赖 CharacterController，不需要 Rigidbody；CharacterController 进入 Trigger 时会正常触发 OnTriggerEnter。
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
-    public class DemoPlayerController : MonoBehaviour
+    public class DemoPlayerController : MonoBehaviour, IGameServicesConsumer
     {
         public float moveSpeed = 6f;
         public float jumpHeight = 1.5f;
         public float gravity = -20f;
         public float turnSpeed = 720f;
 
+        private IInputService input;
+        private InputService standalone;
+        public void Configure(IGameServices services) { standalone?.Dispose(); standalone = null; input = services.Input; }
+        private void OnDestroy() { standalone?.Dispose(); }
         private CharacterController controller;
         private float verticalSpeed;
 
         private void Awake()
         {
+            if (input == null) { standalone = new InputService(new UnityLegacyInputBackend(), null); input = standalone; }
             controller = GetComponent<CharacterController>();
         }
 
         private void Update()
         {
-            float horizontal = Input.GetAxisRaw("Horizontal");
-            float vertical = Input.GetAxisRaw("Vertical");
+            float horizontal = input.GetAxis("MoveHorizontal");
+            float vertical = input.GetAxis("MoveVertical");
 
             Vector3 move = new Vector3(horizontal, 0f, vertical);
             if (move.sqrMagnitude > 1f) move.Normalize();
@@ -38,7 +43,7 @@ namespace UPandaGF.RunTime.TaskSystem
             }
 
             if (controller.isGrounded && verticalSpeed < 0f) verticalSpeed = -2f;   // 贴地
-            if (controller.isGrounded && Input.GetKeyDown(KeyCode.Space))
+            if (controller.isGrounded && input.GetButtonDown("Jump"))
             {
                 verticalSpeed = Mathf.Sqrt(-2f * gravity * jumpHeight);
             }

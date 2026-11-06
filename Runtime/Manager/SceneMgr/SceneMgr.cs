@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,9 +10,26 @@ using UPandaGF;
 /// <summary>场景服务。异步等待通过 PublicMono 托管，失败/取消均有明确 Task 终态。</summary>
 public class SceneMgr : LazySingletonBase<SceneMgr>
 {
+    private ISceneService service;
+    public void Configure(ISceneService value)
+    {
+        if (service != null) service.Progress -= OnProgress;
+        service = value;
+        if (service != null) service.Progress += OnProgress;
+    }
+    private void OnProgress(SceneTransitionProgress progress)
+    {
+        if (progress.Phase == SceneTransitionPhase.Loading || progress.Phase == SceneTransitionPhase.Completed)
+            EventCenter.Instance.EventTrigger(new SceneMgr_SceneAsynLoadProgress(progress.Progress, progress.RequestId, progress.Scene, progress.Phase));
+    }
+    private void EnsureNoManagedTransition()
+    {
+        if (service is SceneService scenes && scenes.HasPendingRequests)
+            throw new InvalidOperationException("已有受管理的场景操作；请使用 ISceneService 排队。");
+    }
     public void LoadScene(string sceneName, UnityAction Callback = null) { LoadScene(sceneName, LoadSceneMode.Single, Callback); }
     public void LoadScene(string sceneName, LoadSceneMode loadSceneMode, UnityAction Callback = null)
-    { SceneManager.LoadScene(sceneName, loadSceneMode); Callback?.Invoke(); }
+    { EnsureNoManagedTransition(); SceneManager.LoadScene(sceneName, loadSceneMode); Callback?.Invoke(); }
 
     // 保留 Asyn 拼写及全部既有重载；旧回调仅在成功时调用，失败由 PublicMono 记录，取消静默结束。
     public void LoadSceneAsyn(string sceneName, UnityAction Callback = null) { LoadSceneAsyn(sceneName, LoadSceneMode.Single, Callback); }
@@ -26,6 +43,7 @@ public class SceneMgr : LazySingletonBase<SceneMgr>
         CancellationToken cancellationToken = default, float timeoutSeconds = 0f)
     {
         if (cancellationToken.IsCancellationRequested) return Task.FromCanceled(cancellationToken);
+        if (service != null) return service.LoadAsync(sceneName, loadSceneMode, cancellationToken, timeoutSeconds);
         var mono = PublicMono.Instance;
         if (mono == null) return Task.FromCanceled(new CancellationToken(true));
         return mono.RunCoroutine(ReallyLoadSceneAsyn(sceneName, loadSceneMode), timeoutSeconds, cancellationToken);
@@ -53,11 +71,16 @@ public class SceneMgr : LazySingletonBase<SceneMgr>
         EventCenter.Instance.EventTrigger(new SceneMgr_SceneAsynLoadProgress(operation.progress));
     }
     public string GetActiveScene() { return SceneManager.GetActiveScene().name; }
-    public AsyncOperation UnloadSceneAsync(string sceneName) { return SceneManager.UnloadSceneAsync(sceneName); }
-    public AsyncOperation UnloadSceneAsync(int sceneIndex) { return SceneManager.UnloadSceneAsync(sceneIndex); }
+    public AsyncOperation UnloadSceneAsync(string sceneName) { EnsureNoManagedTransition(); return SceneManager.UnloadSceneAsync(sceneName); }
+    public AsyncOperation UnloadSceneAsync(int sceneIndex) { EnsureNoManagedTransition(); return SceneManager.UnloadSceneAsync(sceneIndex); }
 }
 public class SceneMgr_SceneAsynLoadProgress : EventArgBase
 {
     public float progress { get; private set; }
+    public long RequestId { get; }
+    public string SceneName { get; }
+    public SceneTransitionPhase Phase { get; }
+    public SceneMgr_SceneAsynLoadProgress(float value, long requestId, string scene, SceneTransitionPhase phase)
+    { progress = value; RequestId = requestId; SceneName = scene; Phase = phase; }
     public SceneMgr_SceneAsynLoadProgress(float progress) { this.progress = progress; }
 }

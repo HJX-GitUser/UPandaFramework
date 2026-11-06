@@ -19,3 +19,7 @@
 ## 清单编解码
 
 AB 清单的格式、结构检查与 AES 包裹统一由 AssetReferenceSerializer 处理；新写入使用版本化字段图，旧 NRBF 只读兼容。生成端升级或切换加密配置时保留旧原始文件。规则及 API 见 `Runtime/Manager/StorageDataMgr/Serialization/README.md`。
+
+## P0 资源入口关闭（2026-11-06）
+
+AssetsLoader 新增 Shutdown()，使初始化代次和就绪状态失效，清除已有 AB 状态；销毁复用同一入口。底层 ABLoadMgr 继续处理迟到原生请求。热更执行已从 UPGameRoot 抽离至 ContentUpdateService。见 [P0 记录](../../../OptimzeLog/P0Startup/README.md)。

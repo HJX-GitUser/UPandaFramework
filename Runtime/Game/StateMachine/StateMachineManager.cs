@@ -1,368 +1,163 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 namespace UPandaGF.StateMechine
 {
-    /// <summary>
-    /// 分层状态管理器
-    /// </summary>
+    /// <summary>分层状态机。活动叶状态与成功切换历史分开；状态 ID 在一台机器中唯一。</summary>
     public class StateMachineManager : MonoBehaviour
     {
-        /// <summary>
-        /// 根状态
-        /// </summary>
-        private IState rootState = null;
-
-        /// <summary>
-        /// 状态ID到状态的映射（用于快速查找）
-        /// </summary>
-        private Dictionary<string, IState> stateRegistry = new Dictionary<string, IState>();
-
-        /// <summary>
-        /// 状态栈（用于返回上一级状态）
-        /// </summary>
-        private Stack<IState> stateStack = new Stack<IState>();
-
-        /// <summary>
-        /// 当前活跃状态的完整路径
-        /// </summary>
+        private IState rootState;
+        private readonly Dictionary<string, IState> stateRegistry = new Dictionary<string, IState>();
+        private readonly Stack<IState> stateStack = new Stack<IState>();
+        private bool transitioning;
         public string ActiveStatePath { get; private set; } = "None";
-
-        /// <summary>
-        /// 状态改变事件
-        /// </summary>
+        public IState CurrentState => GetCurrentContext();
+        public int HistoryCount => stateStack.Count;
         public event Action<string, string> OnStateChanged;
 
-        /// <summary>
-        /// 路径是否已失效（状态切换后置为 true，需重新计算，避免每帧递归拼接字符串）
-        /// </summary>
-        private bool pathDirty = true;
-
-        /// <summary>
-        /// 多级切换记录：记录已切换的父状态及其原活跃子状态（用于失败回滚）
-        /// </summary>
-        private struct SwitchRecord
-        {
-            public BaseState parent;
-            public IState oldChild;
-        }
-
-        void Update()
-        {
-            if (rootState != null)
-            {
-                rootState.OnUpdate(Time.deltaTime);
-                // 仅当路径失效时才重新计算
-                if (pathDirty)
-                {
-                    UpdateActivePath();
-                    pathDirty = false;
-                }
-            }
-        }
-
-        void FixedUpdate()
-        {
-            rootState?.OnFixedUpdate();
-        }
-
-        /// <summary>
-        /// 注册状态（自动构建层级关系）
-        /// </summary>
+        private void Update() { rootState?.OnUpdate(Time.deltaTime); RefreshActivePath(); }
+        private void FixedUpdate() { rootState?.OnFixedUpdate(); }
         public void RegisterState(IState state, string parentStateID = "")
         {
-            if (state == null) return;
-
-            // 检查是否已注册
-            if (stateRegistry.ContainsKey(state.StateID))
+            if (state == null || stateRegistry.ContainsKey(state.StateID)) return;
+            if (string.IsNullOrEmpty(parentStateID))
             {
-                Debug.LogWarning($"状态 {state.StateID} 已注册");
+                if (rootState != null) { Debug.LogError("只能注册一个根状态。"); return; }
+                state.Parent = null;
+                rootState = state;
+                stateRegistry.Add(state.StateID, state);
+                state.OnEnter();
+                RefreshActivePath();
                 return;
             }
-
-            // 添加到注册表
-            stateRegistry[state.StateID] = state;
-
-            // 设置父子关系
-            if (!string.IsNullOrEmpty(parentStateID))
-            {
-                if (stateRegistry.TryGetValue(parentStateID, out var parentState))
-                {
-                    if (parentState is BaseState baseParent)
-                    {
-                        baseParent.RegisterChild(state);
-                    }
-                    else
-                    {
-                        // 父状态不是 BaseState，无法挂载子状态，回滚注册
-                        stateRegistry.Remove(state.StateID);
-                        Debug.LogError($"父状态 {parentStateID} 不是 BaseState，无法注册子状态 {state.StateID}");
-                    }
-                }
-                else
-                {
-                    // 父状态未找到，回滚注册
-                    stateRegistry.Remove(state.StateID);
-                    Debug.LogError($"父状态 {parentStateID} 未找到，无法注册子状态 {state.StateID}");
-                }
-            }
-            else
-            {
-                // 如果没有指定父状态，设置为根状态
-                if (rootState == null)
-                {
-                    rootState = state;
-                    rootState.OnEnter();
-                    pathDirty = true;
-                }
-                else
-                {
-                    // 根状态已存在，回滚注册
-                    stateRegistry.Remove(state.StateID);
-                    Debug.LogError($"已存在根状态 {rootState.StateID}，无法设置新根状态 {state.StateID}");
-                }
-            }
+            if (!stateRegistry.TryGetValue(parentStateID, out var parent) || !(parent is BaseState baseParent))
+            { Debug.LogError("父状态不存在或不是 BaseState：" + parentStateID); return; }
+            baseParent.RegisterChild(state);
+            stateRegistry.Add(state.StateID, state);
         }
-
-        /// <summary>
-        /// 切换状态（支持层级路径）
-        /// </summary>
-        /// <param name="statePath">状态路径（例如："Movement/Run"）</param>
         public bool SwitchState(string statePath)
         {
-            if (string.IsNullOrEmpty(statePath)) return false;
-
-            string[] pathSegments = statePath.Split('/');
-
-            if (pathSegments.Length == 1)
+            if (transitioning || !TryResolve(statePath, out var target)) return false;
+            return Transition(target, true);
+        }
+        private bool TryResolve(string path, out IState target)
+        {
+            target = null;
+            if (string.IsNullOrWhiteSpace(path)) return false;
+            var parts = path.Split('/');
+            if (!stateRegistry.TryGetValue(parts[0], out target)) return false;
+            // 支持唯一 ID、根路径及以任意已注册祖先起始的路径。
+            for (int i = 1; i < parts.Length; i++)
             {
-                // 单级路径：直接切换根状态或当前上下文的子状态
-                return SwitchToState(statePath);
+                if (!(target is BaseState parent) || !parent.children.TryGetValue(parts[i], out target)) return false;
             }
-
-            // 多级路径：逐级切换，失败时回滚
-            IState currentState = GetCurrentContext();
-            if (currentState == null)
+            return true;
+        }
+        private bool Transition(IState target, bool remember)
+        {
+            var previous = GetCurrentContext();
+            if (ReferenceEquals(previous, target)) return true;
+            var chain = Chain(target);
+            if (chain.Count == 0 || !ReferenceEquals(chain[0], rootState)) return false;
+            transitioning = true;
+            string oldPath = ActiveStatePath;
+            bool changed = false;
+            try
             {
-                Debug.LogWarning("没有可用的状态上下文，无法切换");
+                // 无论 ID 还是多级路径，均由真实活动叶节点及其祖先决定是否允许。
+                for (var current = previous; current != null; current = current.Parent)
+                    if (!current.CanTransitionTo(target.StateID)) return false;
+                changed = true;
+                Activate(chain);
+                RefreshActivePath();
+                if (remember && previous != null) stateStack.Push(previous);
+            }
+            catch (Exception e)
+            {
+                // 路径及约束失败不会触发生命周期；用户生命周期抛错时尽力恢复活动结构。
+                if (changed && previous != null)
+                    try { Activate(Chain(previous)); } catch (Exception rollback) { Debug.LogException(rollback); }
+                RefreshActivePath();
+                Debug.LogException(e);
                 return false;
             }
-
-            string oldPath = ActiveStatePath;
-
-            // 把切换前的上下文压栈，便于 GoBack 返回
-            stateStack.Push(currentState);
-
-            // 记录已切换的父状态与其原活跃子状态（用于失败回滚）
-            var switchRecord = new Stack<SwitchRecord>();
-
-            for (int i = 0; i < pathSegments.Length; i++)
+            finally { transitioning = false; }
+            transitioning = true;
+            try
             {
-                var baseState = currentState as BaseState;
-                if (baseState == null)
-                {
-                    Rollback(switchRecord);
-                    return false;
-                }
-
-                IState oldChild = baseState.ActiveChild;
-                if (!baseState.SwitchToChild(pathSegments[i]))
-                {
-                    Rollback(switchRecord);
-                    return false;
-                }
-
-                switchRecord.Push(new SwitchRecord { parent = baseState, oldChild = oldChild });
-                currentState = baseState.ActiveChild;
+                if (OnStateChanged != null)
+                    foreach (Action<string, string> listener in OnStateChanged.GetInvocationList())
+                        try { listener(oldPath, ActiveStatePath); } catch (Exception e) { Debug.LogException(e); }
             }
-
-            // 更新路径并触发事件
-            RefreshActivePath();
-            OnStateChanged?.Invoke(oldPath, ActiveStatePath);
+            finally { transitioning = false; }
             return true;
         }
-
-        /// <summary>
-        /// 切换到指定状态
-        /// </summary>
-        private bool SwitchToState(string stateID)
+        private static List<IState> Chain(IState state)
         {
-            if (!stateRegistry.TryGetValue(stateID, out var targetState)) return false;
-
-            // 检查是否可以切换
-            if (!CanTransitionTo(targetState)) return false;
-
-            // 记录旧状态
-            var oldPath = ActiveStatePath;
-
-            // 处理状态栈（如果新状态是当前状态的子状态，压栈）
-            var currentState = GetCurrentContext();
-            if (currentState != null && targetState.Parent == currentState)
+            var result = new List<IState>();
+            var seen = new HashSet<IState>();
+            while (state != null)
             {
-                stateStack.Push(currentState);
+                if (!seen.Add(state)) throw new InvalidOperationException("状态父链存在循环。");
+                result.Add(state); state = state.Parent;
             }
-
-            // 切换状态
-            if (targetState.Parent == null)
-            {
-                // 切换根状态：清空旧状态栈（已失效），退出旧根并进入新根
-                stateStack.Clear();
-                rootState?.OnExit();
-                rootState = targetState;
-                rootState.OnEnter();
-            }
-            else
-            {
-                // 通过父状态切换
-                if (targetState.Parent is BaseState parentBase)
-                {
-                    if (!parentBase.SwitchToChild(stateID)) return false;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            // 更新路径并触发事件
-            RefreshActivePath();
-            OnStateChanged?.Invoke(oldPath, ActiveStatePath);
-
-            return true;
+            result.Reverse(); return result;
         }
-
-        /// <summary>
-        /// 返回上一级状态
-        /// </summary>
+        private static void Activate(List<IState> chain)
+        {
+            bool entered = false;
+            for (int i = 0; i < chain.Count - 1; i++)
+            {
+                var parent = (BaseState)chain[i];
+                if (!ReferenceEquals(parent.ActiveChild, chain[i + 1]))
+                {
+                    entered = true;
+                    parent.SwitchToChild(chain[i + 1].StateID);
+                }
+            }
+            if (!entered && chain[chain.Count - 1] is BaseState ancestor) ancestor.ClearActiveChild();
+        }
         public bool GoBack()
         {
-            if (stateStack.Count == 0) return false;
-
-            var previousState = stateStack.Pop();
-            return SwitchToState(previousState.StateID);
-        }
-
-        /// <summary>
-        /// 获取当前上下文状态（状态栈顶或根状态）
-        /// </summary>
-        private IState GetCurrentContext()
-        {
-            return stateStack.Count > 0 ? stateStack.Peek() : rootState;
-        }
-
-        /// <summary>
-        /// 检查是否可以切换到目标状态
-        /// </summary>
-        private bool CanTransitionTo(IState targetState)
-        {
-            var currentState = GetCurrentContext();
-            if (currentState == null) return true;
-
-            // 沿层级链向上，逐级检查当前状态是否允许切换到目标状态
-            var temp = currentState;
-            while (temp != null)
-            {
-                if (!temp.CanTransitionTo(targetState.StateID))
-                    return false;
-
-                // 到达目标状态的父层级后停止（更高层级无需检查）
-                if (temp.Parent == null || temp.Parent == targetState.Parent)
-                    break;
-
-                temp = temp.Parent;
-            }
-
+            if (transitioning || stateStack.Count == 0) return false;
+            var target = stateStack.Peek();
+            if (!Transition(target, false)) return false;
+            stateStack.Pop();
             return true;
         }
-
-        /// <summary>
-        /// 更新当前活跃路径
-        /// </summary>
-        private void UpdateActivePath()
+        private IState GetCurrentContext()
         {
-            if (rootState is BaseState baseRoot)
-            {
-                ActiveStatePath = baseRoot.GetActivePath();
-            }
-            else
-            {
-                ActiveStatePath = rootState?.StateID ?? "None";
-            }
+            var state = rootState;
+            while (state is BaseState parent && parent.ActiveChild != null) state = parent.ActiveChild;
+            return state;
         }
-
-        /// <summary>
-        /// 更新活跃路径并标记为已刷新
-        /// </summary>
         private void RefreshActivePath()
         {
-            UpdateActivePath();
-            pathDirty = false;
+            if (rootState == null) { ActiveStatePath = "None"; return; }
+            var names = new List<string>();
+            foreach (var state in Chain(GetCurrentContext())) names.Add(state.StateID);
+            ActiveStatePath = string.Join("/", names);
         }
-
-        /// <summary>
-        /// 回滚多级切换：逐级恢复原活跃子状态，并弹出切换前压入的状态栈
-        /// </summary>
-        private void Rollback(Stack<SwitchRecord> record)
-        {
-            // 逆序恢复各级原活跃子状态
-            while (record.Count > 0)
-            {
-                var r = record.Pop();
-                if (r.oldChild != null)
-                {
-                    r.parent.SwitchToChild(r.oldChild.StateID);
-                }
-                else
-                {
-                    r.parent.ClearActiveChild();
-                }
-            }
-
-            // 弹出多级切换前压入的状态栈
-            if (stateStack.Count > 0) stateStack.Pop();
-        }
-
-        /// <summary>
-        /// 获取状态信息（用于调试）
-        /// </summary>
         public string GetStateInfo()
         {
-            var info = $"当前状态路径: {ActiveStatePath}\n";
-            info += $"状态栈深度: {stateStack.Count}\n";
-
-            if (rootState is BaseState baseRoot)
-            {
-                info += "状态层级结构:\n";
-                info += PrintStateTree(baseRoot, 0);
-            }
-
-            return info;
+            var text = new System.Text.StringBuilder($"当前状态路径: {ActiveStatePath}\n状态栈深度: {stateStack.Count}\n状态层级结构:\n");
+            AppendTree(text, rootState, 0);
+            return text.ToString();
         }
-
-        private string PrintStateTree(BaseState state, int indent)
+        private void AppendTree(System.Text.StringBuilder text, IState state, int depth)
         {
-            var prefix = new string(' ', indent * 2);
-            var result = $"{prefix}[{state.StateID}]";
-
-            if (state == (rootState as BaseState))
-                result += " (Root)";
-
-            if (state == (GetCurrentContext() as BaseState))
-                result += " (Current)";
-
-            result += "\n";
-
-            foreach (var child in state.children.Values)
-            {
-                if (child is BaseState childBase)
-                {
-                    result += PrintStateTree(childBase, indent + 1);
-                }
-            }
-
-            return result;
+            if (state == null) return;
+            text.Append(' ', depth * 2).Append(state.StateID);
+            if (ReferenceEquals(state, CurrentState)) text.Append(" (Current)");
+            text.AppendLine();
+            if (state is BaseState parent)
+                foreach (var child in parent.children.Values) AppendTree(text, child, depth + 1);
+        }
+        private void OnDestroy()
+        {
+            try { rootState?.OnExit(); }
+            finally { rootState = null; stateRegistry.Clear(); stateStack.Clear(); OnStateChanged = null; ActiveStatePath = "None"; }
         }
     }
 }

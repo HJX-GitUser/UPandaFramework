@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -89,6 +89,12 @@ namespace UPandaGF
         private GameObject poolObj;
         private ResourcesLoader resourcesLoader;
         private IAssetsLoader assetsLoader;
+        private IAssetService assetService;
+        public void Configure(IAssetService service)
+        {
+            if (entries.Count > 0) throw new InvalidOperationException("对象池使用后不能替换资源服务。");
+            assetService = service ?? throw new ArgumentNullException(nameof(service));
+        }
         private int generation, creating;
         private bool disposed;
         private static string Key(string path, AssetLoadMethod method) { return (int)method + ":" + path; }
@@ -142,6 +148,7 @@ namespace UPandaGF
             if (entry.prefab != null && entry.prefab.Asset == null) { entry.prefab.Dispose(); entry.prefab = null; }
             if (entry.prefab == null)
             {
+                if (assetService != null) throw new InvalidOperationException("注入资源服务的对象池请使用 GetObjAsync 或先 Prewarm。");
                 var loader = ResourcesLoaderRef;
                 var acquired = loader != null ? loader.Acquire<GameObject>(path) : null;
                 // 同步接管异步 Resources 请求时，异步续体可能已先提交同一条目。
@@ -213,6 +220,7 @@ namespace UPandaGF
         }
         private async Task<AssetLease<GameObject>> LoadLease(string path, AssetLoadMethod method)
         {
+            if (assetService != null) return await assetService.AcquireAsync<GameObject>(path, method);
             if (method == AssetLoadMethod.Resources)
             {
                 var loader = ResourcesLoaderRef;
@@ -220,6 +228,7 @@ namespace UPandaGF
             }
             if (method != AssetLoadMethod.AssetBundle) return null;
             var assets = AssetsLoaderRef;
+            if (assets is AssetsLoader owned) return await owned.AcquireAsync<GameObject>(path);
             var prefab = assets != null ? await assets.LoadAsync<GameObject>(path) : null;
             return prefab != null ? new AssetLease<GameObject>(prefab, null) : null;
         }
@@ -314,6 +323,13 @@ namespace UPandaGF
             if (root != null) UnityEngine.Object.Destroy(root);
         }
         public void Dispose() { if (disposed) return; disposed = true; Clear(); }
+        /// <summary>作用域拥有池及其借出实例时使用。普通 Dispose 保留旧的借出实例持有语义。</summary>
+        public void DisposeAllInstances()
+        {
+            Dispose();
+            foreach (var tag in new List<PoolInstanceLease>(instances))
+                if (tag != null) UnityEngine.Object.Destroy(tag.gameObject);
+        }
         private GameObject GetPoolRoot()
         {
             if (!isOpenLayout) return null;

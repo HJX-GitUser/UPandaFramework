@@ -1,4 +1,4 @@
-﻿// =============================================================================
+// =============================================================================
 //  AudioMgr.cs —— 音频管理器（背景音乐 + 音效）
 // -----------------------------------------------------------------------------
 //  职责：
@@ -40,7 +40,7 @@ namespace UPandaGF
     /// <summary>
     /// 音频管理器：BGM 支持交叉淡入淡出；音效支持 Resources / AssetBundle 加载并自动回收。
     /// </summary>
-    public class AudioMgr : LazySingletonBase<AudioMgr>, IDisposable
+    public class AudioMgr : LazySingletonBase<AudioMgr>, IDisposable, IAudioService
     {
         #region 常量
 
@@ -81,7 +81,13 @@ namespace UPandaGF
         private int uniqueRequestId;                    // 唯一音效的请求序号
 
         // ---------- 其它 ----------
-        private IAssetsLoader assetsLoader;             // 惰性获取（仅 AssetBundle 模式使用）
+        private IAssetsLoader assetsLoader;
+        private IAssetService assetService;
+        public void Configure(IAssetService service)
+        {
+            if (disposed) throw new ObjectDisposedException(nameof(AudioMgr));
+            assetService = service ?? throw new ArgumentNullException(nameof(service));
+        }             // 惰性获取（仅 AssetBundle 模式使用）
         private PublicMono registeredMono;
         private bool disposed;
         private int soundGeneration;
@@ -692,6 +698,7 @@ namespace UPandaGF
         /// <summary>回收播放完的音效</summary>
         private void RecycleFinishedSounds()
         {
+            if (AudioListener.pause) return;
             for (int i = soundList.Count - 1; i >= 0; i--)
             {
                 SoundHandle handle = soundList[i];
@@ -769,6 +776,7 @@ namespace UPandaGF
         }
         private async Task<AssetLease<AudioClip>> AcquireClip(string path, AssetLoadMethod method)
         {
+            if (assetService != null) return await assetService.AcquireAsync<AudioClip>(path, method);
             if (method == AssetLoadMethod.Resources)
             {
                 var loader = ResourcesLoader.Instance;
@@ -776,6 +784,7 @@ namespace UPandaGF
             }
             if (method != AssetLoadMethod.AssetBundle) return null;
             var loaderAB = GetAssetsLoader();
+            if (loaderAB is AssetsLoader owned) return await owned.AcquireAsync<AudioClip>(path);
             var clip = loaderAB != null ? await loaderAB.LoadAsync<AudioClip>(path) : null;
             return clip != null ? new AssetLease<AudioClip>(clip, null) : null;
         }

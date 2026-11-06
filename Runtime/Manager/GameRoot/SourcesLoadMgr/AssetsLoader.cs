@@ -1,4 +1,5 @@
-﻿using System.IO;
+using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace UPandaGF
     /// <summary>
     /// 资源加载封装
     /// </summary>
-    public class AssetsLoader : MonoBehaviour, IAssetsLoader
+    public class AssetsLoader : MonoBehaviour, IAssetsLoader, ISceneAssetProvider
     {
         private int initializationGeneration;
         private bool initialized;
@@ -20,6 +21,8 @@ namespace UPandaGF
         private ABLoadMgr abLoadMgr;
         private EditorSourcesMgr editorSourcesMgr;
         private SceneMgr sceneMgr;
+        private ISceneService sceneService;
+        public void ConfigureScenes(ISceneService service) { sceneService = service; }
         private ABSourcesRelated sourceRef;
 
         /// <summary>
@@ -91,6 +94,38 @@ namespace UPandaGF
             }
             initialized = true;
             PLogger.Log("AssetsLoader Inited !!!");
+        }
+
+        public async Task<AssetLease<T>> AcquireAsync<T>(string path) where T : UnityEngine.Object
+        {
+            if (!IsInitialized) throw new System.InvalidOperationException("资源服务尚未就绪。");
+            if (method == AssetLoaddingMethod.Editor)
+            {
+                var asset = editorSourcesMgr.Load<T>(path);
+                // AssetDatabase owns editor assets; the lease still has explicit lifetime.
+                return asset != null ? new AssetLease<T>(asset, null) : null;
+            }
+            AssetRelatedArg arg;
+            if (!TryGetAssetArg(path, out arg)) return null;
+            return await abLoadMgr.AcquireAsync<T>(arg.bundleName, arg.sourceName, sourceRef.GetABLoadPath(arg));
+        }
+        public async Task<IDisposable> PrepareSceneAsync(string path, System.Threading.CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            if (!IsInitialized) throw new System.InvalidOperationException("资源服务尚未就绪。");
+            if (method == AssetLoaddingMethod.Editor) return null;
+            AssetRelatedArg arg;
+            if (!sourceRef.sourcesDic.ContainsKey(path))
+            {
+                var matches = sourceRef.sourcesDic.Keys.Where(key => key.EndsWith(".unity", StringComparison.OrdinalIgnoreCase)
+                    && Path.GetFileNameWithoutExtension(key) == path).ToArray();
+                if (matches.Length != 1) throw new ArgumentException("场景名称未登记或存在重名，请使用完整路径：" + path);
+                path = matches[0];
+            }
+            if (!TryGetAssetArg(path, out arg)) throw new System.ArgumentException("场景资源未登记：" + path);
+            var lease = await AssetService.WaitForLeaseAsync(abLoadMgr.AcquireBundleAsync(arg.bundleName, sourceRef.GetABLoadPath(arg)), token);
+            if (lease == null) throw new System.IO.IOException("场景资源包加载失败：" + path);
+            return lease;
         }
 
         public async Task<T> LoadAsync<T>(string path) where T : UnityEngine.Object
@@ -174,6 +209,11 @@ namespace UPandaGF
         }
         public void LoadSceneAsync(string path, LoadSceneMode loadSceneMode, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null)
         {
+            if (sceneService != null)
+            {
+                _ = LoadManagedSceneAsync(path, loadSceneMode, assetLoadComplete, sceneLoadComplete);
+                return;
+            }
             if (string.IsNullOrEmpty(path))
             {
                 PLogger.LogError($"场景路径为空：{path}");
@@ -196,6 +236,27 @@ namespace UPandaGF
                     LoadSceneAssetBundle(arg, path, sceneName, loadSceneMode, assetLoadComplete, sceneLoadComplete);
                     break;
             }
+        }
+
+        private static void InvokeSceneCallback(UnityAction callback)
+        {
+            if (callback == null) return;
+            foreach (UnityAction action in callback.GetInvocationList())
+                try { action(); } catch (Exception e) { Debug.LogException(e); }
+        }
+        private async Task LoadManagedSceneAsync(string path, LoadSceneMode mode, UnityAction prepared, UnityAction completed)
+        {
+            bool notified = false;
+            try
+            {
+                await sceneService.LoadAsync(path, mode, progress: progress => {
+                    if (!notified && progress.Phase == SceneTransitionPhase.Loading)
+                    { notified = true; InvokeSceneCallback(prepared); }
+                });
+                InvokeSceneCallback(completed);
+            }
+            catch (System.OperationCanceledException) { }
+            catch (System.Exception e) { Debug.LogException(e); }
         }
 
         /// <summary>
@@ -311,7 +372,16 @@ namespace UPandaGF
             return isUnload;
         }
 
-        private void OnDestroy() { initializationGeneration++; initialized = false; }
+        public void Shutdown()
+        {
+            initializationGeneration++;
+            initialized = false;
+            sceneService = null;
+            if (abLoadMgr != null) abLoadMgr.ClearAB();
+            abLoadMgr = null;
+            sourceRef = null;
+        }
+        private void OnDestroy() { Shutdown(); }
 
         public void ClearAB()
         {
@@ -319,7 +389,7 @@ namespace UPandaGF
             if (method == AssetLoaddingMethod.Assetbundles) initialized = false;
             if (method == AssetLoaddingMethod.Assetbundles)
             {
-                abLoadMgr.ClearAB();
+                if (abLoadMgr != null) abLoadMgr.ClearAB();
             }
         }
 

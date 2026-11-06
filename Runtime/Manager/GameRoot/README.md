@@ -169,3 +169,7 @@ Inspector 顶部是「UPGameRoot」，底部是配置文件的路径提示 + 三
 清单生成与加载共用 AssetReferenceSerializer。新清单使用带类别/版本/类型/长度/SHA-256 的字段图，保留 Dictionary 和原加载位置；旧 NRBF 清单只读兼容，不再执行 BinaryFormatter.Deserialize。AES 配置仍需生成端/运行端配对。热更本地/远程清单读取增加 64 MiB 上限。
 
 新客户端兼容旧清单；旧客户端不兼容新清单，生成工具和发布渠道需安排对应版本。详见 `OptimzeLog/SerializationMigration/README.md`。
+
+## P0 启动生命周期（2026-11-06）
+
+启动已由 StartupLifecycle 排序，热更执行迁移至 HotUpdate/ContentUpdateService.cs。新增 InitializeAsync、WaitUntilReadyAsync、ShutdownAsync。旧完成/失败事件保留；未就绪时 GetAssetsLoader 改为抛异常。取消等待只影响调用者；失败不原地重试，关闭后重建根节点。详细顺序、所有权与退出限制见 [P0 记录](../../../OptimzeLog/P0Startup/README.md)。

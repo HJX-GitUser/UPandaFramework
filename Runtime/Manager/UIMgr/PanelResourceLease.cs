@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using UnityEngine;
+using System;
 
 namespace UPandaGF
 {
@@ -6,6 +7,8 @@ namespace UPandaGF
     [AddComponentMenu("")]
     internal sealed class PanelResourceLease : MonoBehaviour
     {
+        private IDisposable lease;
+        public void Initialize(IDisposable value) { lease = value; }
         private ResourcesLoader loader;
         private string path;
         public void Initialize(ResourcesLoader resourceLoader, string resourcePath)
@@ -15,6 +18,7 @@ namespace UPandaGF
         }
         private void OnDestroy()
         {
+            lease?.Dispose(); lease = null;
             if (loader != null) loader.UnLoadAsset<GameObject>(path, true);
             loader = null;
         }

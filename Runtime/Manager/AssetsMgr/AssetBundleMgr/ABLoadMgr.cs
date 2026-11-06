@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -34,6 +34,10 @@ namespace UPandaGF
         private readonly Dictionary<string, Task> retiring = new Dictionary<string, Task>();
         private readonly HashSet<AssetOperation> assetOperations = new HashSet<AssetOperation>();
         private ABSourcesRelated sourceRef;
+        private readonly Dictionary<string, int> leasePins = new Dictionary<string, int>();
+        private readonly HashSet<string> managedBundles = new HashSet<string>();
+        private readonly HashSet<string> legacyBundles = new HashSet<string>();
+        public int GetLeaseCount(string name) => leasePins.TryGetValue(name, out var count) ? count : 0;
         private int generation;
         private bool destroyed;
         public bool IsInitialized => !destroyed && mainAB != null && manifest != null;
@@ -152,13 +156,23 @@ namespace UPandaGF
                 // 原生收尾完成后才允许下一代同名加载启动。
                 operation.settled.TrySetResult(true);
                 operation.result.TrySetResult(null);
+                CollectLeaseBundles();
             }
         }
         private void Progress(BundleOperation operation, float value, bool complete = false)
         {
             if (Current(operation.generation)) EventCenter.Instance.EventTrigger(new ABLoadProgressEvent(operation.name, operation.path, value, complete));
         }
-        public async Task<AssetBundle> GetAssetBundle(string abName, ABLoadPath loodPath)
+        public Task<AssetBundle> GetAssetBundle(string abName, ABLoadPath loodPath)
+        {
+            if (!string.IsNullOrEmpty(abName))
+            {
+                legacyBundles.Add(abName);
+                if (manifest != null) foreach (string name in manifest.GetAllDependencies(abName)) legacyBundles.Add(name);
+            }
+            return GetAssetBundleCore(abName, loodPath);
+        }
+        private async Task<AssetBundle> GetAssetBundleCore(string abName, ABLoadPath loodPath)
         {
             int epoch = generation;
             var dependencies = manifest;
@@ -203,7 +217,7 @@ namespace UPandaGF
                 operation.result.TrySetResult(Current(epoch) ? request.asset : null);
             }
             catch (Exception e) { if (Current(epoch)) Debug.LogException(e); }
-            finally { assetOperations.Remove(operation); operation.settled.TrySetResult(true); operation.result.TrySetResult(null); }
+            finally { assetOperations.Remove(operation); operation.settled.TrySetResult(true); operation.result.TrySetResult(null); CollectLeaseBundles(); }
         }
         public void LoadResAsync<T>(string abName, string resName, ABLoadPath loodPath, UnityAction<T> callBack) where T : Object
         { _ = Deliver(LoadResAsync<T>(abName, resName, loodPath), callBack); }
@@ -217,9 +231,61 @@ namespace UPandaGF
             try { result = await task; } catch (Exception e) { Debug.LogException(e); }
             ResourcesLoader.InvokeCallbacks(callback, result);
         }
+        public async Task<AssetLease<T>> AcquireAsync<T>(string abName, string resName, ABLoadPath path) where T : Object
+        {
+            var bundleLease = await AcquireBundleAsync(abName, path);
+            if (bundleLease == null) return null;
+            int epoch = generation;
+            try
+            {
+                var operation = new AssetOperation();
+                assetOperations.Add(operation);
+                _ = RunAsset(operation, bundleLease.Asset, resName, typeof(T), epoch);
+                var asset = await operation.result.Task as T;
+                if (!Current(epoch) || asset == null) return null;
+                var owned = bundleLease;
+                bundleLease = null;
+                return new AssetLease<T>(asset, owned.Dispose);
+            }
+            finally { bundleLease?.Dispose(); }
+        }
+        public async Task<AssetLease<AssetBundle>> AcquireBundleAsync(string name, ABLoadPath path)
+        {
+            if (!IsInitialized || string.IsNullOrEmpty(name)) return null;
+            int epoch = generation;
+            var names = new List<string>(manifest.GetAllDependencies(name));
+            if (!names.Contains(name)) names.Add(name);
+            foreach (var item in names) { leasePins[item] = GetLeaseCount(item) + 1; managedBundles.Add(item); }
+            bool transferred = false;
+            try
+            {
+                var bundle = await GetAssetBundleCore(name, path);
+                if (!Current(epoch) || bundle == null) return null;
+                transferred = true;
+                return new AssetLease<AssetBundle>(bundle, () => ReleasePins(names, epoch));
+            }
+            finally { if (!transferred) ReleasePins(names, epoch); }
+        }
+        private void ReleasePins(List<string> names, int epoch)
+        {
+            if (!Current(epoch)) return;
+            foreach (string name in names)
+            {
+                int count = GetLeaseCount(name);
+                if (count <= 1) leasePins.Remove(name); else leasePins[name] = count - 1;
+            }
+            CollectLeaseBundles();
+        }
+        private void CollectLeaseBundles()
+        {
+            if (assetOperations.Count > 0 || operations.Count > 0) return;
+            foreach (string name in new List<string>(managedBundles))
+                if (GetLeaseCount(name) == 0 && !legacyBundles.Contains(name) && name != MainName)
+                { UnLoadAB(name); managedBundles.Remove(name); }
+        }
         public bool UnLoadAB(string name)
         {
-            if (operations.ContainsKey(name) || assetOperations.Count > 0) return false;
+            if (GetLeaseCount(name) > 0 || operations.ContainsKey(name) || assetOperations.Count > 0) return false;
             AssetBundle bundle;
             if (_loadedBundles.TryGetValue(name, out bundle))
             {
@@ -232,6 +298,7 @@ namespace UPandaGF
         public void ClearAB()
         {
             generation++;
+            leasePins.Clear(); managedBundles.Clear(); legacyBundles.Clear();
             var completed = new List<string>();
             foreach (var pair in retiring) if (pair.Value.IsCompleted) completed.Add(pair.Key);
             foreach (var name in completed) retiring.Remove(name);
@@ -250,6 +317,7 @@ namespace UPandaGF
             {
                 if (operation.request != null) operation.request.Abort();
                 operation.result.TrySetResult(null);
+                CollectLeaseBundles();
             }
             foreach (var operation in assets) operation.result.TrySetResult(null);
         }

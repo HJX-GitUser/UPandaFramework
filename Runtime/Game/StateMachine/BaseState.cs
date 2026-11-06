@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -170,7 +170,7 @@ namespace UPandaGF.StateMechine
             var path = StateID;
             if (activeChild != null)
             {
-                path += "/" + (activeChild as BaseState)?.GetActivePath() ?? activeChild.StateID;
+                path += "/" + ((activeChild as BaseState)?.GetActivePath() ?? activeChild.StateID);
             }
             return path;
         }
