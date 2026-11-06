@@ -25,6 +25,7 @@ public abstract class ResInfoBase
 {
     public int refCount;
     internal virtual UnityEngine.Object AssetObject => null;
+    internal virtual bool IsLoading => false;
     internal virtual void CancelPending() { }
 }
 
@@ -36,6 +37,7 @@ public class ResInfo<T> : ResInfoBase
     public bool isDel;
     internal bool loading;
     internal override UnityEngine.Object AssetObject => asset as UnityEngine.Object;
+    internal override bool IsLoading => loading;
     public void AddRefCount() { ++refCount; }
     public void SubRefCount()
     {
@@ -241,7 +243,7 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         int loading = 0, references = 0, zeroReferences = 0;
         foreach (var info in resDic.Values)
         {
-            if (info.loading) loading++;
+            if (info.IsLoading) loading++;
             references += Math.Max(0, info.refCount);
             if (info.refCount == 0) zeroReferences++;
         }
