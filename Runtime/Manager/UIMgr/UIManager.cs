@@ -53,6 +53,8 @@ namespace UPandaGF
         private IAssetsLoader assetsLoader;
         private IAssetService assetService;
         private readonly Dictionary<string, ILifetimeScope> panelScopes = new Dictionary<string, ILifetimeScope>();
+        internal int DiagnosticOpenPanelCount => panelDic.Count;
+        internal int DiagnosticPendingPanelCount => pendingPanels.Count;
         public void Configure(IAssetService service) { assetService = service ?? throw new ArgumentNullException(nameof(service)); }
 
         /// <summary>

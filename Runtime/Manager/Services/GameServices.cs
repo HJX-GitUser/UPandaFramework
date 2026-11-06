@@ -27,11 +27,13 @@ namespace UPandaGF
         public ConfigService ConfigService { get; }
         public GameFlowController FlowController { get; }
         public AppLifecycleService AppLifecycleService { get; }
+        public ResourcesLoader ResourceLoader { get; }
         private readonly AudioMgr audio;
         private readonly PublicMono timerDriver;
         private Task shutdown;
         public GameServices(ResourcesLoader resources, AssetsLoader assets, UPGameRootConfig config, string saveDirectory)
         {
+            ResourceLoader = resources;
             Assets = new AssetService(resources, assets);
             TimeService = new GameTimeService();
             InputService = new InputService(new UnityLegacyInputBackend(), TimeService, config.inputBindings);

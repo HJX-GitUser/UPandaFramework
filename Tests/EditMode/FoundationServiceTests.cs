@@ -212,12 +212,18 @@ namespace UPandaGF.Tests.EditMode
             bool stopped = false;
             lifecycle.Add("Ok", ct => Task.CompletedTask, () => { stopped = true; return Task.CompletedTask; });
             lifecycle.Add("Bad", ct => throw new InvalidOperationException("init failed"));
+            var pending = lifecycle.GetModuleDiagnostics();
+            Assert.AreEqual(2, pending.Count);
+            Assert.AreEqual(FrameworkModuleState.Pending, pending[0].State);
             await AssertThrowsAsync<InvalidOperationException>(() => lifecycle.InitializeAsync());
             Assert.AreEqual(StartupState.Failed, lifecycle.State);
             Assert.AreEqual(2, lifecycle.Metrics.Count);
             Assert.IsTrue(lifecycle.Metrics[0].Completed);
             Assert.IsFalse(lifecycle.Metrics[1].Completed);
             Assert.IsTrue(stopped); // 失败步骤参与逆序回滚
+            var modules = lifecycle.GetModuleDiagnostics();
+            Assert.AreEqual(FrameworkModuleState.RolledBack, modules[0].State);
+            Assert.AreEqual(FrameworkModuleState.Failed, modules[1].State);
             await lifecycle.ShutdownAsync();
         }
     }

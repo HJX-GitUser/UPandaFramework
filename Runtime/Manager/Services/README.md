@@ -81,6 +81,10 @@ await services.Flow.GoToAsync("Lobby");
 `PauseChanged / FocusChanged / LowMemory / Quitting` 即可。前后台暂停仍通过 `IPauseService` 的嵌套凭据实现，不会重复暂停。
 `Quitting` 是同步通知：Unity 不会等待异步操作，退出前的关键存档应在收到通知时同步落盘，或提前在流程状态中完成。
 
+## 运行诊断
+
+`FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 汇总 SceneService 的作用域 / 请求数、GameFlow 当前状态、AppLifecycle 前后台与焦点、UI 面板数以及底层资源计数。Reporter 信息页展示同一快照；诊断读取不创建额外服务，也不改变生命周期。
+
 ## 关闭顺序
 
 `SceneService → GameFlow → 移除计时器帧驱动 → Timer → AppLifecycle → Audio → Input → Time`。

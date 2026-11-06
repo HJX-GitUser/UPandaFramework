@@ -186,8 +186,8 @@ services.Config.Register("battle", battleConfig, validator: ValidateBattle);
 
 ### 日志系统（Manager/DebugSystem）
 
-- **PLogger**：日志门面 —— `[Conditional("OPEN_PLOG")]` 编译期剔除（关日志零成本、实参不求值）；运行时由 `LogConfig`（`StreamingAssets/Data/LogConfig.json`）控制总开关、Warning/Error 分级、前缀 / 时间 / 线程号与单条截断。
-- **PLogHelper**：后台线程把日志落盘；**Reporter / LogListenerManager**：两套真机日志面板（IMGUI / UGUI）。
+- **PLogger**：普通日志 / Warning 由 `[Conditional("OPEN_PLOG")]` 编译期剔除（实参不求值），Error / Exception 常驻；运行时由 `LogConfig`（`StreamingAssets/Data/LogConfig.json`）控制分级、前缀 / 时间 / 线程号与单条截断。
+- **PLogHelper**：后台线程把日志落盘；**Reporter / LogListenerManager**：两套真机日志面板（IMGUI / UGUI）。Reporter 信息页另提供模块状态、启动逐步耗时和资源缓存 / 引用 / 请求统计。
 - 菜单 `UPandaGF -> 日志系统`：启动日志 / 剔除日志 / 日志系统诊断 / 日志自检（19 项断言）。
 
 > 用法、日志链路、面板对比、FAQ 与已知限制：见 `Runtime/Manager/DebugSystem/README.md`。

@@ -46,6 +46,27 @@ namespace UPandaGF
         /// <summary>已执行步骤的耗时（含失败步骤），用于定位启动瓶颈。</summary>
         public IReadOnlyList<StartupStepMetric> Metrics => metrics;
 
+        public List<FrameworkModuleDiagnostic> GetModuleDiagnostics()
+        {
+            var result = new List<FrameworkModuleDiagnostic>(steps.Count);
+            for (int i = 0; i < steps.Count; i++)
+            {
+                var step = steps[i];
+                if (i >= metrics.Count)
+                {
+                    bool running = State == StartupState.Initializing && CurrentStep == step.Name && entered.Contains(step);
+                    result.Add(new FrameworkModuleDiagnostic(step.Name, running ? FrameworkModuleState.Running : FrameworkModuleState.Pending));
+                    continue;
+                }
+                var metric = metrics[i];
+                FrameworkModuleState state = metric.Completed ? FrameworkModuleState.Ready : FrameworkModuleState.Failed;
+                if (metric.Completed && (State == StartupState.Failed || State == StartupState.Stopping || State == StartupState.Stopped)
+                    && !entered.Contains(step)) state = FrameworkModuleState.RolledBack;
+                result.Add(new FrameworkModuleDiagnostic(step.Name, state, metric.Milliseconds));
+            }
+            return result;
+        }
+
         public void Add(string name, Func<CancellationToken, Task> start, Func<Task> stop = null)
         {
             if (State != StartupState.Created) throw new InvalidOperationException("启动后不能注册步骤。");

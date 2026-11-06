@@ -38,6 +38,13 @@ namespace UPandaGF
         private readonly HashSet<string> managedBundles = new HashSet<string>();
         private readonly HashSet<string> legacyBundles = new HashSet<string>();
         public int GetLeaseCount(string name) => leasePins.TryGetValue(name, out var count) ? count : 0;
+        public AssetBundleDiagnostics GetDiagnostics()
+        {
+            int pins = 0, retiringCount = 0;
+            foreach (var count in leasePins.Values) pins += count;
+            foreach (var task in retiring.Values) if (!task.IsCompleted) retiringCount++;
+            return new AssetBundleDiagnostics(_loadedBundles.Count, operations.Count, assetOperations.Count, retiringCount, pins);
+        }
         private int generation;
         private bool destroyed;
         public bool IsInitialized => !destroyed && mainAB != null && manifest != null;

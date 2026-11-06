@@ -21,6 +21,7 @@ namespace UPandaGF
         public bool IsInitialized => initialized && (method != AssetLoaddingMethod.Assetbundles || (abLoadMgr != null && abLoadMgr.IsInitialized));
         private AssetLoaddingMethod method;
         private ABLoadMgr abLoadMgr;
+        internal ABLoadMgr BundleLoader => abLoadMgr;
         private EditorSourcesMgr editorSourcesMgr;
         private SceneMgr sceneMgr;
         private ISceneService sceneService;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UPandaGF;
 
 public partial class Reporter
 {
@@ -19,6 +20,8 @@ public partial class Reporter
     private int draggingArea;
     private Vector2 pressPosition, pressScroll;
     private bool dragMoved, draggingSplitter, focusSearch;
+    private FrameworkDiagnosticsSnapshot frameworkDiagnostics;
+    private float nextDiagnosticsAt;
 
     public void OnGUIDraw()
     {
@@ -151,7 +154,7 @@ public partial class Reporter
         float totalHeight = stacked ? h * 2 : h;
         GUI.DrawTexture(new Rect(0, 0, width, totalHeight), toolbarSurface);
         GUI.Label(new Rect(14, 0, Mathf.Max(1, stacked ? width - 28 : width - actionsWidth - 14), h),
-            currentView == ReportView.Info ? "设备与显示设置" : "运行日志", titleStyle);
+            currentView == ReportView.Info ? "设备 / 框架诊断" : "运行日志", titleStyle);
         if (stacked)
         {
             closeWidth = Mathf.Min(closeWidth, (width - 36) * .4f);
@@ -394,8 +397,15 @@ public partial class Reporter
     }
     private void DrawInformation(Rect rect)
     {
+        if (frameworkDiagnostics == null || Time.realtimeSinceStartup >= nextDiagnosticsAt)
+        {
+            frameworkDiagnostics = FrameworkDiagnostics.Capture(UPGameRoot.Instance);
+            nextDiagnosticsAt = Time.realtimeSinceStartup + .5f;
+        }
         float line = ControlHeight + 10;
-        float contentHeight = line * 19 + 100;
+        int diagnosticRows = 13 + Math.Max(1, frameworkDiagnostics.Modules.Count) + Math.Max(1, frameworkDiagnostics.StartupSteps.Count)
+            + (string.IsNullOrEmpty(frameworkDiagnostics.InitializationError) ? 0 : 1);
+        float contentHeight = line * (19 + diagnosticRows) + 120;
         infoScroll = GUI.BeginScrollView(rect, infoScroll, new Rect(0, 0, Mathf.Max(1, rect.width - 16), contentHeight), false, true, GUIStyle.none, viewSkin.verticalScrollbar);
         float y = 8;
         InfoLine(ref y, rect.width, "应用", Application.productName + "  " + Application.version, images.softwareImage);
@@ -426,14 +436,64 @@ public partial class Reporter
             if (GUI.Button(box, (values[i] ? "✓ " : "") + settings[i], values[i] ? activeStyle : buttonStyle)) values[i] = !values[i];
         }
         showClearOnNewSceneLoadedButton = values[0]; showTimeButton = values[1]; showSceneButton = values[2]; showMemButton = values[3]; showFpsButton = values[4]; showSearchText = values[5]; showCopyButton = values[6]; showSaveButton = values[7];
+        DrawFrameworkDiagnostics(ref y, rect.width, line, frameworkDiagnostics);
         GUI.EndScrollView();
     }
-    private void InfoLine(ref float y, float width, string key, string value, Texture2D icon)
+    private void DrawFrameworkDiagnostics(ref float y, float width, float line, FrameworkDiagnosticsSnapshot snapshot)
+    {
+        float keyWidth = width >= 600 ? 180 : 120;
+        DiagnosticSection(ref y, width, line, "框架状态");
+        InfoLine(ref y, width, "生命周期", snapshot.FrameworkState + (string.IsNullOrEmpty(snapshot.CurrentStep) ? "" : " / " + snapshot.CurrentStep), images.infoImage, keyWidth);
+        InfoLine(ref y, width, "启动总耗时", snapshot.TotalStartupMilliseconds + " ms", images.showTimeImage, keyWidth);
+        if (!string.IsNullOrEmpty(snapshot.InitializationError)) InfoLine(ref y, width, "初始化错误", snapshot.InitializationError, images.errorImage, keyWidth);
+
+        DiagnosticSection(ref y, width, line, "模块状态");
+        if (snapshot.Modules.Count == 0) InfoLine(ref y, width, "模块", "尚未注册", images.infoImage, keyWidth);
+        foreach (var module in snapshot.Modules)
+        {
+            string value = ModuleStateText(module.State);
+            if (module.Milliseconds >= 0) value += " · " + module.Milliseconds + " ms";
+            if (!string.IsNullOrEmpty(module.Detail)) value += " · " + module.Detail;
+            InfoLine(ref y, width, module.Name, value, images.infoImage, keyWidth);
+        }
+
+        DiagnosticSection(ref y, width, line, "启动步骤耗时");
+        if (snapshot.StartupSteps.Count == 0) InfoLine(ref y, width, "启动", "尚未执行", images.showTimeImage, keyWidth);
+        foreach (var step in snapshot.StartupSteps)
+            InfoLine(ref y, width, step.Name, step.Milliseconds + " ms · " + (step.Completed ? "完成" : "失败 / 取消"), images.showTimeImage, keyWidth);
+
+        DiagnosticSection(ref y, width, line, "资源统计");
+        var resources = snapshot.Resources;
+        InfoLine(ref y, width, "Resources", $"缓存 {resources.CachedEntries} / 加载中 {resources.LoadingEntries} / 引用 {resources.TotalReferences} / 零引用 {resources.ZeroReferenceEntries}", images.showMemoryImage, keyWidth);
+        var bundles = snapshot.AssetBundles;
+        InfoLine(ref y, width, "AssetBundle", $"已加载 {bundles.LoadedBundles} / 包请求 {bundles.PendingBundles} / 资源请求 {bundles.PendingAssets} / 退役 {bundles.RetiringBundles} / 引用 {bundles.LeasePins}", images.showMemoryImage, keyWidth);
+        InfoLine(ref y, width, "场景", $"作用域 {snapshot.SceneScopes} / 待处理请求 {snapshot.PendingSceneRequests}", images.showSceneImage, keyWidth);
+        InfoLine(ref y, width, "UI", $"已打开 {snapshot.OpenPanels} / 加载中 {snapshot.PendingPanels}", images.infoImage, keyWidth);
+    }
+    private void DiagnosticSection(ref float y, float width, float line, string title)
+    {
+        y += 8;
+        GUI.Label(new Rect(16, y, width - 32, line), title, titleStyle);
+        y += line;
+    }
+    private static string ModuleStateText(FrameworkModuleState state)
+    {
+        switch (state)
+        {
+            case FrameworkModuleState.Pending: return "等待";
+            case FrameworkModuleState.Running: return "运行中";
+            case FrameworkModuleState.Ready: return "就绪";
+            case FrameworkModuleState.Failed: return "失败";
+            case FrameworkModuleState.RolledBack: return "已回滚";
+            default: return state.ToString();
+        }
+    }
+    private void InfoLine(ref float y, float width, string key, string value, Texture2D icon, float keyWidth = 65)
     {
         float h = ControlHeight + 10;
         if (icon != null) GUI.DrawTexture(new Rect(16, y + (h - 22) / 2, 22, 22), icon, ScaleMode.ScaleToFit);
-        GUI.Label(new Rect(48, y, 65, h), key, mutedStyle);
-        GUI.Label(new Rect(118, y, Mathf.Max(1, width - 150), h), value ?? "", textStyle);
+        GUI.Label(new Rect(48, y, keyWidth, h), key, mutedStyle);
+        GUI.Label(new Rect(53 + keyWidth, y, Mathf.Max(1, width - keyWidth - 85), h), value ?? "", textStyle);
         y += h;
     }
 }

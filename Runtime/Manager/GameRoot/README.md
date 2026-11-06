@@ -178,6 +178,7 @@ Inspector 顶部是「UPGameRoot」，底部是配置文件的路径提示 + 三
 ## 基础设施补强（2026-11-06）
 
 - **启动耗时指标**：`StartupLifecycle` 记录每一步耗时（含失败步骤），通过 `UPGameRoot.StartupMetrics` 读取；`OnInited` 日志输出总耗时（`GameRoot Initialization completed in XX ms!`），用于建立启动性能基线。
+- **模块诊断**：`StartupLifecycle.GetModuleDiagnostics()` 返回全部注册模块的等待 / 运行中 / 就绪 / 失败 / 已回滚状态；`FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 汇总启动指标与运行服务状态，Reporter 信息页每 0.5 秒展示一次。
 - **模块自注册**：新增 `IStartupModule`（`Name / StartAsync / StopAsync`）与 `UPGameRoot.ConfigureLifecycle` 静态事件。外部模块在 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]` 中订阅并 `lifecycle.Add(new MyModule())`，即可插入启动链；失败走统一逆序回滚与 `GFLoadedFailedEvent`，订阅者自身抛异常会中止启动。
 - **应用生命周期**：`OnApplicationPause / OnApplicationFocus / OnApplicationLowMemory / OnApplicationQuit` 统一转发到 `services.AppLifecycle`（实现 `AppLifecycleService`）。业务订阅 `PauseChanged / FocusChanged / LowMemory / Quitting`；前后台暂停仍由 `IPauseService` 嵌套凭据实现，语义与原先一致。
 - **旧场景入口**：`SceneMgr` 已标记 `[Obsolete]`，框架内部适配点用 `#pragma warning disable CS0618` 局部抑制；新代码一律使用 `UPGameRoot.Services.Scenes`。

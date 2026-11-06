@@ -56,6 +56,8 @@ namespace UPandaGF
         private Task shutdown;
         public event Action<SceneTransitionProgress> Progress;
         public bool HasPendingRequests => pending.Count > 0;
+        internal int DiagnosticScopeCount => scopes.Count;
+        internal int DiagnosticPendingRequestCount => pending.Count;
         public SceneService(ISceneBackend backend, ISceneAssetProvider assets = null)
         {
             this.backend = backend ?? throw new ArgumentNullException(nameof(backend));

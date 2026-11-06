@@ -113,6 +113,11 @@ namespace UPandaGF
         private ContentUpdateService contentUpdate;
         public StartupState State => lifecycle?.State ?? StartupState.Created;
         public Exception InitializationError => lifecycle?.Error;
+        internal StartupLifecycle Lifecycle => lifecycle;
+        internal string CurrentStartupStep => lifecycle?.CurrentStep;
+        internal GameServices RuntimeServices => services;
+        internal AssetsLoader AssetLoader => sourcesLoadMgr;
+        internal UIManager RootUIManager => _UIManager;
 
         /// <summary>最近一次热更的文件阶段统计（下载等待时间另计）。</summary>
         public HotUpdateStatistics LastHotUpdateStatistics => contentUpdate?.LastHotUpdateStatistics;

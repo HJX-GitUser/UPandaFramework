@@ -236,6 +236,17 @@ public class ResourcesLoader : LazyMonoSingletonBase<ResourcesLoader>
         ResInfoBase info;
         return resDic.TryGetValue(key, out info) ? info.refCount : 0;
     }
+    public ResourceLoaderDiagnostics GetDiagnostics()
+    {
+        int loading = 0, references = 0, zeroReferences = 0;
+        foreach (var info in resDic.Values)
+        {
+            if (info.loading) loading++;
+            references += Math.Max(0, info.refCount);
+            if (info.refCount == 0) zeroReferences++;
+        }
+        return new ResourceLoaderDiagnostics(resDic.Count, loading, references, zeroReferences);
+    }
 
     public void UnLoadUnUseAssets(UnityAction callback = null)
     {
