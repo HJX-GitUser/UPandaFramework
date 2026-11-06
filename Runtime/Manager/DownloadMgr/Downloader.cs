@@ -28,6 +28,9 @@ namespace UPandaGF
         /// <summary>预期文件大小（字节，0 = 未知）。由清单提供时可用于进度计算与下载完整性校验</summary>
         public long fileSize;
 
+        /// <summary>落盘文件字节上限（含续传部分），0 不限；热更由清单大小/暂存预算指定</summary>
+        public long maximumBytes;
+
         /// <summary>超时时间（秒）：-1 = 使用 Downloader.defaultTimeout；0 = 不超时</summary>
         public int timeout = -1;
 
@@ -203,6 +206,8 @@ namespace UPandaGF
         public void AddBatchDownloads(List<DownloadItem> items)
         {
             if (items == null || items.Count == 0) return;
+            if (destroyed || !isActiveAndEnabled)
+            { foreach (var item in items) if (item != null) item.state = DownloadState.Canceled; return; }
 
             BeginBatchIfIdle();
 
@@ -315,6 +320,12 @@ namespace UPandaGF
             if (item == null) return;
 
             item.cancelRequested = true;
+            // 先关闭写入并 Abort；请求的 Dispose 由协程统一完成，调用方现在即可回收暂存。
+            if (item.request != null)
+            {
+                (item.request.downloadHandler as DownloadHandlerFile)?.Close();
+                if (!item.request.isDone) item.request.Abort();
+            }
 
             if (pendingItems.Remove(item))
             {
@@ -409,7 +420,7 @@ namespace UPandaGF
                 }
                 if (progress != null)
                     try { progress.Report(item.progress); } catch (Exception e) { Debug.LogException(e); }
-                await Task.Delay(25);
+                await PlatformTasks.Delay(TimeSpan.FromMilliseconds(25));
             }
             if (progress != null && item.state == DownloadState.Completed)
                 try { progress.Report(1f); } catch (Exception e) { Debug.LogException(e); }
@@ -420,20 +431,14 @@ namespace UPandaGF
 
         private bool destroyed;
 
-        private void OnDestroy()
+        private void OnDisable() { StopDownloads(); }
+        private void OnDestroy() { destroyed = true; StopDownloads(); }
+        private void StopDownloads()
         {
-            destroyed = true;
+            StopAllCoroutines();
             CancelAllDownloads();
-
-            // 对象销毁时协程会被强制终止，这里直接释放仍在使用的请求，避免文件句柄泄漏
-            for (int i = 0; i < activeItems.Count; i++)
-            {
-                DownloadItem item = activeItems[i];
-                if (item == null) continue;
-
-                ReleaseRequest(item);
-                item.state = DownloadState.Canceled;
-            }
+            foreach (var item in activeItems)
+            { if (item == null) continue; ReleaseRequest(item); item.state = DownloadState.Canceled; }
             activeItems.Clear();
         }
 
@@ -442,6 +447,7 @@ namespace UPandaGF
         /// <summary>创建并校验任务（不排队）</summary>
         private DownloadItem CreateItem(string url, string savePath, string fileName)
         {
+            if (destroyed || !isActiveAndEnabled) return null;
             if (string.IsNullOrEmpty(url))
             {
                 PLogger.LogError("[Downloader] url 为空，无法添加下载任务");
@@ -495,6 +501,7 @@ namespace UPandaGF
         /// <summary>按并发上限尽可能多地启动下载</summary>
         private void TryStartNextDownloads()
         {
+            if (destroyed || !isActiveAndEnabled) return;
             int max = Mathf.Max(1, maxConcurrentDownloads);
 
             while (activeItems.Count < max && pendingItems.Count > 0)
@@ -522,7 +529,8 @@ namespace UPandaGF
             // 重试等待（首次不等待）
             if (item.attempt > 1 && retryDelay > 0f)
             {
-                yield return new WaitForSeconds(retryDelay);
+                float resumeAt = Time.realtimeSinceStartup + retryDelay;
+                while (Time.realtimeSinceStartup < resumeAt && !item.cancelRequested && !item.pauseRequested) yield return null;
             }
 
             if (item.cancelRequested || item.pauseRequested)
@@ -584,10 +592,12 @@ namespace UPandaGF
             request.downloadHandler = new DownloadHandlerFile(
                 savePath,
                 resumeSize > 0,
-                resumeSize > 0 ? (Func<bool>)(() => request.responseCode == 206) : null);
+                resumeSize > 0 ? (Func<bool>)(() => request.responseCode == 206) : null, item.maximumBytes);
             item.request = request;
 
             InvokeSafely(OnDownloadStart, item);
+            if (item.request != request) yield break; // 回调可禁用/销毁下载器
+            if (item.cancelRequested || item.pauseRequested) { FinishItem(item, false); yield break; }
 
             UnityWebRequestAsyncOperation operation = null;
             try
@@ -633,12 +643,12 @@ namespace UPandaGF
                     // 响应头到达后才能拿到 Content-Length，用它确定总大小（进度分母）
                     if (!contentLengthRead)
                     {
-                        UpdateTotalSize(item, request.GetResponseHeader("Content-Length"), accountingResume);
-                        contentLengthRead = true;
+                        contentLengthRead = UpdateTotalSize(item, request.GetResponseHeader("Content-Length"), accountingResume);
                     }
 
                     RefreshProgress(item, accountingResume);
                     InvokeSafely(OnDownloadProgress, item);
+                    if (item.request != request) yield break;
 
                     yield return null;
                 }
@@ -650,6 +660,9 @@ namespace UPandaGF
                 }
             }
 
+            // 某些 Unity 原生响应仍报告 Success，必须独立检查脚本句柄的拒写/预算失败。
+            var fileHandler = request.downloadHandler as DownloadHandlerFile;
+            if (fileHandler != null && fileHandler.WriteFailed) item.error = fileHandler.LastError;
             bool success = string.IsNullOrEmpty(item.error) && IsRequestSuccess(request);
 
             // 未提示错误时再校验落盘大小，避免"被截断的下载"被当作成功
@@ -813,13 +826,15 @@ namespace UPandaGF
         }
 
         /// <summary>用响应头里的 Content-Length 计算总大小</summary>
-        private static void UpdateTotalSize(DownloadItem item, string contentLengthHeader, long resumeSize)
+        private static bool UpdateTotalSize(DownloadItem item, string contentLengthHeader, long resumeSize)
         {
             long remain;
             if (long.TryParse(contentLengthHeader, out remain) && remain > 0)
             {
                 item.totalSize = resumeSize + remain;
+                return true;
             }
+            return false;
         }
 
         /// <summary>

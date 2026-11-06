@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
@@ -147,41 +146,8 @@ namespace UPandaGF
         /// <param name="fileName">存储文件名称</param>
         public void Save(object obj, string fileName)
         {
-            //先判断路径文件夹有没有
-            if (!Directory.Exists(SAVE_PATH))
-            {
-                Directory.CreateDirectory(SAVE_PATH);
-            }
-
-            /*这是用文件流的方式存数据，
-            using (FileStream fs = new FileStream(SAVE_PATH + fileName + FILE_EXTENSION, FileMode.OpenOrCreate, FileAccess.Write))
-            {
-                //把类序列化成二进制数据的工具  命名空间：using System.Runtime.Serialization.Formatters.Binary;
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(fs, obj);
-                fs.Close();
-            }
-            */
-
-            //改用内存流的方式可以对数据再做些操作，比如进行加密
-            using (MemoryStream ms = new MemoryStream())
-            {
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(ms, obj);
-
-                byte[] bytes = ms.ToArray();
-                //ToDo:..在这里可以做一些加密的工作
-                string target = Path.Combine(SAVE_PATH, fileName + FILE_EXTENSION);
-                string temporary = target + ".tmp";
-                try
-                {
-                    File.WriteAllBytes(temporary, bytes);
-                    FileUpdateTransaction.Commit(new[] { temporary }, new[] { target }, target + ".recovery");
-                }
-                finally { if (File.Exists(temporary)) File.Delete(temporary); }
-                ms.Close();
-            }
-
+            string target = Path.Combine(SAVE_PATH, fileName + FILE_EXTENSION);
+            VersionedDataSerializer.SaveFile(target, obj, "save");
         }
         /// <summary>
         /// 读取2进制数据，并转换成对象
@@ -194,13 +160,7 @@ namespace UPandaGF
             string path = Path.Combine(SAVE_PATH, fileName + FILE_EXTENSION);
             try
             {
-                FileUpdateTransaction.Recover(path + ".recovery");
-                if (!File.Exists(path)) return default(T);
-                using (var stream = File.OpenRead(path))
-                {
-                    var formatter = new BinaryFormatter();
-                    return formatter.Deserialize(stream) as T;
-                }
+                return VersionedDataSerializer.LoadFile<T>(path, "save");
             }
             catch (Exception e)
             {

@@ -9,7 +9,8 @@ Unity 的前端（客户端）框架，提供统一的启动入口、单例、�
 
 ## 特性一览
 
-- 统一启动入口 `UPGameRoot`，自动挂载并初始化各子系统
+- 统一启动入口 `UPGameRoot`：`StartupLifecycle` 有序初始化、失败逆序回滚、逐步耗时指标，支持 `IStartupModule` 外部自注册
+- 服务化架构：`UPandaGF.Contracts` 窄接口 + `IGameServices` 装配（资源 / 音频 / 存档 / 场景 / 输入 / 暂停 / 时钟 / 计时器 / 配置 / 游戏流程 / 应用生命周期）
 - 四种单例基类（急加载 / 懒加载 × MonoBehaviour / 纯 C#）
 - 两套事件系统：委托式 `EventCenter`、接口式 `EventBus`（选型与原理见事件模块文档）
 - 双模式资源管理（编辑器直读 / AssetBundle），支持本地、远程加载与热更下载
@@ -89,8 +90,10 @@ upanda-framework/
 │   ├── EditorStu/               编辑器学习示例（控件速查窗口、开发案例窗口、示例资产与自定义 Inspector）
 │   └── UPandaGF.Editor.asmdef   编辑器程序集定义
 ├── Runtime/                     运行时（UPandaGF.Runtime 程序集）
+│   ├── Contracts/               服务契约（UPandaGF.Contracts 程序集，零自研依赖）：服务接口 / 枚举 / AssetLease
 │   ├── Manager/                 核心管理器层
-│   │   ├── GameRoot/            UPGameRoot 启动入口 + UPGameRootConfig（Json 配置）+ SourcesLoadMgr 资源抽象
+│   │   ├── GameRoot/            UPGameRoot + StartupLifecycle（有序启动 / 回滚 / 耗时指标）+ HotUpdate 热更 + SourcesLoadMgr 资源抽象
+│   │   ├── Services/            IGameServices 装配：场景作用域、输入 / 时间、计时器、配置中心、游戏流程、应用生命周期
 │   │   ├── Singleton/           单例基类
 │   │   ├── DebugSystem/         日志系统（含本目录 README.md）
 │   │   ├── EventCenterModule/   事件系统（含本目录 README.md）
@@ -148,6 +151,30 @@ upanda-framework/
 
 若框架初始化失败，会收到 `GFLoadedFailedEvent`（而不是一直等 `GFLoadedEvent`）：`GameLaunchExample` 会打错误日志并在加载界面上给出提示。
 
+### 服务化架构（Runtime/Contracts + Runtime/Manager/Services）
+
+业务代码只依赖 `UPandaGF.Contracts` 的窄接口；框架在启动的 `Services` 步装配 `GameServices`，并向场景里的 `IGameServicesConsumer` 注入。
+
+| 服务 | 接口 | 说明 |
+|---|---|---|
+| 资源 | `IAssetService` | `AssetLease<T>` 引用计数凭据，支持场景作用域自动归还 |
+| 场景 | `ISceneService` | 串行队列、请求进度、超时 / 取消；`SceneMgr` 已标记 `[Obsolete]`，仅为旧业务兼容 |
+| 输入 / 暂停 / 时钟 | `IInputService` / `IPauseService` / `IGameClock` | 动作映射、上下文栈、嵌套暂停 |
+| 计时器 | `ITimerService` | `Delay / Every / DelayAsync`；scaled 受暂停影响，回调异常隔离，可取消 / 可 await |
+| 配置中心 | `IConfigService` | 注册 → JSON 覆盖（环境 / 渠道）→ 统一校验（`ConfigIssue`） |
+| 游戏流程 | `IGameFlowService` | `Boot / Login / Lobby / Battle` 等状态注册、进入守卫、串行切换、失败状态可见 |
+| 应用生命周期 | `IAppLifecycle` | 前后台 / 焦点 / 低内存 / 退出事件，由 `UPGameRoot` 统一转发 |
+
+```csharp
+await UPGameRoot.Instance.WaitUntilReadyAsync();
+var services = UPGameRoot.Instance.Services;
+await services.Flow.StartAsync("Boot");
+await services.Timer.DelayAsync(2f, services.Scenes.GetScope(gameObject.scene).Token);
+services.Config.Register("battle", battleConfig, validator: ValidateBattle);
+```
+
+外部模块可通过 `UPGameRoot.ConfigureLifecycle`（在 `RuntimeInitializeOnLoadMethod(BeforeSceneLoad)` 中订阅）向启动链注册自己的 `IStartupModule`；模块失败同样走逆序回滚与 `GFLoadedFailedEvent`。
+
 ### 单例系统（Manager/Singleton）
 
 | 基类 | 说明 |
@@ -159,8 +186,8 @@ upanda-framework/
 
 ### 日志系统（Manager/DebugSystem）
 
-- **PLogger**：日志门面 —— `[Conditional("OPEN_PLOG")]` 编译期剔除（关日志零成本、实参不求值）；运行时由 `LogConfig`（`StreamingAssets/Data/LogConfig.json`）控制总开关、Warning/Error 分级、前缀 / 时间 / 线程号与单条截断。
-- **PLogHelper**：后台线程把日志落盘；**Reporter / LogListenerManager**：两套真机日志面板（IMGUI / UGUI）。
+- **PLogger**：普通日志 / Warning 由 `[Conditional("OPEN_PLOG")]` 编译期剔除（实参不求值），Error / Exception 常驻；运行时由 `LogConfig`（`StreamingAssets/Data/LogConfig.json`）控制分级、前缀 / 时间 / 线程号与单条截断。
+- **PLogHelper**：后台线程把日志落盘；**Reporter / LogListenerManager**：两套真机日志面板（IMGUI / UGUI）。Reporter 信息页另提供模块状态、启动逐步耗时和资源缓存 / 引用 / 请求统计。
 - 菜单 `UPandaGF -> 日志系统`：启动日志 / 剔除日志 / 日志系统诊断 / 日志自检（19 项断言）。
 
 > 用法、日志链路、面板对比、FAQ 与已知限制：见 `Runtime/Manager/DebugSystem/README.md`。
@@ -263,7 +290,7 @@ upanda-framework/
 ### 数据存储（Manager/StorageDataMgr）
 
 - **PlayerPrefsDataMgr**：基于 PlayerPrefs 的轻量存储。
-- **BinaryDataMgr**：二进制序列化存储。
+- **BinaryDataMgr**：版本化字段图存档，旧 NRBF 兼容与备份迁移；[格式与迁移约定](Runtime/Manager/StorageDataMgr/Serialization/README.md)。
 
 ### 公共 Mono（Manager/PublicMono）
 
@@ -352,7 +379,10 @@ upanda-framework/
 | `Runtime/Manager/HTTPTool/README.md` | 基于 UnityWebRequest 的 HTTP 请求模块 |
 | `Runtime/Manager/AudioMgr/README.md` | 音频管理器：双路 BGM 交叉淡入淡出、唯一 / 叠加音效、引用计数归还、请求序号防竞态、已知限制与维护提示 |
 | `Runtime/Manager/PublicMono/README.md` | 帧调度中心：帧监听（owner 自动注销 / 异常隔离 / 幂等注册）、协程托管（Task 保证结束 + 超时与取消）、已知限制与维护提示 |
-| `Runtime/Manager/GameRoot/README.md` | 启动入口：启动时序图、三种 `loadPath` 的热更语义、清单提交与降级规则、事件与就绪状态、配置项（`UPGameRootConfig` + `StreamingAssets/Data/GameRootConfig.json`）、已知限制 |
+| `Runtime/Manager/GameRoot/README.md` | 启动入口：启动时序图、三种 `loadPath` 的热更语义、清单提交与降级规则、事件与就绪状态、启动耗时指标、模块自注册、配置项、已知限制 |
+| `Runtime/Contracts/README.md` | 服务契约：接口清单、AssetLease、ILifetimeScope、计时器 / 配置 / 流程 / 应用生命周期契约 |
+| `Runtime/Manager/Services/README.md` | 应用服务与场景作用域：装配、输入 / 时间、TimerService、ConfigService、GameFlowController、AppLifecycleService |
+| `OptimzeLog/FoundationHardening/README.md` | 本轮基础设施落地：P0 交付基线、契约扩展、核心服务、EditMode 测试、构建入口、CI 模板与未落地项 |
 | `Editor/AssetBundleTools/README.md` | AssetBundle 打包与热更系统：页签用法、清单格式、三种加载位置、热更语义、已知限制、FAQ |
 
 ## 源码约定
@@ -361,10 +391,14 @@ upanda-framework/
 - **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**，并由根目录 `.editorconfig`、`.gitattributes` 固化。
 - **命名沿袭**：为兼容既有配置与场景，部分历史命名未做改动（如 `OpearationExecute`、`AddErroTimes`、`erroTimes`、部分接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间）。
 - **改动后自检**：涉及交互式任务评分系统时，改完先跑「任务流程校验器」再跑「运行逻辑自检」，可覆盖绝大多数配置错误与逻辑回归。
+- **编码规范自检**：菜单 `UPandaGF -> 框架 -> 校验编码规范`，检查 Runtime 是否直接 `Input.*` / `Resources.Load` / `FindObjectOfType` / 绕过 `ISceneService`；CI 可调用 `FrameworkConventionValidator.Validate()` 取违例数。
+- **测试分层**：`Tests/PlayMode` 跑集成回归；`Tests/EditMode`（`UPandaGF.Tests.EditMode`）跑纯逻辑单测（Timer / Config / GameFlow / StartupLifecycle），不需要场景。
+- **构建入口**：菜单 `UPandaGF -> 构建`，或 CI 调 `FrameworkBuildPipeline.Build(...)`；`UPANDA_VERSION` 环境变量可注入版本号。
+- **资产完整性**：`.meta` 必须提交（`.gitignore` 已不再忽略）。历史 clone 若缺 `.meta`，请在 Unity 中重新导入后提交生成的 `.meta`，否则 prefab / 场景引用会丢。
 
 ## 优化与回归验证
 
-本轮变更、测试与后续计划见 [OPTIMIZATION.md](OPTIMIZATION.md)。
+本轮变更、测试与后续计划见 [OPTIMIZATION.md](OptimzeLog/OPTIMIZATION.md)；基础设施落地清单见 [FoundationHardening](OptimzeLog/FoundationHardening/README.md)。
 
 ## 贡献
 

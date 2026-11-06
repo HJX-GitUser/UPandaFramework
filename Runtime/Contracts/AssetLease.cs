@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace UPandaGF
 {
     /// <summary>主线程共享持有凭据；每个持有者只归还一次，最后一个持有者触发原加载记录的释放。</summary>
-    internal sealed class AssetLease<T> : IDisposable where T : UnityEngine.Object
+    public sealed class AssetLease<T> : IDisposable where T : UnityEngine.Object
     {
         private sealed class State { public T asset; public Action release; public int references = 1; }
         private State state;

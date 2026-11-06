@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace UPandaGF
 {
@@ -60,17 +62,21 @@ namespace UPandaGF
         #region Config
         /// <summary>
         /// 面板 / Json 配置（唯一真源）。
-        /// <para>启动时 <see cref="Init"/> 的第一步先读 StreamingAssets/Data/GameRootConfig.json：
+        /// <para>启动时 <see cref="InitializeAsync"/> 的第一步先读 StreamingAssets/Data/GameRootConfig.json：
         /// 读到就以它为准，读不到 / 解析失败才用面板上的值；面板改完点 Inspector 的「保存到 Json」写回。</para>
         /// </summary>
         [SerializeField] private UPGameRootConfig config = new UPGameRootConfig();
 
         /// <summary>当前配置（外部读用；要改就改这个对象上的字段）</summary>
-        public UPGameRootConfig Config { get { return config; } }
+        private UPGameRootConfig runtimeConfig;
+        private GameServices services;
+        public UPGameRootConfig Config => runtimeConfig != null ? UPGameRootConfigFile.Snapshot(runtimeConfig) : config;
+        public IGameServices Services => IsInited && State == StartupState.Ready ? services : throw new InvalidOperationException("请先等待框架就绪。");
 
         /// <summary>整体替换配置（读 Json / 工具回填用），并做空值兜底</summary>
         public void SetConfig(UPGameRootConfig newConfig)
         {
+            if (runtimeConfig != null) throw new InvalidOperationException("启动配置已冻结；请重建根节点后修改。");
             config = newConfig ?? new UPGameRootConfig();
             EnsureConfigValid();
         }
@@ -79,6 +85,7 @@ namespace UPandaGF
         private void EnsureConfigValid()
         {
             if (config == null) config = new UPGameRootConfig();
+            if (config.hotUpdate == null) config.hotUpdate = new HotUpdateSettings();
             if (config.AssetAESConfig == null)
                 config.AssetAESConfig = new AssetBundleClassificationWindowConfig { enable = false };
             if (string.IsNullOrEmpty(config.LoadAssetPath))
@@ -101,8 +108,29 @@ namespace UPandaGF
         /// <summary>初始化是否失败（失败后 IsInited 始终为 false，并会广播 GFLoadedFailedEvent）</summary>
         public bool IsInitFailed { get; private set; }
 
-        private bool warnedNotInited;
         private bool destroyed;
+        private StartupLifecycle lifecycle;
+        private ContentUpdateService contentUpdate;
+        public StartupState State => lifecycle?.State ?? StartupState.Created;
+        public Exception InitializationError => lifecycle?.Error;
+        internal StartupLifecycle Lifecycle => lifecycle;
+        internal string CurrentStartupStep => lifecycle?.CurrentStep;
+        internal GameServices RuntimeServices => services;
+        internal AssetsLoader AssetLoader => sourcesLoadMgr;
+        internal UIManager RootUIManager => _UIManager;
+
+        /// <summary>最近一次热更的文件阶段统计（下载等待时间另计）。</summary>
+        public HotUpdateStatistics LastHotUpdateStatistics => contentUpdate?.LastHotUpdateStatistics;
+
+        /// <summary>各启动步骤耗时；启动失败时也保留已执行步骤，便于定位慢在哪一步。</summary>
+        public IReadOnlyList<StartupStepMetric> StartupMetrics => lifecycle?.Metrics;
+
+        /// <summary>
+        /// 外部模块自注册入口：在根节点创建 StartupLifecycle 后、开始初始化前回调。
+        /// 用法：在 [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] 里订阅，
+        /// 回调中 lifecycle.Add(new MyStartupModule())。模块失败会走统一的回滚与 GFLoadedFailedEvent。
+        /// </summary>
+        public static event Action<StartupLifecycle> ConfigureLifecycle;
         #endregion
 
         private void Reset()
@@ -120,54 +148,91 @@ namespace UPandaGF
 
         private async void InitAsync()
         {
-            try
-            {
-                await Init();
-                IsInitFailed = false;
-            }
-            catch (Exception e)
-            {
-                if (destroyed) return;
-                IsInited = false;
-                IsInitFailed = true;
-                PLogger.LogError($"UPGameRoot 初始化失败：{e}");
-
-                // 失败必须让上层知道：否则 GFLoadedEvent 永远不来，GameLaunchExample 的整套启动流程
-                // 永不执行，外部表现就是"卡在加载界面 / 黑屏，且没有提示"
-                EventCenter.Instance.EventTrigger(new GFLoadedFailedEvent(e.ToString()));
-            }
+            try { await InitializeAsync(); }
+            catch (OperationCanceledException) { }
+            catch (Exception e) { if (!destroyed) PLogger.LogError($"UPGameRoot 初始化失败：{e}"); }
         }
 
-        private async Task Init()
+        /// <summary>同一根节点只启动一次。token 只取消本调用者等待；关闭整套服务请调用 ShutdownAsync。</summary>
+        public Task InitializeAsync(CancellationToken token = default)
         {
-            // ① 配置优先：读 StreamingAssets/Data/GameRootConfig.json（读到就以它为准）
-            await LoadConfigAsync();
-            ThrowIfDestroyed();
-
-            await PublicMono.Instance.RunCoroutine(debugerInit.Init());
-            binaryDataMgr.Init();
-            sourcesLoadMgr.AssetAESConfig = config.AssetAESConfig;
-
-            if (config.AssetAESConfig != null && config.AssetAESConfig.enable)
+            if (destroyed) return Task.FromCanceled(new CancellationToken(true));
+            if (State == StartupState.Stopping || State == StartupState.Stopped)
+                return Task.FromException(new InvalidOperationException("根节点已关闭，请创建新根节点后再启动。"));
+            if (lifecycle == null)
             {
-                PLogger.LogWarning("[UPGameRoot] 已开启资源清单 AES 解密：请确认打包端（AB 工具窗口）确实对清单加密，"
-                                   + "否则清单会因解密失败而整体不可用（随包清单 assetData.assetref 当前是明文，应保持 enable=false）");
+                lifecycle = new StartupLifecycle();
+                lifecycle.Add("Configuration", async ct => {
+                    await LoadConfigAsync(); ct.ThrowIfCancellationRequested();
+                    string target = Application.isEditor ? null : BundleTargetFor(Application.platform);
+                    runtimeConfig = UPGameRootConfigFile.SnapshotAndValidate(config, Application.isEditor, target);
+                });
+                lifecycle.Add("Logging", async ct => {
+                    await PublicMono.Instance.RunCoroutine(debugerInit.Init(), cancellationToken: ct);
+                });
+                lifecycle.Add("Data", ct => { binaryDataMgr.Init(); return Task.CompletedTask; });
+                lifecycle.Add("ContentUpdate", async ct => {
+                    contentUpdate = new ContentUpdateService(runtimeConfig, downloader);
+                    if (runtimeConfig.method == AssetLoaddingMethod.Assetbundles)
+                        sourceRef = await contentUpdate.ExecuteAsync();
+                    ct.ThrowIfCancellationRequested();
+                }, async () => { if (contentUpdate != null) await contentUpdate.ShutdownAsync(); sourceRef = null; });
+                lifecycle.Add("Assets", async ct => {
+                    sourcesLoadMgr.AssetAESConfig = runtimeConfig.AssetAESConfig;
+                    await sourcesLoadMgr.Init(runtimeConfig.method, runtimeConfig.remoteURL, runtimeConfig.LoadAssetPath, sourceRef);
+                    ct.ThrowIfCancellationRequested();
+                    if (!sourcesLoadMgr.IsInitialized) throw new InvalidOperationException("资源系统初始化失败，框架未就绪。");
+                }, () => { sourcesLoadMgr?.Shutdown(); return Task.CompletedTask; });
+                lifecycle.Add("Services", ct => {
+                    services = new GameServices(ResourcesLoader.Instance, sourcesLoadMgr, runtimeConfig, Path.Combine(Application.persistentDataPath, "Saves"));
+#pragma warning disable CS0618 // SceneMgr 是旧业务兼容层，框架内部仍需完成适配
+                    SceneMgr.Instance.Configure(services.SceneService);
+#pragma warning restore CS0618
+                    sourcesLoadMgr.ConfigureScenes(services.Scenes);
+                    return Task.CompletedTask;
+                }, async () => {
+                    if (services != null) await services.ShutdownAsync();
+                });
+                lifecycle.Add("UI", ct => {
+                    _UIManager.Configure(services.Assets);
+                    _UIManager.Init();
+                    _UIManager.SetResourcesLoader(sourcesLoadMgr, ResourcesLoader.Instance);
+                    return Task.CompletedTask;
+                }, () => { _UIManager?.Shutdown(); return Task.CompletedTask; });
+                try { ConfigureLifecycle?.Invoke(lifecycle); }
+                catch { lifecycle = null; throw; }
             }
-
-            if (config.method == AssetLoaddingMethod.Assetbundles)
-                FileUpdateTransaction.Recover(Path.Combine(Application.persistentDataPath, "AssetBundles", ".update-recovery"));
-            if (config.method == AssetLoaddingMethod.Assetbundles && config.enableAssetUpdate)
+            return StartupLifecycle.WaitAsync(InitializeAndNotifyAsync(), token);
+        }
+        private Task initializationNotification;
+        private Task InitializeAndNotifyAsync() => initializationNotification ?? (initializationNotification = InitializeAndNotifyCoreAsync());
+        private async Task InitializeAndNotifyCoreAsync()
+        {
+            try
             {
-                sourceRef = await UpdateAssets();
+                await lifecycle.InitializeAsync();
+                if (State == StartupState.Ready && !destroyed) OnInited();
             }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception e)
+            {
+                if (!destroyed && State == StartupState.Failed)
+                {
+                    IsInitFailed = true;
+                    EventCenter.Instance.EventTrigger(new GFLoadedFailedEvent(e.ToString()));
+                }
+                throw;
+            }
+        }
+        public Task WaitUntilReadyAsync(CancellationToken token = default) => InitializeAsync(token);
 
-            ThrowIfDestroyed();
-            await sourcesLoadMgr.Init(config.method, config.remoteURL, config.LoadAssetPath, sourceRef);
-            ThrowIfDestroyed();
-            if (!sourcesLoadMgr.IsInitialized)
-                throw new InvalidOperationException("资源系统初始化失败，框架未就绪。请检查清单与主包加载日志。");
-            _UIManager.SetResourcesLoader(sourcesLoadMgr, ResourcesLoader.Instance);
-            OnInited();
+        /// <summary>终止启动，逆序释放根节点管理的服务。关闭后重新创建根节点才能重启。</summary>
+        public Task ShutdownAsync()
+        {
+            IsInited = false;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            contentUpdate?.Cancel();
+            return lifecycle?.ShutdownAsync() ?? Task.CompletedTask;
         }
 
         /// <summary>
@@ -225,224 +290,8 @@ namespace UPandaGF
         }
 
         /// <summary>
-        /// 执行资源热更，返回本次要使用的资源清单。
-        /// <para>失败降级顺序：远端清单不可用 → 本地（persistentDataPath）清单 → 返回 null 交由
-        /// <see cref="AssetsLoader"/> 读随包清单（StreamingAssets/Data/assetData.assetref）。</para>
+        /// 装配根节点拥有的组件，实际初始化由 StartupLifecycle 排序。
         /// </summary>
-        private async Task<ABSourcesRelated> UpdateAssets()
-        {
-            string basePath = Path.Combine(Application.persistentDataPath, "AssetBundles");
-            string recoveryPath = Path.Combine(basePath, ".update-recovery");
-            // 上次在提交途中退出：先恢复完整旧版本，恢复失败则停止启动，避免加载混合版本。
-            FileUpdateTransaction.Recover(recoveryPath);
-            string localFilePath = Path.Combine(basePath, assetData);
-            string stageRoot = Path.GetFullPath(Path.Combine(basePath, ".update-stage"));
-            if (Directory.Exists(stageRoot))
-                foreach (string oldStage in Directory.GetDirectories(stageRoot))
-                    TryDeleteStage(oldStage, stageRoot);
-            string stagePath = Path.Combine(stageRoot, Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(stagePath);
-            string tempFileSavePath = Path.Combine(stagePath, assetData);
-            try
-            {
-                if (!await downloader.DownloadAsync(CombineUrl(config.remoteURL, "AssetBundles", assetData), tempFileSavePath))
-                    return LoadLocalSourceRef(localFilePath);
-                ThrowIfDestroyed();
-                var remote = sourcesLoadMgr.LoadABSourcesRelated(File.ReadAllBytes(tempFileSavePath));
-                if (remote == null || remote.mainBundleInfo == null || remote.bundleInfo == null)
-                    return LoadLocalSourceRef(localFilePath);
-
-                var downloads = new List<DownloadItem>();
-                var expected = new List<AssetBundleLoadInfo>();
-                var staged = new List<string>();
-                var targets = new List<string>();
-                var bundles = new List<AssetBundleLoadInfo>(remote.bundleInfo.Values);
-                bundles.Add(remote.mainBundleInfo);
-                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var info in bundles)
-                {
-                    if (info == null) throw new InvalidDataException("清单包含空包信息");
-                    if (info.loadPath != ABLoadPath.PersistentDataPath) continue;
-                    string target = SafeBundlePath(info.bundleName);
-                    if (!seen.Add(target)) throw new InvalidDataException("清单包含重复包路径：" + info.bundleName);
-                    // 直接校验文件，不只比较两份清单，修复缺失/损坏/加载位置变更遗漏下载的问题。
-                    if (VerifyBundle(target, info)) continue;
-                    string stage = Path.Combine(stagePath, downloads.Count + ".bundle");
-                    downloads.Add(new DownloadItem {
-                        url = CombineUrl(config.remoteURL, config.LoadAssetPath, info.bundleName),
-                        savePath = stage, fileName = info.bundleName, fileSize = info.size, enableResume = false
-                    });
-                    expected.Add(info);
-                    staged.Add(stage);
-                    targets.Add(target);
-                }
-                if (!await DownloadBatchAndWait(downloads)) return LoadLocalSourceRef(localFilePath);
-                ThrowIfDestroyed();
-                for (int i = 0; i < downloads.Count; i++)
-                    if (!VerifyBundle(staged[i], expected[i]))
-                        throw new InvalidDataException("下载文件大小或 MD5 不匹配：" + expected[i].bundleName);
-                staged.Add(tempFileSavePath);
-                targets.Add(localFilePath);
-                FileUpdateTransaction.Commit(staged, targets, recoveryPath);
-                // 保留不再使用的旧包，避免删除仍由随包清单引用的文件；后续可单独实现版本垃圾回收。
-                return remote;
-            }
-            catch (Exception e)
-            {
-                if (File.Exists(Path.Combine(recoveryPath, "journal"))) throw; // 回滚未完成，不能降级加载。
-                PLogger.LogError("资源更新失败，保留旧版本：" + e.Message);
-                return LoadLocalSourceRef(localFilePath);
-            }
-            finally { TryDeleteStage(stagePath, stageRoot); }
-        }
-
-        private static void TryDeleteStage(string path, string root)
-        {
-            string fullPath = Path.GetFullPath(path);
-            string prefix = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            if (!fullPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) return;
-            try { if (Directory.Exists(fullPath)) Directory.Delete(fullPath, true); }
-            catch (IOException) { } // 超时取消中的文件仍可能被请求占用，下次启动再清理。
-            catch (UnauthorizedAccessException) { }
-        }
-
-        private string SafeBundlePath(string name)
-        {
-            string persistent = Path.GetFullPath(Application.persistentDataPath).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            string root = Path.GetFullPath(Path.Combine(Application.persistentDataPath,
-                config.LoadAssetPath.TrimStart('/', '\\'))).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            string target = Path.GetFullPath(Path.Combine(root, name ?? string.Empty));
-            if (!root.StartsWith(persistent, StringComparison.OrdinalIgnoreCase)
-                || string.IsNullOrWhiteSpace(name) || Path.IsPathRooted(name)
-                || !target.StartsWith(root, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("非法资源包路径：" + name);
-            return target;
-        }
-
-        private static bool VerifyBundle(string path, AssetBundleLoadInfo info)
-        {
-            if (!File.Exists(path)) return false;
-            if (info.size > 0 && new FileInfo(path).Length != info.size) return false;
-            if (string.IsNullOrEmpty(info.md5)) return false;
-            using (var md5 = MD5.Create())
-            using (var stream = File.OpenRead(path))
-                return string.Equals(BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", ""),
-                    info.md5, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private ABSourcesRelated LoadLocalSourceRef(string localFilePath)
-        {
-            try
-            {
-                if (!File.Exists(localFilePath)) return null;
-                return sourcesLoadMgr.LoadABSourcesRelated(File.ReadAllBytes(localFilePath));
-            }
-            catch (Exception e)
-            {
-                PLogger.LogWarning("读取本地清单失败，尝试随包清单：" + e.Message);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// 批量下载并等待完成。
-        /// <para>成功与否**按本批次自己的任务状态**判定：下载器的完成事件与失败列表都是全局的，
-        /// 别的批次的任务同样会影响它们（本流程通常只有本批次，但不能假设）。</para>
-        /// <para>仅轮询本批次任务的终态；超时取消本批次，不依赖全局完成事件。</para>
-        /// </summary>
-        private async Task<bool> DownloadBatchAndWait(List<DownloadItem> downloadList)
-        {
-            if (downloadList == null || downloadList.Count == 0)
-            {
-                PLogger.Log("没有需要下载的资源");
-                return true;
-            }
-
-            downloader.AddBatchDownloads(downloadList);
-            float start = Time.realtimeSinceStartup;
-            while (!AllItemsTerminal(downloadList))
-            {
-                if (destroyed || downloader == null || (config.downloadBatchTimeout > 0f
-                    && Time.realtimeSinceStartup - start >= config.downloadBatchTimeout))
-                {
-                    if (downloader != null)
-                        foreach (var item in downloadList) downloader.CancelDownload(item);
-                    PLogger.LogError("资源下载批次已取消或超时，保留旧版本。");
-                    return false;
-                }
-                await Task.Delay(50);
-            }
-            bool success = AllItemsCompleted(downloadList);
-            if (!success) LogDownloadFailures(downloadList);
-            return success;
-        }
-
-        private static bool AllItemsTerminal(List<DownloadItem> items)
-        {
-            foreach (var item in items)
-                if (item != null && item.state != DownloadState.Completed
-                    && item.state != DownloadState.Failed && item.state != DownloadState.Canceled) return false;
-            return true;
-        }
-
-        /// <summary>本批次的任务是否全部成功（下载器完成后会把 state 置为 Completed）</summary>
-        private static bool AllItemsCompleted(List<DownloadItem> downloadList)
-        {
-            for (int i = 0; i < downloadList.Count; i++)
-            {
-                DownloadItem item = downloadList[i];
-                if (item == null)
-                    continue;
-
-                if (item.state != DownloadState.Completed)
-                    return false;
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// 打印本批次未完成的资源（最多列出 10 个），便于定位是哪个资源导致的失败。
-        /// 只统计本批次自己的任务，避免被其它批次的失败记录干扰。
-        /// </summary>
-        private static void LogDownloadFailures(List<DownloadItem> downloadList)
-        {
-            int failedCount = 0;
-            int shown = 0;
-
-            for (int i = 0; i < downloadList.Count; i++)
-            {
-                DownloadItem item = downloadList[i];
-                if (item == null || item.state == DownloadState.Completed)
-                    continue;
-
-                failedCount++;
-                if (shown < 10)
-                {
-                    PLogger.LogError($"下载未完成：{item.fileName}（{item.url}）状态：{item.state}，错误：{item.error}");
-                    shown++;
-                }
-            }
-
-            PLogger.Log_red($"资源下载未全部成功：共 {downloadList.Count} 个任务，未完成 {failedCount} 个");
-        }
-
-        /// <summary>
-        /// 拼接远程 URL，避免 Path.Combine 在跨平台下产生错误的路径分隔符
-        /// </summary>
-        private static string CombineUrl(params string[] segments)
-        {
-            string url = string.Empty;
-            foreach (string segment in segments)
-            {
-                if (string.IsNullOrEmpty(segment))
-                    continue;
-                url = url.Length == 0
-                    ? segment
-                    : url.TrimEnd('/') + "/" + segment.TrimStart('/');
-            }
-            return url;
-        }
-
         private void SetComponent()
         {
             // 配置项兜底（AES 默认关闭：随包清单 assetData.assetref 是明文，误开会让清单解密失败、AB 模式整体不可用；
@@ -454,7 +303,6 @@ namespace UPandaGF
             if (sourcesLoadMgr == null) sourcesLoadMgr = InitComponent<AssetsLoader>();
             if (binaryDataMgr == null) binaryDataMgr = InitComponent<BinaryDataMgrInit>();
             if (_UIManager == null) _UIManager = InitComponent<UIManager>();
-            _UIManager.Init();
         }
 
         private T InitComponent<T>() where T : Component
@@ -475,24 +323,73 @@ namespace UPandaGF
             ThrowIfDestroyed();
             IsInitFailed = false;
             IsInited = true;
-            PLogger.Log_white($"GameRoot Initialization completed!");
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            for (int i = 0; i < SceneManager.sceneCount; i++) BindScene(SceneManager.GetSceneAt(i));
+            long startupMs = 0;
+            if (lifecycle?.Metrics != null)
+                foreach (var metric in lifecycle.Metrics) startupMs += metric.Milliseconds;
+            PLogger.Log_white($"GameRoot Initialization completed in {startupMs} ms!");
             EventCenter.Instance.EventTrigger(new GFLoadedEvent());
         }
 
         /// <summary>
         /// 获取资源加载接口。
         /// <para>⚠ <see cref="IsInited"/> 为 false 时它还没被真正初始化（加载方式仍是默认值、
-        /// 清单还是 null），请在收到 <see cref="GFLoadedEvent"/> 之后再使用。</para>
+        /// 清单还是 null），访问会抛出异常；请先等待 WaitUntilReadyAsync。</para>
         /// </summary>
         public IAssetsLoader GetAssetsLoader()
         {
-            if (!IsInited && !warnedNotInited)
-            {
-                warnedNotInited = true;
-                PLogger.LogWarning("[UPGameRoot] 资源系统尚未初始化完成（IsInited=false）：此时取到的 IAssetsLoader 仍处于默认加载方式，"
-                                   + "AssetBundle 相关接口不可用。请在 GFLoadedEvent 之后再取。");
-            }
+            if (!IsInited || State != StartupState.Ready)
+                throw new InvalidOperationException("资源系统尚未就绪，请先等待 WaitUntilReadyAsync。");
             return sourcesLoadMgr;
+        }
+
+        private static string BundleTargetFor(RuntimePlatform platform)
+        {
+            switch (platform)
+            {
+                case RuntimePlatform.WindowsPlayer: return "StandaloneWindows64";
+                case RuntimePlatform.Android: return "Android";
+                case RuntimePlatform.IPhonePlayer: return "iOS";
+                case RuntimePlatform.WebGLPlayer: return "WebGL";
+                case RuntimePlatform.OSXPlayer: return "StandaloneOSX";
+                case RuntimePlatform.LinuxPlayer: return "StandaloneLinux64";
+                default: return platform.ToString();
+            }
+        }
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode) { if (IsInited) BindScene(scene); }
+        private void BindScene(Scene scene)
+        {
+            if (!scene.IsValid() || !scene.isLoaded) return;
+            services.SceneService.GetScope(scene);
+            foreach (var root in scene.GetRootGameObjects())
+                foreach (var behaviour in root.GetComponentsInChildren<MonoBehaviour>(true))
+                    if (behaviour is IGameServicesConsumer consumer)
+                        try { consumer.Configure(services); } catch (Exception e) { Debug.LogException(e); }
+        }
+        private void OnApplicationPause(bool paused)
+        {
+            if (!IsInited || services == null) return;
+            services.AppLifecycleService.NotifyPause(paused);
+        }
+        private void OnApplicationFocus(bool focused)
+        {
+            if (!IsInited || services == null) return;
+            services.AppLifecycleService.NotifyFocus(focused);
+        }
+        private void OnApplicationLowMemory()
+        {
+            if (!IsInited || services == null) return;
+            services.AppLifecycleService.NotifyLowMemory();
+        }
+        private void OnApplicationQuit()
+        {
+            services?.AppLifecycleService.NotifyQuitting();
+        }
+
+        private static async void ObserveShutdown(Task task)
+        {
+            try { await task; } catch (Exception e) { Debug.LogException(e); }
         }
 
         private void ThrowIfDestroyed()
@@ -503,6 +400,7 @@ namespace UPandaGF
         protected override void OnDestroyed()
         {
             destroyed = true;
+            ObserveShutdown(ShutdownAsync());
             IsInited = false;
             base.OnDestroyed();
             PLogger.LogWarning("UPGameRoot Destory!!!");

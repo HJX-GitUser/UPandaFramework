@@ -1,0 +1,22 @@
+{
+  "name": "UPandaGF.Tests.EditMode",
+  "rootNamespace": "",
+  "references": [
+    "UPandaGF.Runtime",
+    "UPandaGF.Contracts"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

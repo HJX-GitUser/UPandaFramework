@@ -1,0 +1,1 @@
+PASS: legacy/new save, exact backup, private readonly fields, reference graph, comparer, local DateTime, Unity value types, BinaryDataMgr API, legacy/AES manifests, legacy/JSON replay, corruption rejection; no serialization callbacks.

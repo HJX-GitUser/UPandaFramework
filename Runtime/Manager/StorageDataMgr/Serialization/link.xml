@@ -1,0 +1,11 @@
+<linker>
+  <!-- 字段图只通过反射访问这两个属性；High 裁剪必须保留属性及 getter 元数据。 -->
+  <assembly fullname="mscorlib">
+    <type fullname="System.Collections.Generic.Dictionary`2" preserve="nothing">
+      <property name="Comparer" accessors="get" />
+    </type>
+    <type fullname="System.Collections.Generic.EqualityComparer`1" preserve="nothing">
+      <property name="Default" accessors="get" />
+    </type>
+  </assembly>
+</linker>

@@ -1,0 +1,20 @@
+{
+    "caches": [
+        {
+            "name": "Build",
+            "bytes": 913,
+            "legacy": true,
+            "migrated": true,
+            "backupExact": true,
+            "sourceUnchanged": true
+        },
+        {
+            "name": "Inspect",
+            "bytes": 1105,
+            "legacy": true,
+            "migrated": true,
+            "backupExact": true,
+            "sourceUnchanged": true
+        }
+    ]
+}

@@ -10,8 +10,10 @@ namespace UPandaGF
     /// <summary>
     /// 框架日志门面。
     ///
-    /// 编译期剔除：所有公开 API 都带 [Conditional("OPEN_PLOG")]，未定义该宏时**调用点会被编译器整体移除**
+    /// 编译期剔除：普通日志 / Warning 带 [Conditional("OPEN_PLOG")]，未定义该宏时调用点会被编译器整体移除
     /// （连实参表达式都不求值），因此关闭日志是零运行时开销的。
+    /// 错误日志例外：LogError / LogErrorFormat / LogException 不参与编译期剔除，
+    /// 避免"监听者异常被隔离、下载失败被降级，但线上没有任何错误日志"。
     /// 宏开关：菜单 UPandaGF -> 日志系统 -> 启动日志 / 剔除日志（对 Standalone/iOS/Android/WebGL 四个平台组生效）。
     ///
     /// 运行时开关：<see cref="cfg"/> 里的 openLog / openWarning / openError / maxLogLength 等字段，
@@ -71,7 +73,8 @@ namespace UPandaGF
 
         private static bool CanLog { get { return cfg != null && cfg.openLog; } }
         private static bool CanWarning { get { return CanLog && cfg.openWarning; } }
-        private static bool CanError { get { return CanLog && cfg.openError; } }
+        // Error 不随 openLog 总开关静默：只受 openError 控制（默认 true）。
+        private static bool CanError { get { return cfg == null || cfg.openError; } }
 
         #endregion
 
@@ -143,14 +146,12 @@ namespace UPandaGF
             UnityEngine.Debug.LogWarning(GenerateLog(Format(Safe(obj), args)));
         }
 
-        [Conditional("OPEN_PLOG")]
         public static void LogError(object obj)
         {
             if (!CanError) return;
             UnityEngine.Debug.LogError(GenerateLog(Safe(obj)));
         }
 
-        [Conditional("OPEN_PLOG")]
         public static void LogErrorFormat(object obj, params object[] args)
         {
             if (!CanError) return;
@@ -158,7 +159,6 @@ namespace UPandaGF
         }
 
         /// <summary>异常日志（字符串形式），与 Reporter 的 LogType.Exception 对应</summary>
-        [Conditional("OPEN_PLOG")]
         public static void LogException(object obj)
         {
             if (!CanError) return;
@@ -166,7 +166,6 @@ namespace UPandaGF
         }
 
         /// <summary>异常日志（Exception 对象，Unity 会附带完整堆栈）</summary>
-        [Conditional("OPEN_PLOG")]
         public static void LogException(Exception ex)
         {
             if (!CanError) return;

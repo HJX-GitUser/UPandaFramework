@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -15,7 +17,7 @@ namespace ReplaySystem
     /// 录制文件的保存/加载逻辑。
     /// 保存格式：版本化 JSON（旧版二进制文件只读兼容），文件存放于 Application.persistentDataPath/ReplayRecords/。
     /// </summary>
-    public static class FileManager
+    public static partial class FileManager
     {
         public const string FolderName = "ReplayRecords";
         private const string Header = "UPANDA_REPLAY:2\n";
@@ -25,7 +27,7 @@ namespace ReplaySystem
             public Func<string, object> decode;
         }
         [Serializable] private class StateBox<T> { public T value; }
-        private static readonly Dictionary<string, ComponentCodec> codecs = new Dictionary<string, ComponentCodec>();
+        private static readonly ConcurrentDictionary<string, ComponentCodec> codecs = new ConcurrentDictionary<string, ComponentCodec>();
         static FileManager() { RegisterComponentState<Vector3>("RigidbodyVelocity"); }
 
         /// <summary>自定义组件持久化需注册明确的数据类型；不从文件解析 CLR 类型名。</summary>
@@ -36,19 +38,6 @@ namespace ReplaySystem
                 encode = value => JsonUtility.ToJson(new StateBox<T> { value = (T)value }),
                 decode = json => JsonUtility.FromJson<StateBox<T>>(json).value
             };
-        }
-
-        // 只用于读取已有的旧版 .dat；禁止解析 DTO 白名单以外的类型。
-        private sealed class LegacyBinder : SerializationBinder
-        {
-            public override Type BindToType(string assemblyName, string typeName)
-            {
-                Type[] allowed = { typeof(SerializableRecordFile), typeof(SerializableFrame),
-                    typeof(SerializableSnapshot), typeof(SerializableFrame[]), typeof(SerializableSnapshot[]),
-                    typeof(float[]), typeof(string[]) };
-                foreach (var type in allowed) if (type.FullName == typeName) return type;
-                throw new SerializationException("Unsupported legacy replay type: " + typeName);
-            }
         }
 
         /// <summary>录制文件所在目录（不存在则自动创建）</summary>
@@ -65,68 +54,80 @@ namespace ReplaySystem
         /// <summary>保存录制数据，文件名带时间戳，返回完整路径</summary>
         public static string Save(List<RecordFrame> frames)
         {
-            string fullPath = null;
-            string temporary = null;
+            ReplayWriter writer = null;
             try
             {
-                var file = ToSerializable(frames);
-                file.version = 2;
-                Validate(file);
-                fullPath = Path.Combine(FolderPath, $"record_{DateTime.Now:yyyyMMdd_HHmmss_fff}_{Guid.NewGuid():N}.dat");
-                temporary = fullPath + ".tmp";
-                File.WriteAllText(temporary, Header + JsonUtility.ToJson(file), new UTF8Encoding(false));
-                File.Move(temporary, fullPath);
-                return fullPath;
+                var view = new SaveView(frames); writer = new ReplayWriter(FolderPath, CancellationToken.None);
+                for (int i = 0; i < view.frames.Length; i++)
+                {
+                    writer.StartFrame(view.times[i]);
+                    for (int j = 0; j < view.counts[i]; j++) writer.Snapshot(ToSerializable(view.frames[i].snapshots[j]));
+                    writer.EndFrame();
+                }
+                return writer.Complete();
             }
-            catch (Exception e)
-            {
-                Debug.LogWarning("[ReplaySystem] 保存失败：" + e.Message);
-                return null;
-            }
-            finally
-            {
-                if (temporary != null && File.Exists(temporary))
-                    try { File.Delete(temporary); } catch (IOException) { }
-            }
+            catch (Exception e) { Debug.LogWarning("[ReplaySystem] 保存失败：" + e.Message); return null; }
+            finally { writer?.Dispose(); }
         }
-
-        /// <summary>读取新版 JSON 或白名单旧版文件；损坏/版本不支持时返回 null。</summary>
+        /// <summary>保存调用时的帧前缀；DTO 按 128 个快照分块，Unity 状态只在调用线程编码。</summary>
+        public static async Task<string> SaveAsync(List<RecordFrame> frames, CancellationToken token = default)
+        {
+            ReplayWriter writer = null;
+            try
+            {
+                token.ThrowIfCancellationRequested(); var view = new SaveView(frames); string folder = Path.Combine(Application.persistentDataPath, FolderName);
+                writer = await Background(() => new ReplayWriter(folder, token));
+                int frameIndex = 0, snapshotIndex = -1;
+                while (frameIndex < view.frames.Length)
+                {
+                    token.ThrowIfCancellationRequested();
+                    var batch = new List<WriteOperation>(256); int snapshots = 0; long characters = 0; var slice = System.Diagnostics.Stopwatch.StartNew();
+                    do
+                    {
+                        if (snapshotIndex < 0) { batch.Add(new WriteOperation { kind = 0, time = view.times[frameIndex] }); snapshotIndex = 0; }
+                        if (snapshotIndex < view.counts[frameIndex])
+                        {
+                            var snapshot = ToSerializable(view.frames[frameIndex].snapshots[snapshotIndex++]);
+                            batch.Add(new WriteOperation { kind = 1, snapshot = snapshot }); snapshots++;
+                            characters += 256 + (snapshot.objectName?.Length ?? 0) + (snapshot.objectPath?.Length ?? 0);
+                            if (snapshot.componentJson != null) foreach (string json in snapshot.componentJson) characters += json.Length;
+                        }
+                        if (snapshotIndex == view.counts[frameIndex]) { batch.Add(new WriteOperation { kind = 2 }); snapshotIndex = -1; frameIndex++; }
+                    } while (frameIndex < view.frames.Length && snapshots < 128 && batch.Count < 512 && characters < 1024 * 1024 && slice.ElapsedMilliseconds < 4);
+                    await Background(() => { foreach (var operation in batch) { if (operation.kind == 0) writer.StartFrame(operation.time); else if (operation.kind == 1) writer.Snapshot(operation.snapshot); else writer.EndFrame(); } return true; });
+                    await Task.Yield();
+                }
+                string published = await Background(writer.Complete);
+                try { await UPandaGF.PlatformStorage.FlushAsync(); }
+                catch { if (File.Exists(published)) File.Delete(published); throw; }
+                return published;
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception e) { Debug.LogWarning("[ReplaySystem] 保存失败：" + e.Message); return null; }
+            finally { if (writer != null) await Background(() => { writer.Dispose(); return true; }); }
+        }
         public static List<RecordFrame> Load(string path)
         {
-            try
-            {
-                if (string.IsNullOrEmpty(path) || !File.Exists(path)) return null;
-                if (new FileInfo(path).Length > 128L * 1024 * 1024)
-                    throw new InvalidDataException("回放文件超过 128 MiB 限制");
-                SerializableRecordFile file;
-                using (var stream = File.OpenRead(path))
-                {
-                    var prefix = new byte[Encoding.UTF8.GetByteCount(Header)];
-                    int read = stream.Read(prefix, 0, prefix.Length);
-                    stream.Position = 0;
-                    if (read == prefix.Length && Encoding.UTF8.GetString(prefix) == Header)
-                    {
-                        using (var reader = new StreamReader(stream, Encoding.UTF8))
-                            file = JsonUtility.FromJson<SerializableRecordFile>(reader.ReadToEnd().Substring(Header.Length));
-                        if (file == null || file.version != 2) throw new InvalidDataException("不支持的回放版本");
-                    }
-                    else
-                    {
-#pragma warning disable SYSLIB0011
-                        var formatter = new BinaryFormatter { Binder = new LegacyBinder() };
-                        file = formatter.Deserialize(stream) as SerializableRecordFile;
-#pragma warning restore SYSLIB0011
-                    }
-                }
-                Validate(file);
-                return FromSerializable(file);
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning("[ReplaySystem] 读取失败：" + e.Message);
-                return null;
-            }
+            try { return ReadReplay(path, CancellationToken.None); }
+            catch (Exception e) { Debug.LogWarning("[ReplaySystem] 读取失败：" + e.Message); return null; }
         }
+        public static async Task<List<RecordFrame>> LoadAsync(string path, CancellationToken token = default)
+        {
+            try { return await Background(() => ReadReplay(path, token)); }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception e) { Debug.LogWarning("[ReplaySystem] 读取失败：" + e.Message); return null; }
+        }
+        private static Task<T> Background<T>(Func<T> action)
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            return Inline(action);
+#else
+            return Task.Run(action);
+#endif
+        }
+#if UNITY_WEBGL && !UNITY_EDITOR
+        private static async Task<T> Inline<T>(Func<T> action) { await Task.Yield(); return action(); }
+#endif
 
         private static void Validate(SerializableRecordFile file)
         {
@@ -139,34 +140,24 @@ namespace ReplaySystem
                     || float.IsInfinity(frame.time) || frame.time < previous)
                     throw new InvalidDataException("回放时间戳无效或未排序");
                 previous = frame.time;
-                foreach (var snapshot in frame.snapshots)
-                {
-                    if (snapshot == null || (snapshot.animParamNames?.Length ?? 0) != (snapshot.animParamValues?.Length ?? 0)
-                        || (snapshot.componentKeys?.Length ?? 0) != (snapshot.componentJson?.Length ?? 0))
-                        throw new InvalidDataException("回放快照数组不匹配");
-                    float[] values = { snapshot.px, snapshot.py, snapshot.pz, snapshot.rx, snapshot.ry,
-                        snapshot.rz, snapshot.rw, snapshot.sx, snapshot.sy, snapshot.sz };
-                    foreach (float value in values)
-                        if (float.IsNaN(value) || float.IsInfinity(value)) throw new InvalidDataException("回放坐标无效");
-                }
+                foreach (var snapshot in frame.snapshots) ValidateSnapshot(snapshot);
             }
         }
+        private static void ValidateSnapshot(SerializableSnapshot snapshot)
+        {
+            if (snapshot == null || (snapshot.animParamNames?.Length ?? 0) != (snapshot.animParamValues?.Length ?? 0)
+                || (snapshot.componentKeys?.Length ?? 0) != (snapshot.componentJson?.Length ?? 0)) throw new InvalidDataException("回放快照数组不匹配");
+            if (!Finite(snapshot.px) || !Finite(snapshot.py) || !Finite(snapshot.pz) || !Finite(snapshot.rx) || !Finite(snapshot.ry)
+                || !Finite(snapshot.rz) || !Finite(snapshot.rw) || !Finite(snapshot.sx) || !Finite(snapshot.sy) || !Finite(snapshot.sz)) throw new InvalidDataException("回放坐标无效");
+            if (snapshot.animParamNames != null) for (int i = 0; i < snapshot.animParamNames.Length; i++)
+                if (string.IsNullOrEmpty(snapshot.animParamNames[i]) || !Finite(snapshot.animParamValues[i])) throw new InvalidDataException("回放动画参数无效");
+            if (snapshot.componentKeys != null) for (int i = 0; i < snapshot.componentKeys.Length; i++)
+                if (string.IsNullOrEmpty(snapshot.componentKeys[i]) || snapshot.componentJson[i] == null) throw new InvalidDataException("回放组件数据无效");
+        }
+
+        private static bool Finite(float value) { return !float.IsNaN(value) && !float.IsInfinity(value); }
 
         // ================= DTO 转换（可序列化层） =================
-
-        private static SerializableRecordFile ToSerializable(List<RecordFrame> frames)
-        {
-            var file = new SerializableRecordFile { frames = new SerializableFrame[frames.Count] };
-            for (int i = 0; i < frames.Count; i++)
-            {
-                var src = frames[i];
-                var dst = new SerializableFrame { time = src.time, snapshots = new SerializableSnapshot[src.snapshots.Count] };
-                for (int j = 0; j < src.snapshots.Count; j++)
-                    dst.snapshots[j] = ToSerializable(src.snapshots[j]);
-                file.frames[i] = dst;
-            }
-            return file;
-        }
 
         private static SerializableSnapshot ToSerializable(ObjectSnapshot s)
         {
@@ -174,7 +165,7 @@ namespace ReplaySystem
             {
                 instanceID = s.instanceID,
                 objectName = s.objectName,
-                objectPath = s.objectPath,
+                objectPath = s.objectPath, animatorStateComplete = s.animatorStateComplete,
                 px = s.position.x, py = s.position.y, pz = s.position.z,
                 rx = s.rotation.x, ry = s.rotation.y, rz = s.rotation.z, rw = s.rotation.w,
                 sx = s.localScale.x, sy = s.localScale.y, sz = s.localScale.z
@@ -196,14 +187,16 @@ namespace ReplaySystem
             {
                 d.componentKeys = new string[s.componentData.Count];
                 d.componentJson = new string[s.componentData.Count];
-                int index = 0;
+                int index = 0; long characters = 0;
                 foreach (var pair in s.componentData)
                 {
                     ComponentCodec codec;
                     if (!codecs.TryGetValue(pair.Key, out codec))
                         throw new InvalidDataException("请先注册组件持久化类型：" + pair.Key);
                     d.componentKeys[index] = pair.Key;
-                    d.componentJson[index++] = codec.encode(pair.Value);
+                    string encoded = codec.encode(pair.Value); characters += encoded.Length;
+                    if (characters > 1024 * 1024) throw new InvalidDataException("单快照组件 JSON 超过 1 Mi 字符限制");
+                    d.componentJson[index++] = encoded;
                 }
             }
             return d;
@@ -231,7 +224,7 @@ namespace ReplaySystem
                 new Quaternion(d.rx, d.ry, d.rz, d.rw),
                 new Vector3(d.sx, d.sy, d.sz))
             {
-                objectName = d.objectName, objectPath = d.objectPath
+                objectName = d.objectName, objectPath = d.objectPath, animatorStateComplete = d.animatorStateComplete
             };
             if (d.animParamNames != null && d.animParamNames.Length > 0)
             {
@@ -281,7 +274,7 @@ namespace ReplaySystem
         }
     }
 
-    /// <summary>可序列化的录制文件根（纯 .NET [Serializable] 类型，供 BinaryFormatter 使用）</summary>
+    /// <summary>可序列化的录制文件根（纯 .NET [Serializable] 类型，用于历史数据兼容与当前 JSON 持久化）</summary>
     [Serializable]
     public class SerializableRecordFile
     {
@@ -307,6 +300,7 @@ namespace ReplaySystem
         public int instanceID;
         public string objectName;
         [System.Runtime.Serialization.OptionalField] public string objectPath;
+        [System.Runtime.Serialization.OptionalField] public bool animatorStateComplete;
 
         // position
         public float px, py, pz;

@@ -25,14 +25,14 @@
 
 | 文件 | 内容 | 编码 |
 | --- | --- | --- |
-| `EventCenter.cs` | `EventArgBase`、`PD_EventInfo<T>`（单事件类型的监听容器）、`EventCenter`（单例）、`EventListenerInfo` / `EventTypeDebugInfo`（调试数据） | **GBK（无 BOM）** ⚠️ |
+| `EventCenter.cs` | `EventArgBase`、`PD_EventInfo<T>`（单事件类型的监听容器）、`EventCenter`（单例）、`EventListenerInfo` / `EventTypeDebugInfo`（调试数据） | UTF-8（带 BOM） |
 | `EventBus.cs` | `IEventListener<T>`、`EventBus`、`EventBusSubscriptionInfo`（调试数据） | UTF-8（带 BOM） |
 | （编辑器工具）`Editor/CustomInspector/EventCenterModule/` | `EventCenterDebugWindow.cs`、`EventCenterSelfCheck.cs` | UTF-8（带 BOM） |
 
 命名空间：运行时两个类都在 `UPandaGF`；编辑器工具在 `UPandaGF.EditorTools`。
 基类 `LazySingletonBase<T>` 位于**全局命名空间**（`Runtime/Manager/Singleton/`）。
 
-> ⚠️ **改 `EventCenter.cs` 必须按 GBK 读写**：用 UTF-8 工具直接改会把中文注释写成 `U+FFFD`。批量替换请"按原编码读取 → 替换 → 按原编码写回"。
+> C# 源码统一采用 UTF-8 BOM + CRLF。
 
 ---
 
@@ -45,7 +45,7 @@ EventCenter（单例）
 └── Dictionary<Type, object> eventDic         // 键 = typeof(T)，值 = PD_EventInfo<T>
     └── PD_EventInfo<T>                       // 一个事件类型一个容器
         ├── List<Listener>                    // Listener { action, owner(WeakReference<Object>), priority, seq }
-        ├── UnityAction<T>[] snapshot         // 派发快照（惰性重建，派发零分配）
+        ├── Listener[] snapshot               // 携带 owner 的监听快照（惰性重建）
         └── lockObj                           // 只保护容器本身
 ```
 
@@ -296,3 +296,15 @@ string report = UPandaGF.EditorTools.EventCenterSelfCheck.RunSilent();   // 返�
 
 **兼容性**：`EventCenter` 的公共 API **只增不改**，既有调用点（`GFLoadedEvent`、`TaskTipsInfoEvent`、`SceneMgr_SceneAsynLoadProgress`、`ABLoadProgressEvent` 等）无需改动。
 **唯一行为变化**：`EventBus` 的派发顺序由"倒序"改为"订阅顺序"（改造前 `EventBus` 在项目里没有任何调用点）。
+
+## 2026-11-06 联合生命周期补充
+
+- 普通 Add / Remove / Subscribe / Unsubscribe 保留原有快照语义：本次派发仍使用开始时的成员，变化从后续派发生效。
+- Clear 是批次失效边界：本轮尚未调用的旧监听者不再收到消息；回调里 Clear 后新增的监听者属于新一轮。
+- EventCenter 在每个调用前检查 owner 是否仍存活，跳过同轮较早回调中已销毁的 owner。已销毁 owner 的新注册不会退化为无 owner 的强引用注册。
+- Once 除了先退订，还使用一次性执行标记，递归派发留下的外层快照不能再次执行它。
+- 快照失效时立刻解除缓存字段对旧委托的强引用；当前正在派发的局部快照只保留到本次派发结束。GetListenerCount 清理死 owner 后，不会因旧缓存继续保留业务对象。
+- EventBus 同时识别 GC 回收与 Unity 原生对象已销毁，接口引用仍在不代表 MonoBehaviour 仍存活；普通托管订阅者仍保持弱引用行为。
+- 这些调整不增加跨线程投递能力，Unity owner 的注册、清理与派发仍在主线程使用。
+
+验证与证据见 `OptimzeLog/CoordinationAudit/README.md`。

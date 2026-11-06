@@ -1,0 +1,22 @@
+using System;
+using System.IO;
+using UnityEditor;
+using UnityEditor.Animations;
+using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+
+public static class ReplayPlayerBuild
+{
+    public static void Build()
+    {
+        string folder = "Assets/ReplayPlayerFixtures"; Directory.CreateDirectory(folder); AssetDatabase.Refresh();
+        var controller = AnimatorController.CreateAnimatorControllerAtPath(folder + "/Replay.controller"); controller.AddParameter("Speed", AnimatorControllerParameterType.Float);
+        EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single); var smoke = new GameObject("ReplaySmoke").AddComponent<ReplayPlayerSmoke>(); smoke.controller = controller;
+        EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), "Assets/ReplaySmoke.unity");
+        PlayerSettings.companyName = "UPandaAudit"; PlayerSettings.productName = "ReplayPerformanceVerification";
+        var result = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = new[] { "Assets/ReplaySmoke.unity" }, target = BuildTarget.StandaloneWindows64, locationPathName = "ReplayBuild/ReplaySmoke.exe", options = BuildOptions.Development });
+        if (result.summary.result != BuildResult.Succeeded) throw new Exception("Replay player build failed");
+        Directory.CreateDirectory("ReplayBuild/Fixtures"); File.Copy("SerializationBuild/Fixtures/legacy-replay.dat", "ReplayBuild/Fixtures/legacy-replay.dat", true); Debug.Log("REPLAY_PLAYER_BUILD_SUCCEEDED");
+    }
+}

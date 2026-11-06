@@ -18,7 +18,7 @@
 3. **owner 自动注销**：注册时传一个 `UnityEngine.Object` 作为"存活依据"（MonoBehaviour 传 `this`）。owner 被销毁后，PublicMono 会在下一次派发时**自动跳过并移除**它 —— 避免"僵尸监听者"每帧抛 `MissingReferenceException`，也避免委托强引用让已销毁对象无法回收。
    不带 owner 时是**强引用**：必须在 `OnDisable`/`OnDestroy` 里显式注销，或用 `ClearAllListeners()`。
 4. **幂等注册**：同一方法重复注册会被忽略并打警告（否则"每帧跑两遍"）。
-5. **`RunCoroutine` 的 Task 一定会结束**：正常完成 / 协程异常 → Task 抛异常 / 宿主停用或销毁、`StopAllCoroutines` → Task 取消 / 超时 → `TimeoutException`。绝不会"没有异常也不返回"地永久挂起。
+5. **托管任务的终态**：正常完成、根或嵌套迭代器异常、宿主停用/销毁、托管停止与超时均有对应 Task 终态。不限时且从不结束的协程仍会保持等待。
 
 ## 3. API 参考
 
@@ -78,24 +78,36 @@ catch (Exception e) { /* 协程内部出错 */ }
 
 - **lambda / 闭包注销不掉**：`AddUpdateListener(() => {...})` 之后 `RemoveUpdateListener(() => {...})` 永远不生效（每次求值都是新的委托实例）→ 注册与注销必须用**同一个方法引用**（命名方法，或把委托存进字段）。
 - **Unity 对象不要用 `?.` 判空**：`PublicMono.Instance?.AddUpdateListener(...)` 走的是 CLR 真 null 判断，绕过 Unity 重载的 `==`，对象"已销毁但引用还在"时会照样调用进去并报 `MissingReferenceException`。用 `var m = PublicMono.Instance; if (m == null) return;`。
-- **不带 owner 的监听器不会自动清理**：切场景后遗留在链上的监听器会被跳过（若 owner 为空则无法判断存活）→ 请成对注销，或在切场景时 `ClearAllListeners()`。
+- **不带 owner 的监听器不会自动清理**：它们会持续被调用，框架无法推断对应业务对象是否仍应更新→ 请成对注销，或在切场景时 `ClearAllListeners()`。
 - **取消最多延迟一帧生效**（见 3.2 说明）；超时精度同样取决于帧率。
 - **`Task` 续体默认在同线程同步执行**（这是刻意的：保证 `await` 之后仍在主线程，可以安全调 Unity API，也与旧行为一致）。若改成异步续体（`TaskCreationOptions.RunContinuationsAsynchronously`），必须先确认调用方不依赖"续体在主线程同步执行"。
 - 未提供：定时器 / 延迟调用 / 协程池、监听器优先级与执行顺序保证（按注册顺序执行，但 `owner` 自动清理会改变顺序）。
 
 ## 6. 与框架的关系
 
-- **启动链**：`UPGameRoot.Init()` 用 `await PublicMono.Instance.RunCoroutine(debugerInit.Init())` 驱动日志系统初始化；`SceneMgr` 用 `PublicMono.Instance.StartCoroutine(...)` 跑场景加载协程。
+- **启动链**：`UPGameRoot.Init()` 用 `await PublicMono.Instance.RunCoroutine(debugerInit.Init())` 驱动日志系统初始化；`SceneMgr` 用 `PublicMono.RunCoroutine` 托管场景加载等待。
 - **帧驱动**：`AudioMgr` 等纯 C# 管理器通过 `AddUpdateListener` 拿到 `Update`（`AudioMgr` 在 `Dispose` 时注销，见 `Runtime/Manager/AudioMgr/README.md`）。
 - **异常隔离是框架级保障**：正因为这里逐个 `try/catch`，各模块自己的 `Update` 里即使漏了异常保护，也不会连累其它模块。
 
 ## 7. 维护提示
 
 - 三个通道的派发都走 `ListenerList.Invoke()`：**不要在派发过程中改 `entries` 的长度**（新增会被"本帧不生效"挡住；删除走 `removed` 标记 + 派发结束后压缩）—— 修改这块前先读懂 `Invoke/Remove/Clear/Compact` 四个方法。
-- `FinishJob` 的顺序不能变：先置 `finished`（防重入）→ 移除出表 → 释放取消注册 → `StopCoroutine` → 最后才 `Set` 结果（`Set` 可能同步内联执行调用方的续体，续体里若再操作协程表必须看到一致状态）。
+- `FinishJob` 的顺序不能变：先置 `finished`（防重入）→ 移除出表 → 释放取消注册 → 停止与释放迭代器栈 → 最后才 `Set` 结果（`Set` 可能同步内联执行调用方的续体，续体里若再操作协程表必须看到一致状态）。
 - `Awake` 之前不保证字段初始化器执行过：所有托管字段都通过 `EnsureInitialized()`（在 `OnAwake` 和每个注册入口调用）兜底，新增字段时请沿用这个习惯。
 - 改动后建议用工程外的真实编译校验（`get_errors` 在 Unity 工程里可能是假阴性）：从 `Library/EditorInstance.json` 的 `app_contents_path` 取 `Managed` / `MonoBleedingEdge\lib\mono\4.7.1-api` 作参考程序集，用 `dotnet <sdk>\Roslyn\bincore\csc.dll` 编译 `Runtime/` 下全部源码。注意**不要**把 `NetStandard\ref\2.1.0\netstandard.dll` 加进响应文件（会让 corlib 解析崩掉，出现上千个 CS0518）。
 
 ## 生命周期联合回归补充
 
 监听记录显式区分“没有提供 owner”与“owner 的 Unity 对象已销毁”。前者持续更新直到主动注销；后者才自动移除。本轮通过实际帧回调验证强引用监听存活与销毁 owner 的清理，并验证音频在调度器重建后的重新绑定。
+
+## 2026-11-06 协程与重入补充
+
+- RunCoroutine 在首次 MoveNext 前登记任务，覆盖首次迭代里停用/销毁宿主的情况。已取消令牌、未激活宿主及正在整批停止时，不执行用户 MoveNext，返回已取消 Task。
+- 嵌套 IEnumerator 由同一迭代器栈驱动，嵌套异常传回原 Task。完成、异常、取消、超时时按内到外 Dispose，执行已进入的 try/finally；不能撤销已经发生的业务副作用。
+- CancellationToken 的跨线程回调只设置 volatile 标志，清理和 Task 通知仍在 Unity 主线程。MoveNext 里的停止会等当前迭代退出执行态后再 Dispose 和通知。
+- 通过 PublicMono 类型调用 StopAllCoroutines 会结束托管 Task 并停止原始协程。通过 MonoBehaviour 基类引用或反射绕过此入口的原始 StopAllCoroutines / StopCoroutine 不提供托管完成保证；托管调用方应使用 CancellationToken 或 PublicMono 停止入口。
+- 完成通知可能同步重入；处理取消/超时的遍历使用可复用快照，清理中再次停用宿主不会破坏索引。整批停止期间重入创建的托管任务立即取消，停止结束后可继续使用。
+- 帧监听器用派发深度保护嵌套调用；Remove 忽略已标记移除的旧记录，避免“移除 → 重新注册 → 再移除”遗漏新记录。
+- 由原始 StartCoroutine 启动、再 yield 返回 Coroutine 句柄的子协程不属于上述 IEnumerator 栈，其内部异常不能从句柄反推回原 Task。
+
+验证与证据见 `OptimzeLog/CoordinationAudit/README.md`。

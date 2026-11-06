@@ -1,0 +1,37 @@
+{
+  "unity": "2022.3.48f1c1",
+  "platform": "Windows x64 / Mono, Development Player, batchmode nographics",
+  "baseline": "5b9fe9e",
+  "tests": {
+    "total": 191,
+    "passed": 191,
+    "new": 40,
+    "previous": 151
+  },
+  "playerBuild": "Succeeded",
+  "playerSmoke": "Passed",
+  "dotnetBuild": {
+    "errors": 0,
+    "existingWarnings": 7
+  },
+  "measurement": {
+    "bytes": 33554432,
+    "baselineSyncMD5Milliseconds": 107,
+    "baselineAdvancedFrames": 0,
+    "workerVerifyMilliseconds": 75,
+    "workerAdvancedHeadlessFrames": 8302,
+    "interpretation": "Thread placement check on this machine, not representative FPS or a device performance promise."
+  },
+  "sourceSHA256": {
+    "Runtime/Manager/AssetsMgr/FileUpdateTransaction.cs": "05c8334fe86a2f49f4f5ccac9523d0eafc300a074111c6eca554b7117afa8c9c",
+    "Runtime/Manager/AssetsMgr/AssetBundleMgr/ABLoadMgr.cs": "40b7626ccd0bfd177f6492cce611c84aef36a2c8f1c2aa91781a1e83212ce261",
+    "Runtime/Manager/AssetsMgr/AssetBundleMgr/HotUpdateFileGate.cs": "74f4aeee75fe982d1e4aee6235d9a2e1350c9287a7394f0ac3aa000db679fb2b",
+    "Runtime/Manager/GameRoot/UPGameRoot.cs": "ccd69ac5db2bb3e53b3ce8b85ae2df3dd2e412b2aae032c253611e4c1e4612e1",
+    "Runtime/Manager/GameRoot/UPGameRootConfig.cs": "6c3a30af0616bd54d2dca2d0278311b09da29c9a85b03d7adec6c60c981cc7e7",
+    "Runtime/Manager/GameRoot/HotUpdate/HotUpdateSettings.cs": "29f929142c5b5485e45eaeee17f06e95106e5723dea62dd853609c858c928842",
+    "Runtime/Manager/GameRoot/HotUpdate/HotUpdateStorage.cs": "ed08c32dcc3864d61be6b0e16b96b543194d6d44b1f00bfdb85018355ac5d66f",
+    "Runtime/Manager/DownloadMgr/Downloader.cs": "ada015f48d24050ceb9c3ff55c7953eaab41f87f728e924354dfccfa62b53362",
+    "Runtime/Manager/DownloadMgr/DownloadHandlerFile.cs": "1c23c4c376ae62833a1b72d262d6b3a5d4f4d0c8148f193c79729c64dd4d0b25",
+    "Tests/PlayMode/HotUpdateRegressionTests.cs": "5e59100976b104aa5a257b7754c937261b901ff6f209356d36ed4cdc8ef7b5ce"
+  }
+}

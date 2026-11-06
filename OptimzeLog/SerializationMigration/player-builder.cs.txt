@@ -1,0 +1,60 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
+using UnityEditor;
+using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UPandaGF;
+
+public static class SerializationPlayerBuild
+{
+    [Serializable] private class CacheResult{public string name;public int bytes;public bool legacy,migrated,backupExact,sourceUnchanged;}
+    [Serializable] private class CacheResults{public List<CacheResult> caches=new List<CacheResult>();}
+    private static byte[] Legacy(object value)
+    {
+#pragma warning disable SYSLIB0011
+        using(var stream=new MemoryStream()){new BinaryFormatter().Serialize(stream,value);return stream.ToArray();}
+#pragma warning restore SYSLIB0011
+    }
+    public static void VerifyEditorCaches()
+    {
+        var results=new CacheResults();Directory.CreateDirectory("Temp/SerializationActualCaches");
+        string originalProject=Path.GetFullPath("../..");
+        foreach(string tab in new[]{"Build","Inspect"})
+        {
+            string current=Path.Combine(originalProject,"Library/AssetBundleBrowser"+tab+".dat");
+            string source=File.Exists(current+".legacy.bak")?current+".legacy.bak":current;if(!File.Exists(source))throw new Exception("Expected real cache missing: "+tab);
+            byte[] original=VersionedDataSerializer.ReadFile(source);string copy="Temp/SerializationActualCaches/"+tab+".dat";File.WriteAllBytes(copy,original);
+            Type type=typeof(AssetBundleBrowser.AssetBundleBrowserMain).Assembly.GetType(tab=="Build"?"AssetBundleBrowser.AssetBundleBuildTab+BuildTabData":"AssetBundleBrowser.AssetBundleInspectTab+InspectTabData",true);
+            string kind=tab=="Build"?"ab-build-settings":"ab-inspect-settings";bool legacy;
+            object before=VersionedDataSerializer.Deserialize(original,type,kind,out legacy);
+            object restored=typeof(VersionedDataSerializer).GetMethod("LoadFile").MakeGenericMethod(type).Invoke(null,new object[]{copy,kind,true});
+            if(!VersionedDataSerializer.Serialize(before,kind).SequenceEqual(VersionedDataSerializer.Serialize(restored,kind)))throw new Exception("Editor cache fields changed: "+tab);
+            bool backup=!legacy||File.ReadAllBytes(copy+".legacy.bak").SequenceEqual(original),unchanged=File.ReadAllBytes(source).SequenceEqual(original);
+            if(!backup||!unchanged||!VersionedDataSerializer.IsVersioned(File.ReadAllBytes(copy)))throw new Exception("Cache migration failed: "+tab);
+            results.caches.Add(new CacheResult{name=tab,bytes=original.Length,legacy=legacy,migrated=true,backupExact=backup,sourceUnchanged=unchanged});
+        }
+        Directory.CreateDirectory("SerializationBuild");
+        File.WriteAllText("SerializationBuild/editor-cache-results.json",JsonUtility.ToJson(results,true));
+        Debug.Log("SERIALIZATION_REAL_EDITOR_CACHES_VERIFIED");
+    }
+    public static void Build()
+    {
+        VerifyEditorCaches();EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
+        new GameObject("SerializationSmoke").AddComponent<SerializationPlayerSmoke>();
+        EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(),"Assets/SerializationSmoke.unity");
+        PlayerSettings.companyName="UPandaAudit";PlayerSettings.productName="UPandaSerializationVerification";
+        var result=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{"Assets/SerializationSmoke.unity"},target=BuildTarget.StandaloneWindows64,locationPathName="SerializationBuild/SerializationSmoke.exe",options=BuildOptions.Development});
+        if(result.summary.result!=BuildResult.Succeeded)throw new Exception("Serialization player build failed");
+        Directory.CreateDirectory("SerializationBuild/Fixtures");
+        var record=new SerializationPlayerRecord{text="old",date=new DateTime(2023,5,6,7,8,9,DateTimeKind.Local),amount=123.5m,values=new Dictionary<string,int>(StringComparer.OrdinalIgnoreCase){{"Case",4}}};record.parent=record;record.links=new List<SerializationPlayerRecord>{record};
+        File.WriteAllBytes("SerializationBuild/Fixtures/legacy-record.bin",Legacy(record));
+        var manifest=new ABSourcesRelated{mainBundleInfo=new AssetBundleLoadInfo{bundleName="Main",loadPath=ABLoadPath.StreamingAssetsPath}};manifest.bundleInfo.Add("common",new AssetBundleLoadInfo{bundleName="common",size=12,md5=new string('a',32),loadPath=ABLoadPath.RemotePath});manifest.sourcesDic.Add("Assets/Box.prefab",new AssetRelatedArg("common","Box"));File.WriteAllBytes("SerializationBuild/Fixtures/legacy.assetref",Legacy(manifest));
+        File.WriteAllBytes("SerializationBuild/Fixtures/legacy-replay.dat",Legacy(new ReplaySystem.SerializableRecordFile{frames=new[]{new ReplaySystem.SerializableFrame{time=0,snapshots=new[]{new ReplaySystem.SerializableSnapshot{instanceID=1,rw=1,sx=1,sy=1,sz=1}}}}}));
+        Debug.Log("SERIALIZATION_PLAYER_BUILD_SUCCEEDED");
+    }
+}

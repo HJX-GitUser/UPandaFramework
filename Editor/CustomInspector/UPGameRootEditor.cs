@@ -172,6 +172,7 @@ namespace UPandaGF.GFEditor
             ShowArg("config.remoteURL", "远程加载URL");
             ShowArg("config.LoadAssetPath", "相对路径");
             ShowArg("config.downloadBatchTimeout", "下载等待超时（秒）");
+            ShowArg("config.hotUpdate", "热更磁盘管理", true);
             ShowArg("config.AssetAESConfig", "清单 AES 配置", true);
 
             if (GUILayout.Button("重置相对路径"))

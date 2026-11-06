@@ -1,0 +1,13 @@
+{
+  "platform": "WebGLPlayer",
+  "backend": "IL2CPP High",
+  "completed": false,
+  "passed": false,
+  "observations": [
+    "ASCII StreamingAssets passed",
+    "Raw Unicode/space/# URL returned 404",
+    "Runtime type component creation passed",
+    "Wasm memory access out of bounds in PropertyInfo.GetValue -> FieldGraphCodec.Write; app aborted before remaining steps"
+  ],
+  "runnerTimeoutSeconds": 240
+}

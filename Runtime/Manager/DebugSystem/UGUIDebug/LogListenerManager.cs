@@ -53,6 +53,7 @@ public class LogListenerManager : MonoBehaviour
     private List<LogEntry> logEntries = new List<LogEntry>();
     private StringBuilder logContent = new StringBuilder();
     private Thread logThread;
+    private Coroutine cooperativeReader;
     private bool isListening = false;
     private string logFilePath;
     private FileStream fileStream;
@@ -298,10 +299,13 @@ public class LogListenerManager : MonoBehaviour
 
             isListening = true;
 
-            // 启动监听线程
+#if UNITY_WEBGL && !UNITY_EDITOR
+            cooperativeReader = StartCoroutine(ReadCooperatively());
+#else
             logThread = new Thread(ReadLogFile);
             logThread.IsBackground = true;
             logThread.Start();
+#endif
 
             UpdateStatus("正在监听日志...");
             AddLog("开始监听日志文件: " + logFilePath, LogType.Log);
@@ -315,12 +319,14 @@ public class LogListenerManager : MonoBehaviour
     public void StopListening()
     {
         isListening = false;
+        if (cooperativeReader != null) { StopCoroutine(cooperativeReader); cooperativeReader = null; }
 
         if (logThread != null && logThread.IsAlive)
         {
             logThread.Join(1000);
         }
 
+        if (streamReader != null) { streamReader.Dispose(); streamReader = null; }
         if (fileStream != null)
         {
             fileStream.Close();
@@ -330,6 +336,28 @@ public class LogListenerManager : MonoBehaviour
         UpdateStatus("已停止监听");
         AddLog("停止监听日志", LogType.Log);
     }
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+    private IEnumerator ReadCooperatively()
+    {
+        fileStream = new FileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        streamReader = new StreamReader(fileStream, Encoding.UTF8);
+        while (isListening)
+        {
+            int lines = 0;
+            while (lines++ < 128 && !streamReader.EndOfStream)
+            {
+                string line = streamReader.ReadLine();
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    lock (logQueue) logQueue.Enqueue(new LogEntry { text = line, rawText = line, type = ParseLogType(line), time = System.DateTime.Now });
+                    needsUpdate = true;
+                }
+            }
+            yield return null;
+        }
+    }
+#endif
 
     private void ReadLogFile()
     {

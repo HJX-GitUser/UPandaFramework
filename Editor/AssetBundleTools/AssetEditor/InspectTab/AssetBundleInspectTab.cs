@@ -1,9 +1,10 @@
-﻿using UnityEditor;
+﻿using UPandaGF;
+using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEditor.IMGUI.Controls;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Linq;
 
 namespace AssetBundleBrowser
@@ -15,6 +16,7 @@ namespace AssetBundleBrowser
 
         [SerializeField]
         private InspectTabData m_Data;
+        [NonSerialized] private bool m_CacheLoadFailed;
 
 
         private Dictionary<string, List<string> > m_BundleList;
@@ -60,6 +62,7 @@ namespace AssetBundleBrowser
 
         internal void OnEnable(Rect pos)
         {
+            m_CacheLoadFailed = false;
             m_Position = pos;
             if (m_Data == null)
                 m_Data = new InspectTabData();
@@ -71,12 +74,12 @@ namespace AssetBundleBrowser
 
             if (File.Exists(dataPath))
             {
-                BinaryFormatter bf = new BinaryFormatter();
-                FileStream file = File.Open(dataPath, FileMode.Open);
-                var data = bf.Deserialize(file) as InspectTabData;
-                if (data != null)
-                    m_Data = data;
-                file.Close();
+                try
+                {
+                    var data = VersionedDataSerializer.LoadFile<InspectTabData>(dataPath, "ab-inspect-settings");
+                    if (data != null) m_Data = data;
+                }
+                catch (Exception e) { m_CacheLoadFailed = true; Debug.LogWarning("AB 检视配置读取失败，使用默认值并保留原文件：" + e.Message); }
             }
 
 
@@ -94,16 +97,14 @@ namespace AssetBundleBrowser
         internal void OnDisable()
         {
             ClearData();
+            if (m_CacheLoadFailed) return;
 
             var dataPath = System.IO.Path.GetFullPath(".");
             dataPath = dataPath.Replace("\\", "/");
             dataPath += "/Library/AssetBundleBrowserInspect.dat";
 
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Create(dataPath);
-
-            bf.Serialize(file, m_Data);
-            file.Close();
+            try { VersionedDataSerializer.WriteFile(dataPath, VersionedDataSerializer.Serialize(m_Data, "ab-inspect-settings")); }
+            catch (Exception e) { Debug.LogWarning("AB 检视配置保存失败，保留原文件：" + e.Message); }
         }
 
         internal void OnGUI(Rect pos)

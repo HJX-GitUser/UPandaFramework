@@ -1,0 +1,69 @@
+{
+  "platform": "WebGLPlayer",
+  "backend": "IL2CPP",
+  "passed": true,
+  "existingCheckpoint": true,
+  "steps": [
+    {
+      "name": "streaming-ascii",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "streaming-unicode-fragment",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "aot-component-add",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "versioned-private-generics-cycle",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "legacy-migration",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "timer-and-download",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "log-file-writer",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "hotupdate-default-disk-policy",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "hotupdate-ledger-roundtrip",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "replay-async-roundtrip",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "bundles-native-platform",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "storage-checkpoint",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "browserReloadVerified": true
+}

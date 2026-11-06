@@ -1,0 +1,36 @@
+using System;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using UnityEditor;
+using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UPandaGF;
+
+public static class CrossPlatformProbeBuild
+{
+    private static void Build(BuildTarget target, string output)
+    {
+        var group = BuildPipeline.GetBuildTargetGroup(target); EditorUserBuildSettings.SwitchActiveBuildTarget(group, target);
+        PlayerSettings.companyName = "UPandaAudit"; PlayerSettings.productName = "CrossPlatformVerification";
+        PlayerSettings.SetScriptingBackend(group, ScriptingImplementation.IL2CPP); PlayerSettings.SetManagedStrippingLevel(group, ManagedStrippingLevel.High);
+        PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
+        PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled; PlayerSettings.WebGL.initialMemorySize = 128; PlayerSettings.WebGL.maximumMemorySize = 512;
+        if (target == BuildTarget.Android) { PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64; PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel34; PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel23; PlayerSettings.SetApplicationIdentifier(group, "com.upanda.crossplatformprobe"); }
+        string folder = Application.streamingAssetsPath + "/Probe"; Directory.CreateDirectory(folder + "/空 格"); File.WriteAllText(folder + "/value.txt", "platform-data"); File.WriteAllText(folder + "/空 格/内容#1.txt", "unicode-data");
+        var value = new PlatformProbeRecord(); value.parent = value; value.children.Add(value); File.WriteAllBytes(folder + "/versioned.bin", VersionedDataSerializer.Serialize(value, "platform-probe"));
+#pragma warning disable SYSLIB0011
+        using (var stream = File.Create(folder + "/legacy.bin")) new BinaryFormatter().Serialize(stream, value);
+#pragma warning restore SYSLIB0011
+        Directory.CreateDirectory("Assets/PlatformProbeFixtures"); File.WriteAllText("Assets/PlatformProbeFixtures/value.txt", "platform-data");
+        Directory.CreateDirectory(folder + "/Bundles"); AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+        if (BuildPipeline.BuildAssetBundles(folder + "/Bundles", new[] { new AssetBundleBuild { assetBundleName = "probe", assetNames = new[] { "Assets/PlatformProbeFixtures/value.txt" } } }, BuildAssetBundleOptions.ChunkBasedCompression, target) == null) throw new Exception("Platform fixture AB build failed");
+        EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single); new GameObject("CrossPlatformProbe").AddComponent<CrossPlatformPlayerProbe>(); EditorSceneManager.SaveScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), "Assets/CrossPlatformProbe.unity");
+        var result = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = new[] { "Assets/CrossPlatformProbe.unity" }, target = target, locationPathName = output, options = BuildOptions.Development });
+        File.WriteAllText("Temp/platform-build-" + target + ".txt", result.summary.result + " errors=" + result.summary.totalErrors + " warnings=" + result.summary.totalWarnings);
+        if (result.summary.result != BuildResult.Succeeded) throw new Exception("Platform player build failed: " + target); Debug.Log("CROSS_PLATFORM_BUILD_SUCCEEDED " + target);
+    }
+    public static void Windows() { Build(BuildTarget.StandaloneWindows64, "CrossPlatformWindows/PlatformProbe.exe"); }
+    public static void WebGL() { Build(BuildTarget.WebGL, "CrossPlatformWebGL"); }
+    public static void Android() { Build(BuildTarget.Android, "CrossPlatformAndroid/PlatformProbe.apk"); }
+}

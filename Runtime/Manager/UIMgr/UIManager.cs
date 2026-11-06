@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -31,6 +32,8 @@ namespace UPandaGF
 
         private sealed class PendingPanel
         {
+            public ILifetimeScope scope;
+            public CancellationTokenRegistration cancellation;
             public readonly TaskCompletionSource<BasePanel> completion = new TaskCompletionSource<BasePanel>();
         }
         private readonly Dictionary<string, PendingPanel> pendingPanels = new Dictionary<string, PendingPanel>();
@@ -48,6 +51,11 @@ namespace UPandaGF
 
         private ResourcesLoader resourcesLoader;
         private IAssetsLoader assetsLoader;
+        private IAssetService assetService;
+        private readonly Dictionary<string, ILifetimeScope> panelScopes = new Dictionary<string, ILifetimeScope>();
+        internal int DiagnosticOpenPanelCount => panelDic.Count;
+        internal int DiagnosticPendingPanelCount => pendingPanels.Count;
+        public void Configure(IAssetService service) { assetService = service ?? throw new ArgumentNullException(nameof(service)); }
 
         /// <summary>
         /// 重置Canvas
@@ -190,9 +198,15 @@ namespace UPandaGF
             ResourcesLoader.InvokeCallbacks(callBack, panel);
         }
 
-        public async Task<T> ShowPanelAsync<T>(object panelArg = null) where T : BasePanel
+        public Task<T> ShowPanelAsync<T>(object panelArg = null) where T : BasePanel => ShowPanelCoreAsync<T>(null, panelArg);
+        public Task<T> ShowPanelInScopeAsync<T>(ILifetimeScope scope, object panelArg = null) where T : BasePanel
         {
-            if (destroyed) return null;
+            if (scope == null) throw new ArgumentNullException(nameof(scope));
+            return ShowPanelCoreAsync<T>(scope, panelArg);
+        }
+        private async Task<T> ShowPanelCoreAsync<T>(ILifetimeScope scope, object panelArg) where T : BasePanel
+        {
+            if (destroyed || (scope != null && scope.Token.IsCancellationRequested)) return null;
             var info = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
             if (info == null || string.IsNullOrEmpty(info.loadPath))
             {
@@ -204,17 +218,24 @@ namespace UPandaGF
                 BasePanel panel;
                 if (!panelDic.TryGetValue(info.loadPath, out panel) || panel == null)
                 {
-                    panelDic.Remove(info.loadPath);
+                    panelDic.Remove(info.loadPath); panelScopes.Remove(info.loadPath);
                     PendingPanel pending;
                     if (!pendingPanels.TryGetValue(info.loadPath, out pending))
                     {
-                        pending = new PendingPanel();
+                        pending = new PendingPanel { scope = scope };
                         pendingPanels.Add(info.loadPath, pending);
+                        if (scope != null) pending.cancellation = scope.Token.Register(() => {
+                            if (pendingPanels.TryGetValue(info.loadPath, out var active) && ReferenceEquals(active, pending)) pendingPanels.Remove(info.loadPath);
+                            pending.completion.TrySetResult(null);
+                        });
                         _ = CreatePanel<T>(info, pending);
                     }
+                    if (!ReferenceEquals(pending.scope, scope)) throw new InvalidOperationException("同一路径面板不能由不同作用域共享。");
                     panel = await pending.completion.Task;
                 }
-                if (destroyed || panel == null) return null;
+                if (destroyed || panel == null || (scope != null && scope.Token.IsCancellationRequested)) return null;
+                if (panelScopes.TryGetValue(info.loadPath, out var owner) && !ReferenceEquals(owner, scope))
+                    throw new InvalidOperationException("同一路径面板已属于其他作用域。");
                 T typed = panel as T;
                 if (typed == null) throw new InvalidOperationException("同一路径不能绑定不同面板类型：" + info.loadPath);
                 typed.OnOpen(panelArg);
@@ -232,10 +253,17 @@ namespace UPandaGF
             GameObject instance = null;
             ResourcesLoader loader = null;
             bool acquired = false;
+            AssetLease<GameObject> prefabLease = null;
             try
             {
                 GameObject prefab = null;
-                switch (info.loadMethod)
+                if (assetService != null)
+                {
+                    prefabLease = await assetService.AcquireAsync<GameObject>(info.loadPath, info.loadMethod,
+                        pending.scope?.Token ?? CancellationToken.None);
+                    prefab = prefabLease?.Asset;
+                }
+                else switch (info.loadMethod)
                 {
                     case AssetLoadMethod.Resources:
                         loader = resourcesLoader != null ? resourcesLoader : ResourcesLoader.Instance;
@@ -247,7 +275,8 @@ namespace UPandaGF
                         break;
                     case AssetLoadMethod.AssetBundle:
                         if (assetsLoader == null) throw new InvalidOperationException("AssetsLoader 尚未初始化");
-                        prefab = await assetsLoader.LoadAsync<GameObject>(info.loadPath);
+                        if (assetsLoader is AssetsLoader owned) { prefabLease = await owned.AcquireAsync<GameObject>(info.loadPath); prefab = prefabLease?.Asset; }
+                        else prefab = await assetsLoader.LoadAsync<GameObject>(info.loadPath);
                         break;
                 }
                 PendingPanel current;
@@ -271,14 +300,25 @@ namespace UPandaGF
                     lease.Initialize(loader, info.loadPath);
                     acquired = false; // 从此由实例销毁时归还引用，支持外部直接 Destroy。
                 }
+                if (prefabLease != null)
+                {
+                    instance.AddComponent<PanelResourceLease>().Initialize(prefabLease);
+                    prefabLease = null;
+                }
+                if (pending.scope != null && pending.scope.Token.IsCancellationRequested) return;
                 panelDic[info.loadPath] = panel;
+                panelScopes[info.loadPath] = pending.scope;
+                if (pending.scope != null) pending.scope.Own(new DisposableAction(() => CloseIfCurrent(info.loadPath, panel)));
                 instance = null;
                 pendingPanels.Remove(info.loadPath);
                 pending.completion.TrySetResult(panel);
             }
+            catch (OperationCanceledException) { }
             catch (Exception e) { Debug.LogException(e); }
             finally
             {
+                pending.cancellation.Dispose();
+                prefabLease?.Dispose();
                 if (instance != null) Destroy(instance);
                 if (acquired && loader != null) loader.UnLoadAsset<GameObject>(info.loadPath, true);
                 PendingPanel current;
@@ -301,21 +341,35 @@ namespace UPandaGF
             }
             BasePanel panel;
             if (!panelDic.TryGetValue(info.loadPath, out panel)) return;
-            panelDic.Remove(info.loadPath); // 用户 OnClose 可重入打开。
+            panelDic.Remove(info.loadPath); panelScopes.Remove(info.loadPath); // 用户 OnClose 可重入打开。
             if (panel == null) return;
             try { panel.OnClose(); }
             finally { if (panel != null) Destroy(panel.gameObject); }
         }
 
-        protected override void OnDestroyed()
+        private void CloseIfCurrent(string path, BasePanel expected)
         {
+            if (!panelDic.TryGetValue(path, out var panel) || !ReferenceEquals(panel, expected)) return;
+            panelDic.Remove(path); panelScopes.Remove(path);
+            if (panel == null) return;
+            try { panel.OnClose(); }
+            finally { if (panel != null) Destroy(panel.gameObject); }
+        }
+        public void Shutdown()
+        {
+            if (destroyed) return;
             destroyed = true;
             var requests = new List<PendingPanel>(pendingPanels.Values);
             pendingPanels.Clear();
             foreach (var request in requests) request.completion.TrySetResult(null);
             foreach (var panel in panelDic.Values)
                 if (panel != null) Destroy(panel.gameObject);
-            panelDic.Clear();
+            panelDic.Clear(); panelScopes.Clear();
+        }
+
+        protected override void OnDestroyed()
+        {
+            Shutdown();
             base.OnDestroyed();
         }
 

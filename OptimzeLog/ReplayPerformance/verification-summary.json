@@ -1,0 +1,55 @@
+{
+  "unity": "2022.3.48f1c1",
+  "platform": "Windows x64 Mono Development Player, batchmode nographics",
+  "baselineCommit": "5b9fe9e",
+  "baselineTests": {
+    "total": 4,
+    "failedAsExpected": 4
+  },
+  "regressionTests": {
+    "total": 230,
+    "passed": 230,
+    "failed": 0,
+    "new": 39,
+    "previous": 191
+  },
+  "editorBuild": {
+    "errors": 0,
+    "existingWarnings": 7
+  },
+  "playerBuild": "Succeeded",
+  "playerSmoke": "Passed",
+  "measurement": {
+    "targets": 200,
+    "samples": 100,
+    "baselineAllocationBlocks": 161200,
+    "optimizedAllocationBlocks": 0,
+    "baselineMilliseconds": 49,
+    "optimizedMilliseconds": 6,
+    "recordClearCycles": 20,
+    "captureAttempts": 12000,
+    "monoUsedBytesAfterClear": [
+      2940928,
+      724992,
+      724992,
+      724992
+    ],
+    "note": "Synthetic headless test; not real device FPS or a full business scene endurance run."
+  },
+  "sourceSHA256": {
+    "Runtime/Game/ReplaySystem/Runtime/FileManager.cs": "19272900927c895b3b1ef8c0a876f7ce95d4fb27af32b1ccf8b852babfd208e2",
+    "Runtime/Game/ReplaySystem/Runtime/FileManager.Streaming.cs": "b561fce183cf7e7350f863151089c0cd01c07ecdebc3035154b39613c6b4f5d1",
+    "Runtime/Game/ReplaySystem/Runtime/IRecordableComponent.cs": "5646977c176798dda9ec9a900a1d02a181d9963142233801c3fe8d02bc07da1a",
+    "Runtime/Game/ReplaySystem/Runtime/ObjectSnapshot.cs": "03f3c28f19b9a6d2f94e98fe105494932bd8e1e0171f668d825ad0411a4e4721",
+    "Runtime/Game/ReplaySystem/Runtime/RecordFrame.cs": "40dda220d6fff04fef44b255d0d80f918fe5ff0d14b81c8c13af804ea51307e9",
+    "Runtime/Game/ReplaySystem/Runtime/ReplayManager.cs": "5572fa58a0b6201f6902b8bebf20a2bf33efae5428e4280c668660873ddb9d6a",
+    "Runtime/Game/ReplaySystem/Runtime/ReplayManager.IO.cs": "bc3d978e8dae90f8b77b89d2b3bf258646614b87f74ef54c46fae4243c1d8ecb",
+    "Runtime/Game/ReplaySystem/Runtime/ReplayManager.Playback.cs": "166edea6894c5307e9d6aa1d52c6532cfdc65ba9292b9c32bc548a936c5ac87b",
+    "Runtime/Game/ReplaySystem/Runtime/ReplayManager.Recording.cs": "14fd2cb737f76491969fde38a133125fe00540232f265e56b559ad416e8f5721",
+    "Runtime/Game/ReplaySystem/Runtime/ReplayRecordingSettings.cs": "a252c7a02b45656ff5f2ba14817e9295d58344b9d1106515ce3e24408a069fc6",
+    "Runtime/Game/ReplaySystem/Runtime/ReplayUI.cs": "84326236bacc3a58a36f816a5009fc8d309a2c34c7fb311152ff53a07c5c9085",
+    "Runtime/Game/ReplaySystem/Runtime/RigidbodyVelocityRecorder.cs": "17c467400f707d79d90fe9fb64e227758357b33b781fb3531611dff02de57f82",
+    "Tests/PlayMode/ReplayPerformanceTests.cs": "04171f0f62b79119f666b0a82dec92395fc55f419fbdfe118d60c5895452c1cb",
+    "Tests/PlayMode/ReplayPerformanceFixtures.cs": "938ebd139fbf30a297088502b088bd1623934a75c3e510b2c105bcb364bcff5c"
+  }
+}

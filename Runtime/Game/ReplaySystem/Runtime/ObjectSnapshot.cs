@@ -16,6 +16,7 @@ namespace ReplaySystem
 
         // 可选：仅当物体有 Animator 且 float 参数发生变化时记录
         public Dictionary<string, float> animatorParams;
+        public bool animatorStateComplete;
 
         // 物体名称：用于跨会话加载时按名称回退匹配（instanceID 仅在当前会话内稳定）
         public string objectName;

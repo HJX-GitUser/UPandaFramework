@@ -18,6 +18,7 @@
 | `PLogHelper.cs` | 订阅 `Application.logMessageReceivedThreaded` → 无锁队列 → 后台线程写文件 | **GBK** ⚠️ |
 | `Data/LogConfig.cs` | 配置（`[Serializable]`，对应 `LogConfig.json`）；含 `Equals/GetHashCode/==` | **GBK** ⚠️ |
 | `DebugerInit.cs` | 从 `StreamingAssets/Data/LogConfig.json` 读配置 → `PLogger.InitLog`；FPS 角标 + 唤起 Reporter | **GBK** ⚠️ |
+| `FrameworkDiagnostics.cs` | 主线程框架诊断快照：模块状态、启动步骤耗时、Resources / AB / 场景 / UI 统计 | UTF-8 |
 | `Reporter/*` | 第三方 **Reporter（LogView）** 面板：IMGUI，`logMessageReceivedThreaded` 收集，PlayerPrefs 记 UI 偏好 | UTF-8 |
 | `UGUIDebug/LogListenerManager.cs` | **另一套** UGUI 日志面板（全局命名空间）：静态入口 + 可视面板 | **GBK** ⚠️ |
 | `Editor/PLogger/ScriptingDefineSymbols.cs` | 增删 `OPEN_PLOG` 宏（Standalone / iOS / Android / WebGL 四个平台组） | UTF-8 |
@@ -33,9 +34,10 @@
 
 ### 2.1 编译期（零成本）
 
-所有 `PLogger` 公开 API 都带 `[Conditional("OPEN_PLOG")]`：
+普通日志与 Warning 带 `[Conditional("OPEN_PLOG")]`；**`LogError / LogErrorFormat / LogException` 不参与编译期剔除**（2026-11-06 起）：
 
-- **未定义宏时，调用点被编译器整体移除**，连实参表达式都不求值 —— 因此"关日志"是**真正零运行时开销**的（不是运行时 `if`）；
+- **未定义宏时，普通日志 / Warning 的调用点被编译器整体移除**，连实参表达式都不求值 —— 因此对普通日志而言"关日志"是**真正零运行时开销**的（不是运行时 `if`）；
+- **错误日志始终保留**：事件监听者异常、下载失败、资源加载失败等关键路径即使关闭宏也会输出，避免"异常被隔离、流程被降级，但线上没有任何错误日志"；
 - 宏由菜单 `UPandaGF -> 日志系统 -> 启动日志 / 剔除日志` 增删，**四个平台组**（Standalone / iOS / Android / WebGL）一起改；
 - 编辑器窗口与自检里可以用 `#if OPEN_PLOG` 判断当前是否启用。
 
@@ -45,7 +47,7 @@
 
 | 字段 | 说明 |
 | --- | --- |
-| `openLog` | **总开关**：false 时 Warning / Error 也一起静默 |
+| `openLog` | **总开关**：false 时普通日志 / Warning 静默；**Error 不受它控制**（2026-11-06 起），只受 `openError` 控制 |
 | `openWarning` / `openError` | 分级开关（生产环境"只留 Error"= `openLog=true, openWarning=false, openError=true`） |
 | `addHeadFix` / `logHeadFix` | 是否加前缀、前缀内容（默认 `###` → 输出 `<###>  ...`） |
 | `openTime` / `showThreadID` | 是否输出时间（**`HH:mm:ss.fff`，24 小时制**）与 `ThreadID:` |
@@ -118,6 +120,19 @@ flowchart LR
 - 两者的 UI 偏好都存在 `PlayerPrefs`；
 - `LogListenerManager` 找不到实例时会**自动创建空 GameObject**（Reference 没填时注意这一点）；
 - 用 `Editor/PLogger/LogListenerUIPrefabCreator.cs` 可一键生成 UGUI 面板预制体。
+
+### 6.1 Reporter 框架诊断（2026-11-06）
+
+打开 Reporter 右上角的「显示设置」，在设备信息和界面设置下方查看：
+
+- **框架状态**：`StartupState`、当前启动步骤、累计启动耗时和初始化错误；
+- **模块状态**：所有已注册启动模块的等待 / 运行中 / 就绪 / 失败 / 已回滚状态，以及 SceneService、GameFlow、AppLifecycle 的运行状态；
+- **启动步骤耗时**：逐步毫秒数与完成状态，包含外部 `IStartupModule` 和失败步骤；
+- **资源统计**：Resources 缓存 / 加载中 / 总引用 / 零引用条目，AB 已加载 / 包请求 / 资源请求 / 退役中 / 凭据引用，场景作用域与请求数，UI 已打开与加载中面板数。
+
+诊断只在信息页打开时每 **0.5 秒**从主线程采集一次，关闭页面不刷新。代码也可调用 `FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 获取 `FrameworkDiagnosticsSnapshot`。
+
+> 资源统计是框架内部缓存、引用和请求的**数量快照**，不是 Unity 原生 / GPU 资源内存字节数；AB 引用包含依赖包的 LeasePin。精确内存仍应使用 Unity Profiler / Memory Profiler。
 
 ---
 
@@ -199,3 +214,11 @@ string report = UPandaGF.EditorTools.PLoggerSelfCheck.RunSilent();
 
 **兼容性**：`PLogger` 的所有既有 API 签名与语义保持不变（`Log/Log_*/LogFormat/LogWarning*/LogError*`），新增的只是分级开关与 `LogException`；
 `LogConfig` 只新增字段（`openWarning` / `openError` / `maxLogLength`），旧 json 缺字段时用默认值。
+
+---
+
+## 11. 变更记录（2026-11-06 错误日志常驻）
+
+- `LogError / LogErrorFormat / LogException` 移除 `[Conditional("OPEN_PLOG")]`，关闭宏也会输出错误。
+- `CanError` 不再依赖 `openLog`，仅由 `openError` 控制（默认 `true`）。若确实需要完全静默错误，可显式设 `openError = false`。
+- 未定义宏时 `InitLog` 仍被剔除，**文件落盘模块不会初始化**：错误会进入 Unity Console / Reporter，但不会写入 `PLogHelper` 的日志文件。需要错误落盘的生产包请保留 `OPEN_PLOG` 并配置 `logSave`。

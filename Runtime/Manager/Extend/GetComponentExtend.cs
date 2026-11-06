@@ -71,22 +71,10 @@ public static class GetComponentExtend
             return null;
         }
 
-        // 4. 通过反射调用AddComponent
-        MethodInfo addComponentMethod = typeof(GameObject).GetMethod("AddComponent",
-            BindingFlags.Public | BindingFlags.Instance,
-            null,
-            new Type[] { },
-            null);
-
-        if (addComponentMethod == null)
-        {
-            Debug.LogError("找不到AddComponent方法");
-            return null;
-        }
-
-        // 5. 调用泛型方法
-        MethodInfo genericAddComponent = addComponentMethod.MakeGenericMethod(hotfixType);
-        Component component = genericAddComponent.Invoke(gameObject, null) as Component;
+        if (hotfixType.IsAbstract || hotfixType.ContainsGenericParameters)
+        { Debug.LogError($"{hotfixTypeName} 不是可实例化的 Component 类型"); return null; }
+        // Type 入口由 Unity 原生创建组件，不依赖运行时 MakeGenericMethod 生成 AOT 方法体。
+        Component component = gameObject.AddComponent(hotfixType);
 
         Debug.Log($"成功添加热更组件: {hotfixTypeName}");
         return component;

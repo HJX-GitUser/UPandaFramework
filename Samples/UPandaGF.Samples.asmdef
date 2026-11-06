@@ -1,0 +1,10 @@
+{
+  "name": "UPandaGF.Samples",
+  "references": [
+    "UPandaGF.Runtime",
+    "UPandaGF.Contracts",
+    "UPandaGF.Extensions",
+    "Unity.TextMeshPro"
+  ],
+  "autoReferenced": true
+}

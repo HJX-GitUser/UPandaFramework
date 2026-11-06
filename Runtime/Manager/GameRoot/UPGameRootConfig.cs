@@ -1,4 +1,4 @@
-﻿// =============================================================================
+// =============================================================================
 //  UPGameRootConfig.cs —— UPGameRoot 的配置对象（Inspector 面板与 Json 共用一个对象）
 // -----------------------------------------------------------------------------
 //  真源与优先级：
@@ -27,6 +27,10 @@ namespace UPandaGF
     [Serializable]
     public class UPGameRootConfig
     {
+        public int schemaVersion = 1;
+        [Tooltip("AB 构建目标，与 Unity BuildTarget 名称一致；Player 启动和构建前校验")]
+        public string bundleTarget = "StandaloneWindows64";
+        public InputBinding[] inputBindings = InputBinding.Defaults();
         [Tooltip("资源加载方式：Editor=编辑器直读资源；Assetbundles=走 AssetBundle")]
         public AssetLoaddingMethod method = AssetLoaddingMethod.Editor;
 
@@ -41,6 +45,8 @@ namespace UPandaGF
 
         [Tooltip("等待一批下载完成的超时（秒）；<= 0 表示不超时")]
         public float downloadBatchTimeout = 300f;
+
+        public HotUpdateSettings hotUpdate = new HotUpdateSettings();
 
         [Tooltip("启用运行时日志窗口（Reporter），正式包建议关闭")]
         public bool EnableDebugModel = false;
@@ -71,6 +77,53 @@ namespace UPandaGF
         public static string RelativePath { get { return "/" + SubFolder + "/" + FileName + ".json"; } }
 
         /// <summary>配置 → Json 文本（带缩进，方便手改与版本管理）</summary>
+        public static UPGameRootConfig Snapshot(UPGameRootConfig config)
+        {
+            if (config == null) throw new ArgumentNullException(nameof(config));
+            return FromJson(ToJson(config));
+        }
+        public static UPGameRootConfig SnapshotAndValidate(UPGameRootConfig config, bool isEditor, string expectedBundleTarget = null)
+        {
+            var snapshot = Snapshot(config);
+            var errors = Validate(snapshot, isEditor, expectedBundleTarget);
+            if (errors.Count > 0) throw new InvalidDataException("框架配置无效：\n" + string.Join("\n", errors));
+            return snapshot;
+        }
+        public static System.Collections.Generic.List<string> Validate(UPGameRootConfig value, bool isEditor, string expectedBundleTarget = null)
+        {
+            var errors = new System.Collections.Generic.List<string>();
+            if (value == null) { errors.Add("配置为空"); return errors; }
+            if (value.schemaVersion != 1) errors.Add("不支持的 schemaVersion：" + value.schemaVersion);
+            if (!Enum.IsDefined(typeof(AssetLoaddingMethod), value.method)) errors.Add("资源加载模式无效");
+            if (!isEditor && value.method == AssetLoaddingMethod.Editor) errors.Add("Player 禁止使用 Editor 资源加载模式");
+            if (float.IsNaN(value.downloadBatchTimeout) || float.IsInfinity(value.downloadBatchTimeout) || value.downloadBatchTimeout < 0) errors.Add("下载超时必须为非负有限值");
+            if (value.method == AssetLoaddingMethod.Assetbundles)
+            {
+                if (string.IsNullOrWhiteSpace(value.LoadAssetPath) || Path.IsPathRooted(value.LoadAssetPath)) errors.Add("LoadAssetPath 必须为非空相对路径");
+                else try { AssetLocation.Combine("root", value.LoadAssetPath); } catch (ArgumentException) { errors.Add("LoadAssetPath 包含非法路径段"); }
+                if (!Uri.TryCreate(value.remoteURL, UriKind.Absolute, out var uri) || (uri.Scheme != "http" && uri.Scheme != "https")) errors.Add("remoteURL 必须为 HTTP/HTTPS 地址");
+                if (!string.IsNullOrEmpty(expectedBundleTarget) && value.bundleTarget != expectedBundleTarget) errors.Add("bundleTarget 与目标平台不匹配：" + expectedBundleTarget);
+            }
+            if (value.hotUpdate == null) errors.Add("hotUpdate 配置为空");
+            else if (value.hotUpdate.minimumFreeSpaceMB < 0 || value.hotUpdate.maximumStagingMB < 0 || value.hotUpdate.maximumManagedCacheMB < 0
+                || value.hotUpdate.retainedManifestCount < 1 || value.hotUpdate.retainedManifestCount > 10) errors.Add("热更容量或清单保留数量无效");
+            if (value.AssetAESConfig == null) errors.Add("AES 配置为空");
+            else if (value.AssetAESConfig.enable)
+            {
+                int key = System.Text.Encoding.UTF8.GetByteCount(value.AssetAESConfig.AESKEY ?? "");
+                if ((key != 16 && key != 24 && key != 32) || System.Text.Encoding.UTF8.GetByteCount(value.AssetAESConfig.AESIV ?? "") != 16) errors.Add("AES Key/IV 字节长度无效");
+            }
+            var actions = new System.Collections.Generic.HashSet<string>();
+            if (value.inputBindings == null) errors.Add("输入映射为空");
+            else foreach (var binding in value.inputBindings)
+            {
+                if (binding == null || string.IsNullOrWhiteSpace(binding.action) || string.IsNullOrWhiteSpace(binding.context)) { errors.Add("输入动作或上下文为空"); continue; }
+                if (!actions.Add(binding.context + "/" + binding.action)) errors.Add("输入动作重复：" + binding.context + "/" + binding.action);
+                if (!Enum.IsDefined(typeof(KeyCode), binding.positive) || !Enum.IsDefined(typeof(KeyCode), binding.negative)) errors.Add("输入按键无效：" + binding.action);
+                if (string.IsNullOrEmpty(binding.axis) && binding.positive == KeyCode.None && binding.negative == KeyCode.None) errors.Add("输入动作未绑定：" + binding.action);
+            }
+            return errors;
+        }
         public static string ToJson(UPGameRootConfig config)
         {
             return JsonUtility.ToJson(config ?? new UPGameRootConfig(), true);
@@ -83,7 +136,10 @@ namespace UPandaGF
         public static UPGameRootConfig FromJson(string json)
         {
             if (string.IsNullOrEmpty(json)) return null;
-            return JsonUtility.FromJson<UPGameRootConfig>(json);
+            var result = new UPGameRootConfig();
+            JsonUtility.FromJsonOverwrite(json, result);
+            if (result.hotUpdate == null) result.hotUpdate = new HotUpdateSettings();
+            return result;
         }
     }
 }

@@ -2,7 +2,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using AssetBundleBrowser.AssetBundleDataSource;
 using UPandaGF;
 using System;
@@ -52,6 +51,7 @@ namespace AssetBundleBrowser
 
         [SerializeField]
         private BuildTabData m_UserData;
+        [NonSerialized] private bool m_CacheLoadFailed;
         public BuildTabData M_UserData => m_UserData;
 
         List<ToggleData> m_ToggleData;
@@ -85,19 +85,18 @@ namespace AssetBundleBrowser
 
         internal void OnDisable()
         {
+            if (m_CacheLoadFailed) return;
             var dataPath = System.IO.Path.GetFullPath(".");
             dataPath = dataPath.Replace("\\", "/");
             dataPath += "/Library/AssetBundleBrowserBuild.dat";
 
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Create(dataPath);
-
-            bf.Serialize(file, m_UserData);
-            file.Close();
-
+            try { VersionedDataSerializer.WriteFile(dataPath, VersionedDataSerializer.Serialize(m_UserData, "ab-build-settings")); }
+            catch (Exception e) { Debug.LogWarning("AB 构建配置保存失败，保留原文件：" + e.Message); }
         }
+
         internal void OnEnable(EditorWindow parent)
         {
+            m_CacheLoadFailed = false;
             m_Main = (parent as AssetBundleBrowserMain);
             m_InspectTab = m_Main.m_InspectTab;
             //LoadData...
@@ -108,15 +107,14 @@ namespace AssetBundleBrowser
 
             if (File.Exists(dataPath))
             {
-                BinaryFormatter bf = new BinaryFormatter();
-                FileStream file = File.Open(dataPath, FileMode.Open);
-                var data = bf.Deserialize(file) as BuildTabData;
-                if (data != null)
+                try
                 {
-                    m_UserData = data;
+                    var data = VersionedDataSerializer.LoadFile<BuildTabData>(dataPath, "ab-build-settings");
+                    if (data != null) m_UserData = data;
                 }
-                file.Close();
+                catch (Exception e) { m_CacheLoadFailed = true; Debug.LogWarning("AB 构建配置读取失败，使用默认值并保留原文件：" + e.Message); }
             }
+            if (m_UserData.m_OnToggles == null) m_UserData.m_OnToggles = new List<string>();
 
             m_ToggleData = new List<ToggleData>();
             m_ToggleData.Add(new ToggleData(

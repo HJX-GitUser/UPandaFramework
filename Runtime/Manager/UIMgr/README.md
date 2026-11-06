@@ -8,3 +8,7 @@
 - UILoadInfo 路径应只对应一种面板类型；公共 panelDic 为兼容保留，业务应优先通过管理器 API 访问。
 - BasePanel 包括 inactive 子控件；InputField 的变化、提交、结束编辑分别连接对应 Unity 事件。
 - DragArea 使用同一父节点坐标系和按下事件的相机。WorldSpaceOverlayUI 销毁时恢复原材质并释放副本。
+
+## P0 显式关闭（2026-11-06）
+
+新增幂等 Shutdown()，由启动协调器逆序关闭时调用；终止待打开请求并销毁面板。OnDestroyed 复用同一清理入口。关闭后的实例不可重新使用。见 [P0 记录](../../../OptimzeLog/P0Startup/README.md)。

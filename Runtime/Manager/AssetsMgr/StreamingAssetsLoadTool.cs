@@ -50,17 +50,7 @@ public static class StreamingAssetsLoader
 
     private static string CombineRelativePath(string relativePath)
     {
-        if (string.IsNullOrEmpty(relativePath))
-        {
-            return streamingAssetsPath;
-        }
-        if (relativePath[0] != '/')
-        {
-            //Debug.LogWarning($"path[0] is not '/'.  path[0]:{relativePath[0]}");
-            relativePath = '/' + relativePath;
-        }
-        return streamingAssetsPath + relativePath;
-
+        return AssetLocation.Combine(streamingAssetsPath, relativePath);
     }
 
 
@@ -75,32 +65,8 @@ public static class StreamingAssetsLoader
     public static string LoadTextFile(string relativePath)
     {
         string fullPath = CombineRelativePath(relativePath);
-        if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.WebGLPlayer)
-        {
-            using (var request = UnityWebRequest.Get(fullPath))
-            {
-                request.SendWebRequest();
-
-                while (!request.isDone)
-                {
-                    // 等待文件加载完成
-                }
-                if (IsRequestSuccess(request))
-                {
-                    return request.downloadHandler.text;
-                }
-                else
-                {
-                    Debug.LogError($"{fullPath} 加载失败:\n{request.error}");
-                    return null;
-                }
-            }
-        }
-        else
-        {
-            return File.ReadAllText(fullPath);
-        }
-
+        if (!CanSyncCheckFile) throw new PlatformNotSupportedException("包内或 URL StreamingAssets 不能同步等待，请使用异步加载接口");
+        return File.ReadAllText(fullPath);
     }
 
     /// <summary>
@@ -204,41 +170,8 @@ public static class StreamingAssetsLoader
     public static byte[] LoadBinaryData(string relativePath)
     {
         string fullPath = CombineRelativePath(relativePath);
-        if (Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.WebGLPlayer)
-        {
-            using (var request = UnityWebRequest.Get(fullPath))
-            {
-                request.SendWebRequest();
-
-                while (!request.isDone)
-                {
-                    // 等待文件加载完成
-                }
-
-                if (IsRequestSuccess(request))
-                {
-                    return request.downloadHandler.data;
-                }
-                else
-                {
-                    Debug.LogError($"{fullPath} 加载失败:\n{request.error}");
-                    return null;
-                }
-            }
-        }
-        else
-        {
-            try
-            {
-                return File.ReadAllBytes(fullPath);
-            }
-            catch (Exception e)
-            {
-                PLogger.LogError($"{fullPath} 加载失败: \n{e.Message}");
-                return null;
-            }
-        }
-
+        if (!CanSyncCheckFile) throw new PlatformNotSupportedException("包内或 URL StreamingAssets 不能同步等待，请使用异步加载接口");
+        return File.ReadAllBytes(fullPath);
     }
 
     /// <summary>

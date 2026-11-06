@@ -1,0 +1,84 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using ReplaySystem;
+using UnityEngine;
+using UnityEngine.Profiling;
+using Object = UnityEngine.Object;
+using ReplayFiles = ReplaySystem.FileManager;
+
+public class ReplayPlayerSmoke : MonoBehaviour
+{
+    public RuntimeAnimatorController controller;
+    private static readonly BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+    private readonly List<string> checks = new List<string>();
+    private static void Require(bool value, string message) { if (!value) throw new Exception(message); }
+    private static List<RecordFrame> Frames(ReplayManager manager) { return (List<RecordFrame>)typeof(ReplayManager).GetField("frames", Private).GetValue(manager); }
+    private static long Allocations(Action action, out long milliseconds)
+    {
+        var recorder = UnityEngine.Profiling.Recorder.Get("GC.Alloc"); recorder.enabled = false; recorder.FilterToCurrentThread();
+        var timer = System.Diagnostics.Stopwatch.StartNew(); recorder.enabled = true;
+        action(); recorder.enabled = false; milliseconds = timer.ElapsedMilliseconds; long blocks = recorder.sampleBlockCount; recorder.CollectFromAllThreads(); return blocks;
+    }
+    private async void Start()
+    {
+        string output = Path.GetFullPath(Path.Combine(Application.dataPath, "../smoke-result.txt")); string saved = null;
+        try
+        {
+            var targets = new Transform[200]; for (int i = 0; i < targets.Length; i++) targets[i] = new GameObject("Recorded_" + i).transform;
+            var animator = targets[0].gameObject.AddComponent<Animator>(); animator.runtimeAnimatorController = controller; animator.SetFloat("Speed", 2);
+            var legacy = new GameObject("LegacyBenchmark").AddComponent<ReplayLegacyManager>(); legacy.StartRecording();
+            var legacyCapture = (Action)Delegate.CreateDelegate(typeof(Action), legacy, typeof(ReplayLegacyManager).GetMethod("RecordFrame", Private));
+            legacyCapture(); long oldMs; long oldBlocks = Allocations(() => { for (int i = 0; i < 100; i++) legacyCapture(); }, out oldMs);
+            legacy.StopRecording(); Object.DestroyImmediate(legacy.gameObject); legacy = null; legacyCapture = null;
+            var manager = new GameObject("ReplayManager").AddComponent<ReplayManager>(); manager.recording.targets = ReplayTargetMode.Registered;
+            manager.recording.discoveryInterval = 10000; manager.recording.maximumDuration = 0; foreach (var tr in targets) manager.RegisterTarget(tr);
+            manager.StartRecording(); var capture = (Action<float>)Delegate.CreateDelegate(typeof(Action<float>), manager, typeof(ReplayManager).GetMethod("CaptureAtTime", Private)); float begin = Frames(manager)[0].time; capture(begin + 1);
+            long newMs; long newBlocks = Allocations(() => { for (int i = 0; i < 100; i++) capture(begin + 2 + i); }, out newMs);
+            Require(manager.FrameCount == 2 && manager.Statistics.createdSnapshots == targets.Length && manager.Statistics.sceneScans == 0, "Static coalescing and scoped recording");
+            Require(newBlocks < 1000 && oldBlocks > newBlocks, "Static allocation reduction");
+            checks.Add("PASS scoped capture; static 200 targets remain 2 frames and 200 snapshots");
+            checks.Add("MEASURE samples=100 oldGCBlocks=" + oldBlocks + " newGCBlocks=" + newBlocks + " oldMs=" + oldMs + " newMs=" + newMs);
+            for (int i = 0; i < 1000; i++) new GameObject("Unrelated_" + i); capture(begin + 110); Require(manager.Statistics.trackedTargets == 200 && manager.Statistics.sceneScans == 0, "Unrelated scene objects excluded");
+            targets[0].localPosition = Vector3.right * 12; animator.SetFloat("Speed", 4); capture(begin + 120); manager.StopRecording();
+            manager.Seek(.5f); Require(targets[0].localPosition == Vector3.zero && animator.GetFloat("Speed") == 2, "Hold seek and Animator start"); manager.Seek(1); Require(targets[0].localPosition.x == 12 && animator.GetFloat("Speed") == 4, "Final seek and Animator end"); manager.Seek(0);
+            checks.Add("PASS stationary-to-moving interpolation, reverse Seek and real Animator parameters");
+            int frame = Time.frameCount; saved = await manager.SaveAsync(); Require(saved != null && Time.frameCount > frame, "Async save allows main loop");
+            Require(File.ReadAllText(saved).StartsWith("UPANDA_REPLAY:2\n"), "Version 2 file format"); manager.ClearRecording(); Require(manager.FrameCount == 0 && manager.Statistics.estimatedDataBytes == 0 && Frames(manager).Capacity == 0, "Explicit clear");
+            Require(await manager.LoadAsync(saved), "Async read"); manager.Seek(1); Require(targets[0].localPosition.x == 12 && animator.GetFloat("Speed") == 4, "Loaded data values");
+            checks.Add("PASS bounded async JSON v2 save/load, component values, complete clear and native scene binding");
+            string fixture = Path.GetFullPath(Path.Combine(Application.dataPath, "../Fixtures/legacy-replay.dat")); var old = await ReplayFiles.LoadAsync(fixture); Require(old != null && old.Count == 1 && old[0].snapshots.Count == 1, "Actual historical NRBF fixture");
+            checks.Add("PASS real historical NRBF replay without new completeness field");
+            manager.ClearRecording(); Frames(manager).AddRange(Data(1000, 20)); var prior = new HashSet<string>(Directory.GetFiles(ReplayFiles.FolderPath)); var pending = manager.SaveAsync();
+            await Task.Yield(); Object.DestroyImmediate(manager.gameObject); bool canceled = false; try { await pending; } catch (OperationCanceledException) { canceled = true; }
+            Require(canceled, "Destroyed owner cancellation"); Require(prior.SetEquals(Directory.GetFiles(ReplayFiles.FolderPath)), "No published partial or temporary files");
+            checks.Add("PASS destroyed manager cancels in-flight writer and removes its temporary file");
+            var stress = new GameObject("BoundedStress").AddComponent<ReplayManager>(); stress.recording.targets = ReplayTargetMode.Registered; stress.recording.maximumDuration = 0; stress.recording.discoveryInterval = 10000;
+            stress.recording.maximumFrames = 512; stress.recording.maximumSnapshots = 1024; stress.recording.maximumMemoryMB = 4; stress.RegisterTarget(targets[0]);
+            var sample = (Action<float>)Delegate.CreateDelegate(typeof(Action<float>), stress, typeof(ReplayManager).GetMethod("CaptureAtTime", Private));
+            var memory = new List<long>();
+            for (int cycle = 0; cycle < 20; cycle++)
+            {
+                stress.StartRecording(); float start = Frames(stress)[0].time;
+                for (int i = 1; i <= 600; i++) { targets[0].localPosition += Vector3.right; sample(start + i * .033f); }
+                Require(stress.FrameCount <= 512 && stress.Statistics.snapshotReferences <= 1024 && stress.Statistics.estimatedDataBytes <= 4 * 1024 * 1024, "Bounded recording");
+                Require(stress.LastRecordingStopReason == RecordingStopReason.FrameLimit, "Budget stops instead of overwriting old prefix"); stress.ClearRecording();
+                Require(stress.FrameCount == 0 && Frames(stress).Capacity == 0 && stress.Statistics.indexedSnapshots == 0, "Cycle fully releases data");
+                GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect(); if (cycle == 0 || cycle == 4 || cycle == 9 || cycle == 19) memory.Add(Profiler.GetMonoUsedSizeLong());
+                await Task.Yield();
+            }
+            checks.Add("PASS 20 bounded record/clear cycles, 12000 synthetic samples; memoryAfterClear=" + string.Join(",", memory));
+            File.WriteAllText(output, string.Join("\n", checks) + "\nREPLAY_PLAYER_SMOKE_PASSED\n"); Application.Quit(0);
+        }
+        catch (Exception e) { File.WriteAllText(output, string.Join("\n", checks) + "\nFAILED " + e); Debug.LogException(e); Application.Quit(2); }
+        finally { if (saved != null && File.Exists(saved)) File.Delete(saved); }
+    }
+    private static List<RecordFrame> Data(int frames, int snapshots)
+    {
+        var result = new List<RecordFrame>(); for (int i = 0; i < frames; i++)
+        { var frame = new RecordFrame(i, snapshots); for (int j = 0; j < snapshots; j++) frame.snapshots.Add(new ObjectSnapshot(j, Vector3.one, Quaternion.identity, Vector3.one)); result.Add(frame); } return result;
+    }
+}

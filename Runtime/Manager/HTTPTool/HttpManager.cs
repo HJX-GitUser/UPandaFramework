@@ -212,19 +212,20 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
     /// </summary>
     private bool SendInternal<T>(GenericHttpPack<T> pack, Dictionary<string, string> headers) where T : class
     {
-        if (pack == null) return false;
+        if (pack == null || pack.IsSubmitted || pack.IsCompleted) return false;
 
         if (string.IsNullOrEmpty(pack.Url))
         {
             const string message = "HTTP 请求未发送：URL 为空";
             PLogger.LogError($"[HttpManager] {message}");
-            pack.OnFailure?.Invoke(message);
+            pack.MarkCompleted();
+            pack.NotifyFailure(message);
             return false;
         }
 
         foreach (var header in _globalHeaders)
         {
-            pack.Headers[header.Key] = header.Value;
+            if (!pack.Headers.ContainsKey(header.Key)) pack.Headers[header.Key] = header.Value;
         }
         if (headers != null)
         {
@@ -236,8 +237,8 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
             }
         }
 
-        Client.SendRequest(pack);
-        return true;
+        if (this == null) { pack.Cancel(); pack.MarkCompleted(); pack.DisposeWebRequest(); return false; }
+        return Client.TrySendRequest(pack);
     }
 
     /// <summary>
