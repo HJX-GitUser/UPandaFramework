@@ -12,6 +12,18 @@ namespace UPandaGF.Tests.EditMode
     /// <summary>新增基础服务的纯逻辑单测：不依赖场景、不依赖 PublicMono 帧循环。</summary>
     public class FoundationServiceTests
     {
+        private static async Task AssertThrowsAsync<TException>(Func<Task> action) where TException : Exception
+        {
+            try { await action(); }
+            catch (TException) { return; }
+            catch (Exception e)
+            {
+                Assert.Fail($"期望异常 {typeof(TException).Name}，实际为 {e.GetType().Name}。");
+                return;
+            }
+            Assert.Fail($"期望异常 {typeof(TException).Name}，但没有抛出异常。");
+        }
+
         [Test]
         public void Timer_Delay_FiresOnlyAfterElapsed()
         {
@@ -67,14 +79,14 @@ namespace UPandaGF.Tests.EditMode
         }
 
         [Test]
-        public void Timer_DelayAsync_HonorsCancellation()
+        public async Task Timer_DelayAsync_HonorsCancellation()
         {
             var timer = new TimerService();
             using (var cts = new CancellationTokenSource())
             {
                 var task = timer.DelayAsync(1f, cts.Token);
                 cts.Cancel();
-                Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+                await AssertThrowsAsync<TaskCanceledException>(() => task);
             }
             timer.Dispose();
         }
@@ -173,7 +185,7 @@ namespace UPandaGF.Tests.EditMode
             var lobby = new StubState("Lobby") { Allow = false };
             flow.Register(boot); flow.Register(lobby);
             await flow.StartAsync("Boot");
-            Assert.ThrowsAsync<InvalidOperationException>(async () => await flow.GoToAsync("Lobby"));
+            await AssertThrowsAsync<InvalidOperationException>(() => flow.GoToAsync("Lobby"));
             Assert.AreEqual("Boot", flow.CurrentStateId);
             Assert.AreEqual(GameFlowStatus.Ready, flow.Status);
             flow.Dispose();
@@ -187,7 +199,7 @@ namespace UPandaGF.Tests.EditMode
             var battle = new StubState("Battle") { ThrowOnEnter = true };
             flow.Register(boot); flow.Register(battle);
             await flow.StartAsync("Boot");
-            Assert.ThrowsAsync<InvalidOperationException>(async () => await flow.GoToAsync("Battle"));
+            await AssertThrowsAsync<InvalidOperationException>(() => flow.GoToAsync("Battle"));
             Assert.AreEqual(GameFlowStatus.Failed, flow.Status);
             Assert.AreEqual("Boot", flow.CurrentStateId);
             flow.Dispose();
@@ -200,7 +212,7 @@ namespace UPandaGF.Tests.EditMode
             bool stopped = false;
             lifecycle.Add("Ok", ct => Task.CompletedTask, () => { stopped = true; return Task.CompletedTask; });
             lifecycle.Add("Bad", ct => throw new InvalidOperationException("init failed"));
-            Assert.ThrowsAsync<InvalidOperationException>(async () => await lifecycle.InitializeAsync());
+            await AssertThrowsAsync<InvalidOperationException>(() => lifecycle.InitializeAsync());
             Assert.AreEqual(StartupState.Failed, lifecycle.State);
             Assert.AreEqual(2, lifecycle.Metrics.Count);
             Assert.IsTrue(lifecycle.Metrics[0].Completed);
