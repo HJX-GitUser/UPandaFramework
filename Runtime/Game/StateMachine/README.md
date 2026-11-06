@@ -7,8 +7,9 @@
 ```
 StateMachine/
 ├── BaseState.cs            # IState 接口 + BaseState 抽象基类
-├── StateMachineManager.cs  # 分层状态管理器（驱动层）
-└── StateMachineExample.cs  # 使用案例
+└── StateMachineManager.cs  # 分层状态管理器（驱动层）
+
+使用案例已移至 Samples/StateMachine/StateMachineExample.cs（UPandaGF.Samples 程序集）。
 ```
 
 ## 核心概念
@@ -98,7 +99,7 @@ Debug.Log(manager.GetStateInfo()); // 打印状态树与当前状态
 
 ## 使用案例说明
 
-`StateMachineExample.cs` 演示了完整的玩家状态机（`Player → Idle / Move / Attack`，`Move → Walk / Run`）。挂到空物体上运行后：
+`Samples/StateMachine/StateMachineExample.cs` 演示了完整的玩家状态机（`Player → Idle / Move / Attack`，`Move → Walk / Run`）。挂到空物体上运行后：
 
 | 按键 | 功能 |
 |------|------|

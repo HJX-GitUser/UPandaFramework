@@ -55,3 +55,14 @@ AB 清单、通用存档及两份 AB 工具缓存写入已改为版本化字段�
 ## 跨平台验证与兼容（2026-11-06）
 
 Windows x64 与 WebGL 的 IL2CPP High 构建、实际运行各 12 项通过，WebGL 刷新后 IndexedDB 检查点通过；Android ARM64 High APK 构建成功，尚无真机运行；iOS 未构建。修复裁剪后的字典反射、资源 URL 转义、平台空间查询、WebGL 日志/等待与持久化。新增 18 项回归，累计 248/248 通过。详见 [跨平台记录](CrossPlatform/README.md)。
+
+## 基础设施落地（2026-11-06，FoundationHardening）
+
+按"交付基线 → 契约与模块边界 → 核心服务 → 测试与构建骨架"的优先级推进：
+
+- **P0**：`.gitignore` 不再忽略 `.meta`；`PLogger` 错误日志改为常驻（不受 `OPEN_PLOG` 与 `openLog` 剔除）；`StartupLifecycle` 增加逐步耗时指标；`SceneMgr` 标记 `[Obsolete]`。
+- **P1**：Contracts 新增 `ITimerService / IConfigService / IGameFlowService / IAppLifecycle`；`StartupLifecycle` 支持 `IStartupModule` 与 `UPGameRoot.ConfigureLifecycle` 外部自注册；新增 `FrameworkConventionValidator` 编码规范检查。
+- **P2**：实现 `TimerService / ConfigService / GameFlowController / AppLifecycleService` 并接入 `GameServices` 与 `UPGameRoot`（前后台、焦点、低内存、退出统一转发）。
+- **P3**：新增 `Tests/EditMode`（12 个纯逻辑单测）与 `FrameworkBuildPipeline` 一键构建入口（`UPANDA_VERSION` 注入版本号）。
+
+详见 [落地清单、验收与未落地项](FoundationHardening/README.md)。本轮未做 Runtime 程序集拆分、New Input System、本地化、WebSocket、CI 实际接入，原因与后续顺序见该文档。

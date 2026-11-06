@@ -1,11 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace UPandaGF
 {
     public enum StartupState { Created, Initializing, Ready, Failed, Stopping, Stopped }
+
+    /// <summary>一个启动步骤的耗时记录；Completed 为 false 表示该步抛异常或被取消。</summary>
+    public readonly struct StartupStepMetric
+    {
+        public readonly string Name;
+        public readonly long Milliseconds;
+        public readonly bool Completed;
+        public StartupStepMetric(string name, long milliseconds, bool completed)
+        { Name = name; Milliseconds = milliseconds; Completed = completed; }
+    }
+
+    /// <summary>启动模块：把"一类能力的初始化/释放"封装成可自注册的单元，避免所有步骤都堆在 UPGameRoot 里。</summary>
+    public interface IStartupModule
+    {
+        string Name { get; }
+        Task StartAsync(CancellationToken token);
+        Task StopAsync();
+    }
 
     /// <summary>主线程启动协调器。失败步骤也参与回滚；同一实例不可重试，关闭可重复等待。</summary>
     public sealed class StartupLifecycle
@@ -20,14 +39,22 @@ namespace UPandaGF
         private readonly Stack<Step> entered = new Stack<Step>();
         private readonly CancellationTokenSource lifetime = new CancellationTokenSource();
         private Task initialization, shutdown;
+        private readonly List<StartupStepMetric> metrics = new List<StartupStepMetric>();
         public StartupState State { get; private set; } = StartupState.Created;
         public Exception Error { get; private set; }
         public string CurrentStep { get; private set; }
+        /// <summary>已执行步骤的耗时（含失败步骤），用于定位启动瓶颈。</summary>
+        public IReadOnlyList<StartupStepMetric> Metrics => metrics;
 
         public void Add(string name, Func<CancellationToken, Task> start, Func<Task> stop = null)
         {
             if (State != StartupState.Created) throw new InvalidOperationException("启动后不能注册步骤。");
             steps.Add(new Step { Name = name, Start = start ?? throw new ArgumentNullException(nameof(start)), Stop = stop });
+        }
+        public void Add(IStartupModule module)
+        {
+            if (module == null) throw new ArgumentNullException(nameof(module));
+            Add(module.Name, module.StartAsync, module.StopAsync);
         }
         public Task InitializeAsync()
         {
@@ -47,7 +74,14 @@ namespace UPandaGF
                     lifetime.Token.ThrowIfCancellationRequested();
                     CurrentStep = step.Name;
                     entered.Push(step);
-                    await step.Start(lifetime.Token);
+                    var watch = Stopwatch.StartNew();
+                    bool completed = false;
+                    try { await step.Start(lifetime.Token); completed = true; }
+                    finally
+                    {
+                        watch.Stop();
+                        metrics.Add(new StartupStepMetric(step.Name, watch.ElapsedMilliseconds, completed));
+                    }
                     lifetime.Token.ThrowIfCancellationRequested();
                 }
                 State = StartupState.Ready;

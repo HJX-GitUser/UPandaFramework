@@ -78,5 +78,9 @@ namespace UPandaGF
         IInputService Input { get; }
         IPauseService Pause { get; }
         IGameClock Clock { get; }
+        ITimerService Timer { get; }
+        IConfigService Config { get; }
+        IGameFlowService Flow { get; }
+        IAppLifecycle AppLifecycle { get; }
     }
 }

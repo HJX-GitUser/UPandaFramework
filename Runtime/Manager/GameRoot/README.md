@@ -7,6 +7,7 @@
 | 文件 / 目录 | 说明 |
 |---|---|
 | `UPGameRoot.cs` | 启动根节点（`[AddComponentMenu("UPandaGF/GameRoot")]`，`EagerMonoSingletonBase<UPGameRoot>`，缺失时自动创建并 `DontDestroyOnLoad`）；含 `AssetLoaddingMethod` 枚举与 `GFLoadedEvent` / `GFLoadedFailedEvent` |
+| `StartupLifecycle.cs` | 启动协调器：有序步骤、失败逆序回滚、逐步耗时指标（`StartupStepMetric`）、`IStartupModule` 模块自注册 |
 | `UPGameRootConfig.cs` | **配置对象**（`[Serializable] UPGameRootConfig`）+ 配置文件读写（`UPGameRootConfigFile`：路径常量 / `ToJson` / `FromJson`）。Inspector 面板与 `StreamingAssets/Data/GameRootConfig.json` 共用这一个对象 |
 | `GameLaunchExample.cs` | 示例入口：订阅框架事件 → 开加载界面 → 热更程序集 → 加载首场景 |
 | `PublicEnum.cs` | 本目录用到的公共枚举 |
@@ -173,3 +174,13 @@ Inspector 顶部是「UPGameRoot」，底部是配置文件的路径提示 + 三
 ## P0 启动生命周期（2026-11-06）
 
 启动已由 StartupLifecycle 排序，热更执行迁移至 HotUpdate/ContentUpdateService.cs。新增 InitializeAsync、WaitUntilReadyAsync、ShutdownAsync。旧完成/失败事件保留；未就绪时 GetAssetsLoader 改为抛异常。取消等待只影响调用者；失败不原地重试，关闭后重建根节点。详细顺序、所有权与退出限制见 [P0 记录](../../../OptimzeLog/P0Startup/README.md)。
+
+## 基础设施补强（2026-11-06）
+
+- **启动耗时指标**：`StartupLifecycle` 记录每一步耗时（含失败步骤），通过 `UPGameRoot.StartupMetrics` 读取；`OnInited` 日志输出总耗时（`GameRoot Initialization completed in XX ms!`），用于建立启动性能基线。
+- **模块自注册**：新增 `IStartupModule`（`Name / StartAsync / StopAsync`）与 `UPGameRoot.ConfigureLifecycle` 静态事件。外部模块在 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]` 中订阅并 `lifecycle.Add(new MyModule())`，即可插入启动链；失败走统一逆序回滚与 `GFLoadedFailedEvent`，订阅者自身抛异常会中止启动。
+- **应用生命周期**：`OnApplicationPause / OnApplicationFocus / OnApplicationLowMemory / OnApplicationQuit` 统一转发到 `services.AppLifecycle`（实现 `AppLifecycleService`）。业务订阅 `PauseChanged / FocusChanged / LowMemory / Quitting`；前后台暂停仍由 `IPauseService` 嵌套凭据实现，语义与原先一致。
+- **旧场景入口**：`SceneMgr` 已标记 `[Obsolete]`，框架内部适配点用 `#pragma warning disable CS0618` 局部抑制；新代码一律使用 `UPGameRoot.Services.Scenes`。
+- **新增服务**：`Timer / Config / Flow / AppLifecycle` 在 `Services` 步随 `GameServices` 一起装配，关闭顺序为 `SceneService → GameFlow → Timer → AppLifecycle → Audio → Input → Time`。
+
+详见 [本轮落地记录](../../../OptimzeLog/FoundationHardening/README.md) 与 [服务文档](../Services/README.md)。

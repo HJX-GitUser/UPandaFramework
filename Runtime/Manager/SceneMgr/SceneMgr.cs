@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using UPandaGF;
 
 /// <summary>场景服务。异步等待通过 PublicMono 托管，失败/取消均有明确 Task 终态。</summary>
+[Obsolete("新代码请使用 UPGameRoot.Services.Scenes（ISceneService）；本类仅为旧业务兼容保留。", false)]
 public class SceneMgr : LazySingletonBase<SceneMgr>
 {
     private ISceneService service;

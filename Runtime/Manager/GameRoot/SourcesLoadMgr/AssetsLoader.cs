@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
+#pragma warning disable CS0618 // SceneMgr 是旧业务兼容层，本类仍承担旧路径适配
+
 namespace UPandaGF
 {
     /// <summary>
@@ -427,4 +429,6 @@ namespace UPandaGF
 
     }
 }
+
+#pragma warning restore CS0618
 

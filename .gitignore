@@ -1,2 +1,7 @@
-# 忽略Unity项目中的所有.meta文件
-**/*.meta
+# Unity 的 .meta 文件必须提交：它保存 GUID，脚本 / 预制体 / 场景 / 材质之间的引用都依赖它。
+# 历史版本曾用 **/*.meta 整体忽略，会导致新机器 clone 后 GUID 重新生成、引用丢失（Missing Script）。
+# 只忽略明确可再生成的缓存目录，不要忽略 .meta。
+Temp/
+Library/
+Logs/
+obj/

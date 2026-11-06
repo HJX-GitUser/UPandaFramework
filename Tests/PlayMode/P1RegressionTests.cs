@@ -264,6 +264,10 @@ public class P1ResourceIntegrationTests
         public IInputService Input => null;
         public IPauseService Pause => null;
         public IGameClock Clock => null;
+        public ITimerService Timer => null;
+        public IConfigService Config => null;
+        public IGameFlowService Flow => null;
+        public IAppLifecycle AppLifecycle => null;
     }
     private string relative, folder; private LifecycleFixtureConfig fixtures;
     [SetUp] public void Setup()

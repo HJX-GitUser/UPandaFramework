@@ -70,7 +70,6 @@ namespace UPandaGF
         /// <summary>当前配置（外部读用；要改就改这个对象上的字段）</summary>
         private UPGameRootConfig runtimeConfig;
         private GameServices services;
-        private IDisposable applicationPause;
         public UPGameRootConfig Config => runtimeConfig != null ? UPGameRootConfigFile.Snapshot(runtimeConfig) : config;
         public IGameServices Services => IsInited && State == StartupState.Ready ? services : throw new InvalidOperationException("请先等待框架就绪。");
 
@@ -117,6 +116,16 @@ namespace UPandaGF
 
         /// <summary>最近一次热更的文件阶段统计（下载等待时间另计）。</summary>
         public HotUpdateStatistics LastHotUpdateStatistics => contentUpdate?.LastHotUpdateStatistics;
+
+        /// <summary>各启动步骤耗时；启动失败时也保留已执行步骤，便于定位慢在哪一步。</summary>
+        public IReadOnlyList<StartupStepMetric> StartupMetrics => lifecycle?.Metrics;
+
+        /// <summary>
+        /// 外部模块自注册入口：在根节点创建 StartupLifecycle 后、开始初始化前回调。
+        /// 用法：在 [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] 里订阅，
+        /// 回调中 lifecycle.Add(new MyStartupModule())。模块失败会走统一的回滚与 GFLoadedFailedEvent。
+        /// </summary>
+        public static event Action<StartupLifecycle> ConfigureLifecycle;
         #endregion
 
         private void Reset()
@@ -171,7 +180,9 @@ namespace UPandaGF
                 }, () => { sourcesLoadMgr?.Shutdown(); return Task.CompletedTask; });
                 lifecycle.Add("Services", ct => {
                     services = new GameServices(ResourcesLoader.Instance, sourcesLoadMgr, runtimeConfig, Path.Combine(Application.persistentDataPath, "Saves"));
+#pragma warning disable CS0618 // SceneMgr 是旧业务兼容层，框架内部仍需完成适配
                     SceneMgr.Instance.Configure(services.SceneService);
+#pragma warning restore CS0618
                     sourcesLoadMgr.ConfigureScenes(services.Scenes);
                     return Task.CompletedTask;
                 }, async () => {
@@ -183,6 +194,8 @@ namespace UPandaGF
                     _UIManager.SetResourcesLoader(sourcesLoadMgr, ResourcesLoader.Instance);
                     return Task.CompletedTask;
                 }, () => { _UIManager?.Shutdown(); return Task.CompletedTask; });
+                try { ConfigureLifecycle?.Invoke(lifecycle); }
+                catch { lifecycle = null; throw; }
             }
             return StartupLifecycle.WaitAsync(InitializeAndNotifyAsync(), token);
         }
@@ -213,7 +226,6 @@ namespace UPandaGF
         {
             IsInited = false;
             SceneManager.sceneLoaded -= OnSceneLoaded;
-            applicationPause?.Dispose(); applicationPause = null;
             contentUpdate?.Cancel();
             return lifecycle?.ShutdownAsync() ?? Task.CompletedTask;
         }
@@ -308,7 +320,10 @@ namespace UPandaGF
             IsInited = true;
             SceneManager.sceneLoaded += OnSceneLoaded;
             for (int i = 0; i < SceneManager.sceneCount; i++) BindScene(SceneManager.GetSceneAt(i));
-            PLogger.Log_white($"GameRoot Initialization completed!");
+            long startupMs = 0;
+            if (lifecycle?.Metrics != null)
+                foreach (var metric in lifecycle.Metrics) startupMs += metric.Milliseconds;
+            PLogger.Log_white($"GameRoot Initialization completed in {startupMs} ms!");
             EventCenter.Instance.EventTrigger(new GFLoadedEvent());
         }
 
@@ -350,8 +365,21 @@ namespace UPandaGF
         private void OnApplicationPause(bool paused)
         {
             if (!IsInited || services == null) return;
-            if (paused && applicationPause == null) applicationPause = services.Pause.Pause("Application");
-            else if (!paused) { applicationPause?.Dispose(); applicationPause = null; }
+            services.AppLifecycleService.NotifyPause(paused);
+        }
+        private void OnApplicationFocus(bool focused)
+        {
+            if (!IsInited || services == null) return;
+            services.AppLifecycleService.NotifyFocus(focused);
+        }
+        private void OnApplicationLowMemory()
+        {
+            if (!IsInited || services == null) return;
+            services.AppLifecycleService.NotifyLowMemory();
+        }
+        private void OnApplicationQuit()
+        {
+            services?.AppLifecycleService.NotifyQuitting();
         }
 
         private static async void ObserveShutdown(Task task)
