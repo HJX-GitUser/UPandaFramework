@@ -1,29 +1,30 @@
-# ABLoadMgr 生命周期
+# AssetBundle 加载
 
-## 统一加载
+`ABLoadMgr` 是 AB 容器的主线程加载器，通常由 `UPGameRoot` 经 `AssetsLoader` 装配。业务可使用 `root.Services.Assets.AcquireAsync<T>(path, AssetLoadMethod.AssetBundle, token)` 获取资源租约，场景通过 `root.Services.Scenes.LoadAsync` 进入。Editor 直读模式会由资源入口处理。 [AssetsLoader](../../GameRoot/SourcesLoadMgr/README.md)
 
-现有 Task 和回调 API 均通过同一包操作表加载。同名同来源的进行中请求共用结果；依赖按 ABSourcesRelated.bundleInfo 中各自的 loadPath 解析。未提供清单时，低层直接调用保留沿用目标位置的兼容行为；提供了清单但缺少依赖配置时明确失败。
+## 清单、依赖与加载位置
 
-缓存记录实际来源；同名包从不同路径/URL 加载时不会静默复用旧包，应先重新 Init。远程请求默认超时 30 秒，requestTimeout=0 可关闭该网络超时。
+框架清单 `assetData.assetref` 给出主包、资源所属包和每个包的 `ABLoadPath`。初始化时主包必须包含 Unity 构建生成的 `AssetBundleManifest`，依赖关系从该对象读取。若传入了框架清单，每个依赖都必须有自己的来源登记。旧低层调用没有传清单时，依赖沿用目标包位置。
 
-## 清理与取消
+| `ABLoadPath` | 位置与加载方式 |
+| --- | --- |
+| `StreamingAssetsPath` | 随包资源，从 `StreamingAssets/<LoadAssetPath>/<包名>` 走 UnityWebRequestAssetBundle |
+| `PersistentDataPath` | 本地可写目录，从 `persistentDataPath/<LoadAssetPath>/<包名>` 走 `AssetBundle.LoadFromFileAsync` |
+| `RemotePath` | 从 `<remoteURL>/<LoadAssetPath>/<包名>` 走 UnityWebRequestAssetBundle |
 
-- ClearAB/销毁先推进代次并结束等待者，Task 返回 null，回调以 null 完成；不会把取消表现为永不回调。
-- 只卸载本管理器拥有的包，不再调用 Unity 全局 UnloadAllAssetBundles。
-- Unity 原生文件加载/资源加载不能中途取消时，后台操作继续收尾；结果不写回旧缓存。
-- 同名新请求等待旧原生操作完成收尾，避免重复加载相同包。
-- 资源原生加载仍在进行时，包容器延迟到原生操作完成后再 Unload(false)。
-- UnLoadAB 对加载中的包或资源加载中的上下文返回 false，不会谎报已卸载。
-- Init 开始新上下文，旧初始化不能覆盖新初始化；AssetsLoader 的 IsInitialized 会反映底层清理或销毁。
+同名且来源相同的在途包请求共享结果。已加载同名包从不同来源请求时，当前调用会失败。切换来源需要在消费者结束使用后重新初始化资源上下文。`requestTimeout` 默认 30 秒，`0` 表示不配置 UnityWebRequest 超时。 [ABLoadMgr.cs](ABLoadMgr.cs)
 
-所有接口仍在 Unity 主线程调用。回调可能同步完成（命中缓存/立即取消），调用方需允许重入。
+## 所有权与卸载
 
-## 运行诊断
+- `AcquireAsync<T>` 和 `AcquireBundleAsync` 持有目标包与传递依赖。最后一个相关租约释放后，管理器会尝试卸载无其他持有者的容器。主包保留用于依赖查询。
+- 旧 `GetAssetBundle`、`LoadResAsync` 及相应回调接口将包标为旧式使用。混用租约与旧接口时，需要明确安排 `UnLoadAB` 或统一清理的时机。旧回调可能同步完成，调用方要允许回调重入。
+- `UnLoadAB` 遇到持有租约或仍有相关加载时可能返回 `false`，业务可等待使用结束再请求卸载。实际卸载使用 `Unload(false)`，已加载资产继续由其使用者和 Unity 资源回收管理。
+- `ClearAB` 和销毁会推进代次并完成旧等待者，Task 和回调可收到 `null`。Unity 原生文件和资源加载可能继续收尾，同名新请求等待旧操作退役。整体清理会重置现有租约计数，调用前应结束业务消费者。
 
-`ABLoadMgr.GetDiagnostics()` 返回已加载包、进行中包请求、进行中资源请求、尚未完成的退役包和 LeasePin 总数。LeasePin 包含共享依赖，不能直接当作资源文件数或内存占用；Reporter 的「框架诊断」页签低频读取并展示。
+`ABLoadProgressEvent` 提供逐包进度，`GetDiagnostics()` 提供缓存、在途资源、退役包和租约计数。租约计数包含共享依赖，只用于观察生命周期。 [ABLoadMgr.cs](ABLoadMgr.cs)
 
-## 所有权边界
+## 热更协调与验证
 
-Unload(false) 保留已加载资产，既有实例/AudioSource 不因容器清理而被强制销毁。包仍通过现有 UnLoadAB/ClearAB 显式管理，本轮未引入自动的 AB 依赖引用计数或版本热切换；全局资源回收应由业务在关闭消费者后安排。
+`HotUpdateFileGate` 协调框架加载和启动期文件替换。维护期间新 AB 加载异步等待。维护申请发现框架内正在加载时会失败。低层直接调用 Unity 加载 API 的操作不会加入该门禁。旧 `ABUpdata/AssetBundelUpdataMgr` 是独立 FTP 路径，会直接覆盖包且先删除部分旧文件。框架启动使用 [ContentUpdateService](../../GameRoot/HotUpdate/README.md)。 [HotUpdateFileGate.cs](HotUpdateFileGate.cs) [旧 FTP 入口](ABUpdata/AssetBundelUpdataMgr.cs)
 
-修复及验证见 `OptimzeLog/LifecycleAudit/FIXES.md`。
+使用 [AB 编辑器工具](../../../../Editor/AssetBundleTools/README.md) 为目标平台构建包与清单，确认依赖登记和清单 AES 设置与运行端一致。用 [生命周期回归](../../../../Tests/PlayMode/LifecycleRegressionTests.cs) 检查请求合并、混合来源依赖和清理收尾。切换平台后应在实际 Player 验证主包、首场景及一项有依赖的资源。

@@ -1,138 +1,43 @@
-# AudioMgr — 音频管理器（BGM / 音效）
+# 音频管理器
 
-`Runtime/Manager/AudioMgr/AudioMgr.cs`：`UPandaGF` 命名空间下的纯 C# 懒加载单例（`LazySingletonBase<AudioMgr>`），负责背景音乐与音效的加载、播放与回收。
+`AudioMgr` 实现 `IAudioService`，按需创建跨场景的 `AudioRoot`。背景音乐使用两路 AudioSource 交叉淡变，音效分为独占音效和可叠加音效。默认音源为 2D，淡变与叠加音效回收由 `PublicMono` 驱动。 [源码](AudioMgr.cs) · [服务契约](../../Contracts/Services.cs) · [帧驱动](../PublicMono/README.md)
 
-## 1. 文件组成
+## 通过服务播放
 
-| 文件 | 说明 |
-|---|---|
-| `AudioMgr.cs` | 音频实现，含播放记录与在途请求管理 |
-
-依赖：`ResourcesLoader`（Resources 模式）、`IAssetsLoader`（AssetBundle 模式）、`PublicMono`（帧更新驱动）、`PLogger`（日志）。
-
-## 2. 核心概念
-
-**① 双路 BGM 交叉淡入淡出（cross fade）**
-
-只有一路 `AudioSource` 时，给 `clip` 赋值会立刻打断当前播放，只能硬切；交叉淡变要求"新的淡入"和"旧的淡出"同时存在，所以 BGM 固定占两路：
-
-- `bgmCurrent`：正在发声（或正在淡出）的那一路
-- `bgmIncoming`：正在淡入的那一路（没有交叉淡变时为 `null`）
-- 淡变进度用 `Time.unscaledDeltaTime` 推进（暂停游戏不冻结音乐）；`PauseBKMusic()` 期间淡变进度一起冻结
-- 淡变进行到一半又切歌：会**立刻收掉"正在淡出的那一路"**，最多两路同时响，不会三路齐鸣
-- 淡变结束后旧路会 `Stop()` + `clip = null` + 归还资源引用
-
-**② 唯一音效 vs 叠加音效**
-
-| | 组件 | 行为 |
-|---|---|---|
-| 唯一音效 | `uniqueSound` | 同一时刻只响一个；**新音效加载完成后**才顶掉上一个（加载失败不打断当前正在响的音效） |
-| 叠加音效 | `soundList` 里的多个 `AudioSource` | `LoadSoundAndPlay`，可同时播放多个；播完自动回收（销毁组件 + 归还资源引用） |
-
-**③ 资源引用计数**
-
-`ResourcesLoader` 按"路径 + 类型"缓存并计数。本类每成功加载一次音频，就记一条 绑定原加载记录的 `AssetLease<AudioClip>`，在**切歌 / 回收 / 停止 / 释放**时释放持有凭据，向原缓存记录归还一次计数；否则 `AudioClip` 会被缓存永久占用（旧实现的引用计数只增不减）。
-
-释放顺序固定为：**先 `Stop()` + `clip = null` 解除引用 → 再归还计数**（否则 `Resources.UnloadAsset` 时资源仍被 `AudioSource` 引用）。
-
-AssetBundle 模式按包整体卸载（`IAssetsLoader.UnLoadAB / ClearAB`），没有单资源接口，因此这类加载**不做**单资源释放。
-
-**④ 请求序号（防竞态）**
-
-`bgmRequestId` / `uniqueRequestId` 每次请求自增，异步回调先比对序号，不等则直接返回（并把已加上的引用计数还回去）。这样"连续快速切歌"不会被先到达的旧回调覆盖。
-
-## 3. 常驻节点结构
-
-```
-AudioRoot (DontDestroyOnLoad)
-  ├── BGM_A   ← AudioSource（交叉淡入淡出的一路）
-  ├── BGM_B   ← AudioSource（另一路）
-  └── SFX     ← 唯一音效 + 所有叠加音效都挂在这个节点上
-```
-
-节点在**首次播放时**惰性创建（`EnsureSetup()`），并 `DontDestroyOnLoad`：切场景不销毁。所有 `AudioSource` 都显式设置 `playOnAwake = false`、`spatialBlend = 0`（2D）。
-
-## 4. API 参考
-
-### 4.1 背景音乐
-
-| 方法 / 属性 | 说明 |
-|---|---|
-| `PlayBKMusic(string path, AssetLoadMethod method = Resources, float fadeDuration = -1, bool restartIfSame = false)` | 异步加载后交叉淡入淡出；`fadeDuration < 0` 用默认值（默认 1 秒），`0` = 立即切换；加载失败保持当前 BGM 不变；同一路径且未在淡变时默认不重复加载 |
-| `PlayBKMusic(AudioClip clip, float fadeDuration = -1, bool restartIfSame = false)` | 直接播放已加载好的 clip（资源由外部管理，不归还计数） |
-| `StopBKMusic(float fadeDuration = -1)` | 淡出停止（默认 1 秒），`0` = 立即停止；会作废还在加载中的请求 |
-| `PauseBKMusic()` / `ResumeBKMusic()` | 暂停 / 恢复（暂停期间淡变进度冻结） |
-| `ChangeBKValue(float v)` | 设置 BGM 音量（`Clamp01`）；淡变中会在淡变过程中生效 |
-| `IsBgmPlaying` / `IsBgmPaused` / `CurrentBgmPath` / `BgmVolume` / `DefaultBgmFadeDuration` | 查询 / 配置 |
-
-### 4.2 音效
-
-| 方法 / 属性 | 说明 |
-|---|---|
-| `PlayUniqueSound(string path, AssetLoadMethod method = Resources)` | 唯一音效：加载完成后顶掉上一个 |
-| `PlayUniqueSound(AudioClip clip)` | 唯一音效（直接给 clip） |
-| `PauseUniqueSound(bool isPause = true)` / `StopUniqueSound()` | 暂停 / 停止（停止会归还资源引用） |
-| `LoadSoundAndPlay(string path, bool isLoop = false, AssetLoadMethod method = Resources, UnityAction<AudioSource> callBack = null)` | 叠加音效；播完自动回收；回调参数是音效组件，**失败时以 `null` 回调** |
-| `StopSound(AudioSource source)` | 停止并回收指定音效（已播完/外部销毁的传进来也安全） |
-| `PauseSound(AudioSource source, bool isPause = true)` | 暂停 / 恢复；**暂停中的音效不会被自动回收** |
-| `ChangeSoundValue(float v)` | 设置音效音量，同时作用于唯一音效与所有正在播放的音效 |
-| `StopAllSound()` | 停止全部音效（不含 BGM） |
-| `PlayingSoundCount` / `SoundVolume` | 查询 |
-
-## 5. 使用示例
+在框架就绪后使用注入的 `services.Audio`，从 Unity 主线程调用。Resources 路径省略扩展名，AB 模式使用清单登记的带扩展名全路径。
 
 ```csharp
-// 交叉淡入淡出切歌（1.5 秒）
-AudioMgr.Instance.PlayBKMusic("Audio/Bgm_Main", fadeDuration: 1.5f);
-
-// 暂停 / 恢复 / 淡出停止
-AudioMgr.Instance.PauseBKMusic();
-AudioMgr.Instance.ResumeBKMusic();
-AudioMgr.Instance.StopBKMusic(0.5f);
-
-// 唯一音效（点击音，同时只响一个）
-AudioMgr.Instance.PlayUniqueSound("Audio/Click");
-
-// 叠加音效（爆炸声可以叠着响），播完自动回收
-AudioMgr.Instance.LoadSoundAndPlay("Audio/Explosion", isLoop: false, callBack: source =>
-{
-    if (source == null) PLogger.LogError("爆炸音效加载失败");
-});
-
-// AssetBundle 模式（需要场景里已有 UPGameRoot）
-AudioMgr.Instance.PlayBKMusic("Assets/ArtAssets/Audio/Bgm_Main.wav", AssetLoadMethod.AssetBundle);
+services.Audio.ChangeBKValue(0.7f);
+services.Audio.PlayBKMusic("Audio/Menu", fadeDuration: 0.5f);
+services.Audio.PlayUniqueSound("Audio/Confirm");
 ```
 
-## 6. 注意事项与已知限制
+| 类型 | 入口 | 行为 |
+| --- | --- | --- |
+| 背景音乐 | `PlayBKMusic(string, method, fadeDuration, restartIfSame)`、`StopBKMusic(fadeDuration)`、`ChangeBKValue(v)` | 相同路径默认不重播。切换加载失败时保持当前 BGM。淡变时间小于 0 使用默认值，等于 0 立即完成。 |
+| 独占音效 | `PlayUniqueSound(string, method)`、`StopAllSound()`、`ChangeSoundValue(value)` | 新音效加载成功后替换旧音效。默认音量范围为 0 到 1。 |
+| 叠加音效 | `AudioMgr.LoadSoundAndPlay(path, isLoop, method, callBack)` | 每次成功播放使用独立音源。回调在失败或取消时收到空值。循环音效通过回调保存句柄，业务结束时调用 `StopSound(source)`。 |
 
-- **加载失败会以 `null` 回调**：`ResourcesLoader` 在资源缺失 / 已被卸载时会 `Invoke(null)`，本类已判空并打错误日志，不会再把"空 clip"赋给播放组件（旧实现会因此静默打断正在播的音频）。
-- **循环音效不会被回收**：`LoadSoundAndPlay(isLoop: true)` 需要调用方自己 `StopSound(source)`。
-- **外部自行 `Pause()` 音效会被回收**：自动回收只认"没在播且不是本类暂停的"，所以请用 `PauseSound()` 而不是直接操作 `AudioSource`。
-- **AssetBundle 模式不做单资源释放**（按包卸载）；`UPGameRoot` 缺失时会打错误日志并让回调收到 `null`。
-- **音量不持久化**：跨启动保存请调用方自行写配置 / `EditorPrefs`。
-- 未提供：`AudioMixer` 分组、3D 位置音效（`PlayClipAtPoint`）、自定义淡变曲线、播放速度 / 音高。
-- **不要用 `new AudioMgr()`**：`LazySingletonBase<T>` 带 `new()` 约束，构造函数必须是 public，但外部实例化会得到"游离实例"并重复注册帧更新；统一用 `AudioMgr.Instance`。
+需要按音源暂停、播放已有 AudioClip，或使用 `PauseBKMusic/ResumeBKMusic`、`PauseUniqueSound/StopUniqueSound` 时使用具体类。传入 AudioClip 的重载由调用方保有该 Clip；按路径播放由管理器取得和归还资源。 [具体 API](AudioMgr.cs)
 
-## 7. 与框架的关系
+## 循环音效与资源回收
 
-- **更新驱动**：按实际 PublicMono 宿主身份注册，宿主重建后再次调用播放入口会重新绑定；Dispose 从原宿主解绑，不为清理而新建调度器。PublicMono 对每个监听器隔离异常，并区分无 owner 的强引用监听与已销毁 owner。
-- **释放**：实现 `IDisposable`，`LazySingletonBase.Release()` 会调用 `Dispose()` 解绑更新、停掉音频、归还引用计数并销毁 `AudioRoot`。
-- **Resources 模式不依赖 `UPGameRoot`**；只有 AssetBundle 模式才会惰性去取 `UPGameRoot.GetAssetsLoader()`。
-- **日志**：常规错误走 `PLogger`（与框架其它模块一致）；`Update` 内的"框架级异常"用 `Debug.LogException` —— `PLogger` 带 `[Conditional("OPEN_PLOG")]`，未定义宏时会被静默丢弃。
+```csharp
+AudioSource loopSource = null;
+AudioMgr.Instance.LoadSoundAndPlay(
+    "Audio/Engine",
+    isLoop: true,
+    callBack: source => loopSource = source);
 
-## 8. 维护提示
+// 在回调交付后，且本次播放结束时执行。
+if (loopSource != null)
+    AudioMgr.Instance.StopSound(loopSource);
+```
 
-- 新增播放接口时，**务必**沿用"请求序号 + 加载失败判空 + 归还引用计数"这三件套。
-- 归还引用计数前一定先 `clip = null`，否则 `Resources.UnloadAsset` 会卸载仍被引用着的资源。
-- 修改 `EnsureSetup()` 的节点结构时，注意它同时承担"节点被外部销毁后重建"的职责（重建前会先归还旧记录的资源引用）。
-- 改动后建议用工程外的真实编译校验（Unity 生成的 `.csproj` 未必包含新文件，`get_errors` 可能是假阴性）：用 `Library/EditorInstance.json` 里的 `app_contents_path` 找到 `Managed` / `MonoBleedingEdge\lib\mono\4.7.1-api` 作参考程序集，跑 `dotnet <sdk>\Roslyn\bincore\csc.dll` 编译 `Runtime/` 下的全部源码。
+循环音效的异步回调可能晚于请求方的生命周期。回调需要判断业务对象是否仍有效；若业务已结束，应立即停止收到的音源。`StopAllSound()` 同时停止独占和叠加音效并取消相关等待，不影响 BGM。叠加音效自然结束后自动回收。独占音效自然结束仍持有租约，直到停止、替换或管理器释放。
 
-## 本轮生命周期调整
+按路径加载的音效或 BGM 会在对应音源停止、替换、回收或管理器释放时归还租约，取消后的迟到结果也会归还。业务不要再用底层加载器重复卸载同一份持有。显式 `PauseBKMusic` 会暂停淡变推进；正常淡变使用 unscaled 时间。`GameTimeService` 的全局音频暂停使用 `AudioListener.pause`，该状态与 BGM 自身暂停分开。 [资源持有与取消](AudioMgr.cs) · [全局暂停](../Services/InputAndTime.cs)
 
-- 字符串、直接 AudioClip 和同曲提前返回入口都会先使更早请求失效，最后一次有效播放意图优先。
-- StopAllSound 同时结束当前音效和待加载的叠加/唯一音效；待加载叠加音效的用户回调恰好以 null 完成一次。
-- 停止时先提交状态，再批量通知取消；取消回调中发起的新音效不属于旧请求批次。
-- Dispose 是终止状态，会立即完成待处理回调；旧实例不能重建 AudioRoot。使用 AudioMgr.Release 后重新获取 Instance。
-- Resources 的持有绑定到原加载器及原缓存记录；ClearDic/重建之后，旧释放不会扣除新一代同路径的引用。成功/取消的迟到资源都只归还一次。
-- AudioRoot 被外部销毁后再次使用会清理旧 BGM、唯一及叠加音效持有，并使旧请求失效。
-- AB 资源保留托管持有关系，但包仍按 ABLoadMgr 的显式生命周期管理，不自动卸包。
+## 关闭和验证
+
+根节点关闭时释放音频单例。自建单例使用 `AudioMgr.Release()`，它会解绑帧更新、清空音源、归还引用并终止等待。需要重建根节点时，先等待旧根的 `ShutdownAsync()`，避免旧关闭流程在新根装配后释放两者共用的单例。测试可用 `Configure(IAssetService)` 注入替身。 [根的关闭流程](../Services/GameServices.cs) · [音频生命周期回归](../../../Tests/PlayMode/LifecycleRegressionTests.cs)

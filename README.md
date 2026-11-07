@@ -1,410 +1,76 @@
 # UPandaFramework
 
-Unity 的前端（客户端）框架，提供统一的启动入口、单例、事件、资源热更、UI、日志、任务评分、回放、状态机等常用系统，并配套完整的编辑器工具链。
+Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行时提供场景、资源、热更、UI、音频、存档、输入和帧调度，`Runtime/Game` 提供可选玩法组件，`Editor` 提供打包与内容工具。框架作为源码目录放在宿主项目的 `Assets/upanda-framework`，导入时应一并保留 `.meta`，以便 Unity 恢复脚本、场景、预制体和材质引用。
 
-项目地址：
+[Gitee](https://gitee.com/he-jinxian/upanda-framework.git) · [GitHub](https://github.com/UserHandJ/UPandaFramework.git)
 
-- https://gitee.com/he-jinxian/upanda-framework.git
-- https://github.com/UserHandJ/UPandaFramework.git
+## 集成到 Unity 项目
+1. 导入框架目录及 `.meta`，在 Package Manager 确认 uGUI 和 TextMeshPro 可用。运行时输入的默认后端使用旧 Input Manager。使用 HybridCLR 程序集加载、URP 效果或运行测试时，再核对对应宿主依赖。
+2. 在启动场景通过 `UPandaGF → 创建UPGameRoot` 创建根节点。菜单还会创建可选的 `GameLaunchExample`。每个应用只保留一条启动流程，将启动场景加入 Build Settings。
+3. 在 Inspector 选择资源模式。编辑器直读使用 AssetDatabase，业务场景需要能被 Unity 直接加载。Player 使用 AssetBundle，先按目标平台打包并生成 `assetData.assetref`。保存场景会把根配置导出到 `Assets/StreamingAssets/Data/GameRootConfig.json`。
+4. 在示例上设置 `firstScene`，或在自己的入口等待根就绪，再调用 `root.Services.Scenes.LoadAsync(...)`。AB 场景使用清单登记的完整路径。接入热更前，先验证随包资源能启动。
 
-## 特性一览
-
-- 统一启动入口 `UPGameRoot`：`StartupLifecycle` 有序初始化、失败逆序回滚、逐步耗时指标，支持 `IStartupModule` 外部自注册
-- 服务化架构：`UPandaGF.Contracts` 窄接口 + `IGameServices` 装配（资源 / 音频 / 存档 / 场景 / 输入 / 暂停 / 时钟 / 计时器 / 配置 / 游戏流程 / 应用生命周期）
-- 四种单例基类（急加载 / 懒加载 × MonoBehaviour / 纯 C#）
-- 两套事件系统：委托式 `EventCenter`、接口式 `EventBus`（选型与原理见事件模块文档）
-- 双模式资源管理（编辑器直读 / AssetBundle），支持本地、远程加载与热更下载
-- 可编译期剔除的日志系统，支持本地输出与真机日志面板
-- 分层 UI 管理与 Canvas 自动生成
-- 玩法系统：任务系统、交互式任务评分（含校验器 / 逻辑自检 / 回放复盘工具）、回放、分层状态机、机械臂 CCD 逆运动学、载具控制
-- 内置 Shader 学习文档与效果案例库（流光、描边、卡通、消融、水波等）
-- 编辑器工具链：AB 打包、Excel 数据表、UI 自动生成、HybridCLR 热更、事件调试窗口、常用路径快捷打开、模块示例场景一键生成（描边 / 回放 / 对象池 / 载具驾驶 / 评分）、描边材质 Shader 修复，以及编辑器控件速查 / 开发案例窗口
-
-## 快速开始
-
-1. **初始化目录结构**：菜单 `UPandaGF -> Tools -> 初始化项目目录结构`，自动创建 `3rd / ArtAssets / AssetBundles / Plugins / Resources / Scenes / Scripts / StreamingAssets` 等标准目录。
-
-2. **创建启动节点**：菜单 `UPandaGF -> 创建UPGameRoot`（或 `GameObject -> UPandaGF -> 创建UPGameRoot`），生成 `UPGameRoot` 与示例脚本 `GameLaunchExample`。
-
-3. **监听框架加载完成事件，进入游戏逻辑**：
+[启动与配置](Runtime/Manager/GameRoot/README.md) · [启动示例](Samples/Startup/GameLaunchExample.cs) · [AssetBundle 打包](Editor/AssetBundleTools/README.md)
 
 ```csharp
-using UnityEngine;
+using System.Threading;
+using System.Threading.Tasks;
 using UPandaGF;
 
-public class GameLaunchExample : MonoBehaviour
+public static class AppEntry
 {
-    private void Awake()
+    public static async Task OpenAsync(UPGameRoot root, string scenePath, CancellationToken token)
     {
-        EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnGFLoaded);
-    }
-
-    private void OnDestroy()
-    {
-        EventCenter.Instance.RemoveEventListener<GFLoadedEvent>(OnGFLoaded);
-    }
-
-    private void OnGFLoaded(GFLoadedEvent arg)
-    {
-        PLogger.Log("框架加载完成，进入游戏逻辑");
+        await root.WaitUntilReadyAsync(token);
+        await root.Services.Scenes.LoadAsync(scenePath, token: token);
     }
 }
 ```
 
-> `UPGameRoot` 的 Inspector 面板可配置：资源加载方式（Editor / Assetbundles）、是否启用资源热更、远程地址、AES 加密配置等；配置落地在 `Assets/StreamingAssets/Data/GameRootConfig.json`。**编辑器里以面板为准（不读 Json）；保存场景时自动写入 Json，打包运行时以 Json 为准**（面板底部保留「从 Json 读取」/「定位文件」）。
+`WaitUntilReadyAsync` 可等待已有的共享启动结果。调用者负责处理异常和自己的加载界面。接入了 `GameLaunchExample` 的场景由该示例负责首场景跳转。运行时实例化的业务对象可显式接收需要的服务，已有场景消费者也可实现 `IGameServicesConsumer`。 [服务装配](Runtime/Manager/Services/README.md)
 
-## 示例场景
+## 程序集
 
-框架自带的示例都放在各模块的 `Sample/` 目录下，可直接打开运行：
+| 程序集 | 内容 |
+| --- | --- |
+| `UPandaGF.Contracts` | 服务接口、公共枚举、资源租约。 |
+| `UPandaGF.Runtime` | 启动与核心服务，依赖 Contracts 和 TMP。 |
+| `UPandaGF.Extensions` | 任务、评分、回放、状态机、描边、IK、载具和相机。 |
+| `UPandaGF.Visuals` | Shader 目录边界，具体效果仍受渲染管线和材质配置约束。 |
+| `UPandaGF.Samples` | 启动、协程、池、状态机和任务示例，部分分散脚本用 `asmref` 归入。 |
+| `UPandaGF.Editor` | Editor 工具，引用运行时、玩法、示例，以及 Excel 和 SharpZipLib DLL。 |
+| `UPandaGF.Tests.EditMode` / `UPandaGF.Tests` | EditMode 单元测试与 PlayMode 集成回归。 |
 
-| 模块 | 场景 | 说明 |
-|---|---|---|
-| 机械臂 IK | `Runtime/Game/RobotCCDIK/Sample/Sample.unity` | 6 轴机械臂，编辑器内拖动 Target 实时求解，可录制 / 回放姿态 |
-| 载具控制 | `Runtime/Game/VehicleSystem/Sample/VerticalScene.unity` | Rigidbody + WheelCollider 车辆，`W/S/A/D` 驾驶、`空格` 手刹漂移、`C` 切视角；也可用菜单 `UPandaGF -> Runtime -> VehicleSystem -> 创建驾驶示例场景（新建场景）` 一键重建 |
-| 高亮描边 | `Runtime/Game/QuickOutline/Samples/Scenes/QuickOutline.unity` | 描边效果演示（`OutlineMask` / `OutlineFill`）；也可用菜单 `UPandaGF -> Runtime -> QuickOutline -> 创建描边示例场景（新建场景）` 一键重建 |
-| 回放系统 | `Runtime/Game/ReplaySystem/Sample/HFScene.unity` | 录制 / 回放演示场景；也可用菜单 `UPandaGF -> Runtime -> ReplaySystem -> 创建回放示例场景（新建场景）` 一键重建 |
-| 对象池 | 菜单 `UPandaGF -> Runtime -> ObjPool -> 创建对象池示例场景（新建场景）` 一键生成 | 重建 `ObjPool/Example/PoolUseScene.unity`：`UPGameRoot` 启动设施 + 演示地面 + `TestPoolMgr` 取 / 回收对象 |
-| 交互式任务评分 | 菜单 `UPandaGF -> Runtime -> 交互任务评分系统 -> 创建演示场景` 一键生成 | 生成配置资产 + 实体预制体 + 可运行场景（落 `Example/Demo/`）；演示内容见模块文档 |
+## 核心模块
 
-## 目录结构
+| 模块 | 文档 |
+| --- | --- |
+| 启动和应用服务 | [GameRoot](Runtime/Manager/GameRoot/README.md) · [Contracts](Runtime/Contracts/README.md) · [服务与场景作用域](Runtime/Manager/Services/README.md) |
+| 资源与内容更新 | [资源与平台存储](Runtime/Manager/AssetsMgr/README.md) · [AB 加载](Runtime/Manager/AssetsMgr/AssetBundleMgr/README.md) · [资源入口与场景](Runtime/Manager/GameRoot/SourcesLoadMgr/README.md) · [启动热更](Runtime/Manager/GameRoot/HotUpdate/README.md) |
+| HTTP 与文件下载 | [HTTPTool](Runtime/Manager/HTTPTool/README.md) · [Downloader](Runtime/Manager/DownloadMgr/README.md) |
+| UI、音频与复用 | [uGUI](Runtime/Manager/UIMgr/README.md) · [音频](Runtime/Manager/AudioMgr/README.md) · [对象池](Runtime/Manager/ObjPool/README.md) |
+| 运行基础 | [单例](Runtime/Manager/Singleton/README.md) · [事件](Runtime/Manager/EventCenterModule/README.md) · [PublicMono](Runtime/Manager/PublicMono/README.md) · [扩展方法](Runtime/Manager/Extend/README.md) |
+| 存档与诊断 | [存档、Excel 与 PlayerPrefs](Runtime/Manager/StorageDataMgr/README.md) · [序列化](Runtime/Manager/StorageDataMgr/Serialization/README.md) · [日志](Runtime/Manager/DebugSystem/README.md) · [Reporter](Runtime/Manager/DebugSystem/Reporter/README.md) |
 
-```
-upanda-framework/
-├── Editor/                      编辑器工具（UPandaGF.Editor 程序集）
-│   ├── FrameWorkInitEditor.cs   框架初始化（建目录 / 建 UPGameRoot / 清理缺失脚本）
-│   ├── AssetBundleTools/        AB 打包工具（基于 AssetBundle Browser 扩展）
-│   ├── UIEditor/                UI 自动生成
-│   ├── PLogger/                 日志开关与 Reporter 编辑器
-│   ├── Excel/                   Excel 数据表生成（ExcelTool，依赖 Libraries/Excel.dll）
-│   ├── HyBridCLREditor/         HybridCLR 热更程序集拷贝配置
-│   ├── CustomInspector/         自定义 Inspector
-│   │   ├── UPGameRootEditor.cs            启动根节点面板
-│   │   ├── EventCenterModule/              事件系统工具：事件调试窗口 / 事件模块自检
-│   │   └── InteractiveTaskScoringSystem/   评分系统工具：校验器 / 逻辑自检 / 回放复盘 / 演示生成 / 组件 Inspector
-│   ├── ObjPoolEditor/           对象池工具：示例场景一键生成
-│   ├── QuickOutlineEditor/      高亮描边工具：示例场景一键生成、描边材质 Shader 修复
-│   ├── ReplaySystemEditor/      回放系统工具：示例场景一键生成
-│   ├── VerticalSceneEditor/     载具驾驶工具：示例场景一键生成
-│   ├── EditorTools/             编辑器小工具（资源路径复制、自动碰撞体、常用路径快捷打开）
-│   ├── EditorConfig/            编辑器配置
-│   ├── EditorStu/               编辑器学习示例（控件速查窗口、开发案例窗口、示例资产与自定义 Inspector）
-│   └── UPandaGF.Editor.asmdef   编辑器程序集定义
-├── Runtime/                     运行时（UPandaGF.Runtime 程序集）
-│   ├── Contracts/               服务契约（UPandaGF.Contracts 程序集，零自研依赖）：服务接口 / 枚举 / AssetLease
-│   ├── Manager/                 核心管理器层
-│   │   ├── GameRoot/            UPGameRoot + StartupLifecycle（有序启动 / 回滚 / 耗时指标）+ HotUpdate 热更 + SourcesLoadMgr 资源抽象
-│   │   ├── Services/            IGameServices 装配：场景作用域、输入 / 时间、计时器、配置中心、游戏流程、应用生命周期
-│   │   ├── Singleton/           单例基类
-│   │   ├── DebugSystem/         日志系统（含本目录 README.md）
-│   │   ├── EventCenterModule/   事件系统（含本目录 README.md）
-│   │   ├── AssetsMgr/           资源管理（Resources / AB / StreamingAssets）
-│   │   ├── DownloadMgr/         下载器（含本目录 README.md）
-│   │   ├── UIMgr/               UI 管理
-│   │   ├── AudioMgr/            音频管理
-│   │   ├── HTTPTool/            网络请求
-│   │   ├── ObjPool/             对象池（含 Example 示例与本目录 README.md）
-│   │   ├── StorageDataMgr/      数据存储
-│   │   ├── PublicMono/          公共 Mono（协程 / Update 托管）
-│   │   └── Extend/              扩展方法
-│   ├── Game/                    玩法系统层
-│   │   ├── TaskSystem/          任务系统（含本目录 README.md）
-│   │   ├── InteractiveTaskScoringSystem/  交互式任务评分系统（含 ReadMe.md）
-│   │   │   ├── Core/            纯逻辑层：运行状态 / 进度 / 评分策略 / 难度分级 / 回放日志 / 宿主接口
-│   │   │   ├── Data/            任务与步骤配置（ScriptableObject）
-│   │   │   ├── Task/            步骤调度（TaskDataManager）与步骤基类（TaskStepBase）
-│   │   │   ├── Operation/       操作组与叶子操作（串联 / 并联）
-│   │   │   ├── TaskInteractive/ 交互实体与实体注册表
-│   │   │   └── Example/         示例实体与 HUD（DemoInteractiveEntity / DemoTaskHud）
-│   │   ├── ReplaySystem/        回放系统（含 Sample 示例场景）
-│   │   ├── StateMachine/        分层状态机
-│   │   ├── QuickOutline/        高亮描边（含 Samples 示例场景）
-│   │   ├── SimpleCameraControl/ 相机控制
-│   │   ├── Vignette/            隧道暗角效果
-│   │   ├── RobotCCDIK/          机械臂 CCD 逆运动学（含 Sample 示例与本目录 README.md）
-│   │   ├── VehicleSystem/       载具控制与三视角相机（含 Sample 示例）
-│   │   └── Study/               学习示例
-│   ├── Resources/               框架内置资源（描边 Shader / 材质 / UI 预制体）
-│   ├── Shader/                  Shader 学习文档（含效果案例）与 ShaderLibrary
-│   └── UPandaGF.Runtime.asmdef  运行时程序集定义
-├── Libraries/                   第三方库（Excel.dll、ICSharpCode.SharpZipLib.dll）
-├── README.md
-└── LICENSE
-```
+## 玩法与制作工具
 
-## 模块介绍
+| 模块 | 文档 |
+| --- | --- |
+| 目标与流程 | [任务](Runtime/Game/TaskSystem/README.md) · [交互评分](Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md) · [分层状态机](Runtime/Game/StateMachine/README.md) |
+| 模拟与回放 | [场景回放](Runtime/Game/ReplaySystem/README.md) · [机械臂 CCD](Runtime/Game/RobotCCDIK/README.md) · [车辆与相机](Runtime/Game/VehicleSystem/README.md) |
+| 视觉与示例 | [自由相机](Runtime/Game/SimpleCameraControl/README.md) · [描边](Runtime/Game/QuickOutline/README.md) · [暗角](Runtime/Game/Vignette/README.md) · [Shader 与案例](Runtime/Shader/README.md) · [排序示例](Runtime/Game/Study/README.md) |
+| 工具链 | [Editor 工具索引](Editor/README.md) · [AssetBundle 打包与发布](Editor/AssetBundleTools/README.md) · [示例入口](Samples/README.md) |
 
-### 启动入口（Manager/GameRoot）
+## 构建与发布
 
-- **UPGameRoot**：框架根节点，`Awake` 时自动挂载并初始化 `DebugerInit`（日志）、`Downloader`（下载）、`AssetsLoader`（资源）、`BinaryDataMgrInit`（存储）、`UIManager`（UI）五个子系统；开启热更时下载远程清单 / 按 MD5 增量下载，**只有全部下载成功才提交新清单**（否则降级：上一次成功的本地清单 → 随包清单），完成后广播 `GFLoadedEvent`；失败则广播 `GFLoadedFailedEvent`（并提供 `IsInited` / `IsInitFailed` / `GetAssetsLoader()` 就绪约定），不会静默卡在加载界面。清单 AES 默认关闭（`config.AssetAESConfig.enable = false`）。配置集中在可序列化对象 `UPGameRootConfig`（`UPGameRoot.Config`）里：**编辑器以面板为准（启动不读 Json），保存场景时自动写入 `StreamingAssets/Data/GameRootConfig.json`；打包运行时以该 Json 为准**（读不到 / 解析失败才降级用打包时序列化进场景的面板值）。详见 `Runtime/Manager/GameRoot/README.md`。
-- **GameLaunchExample**：进入游戏的示例入口，演示"热更程序集加载 → 场景加载"的完整流程，并内置完整的失败兜底；场景加载统一走 `ISceneService`（AB 场景与随包场景由框架自动区分，调用方只有一条路径）。
-- **SourcesLoadMgr**：资源加载抽象层，编辑器下用 `EditorSourcesMgr` 直读资源，出包后切换为 `AssetsLoader` 走 AssetBundle。
+框架的 Player 构建入口会对齐启动配置并执行 Unity 构建。发布前需要单独生成目标平台的 AB、主包和资源清单，使它们与 `bundleTarget`、`LoadAssetPath` 和首场景配置一致。编辑器直读和 Player 的资源来源不同，应分别验证首场景加载。 [构建入口](Editor/README.md) · [打包与发布](Editor/AssetBundleTools/README.md)
 
-#### 启动流程（`GameLaunchExample.OnGFLoadedEvent`）
+资源内容更新由 `enableAssetUpdate` 控制，`GameLaunchExample` 的程序集加载由 `loadHotUpdateScripts` 独立控制。按发布需要启用并分别验收。导入随附示例时，按模块文档检查序列化引用和渲染管线。 [内容更新](Runtime/Manager/GameRoot/HotUpdate/README.md) · [示例索引](Samples/README.md)
 
-1. 打开加载界面 `SimpleLoadUI`（`UIManager.ShowPanelAsync`）。
-2. 取 `UPGameRoot.Instance.GetAssetsLoader()` 得到 `IAssetsLoader`。
-3. 若勾选 `loadHotUpdateScripts`：遍历 `HybridCLRScriptsList` 逐个 `LoadAssemblyAsync`，统计成功数量并提示"程序热更完成 / 失败"，随后触发 `onAssemblyLoaded`（供泛型注册使用）。
-4. 校验 `firstScene` 非空后调用 `LoadSceneAsync`（内部 `await scenes.LoadAsync(...)`，AB 场景与随包场景由 `AssetsLoader.ClassifyScenePath` 自动区分），同时监听 `ABLoadProgressEvent` 刷新"加载 / 下载"进度，进入场景后关闭加载界面。
+## 验证与源码维护
 
-整个流程包在 `try/catch` 中：`UIManager` / `SimpleLoadUI` / `UPGameRoot` / 资源加载器 / 热更列表 / `firstScene` 任一缺失都会打印明确的 `PLogger.LogError` 并中止，不会抛空引用异常。
+- 在 Unity Test Runner 中运行 EditMode 与 PlayMode。部分 fixture 会临时创建资源、AB 或修改构建场景，完整测试适合在隔离宿主运行。 [测试入口](Tests/README.md)
+- `OptimzeLog` 保存阶段性验证结果。Windows IL2CPP 与 WebGL 的历史探针来自隔离工程，Android 当轮完成 APK 构建。集成后在目标项目与设备上单独验收。 [历史索引](OptimzeLog/OPTIMIZATION.md) · [跨平台记录](OptimzeLog/CrossPlatform/README.md)
+- C# 与 Markdown 文件遵循仓库的编码和行尾配置。新增 Unity 资源或移动资源时保留正确的 `.meta`。运行时调用 UnityEditor API 要处于编辑器编译条件内。 [源码格式](.editorconfig)
 
-若框架初始化失败，会收到 `GFLoadedFailedEvent`（而不是一直等 `GFLoadedEvent`）：`GameLaunchExample` 会打错误日志并在加载界面上给出提示。
-
-### 服务化架构（Runtime/Contracts + Runtime/Manager/Services）
-
-业务代码只依赖 `UPandaGF.Contracts` 的窄接口；框架在启动的 `Services` 步装配 `GameServices`，并向场景里的 `IGameServicesConsumer` 注入。
-
-| 服务 | 接口 | 说明 |
-|---|---|---|
-| 资源 | `IAssetService` | `AssetLease<T>` 引用计数凭据，支持场景作用域自动归还 |
-| 场景 | `ISceneService` | 串行队列、请求进度、超时 / 取消、场景作用域自动归还资源；AB 场景与随包（Build Settings）场景统一入口，`method = Editor` 时直接从 Build Settings 加载；旧 `SceneMgr` 已删除，统一走 `Services.Scenes` |
-| 输入 / 暂停 / 时钟 | `IInputService` / `IPauseService` / `IGameClock` | 动作映射、上下文栈、嵌套暂停 |
-| 计时器 | `ITimerService` | `Delay / Every / DelayAsync`；scaled 受暂停影响，回调异常隔离，可取消 / 可 await |
-| 配置中心 | `IConfigService` | 注册 → JSON 覆盖（环境 / 渠道）→ 统一校验（`ConfigIssue`） |
-| 游戏流程 | `IGameFlowService` | `Boot / Login / Lobby / Battle` 等状态注册、进入守卫、串行切换、失败状态可见 |
-| 应用生命周期 | `IAppLifecycle` | 前后台 / 焦点 / 低内存 / 退出事件，由 `UPGameRoot` 统一转发 |
-
-```csharp
-await UPGameRoot.Instance.WaitUntilReadyAsync();
-var services = UPGameRoot.Instance.Services;
-await services.Flow.StartAsync("Boot");
-await services.Timer.DelayAsync(2f, services.Scenes.GetScope(gameObject.scene).Token);
-services.Config.Register("battle", battleConfig, validator: ValidateBattle);
-```
-
-外部模块可通过 `UPGameRoot.ConfigureLifecycle`（在 `RuntimeInitializeOnLoadMethod(BeforeSceneLoad)` 中订阅）向启动链注册自己的 `IStartupModule`；模块失败同样走逆序回滚与 `GFLoadedFailedEvent`。
-
-### 单例系统（Manager/Singleton）
-
-| 基类 | 说明 |
-|---|---|
-| `EagerMonoSingletonBase<T>` | MonoBehaviour + 急加载，自动创建 GameObject、`DontDestroyOnLoad`、重复实例销毁 |
-| `LazyMonoSingletonBase<T>` | MonoBehaviour + 懒加载 |
-| `EagerSingletonBase<T>` | 纯 C# + 急加载 |
-| `LazySingletonBase<T>` | 纯 C# + 懒加载，带双检锁与 `Release()` |
-
-### 日志系统（Manager/DebugSystem）
-
-- **PLogger**：普通日志 / Warning 由 `[Conditional("OPEN_PLOG")]` 编译期剔除（实参不求值），Error / Exception 常驻；运行时由 `LogConfig`（`StreamingAssets/Data/LogConfig.json`）控制分级、前缀 / 时间 / 线程号与单条截断。
-- **PLogHelper**：后台线程把日志落盘；**Reporter / LogListenerManager**：两套真机日志面板（IMGUI / UGUI）。Reporter 的「框架诊断」页签另提供模块状态、启动逐步耗时和资源缓存 / 引用 / 请求统计。
-- 菜单 `UPandaGF -> 日志系统`：启动日志 / 剔除日志 / 日志系统诊断 / 日志自检（19 项断言）。
-
-> 用法、日志链路、面板对比、FAQ 与已知限制：见 `Runtime/Manager/DebugSystem/README.md`。
-
-### 事件系统（Manager/EventCenterModule）
-
-两套实现，按需选择：
-
-| 实现 | 形态 | 适用场景 |
-|---|---|---|
-| `EventCenter` | 委托式**单例**，参数为 `EventArgBase` 子类 | 跨模块 / 全局通知；支持带 owner 注册（owner 销毁自动注销）、优先级、一次性监听 |
-| `EventBus` | 接口式，可 `new` 多实例，消息为 `struct` | 帧内高频（零 GC）、需要多套互不干扰的上下文；监听者用弱引用防泄漏 |
-
-两者均已做到：监听者抛异常不中断其余监听者、派发中增删订阅不重复不漏派发、用户回调在锁外执行。配套工具：菜单 `UPandaGF -> Runtime -> 事件系统 -> 事件调试窗口 / 事件模块自检`。
-
-> 用法示例、内部结构、执行语义、FAQ 与已知限制：见 `Runtime/Manager/EventCenterModule/README.md`。
-
-### 资源管理（Manager/AssetsMgr + SourcesLoadMgr）
-
-1. **AB 包打包工具**
-   - 基于官方 `AssetBundle Browser` 扩展为 `Configure / Build Set / Inspect / UpLoadAB` 四个页签：可视化指定包名、单包或含依赖打包、逐包设置加载位置（StreamingAssets / Persistent / Remote）、生成资源清单 `assetData.assetref`（可 AES 加密），并支持 FTP / Nginx 上传。
-   - 路径：`UPandaGF -> AB包工具 -> AssetBundle Browser`。
-
-   > 打包 → 清单 → 上传 → 运行时加载 / 热更的完整流程、数据格式与已知限制：见 `Editor/AssetBundleTools/README.md`。
-
-2. **IAssetsLoader**
-   - AB 包加载接口，统一了"编辑器直读 / AssetBundle"两种模式。
-   - 获取方式：
-
-     ```csharp
-     IAssetsLoader loader = UPGameRoot.Instance.GetAssetsLoader();
-     ```
-
-   - 接口方法：
-
-     | 方法 | 说明 |
-     |---|---|
-     | `Task<T> LoadAsync<T>(string path)` | 泛型异步加载 |
-     | `void LoadAsync<T>(string path, UnityAction<T> callback)` | 泛型回调式加载 |
-     | `Task<Object> LoadAsync(string path, Type type)` | 按类型异步加载 |
-     | `void LoadAsync(string path, Type type, UnityAction<Object> callback)` | 按类型回调式加载 |
-     | `void LoadSceneAsync(string path, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null)` | 异步加载场景（另有 `LoadSceneMode` 重载）；AB 场景与随包（Build Settings）场景由 `ISceneService` 自动区分 |
-     | `void LoadAssemblyAsync(string path, UnityAction<Assembly> callback)` | 加载程序集（回调式） |
-     | `Task<Assembly> LoadAssemblyAsync(string path)` | 加载程序集（异步） |
-     | `void ClearAB()` | 清空已加载的 AB |
-
-   - 开发过程中直接使用编辑器路径加载资源，`UPGameRoot` 的 Inspector 面板可切换为 Editor 模式；打包时再切换为 AssetBundle 模式。
-   - AssetBundle 支持本地加载、远程加载，或资源热更下载到本地后加载。
-   - **错误处理约定（调用方必须注意）**：
-     - 资源缺失 / AB 初始化失败时，加载器打印错误日志并安全返回，**不抛异常**；异步 `LoadAsync` 返回 `null`、回调式则回调 `null`，调用方需自行判空。
-     - `LoadSceneAsync` **没有失败回调**：场景现在统一走 `ISceneService`（串行队列 / 进度 / 取消 / 场景作用域归还），失败或取消时 `assetLoadComplete` 与 `sceneLoadComplete` **都不会触发**（只 `Debug.LogException`）；需要失败/取消语义时直接 `await UPGameRoot.Instance.Services.Scenes.LoadAsync(...)`。
-     - `LoadAssemblyAsync` 可能返回 `null`（内部已对 dll 资源与 `Assembly.Load` 加保护），调用方需判空。
-
-3. **ResourcesLoader**
-   - 封装 Unity 内置的 `Resources.Load`，避免资源重复加载，内置引用计数、失败重试与异步等待者清理，详见 `Runtime/Manager/AssetsMgr/README.md`。
-
-4. **StreamingAssetsLoadTool**
-   - `StreamingAssets` 路径下的资源加载工具，已处理跨平台兼容性，提供多种加载方式。
-
-5. **AssetBundleMgr**
-   - `ABLoadMgr` 负责 AB 的本地 / 远程加载（主包 / manifest / 依赖递归 / 卸载）。
-   - 资源热更已由 `UPGameRoot.Config.enableAssetUpdate` + `Downloader` 按清单 MD5 增量完成（详见 AB 工具文档）；`AssetBundelUpdataMgr` 是**已废弃**的旧方案（文本对比文件 + FTP），勿再使用。
-
-6. **FileUtility**
-   - 文件工具：另存 / 移动（先复制后删除，可指定是否覆盖）等常用文件操作。
-
-### 下载器（Manager/DownloadMgr）
-
-- **Downloader**：下载队列 + 并发 + 超时重试，提供 `async/await` 接口与暂停 / 继续 / 取消；**DownloadHandlerFile** 为落盘下载句柄（延迟打开文件、兼容分块传输）。
-- 断点续传默认关闭：增量清单按 MD5 对比生成，本地文件可能是“完整但过期”的旧版本，追加写入会损坏文件。
-- 实现原理、API 参考与修复记录见 `Runtime/Manager/DownloadMgr/README.md`。
-
-### UI 系统（Manager/UIMgr）
-
-- **UIManager**：按 `Bot / Mid / Top / System` 四层管理面板，自动创建 `UICamera`、`Canvas`（1920×1080 适配）与 `EventSystem`。
-- 生命周期、并发打开和关闭取消约定见 `Runtime/Manager/UIMgr/README.md`。
-- **BasePanel**：面板基类；**SimpleLoadUI**：加载界面；**WorldSpaceOverlayUI**：世界空间 UI；**DragArea**：拖拽组件。
-- **UICameraRegister / UICanvasRegister**：把场景中的相机 / Canvas 注册给 UI 系统（`Reset()` 时自动填充引用）。
-- **UILoadInfoAttribute**（`UIAttribute`）：标记面板所属层级与资源加载方式，供自动加载使用。
-- **UIAutoGenerator**（Editor）：UI 自动生成工具。
-
-### 音频（Manager/AudioMgr）
-
-- 背景音乐支持**双路交叉淡入淡出**（切歌不硬切）、暂停 / 恢复 / 淡出停止与音量调节；唯一音效（新音效加载完成后才顶掉上一个，失败不打断）；叠加音效播完自动回收；支持 Resources 与 AssetBundle 两种加载方式，并在换曲 / 回收时**归还 `ResourcesLoader` 的引用计数**（避免 `AudioClip` 常驻内存）。用法与限制见 `Runtime/Manager/AudioMgr/README.md`。
-
-### 场景管理（Contracts/ISceneService + Manager/Services/SceneService）
-
-- 串行队列 + 请求进度（`ISceneService.Progress`）+ 超时 / 取消；每个场景一个 `LifetimeScope`，场景包资源在 `sceneUnloaded` 时随作用域自动归还。旧 `SceneMgr` / `SceneMgr_SceneAsynLoadProgress` 已删除，`AssetsLoader.LoadSceneAsync` 直接转发到本服务。
-- **场景来源自动识别**（`AssetsLoader.ClassifyScenePath`）：AB 清单里登记的场景先准备场景包；清单里没有、但 Unity 能直接加载的场景按随包（Build Settings）场景处理，不准备 AB；两者都登记时按 AB 加载并打一条警告。
-- **`UPGameRootConfig.method = Editor`**：`SceneService` 装配时根本不接资源提供者（`SceneService.SelectAssetProvider`），加载只走 `UnitySceneBackend`，即从 Build Settings 直接加载，不读清单、不产生 AB 凭据。
-
-### 网络请求（Manager/HTTPTool）
-
-- **HttpManager**：基于 `UnityWebRequest` 的 HTTP 封装：`GET / POST / PUT / DELETE`、全局请求头、泛型 JSON 反序列化（`JsonUtility`）、带状态码回调、失败重试（含重试间隔）、下载进度回调、请求取消与并发控制；按需懒加载单例（不在 `UPGameRoot` 的初始化列表中）。
-- 模块内暂无调用点；已修复原实现的"重试空引用导致请求队列死锁""全局请求头未接入"等问题，API 说明、用法示例与修复记录见 `Runtime/Manager/HTTPTool/README.md`。
-
-### 对象池（Manager/ObjPool）
-
-- **GameObjectPoolMgr**：GameObject 对象池，按资源路径分容器缓存（LIFO），池空时自动加载并实例化；支持 Resources / AssetBundle 两种加载方式、Task 与回调两种异步形式、层级收纳、单容器容量上限、预热（`Prewarm`）与 `IPoolable` 出池 / 回池回调；同步接口仅支持 Resources（已标记过时）。
-- 用法、配置项与注意事项见 `Runtime/Manager/ObjPool/README.md`；示例场景（`Example/PoolUseScene.unity`）可用菜单 `UPandaGF -> Runtime -> ObjPool -> 创建对象池示例场景（新建场景）` 一键重建（默认以 `Editor` 加载方式生成，便于直接在编辑器里运行）。
-
-### 数据存储（Manager/StorageDataMgr）
-
-- **PlayerPrefsDataMgr**：基于 PlayerPrefs 的轻量存储。
-- **BinaryDataMgr**：版本化字段图存档，旧 NRBF 兼容与备份迁移；[格式与迁移约定](Runtime/Manager/StorageDataMgr/Serialization/README.md)。
-
-### 公共 Mono（Manager/PublicMono）
-
-- **PublicMono**：帧调度中心 —— 非 MonoBehaviour 对象可借此托管 `Update / FixedUpdate / LateUpdate` 与协程（`RunCoroutine` 返回可 `await` 的 `Task`）。帧回调逐个异常隔离（一个监听器出错不会连累其它模块）；监听器支持**带 owner 注册**（Unity 对象销毁后自动注销，杜绝僵尸监听者）、重复注册拦截、`ClearAllListeners()` 批量清理；`RunCoroutine` 的 `Task` 保证会结束（完成 / 异常 / 取消 / 超时）。详见 `Runtime/Manager/PublicMono/README.md`。
-
-### 玩法系统（Runtime/Game）
-
-| 模块 | 说明 |
-|---|---|
-| `TaskSystem` | 通用任务系统：ScriptableObject 模板 + 运行时实例、四类目标（击杀 / 收集 / 到达 / 对话）、事件驱动进度（无轮询）、任务链前置、可重复任务、JSON 存档、UGUI 任务日志与 HUD、编辑器一键搭建；详见该目录 `README.md` |
-| `InteractiveTaskScoringSystem` | 交互式任务评分系统：步骤 / 操作组 / 评分 / 回放，面向教学实训场景；详见该目录 `ReadMe.md` |
-| `ReplaySystem` | 回放系统：按帧录制 Transform（可扩展），序列化 + 压缩存储到本地；`ReplayUI` 提供回放界面；详见该目录 `README.md` |
-| `StateMachine` | 分层状态机：状态注册、状态栈、路径切换（如 `Movement/Run`）；详见该目录 `README.md` |
-| `RobotCCDIK` | 串联机械臂 CCD 逆运动学：位置 / 姿态双目标、关节限位、姿态录制回放；原理与用法见该目录 `README.md` |
-| `VehicleSystem` | 载具控制：`VehicleController`（Rigidbody + WheelCollider，前轮转向 / 后轮驱动 / 手刹漂移）、`VehicleInput`（键盘输入）、`CameraModeManager`（第三人称 / 第一人称 / 环绕三视角） |
-| `QuickOutline` | 物体高亮描边（配套 `OutlineMask` / `OutlineFill` Shader 与材质，示例场景 `QuickOutline/Samples/Scenes/QuickOutline.unity`） |
-| `SimpleCameraControl` | 简单相机控制 |
-| `Vignette` | 隧道暗角后处理效果（`TunnelingVignette`） |
-| `Study` | 学习示例（`SortStu` 等）；详见该目录 `README.md` |
-
-#### 交互式任务评分系统（InteractiveTaskScoringSystem）
-
-把“考核流程”拆成若干**步骤**，每步由一个或多个**操作**（串联 / 并联）组成；只允许点击当前步骤激活的交互物，点错计一次错误，完成后按错误次数 / 耗时结算分数。
-
-- **核心能力**：纯逻辑层 `Core/`（不依赖 `UnityEngine`，可单测）、配置与运行状态分离（可重玩 / 多实例 / 存档）、可插拔评分策略（难度分级 + 超时扣分）、动作级回放日志。
-- **编辑器工具**（菜单 `UPandaGF -> Runtime -> 交互任务评分系统`）：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 一键生成演示场景。
-- **演示快捷键**：`G` 引导、`K` 跳过当前步骤、`S` 保存回放日志。
-
-> 架构与调用链、评分规则、回放与工具细节、扩展指南、已知限制与 FAQ：见 `Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md`。
-
-#### 机械臂逆运动学（RobotCCDIK）
-
-`CCDIKController` 提供串联机械臂 IK（位置 + 姿态双目标、关节单轴行程限位、平滑插值、复位与调试绘制）；`RobotAngleRecoder` 可在编辑器内拖动 Target 实时驱动 IK 并录制 / 回放关节姿态。示例场景 `Runtime/Game/RobotCCDIK/Sample/Sample.unity`。
-
-> 原理、角度约定、参数调优与常见问题：见 `Runtime/Game/RobotCCDIK/README.md`。
-
-### Shader 学习资料（Runtime/Shader）
-
-框架内置一套 Shader 学习文档与效果案例库，适合学习内置（Built-in）渲染管线的 Shader 编写：
-
-- **UnityShader学习文档**：`Shader基础.md` 从零讲解 ShaderLab 结构、数据类型与语义、坐标空间、光照模型、纹理、混合、深度 / 模板测试等完整知识树，附图文与可运行代码。
-- **效果案例库**：流光、纹理动画、模型描边、卡通风格、噪声、水波、消融、物体切割、素描风格、翻页、遮挡半透明等 11 个可运行案例。
-- **ShaderLibrary**：内置渲染管线常用 Shader 库（`Library/BuildIn`）。
-
-### 编辑器工具链（Editor）
-
-> 菜单分组约定：**模块级工具**统一放在 `UPandaGF -> Runtime -> <模块名>`（交互任务评分系统 / 事件系统 / QuickOutline / ReplaySystem / ObjPool / VehicleSystem）；**框架级工具**在 `UPandaGF -> Tools / 日志系统 / AB包工具` 以及 `UPandaGF -> 创建UPGameRoot`。
-
-- **FrameWorkInitEditor**：一键初始化目录结构、创建 `UPGameRoot`、清理 Prefab 缺失脚本。
-- **AssetBundleTools**：AB 打包、管理与上传（FTP / Nginx），详见 `Editor/AssetBundleTools/README.md`。
-- **ExcelTool**（`Editor/Excel/`）：根据 Excel 配置生成数据类与数据容器类，依赖 `Libraries/Excel.dll`。
-- **UIAutoGenerator**：UI 自动生成。
-- **HyBridCLREditor**：HybridCLR 热更程序集拷贝配置（`DLLCopyConfigWindow`）。
-- **CustomInspector**：
-  - `UPGameRootEditor`：启动根节点面板（资源加载方式、热更开关、远程地址、AES 配置等 + 配置文件的「从 Json 读取」/「定位文件」，写盘在保存场景与构建前自动完成）。
-  - `EventCenterModule/`：事件调试窗口 + 事件模块自检（菜单 `UPandaGF/Runtime/事件系统/…`），用法见事件模块文档。
-  - `InteractiveTaskScoringSystem/`：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 演示场景生成器 + 各组件自定义 Inspector（菜单 `UPandaGF/Runtime/交互任务评分系统/…`），用法见评分系统文档。
-- **模块示例场景生成器**（菜单 `UPandaGF/Runtime/<模块>/…`，每个都是「新建场景」+「在当前场景追加」两个入口，按原型场景逐项重建位置 / 参数 / 引用）：
-  - `QuickOutlineEditor/`：描边示例场景（5 种描边模式各一个物体）；另含**描边材质 Shader 丢失修复**（菜单 `UPandaGF/Tools/QuictOutLine材质修复`）—— Unity 版本升级 / Samples 重建后 `Materials/OutlineMask|OutlineFill` 的 Shader 引用断链变玫红时，一键重挂并保存。
-  - `ReplaySystemEditor/`：录制 / 回放示例场景（掉落 / 弹跳的物理物体 + 时间轴、进度、暂停、速度、存 / 取档等 UI 全部自动连线）。
-  - `ObjPoolEditor/`：对象池示例场景（含 `UPGameRoot` 启动设施、UI 相机与 Canvas 层级、演示地面与 `TestPoolMgr`）。
-  - `VerticalSceneEditor/`：载具驾驶示例场景（内建图元搭的赛道 + 车辆 + 三种视角管理器；`VehicleController` / `CameraModeManager` 的私有序列化字段由脚本自动连线）。
-- **EditorTools**：编辑器小工具
-  - `ResourcePathCopy`：复制资源路径。
-  - `AutoColliderGenerator`：自动生成碰撞体。
-  - `FolderQuickOpen`：菜单 `UPandaGF/Tools/打开常用路径/`，一键打开项目根目录、`Assets`、`StreamingAssets`、`persistentDataPath`、`temporaryCachePath`、AB 打包输出目录等常用路径（Windows 下用资源管理器打开，其他平台回退 `RevealInFinder`），同时把路径复制到剪贴板。
-- **EditorStu**：编辑器学习示例（都能直接从菜单打开，源码每段都有中文说明）—— `EditorGUIExample`（控件速查窗口，菜单 `UPandaGF/Tools/EditorGUI控件备忘录`：12 个章节覆盖文本 / 数值 / 开关 / 向量 / 颜色曲线 / 枚举下拉 / 资源对象 / 布局与 `GUILayoutOption` / `GUIStyle` / 进度条 / `SerializedProperty` / 事件，带关键字搜索）、`EditorDevelopmentExample`（开发案例窗口，菜单 `UPandaGF/Tools/编辑器开发案例`，快捷键 `Ctrl+Shift+E`：`MenuItem` 写法与 validate、窗口生命周期、`SerializedObject` 与 `Undo`、资产与 `AssetDatabase`、拖拽 / 剪贴板 / JSON、`EditorPrefs`、`EditorApplication` 回调与场景视图 `Handles`、弹窗通知）、`EditorExampleAssets`（示例资产 + 自定义 `PropertyDrawer` / `CustomEditor`）。
-- **EditorConfig**：框架配置（`UPandaGFConfig`）。
-
-## 模块文档索引
-
-各模块的详细文档（原理、API、示例、常见问题）与本文档并行维护：
-
-| 文档 | 内容 |
-|---|---|
-| `Runtime/Manager/DebugSystem/README.md` | 日志系统：两级开关（编译期剔除 / 运行期过滤）、日志链路、落盘机制、两套真机面板、编辑器工具、FAQ、已知限制与变更记录 |
-| `Runtime/Manager/EventCenterModule/README.md` | 事件系统：两套实现的内部结构、执行语义、选型建议、编辑器工具、FAQ、已知限制与变更记录 |
-| `Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md` | 交互式任务评分系统：架构与调用链、评分规则与难度分级、回放、编辑器工具链、扩展指南、已知限制、FAQ |
-| `Runtime/Game/TaskSystem/README.md` | 任务系统：核心概念与状态机、事件驱动接入方式、JSON 存档、UGUI 面板与 HUD 用法、一键搭建菜单、常见问题与扩展点 |
-| `Runtime/Game/RobotCCDIK/README.md` | 机械臂 CCD 逆运动学：原理、参数调优、姿态录制回放 |
-| `Runtime/Game/ReplaySystem/README.md` | 回放系统：录制、存储与播放 |
-| `Runtime/Game/StateMachine/README.md` | 分层状态机 |
-| `Runtime/Game/Study/README.md` | 排序算法学习手册（`SortStu`） |
-| `Runtime/Manager/ObjPool/README.md` | GameObject 对象池 |
-| `Runtime/Manager/DownloadMgr/README.md` | 下载器：队列 / 并发 / 断点续传 / 超时重试 |
-| `Runtime/Manager/HTTPTool/README.md` | 基于 UnityWebRequest 的 HTTP 请求模块 |
-| `Runtime/Manager/AudioMgr/README.md` | 音频管理器：双路 BGM 交叉淡入淡出、唯一 / 叠加音效、引用计数归还、请求序号防竞态、已知限制与维护提示 |
-| `Runtime/Manager/PublicMono/README.md` | 帧调度中心：帧监听（owner 自动注销 / 异常隔离 / 幂等注册）、协程托管（Task 保证结束 + 超时与取消）、已知限制与维护提示 |
-| `Runtime/Manager/GameRoot/README.md` | 启动入口：启动时序图、三种 `loadPath` 的热更语义、清单提交与降级规则、事件与就绪状态、启动耗时指标、模块自注册、配置项、已知限制 |
-| `Runtime/Contracts/README.md` | 服务契约：接口清单、AssetLease、ILifetimeScope、计时器 / 配置 / 流程 / 应用生命周期契约 |
-| `Runtime/Manager/Services/README.md` | 应用服务与场景作用域：装配、输入 / 时间、TimerService、ConfigService、GameFlowController、AppLifecycleService |
-| `OptimzeLog/FoundationHardening/README.md` | 本轮基础设施落地：P0 交付基线、契约扩展、核心服务、EditMode 测试、构建入口、CI 模板与未落地项 |
-| `Editor/AssetBundleTools/README.md` | AssetBundle 打包与热更系统：页签用法、清单格式、三种加载位置、热更语义、已知限制、FAQ |
-
-## 源码约定
-
-- **程序集划分**：`Runtime/` 属于 `UPandaGF.Runtime`，`Editor/` 属于 `UPandaGF.Editor`。Runtime 程序集**在 Player 构建时不引用 `UnityEditor`**，因此 Runtime 代码里任何 `using UnityEditor;` 或 `UnityEditor.*` 调用都必须用 `#if UNITY_EDITOR ... #endif` 包住，否则会出现 `CS0246` 打包阻断。
-- **文本编码**：全仓库 `.cs` 已统一为 **UTF-8（带 BOM）** + **CRLF**，并由根目录 `.editorconfig`、`.gitattributes` 固化。
-- **命名沿袭**：为兼容既有配置与场景，部分历史命名未做改动（如 `OpearationExecute`、`AddErroTimes`、`erroTimes`、部分接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间）。
-- **改动后自检**：涉及交互式任务评分系统时，改完先跑「任务流程校验器」再跑「运行逻辑自检」，可覆盖绝大多数配置错误与逻辑回归。
-- **编码规范自检**：菜单 `UPandaGF -> 框架 -> 校验编码规范`，检查 Runtime 是否直接 `Input.*` / `Resources.Load` / `FindObjectOfType` / 绕过 `ISceneService`；CI 可调用 `FrameworkConventionValidator.Validate()` 取违例数。
-- **测试分层**：`Tests/PlayMode` 跑集成回归；`Tests/EditMode`（`UPandaGF.Tests.EditMode`）跑纯逻辑单测（Timer / Config / GameFlow / StartupLifecycle / 场景归属判定 / 场景资源提供者选择），不需要场景。
-- **构建入口**：菜单 `UPandaGF -> 构建`，或 CI 调 `FrameworkBuildPipeline.Build(...)`；`UPANDA_VERSION` 环境变量可注入版本号。
-- **资产完整性**：`.meta` 必须提交（`.gitignore` 已不再忽略）。历史 clone 若缺 `.meta`，请在 Unity 中重新导入后提交生成的 `.meta`，否则 prefab / 场景引用会丢。
-
-## 优化与回归验证
-
-本轮变更、测试与后续计划见 [OPTIMIZATION.md](OptimzeLog/OPTIMIZATION.md)；基础设施落地清单见 [FoundationHardening](OptimzeLog/FoundationHardening/README.md)。
-
-## 贡献
-
-欢迎提交 Pull Request 或 Issue 来帮助改进框架。
-
-## 许可证
-
-本项目使用 MIT 许可证。
+框架原创部分采用 MIT 许可。随仓库提供的第三方代码、库和资产遵循各自的许可。 [LICENSE](LICENSE) · [第三方声明](THIRD_PARTY_NOTICES.md)
