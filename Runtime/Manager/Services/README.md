@@ -2,6 +2,16 @@
 
 资源加载就绪后，`UPGameRoot` 装配 `GameServices`，并向场景中的 `IGameServicesConsumer` 提供接口集合。使用 Unity 对象、调用场景和作用域 API 时应在主线程。接入业务时可以通过构造函数或 `Configure` 传入所需接口，测试可替换后端。 [服务契约](../../Contracts/README.md) · [装配源码](GameServices.cs) · [启动流程](../GameRoot/README.md)
 
+## 平台能力服务（HTTP / 池 / 日志）
+
+`GameServices` 同时装配 `Http`、`Pools`、`Log`：
+
+- `HttpManager` 实现 `IHttpService`。容器创建宿主对象并在关闭时 `CancelAll` 后销毁；业务用 `services.Http.GetAsync<T>` 等 Task 接口，需要进度/`OnRetry` 时再取具体 `HttpManager`。
+- `PoolService` 实现 `IPoolService`。`Shared` 随容器关闭而释放，`CreatePool(scope)` 随作用域释放；池内预制体统一经 `IAssetService` 取得租约。
+- `LogService` 实现 `ILogService`，转调非 `[Conditional]` 的 `PLogger.Write`，因此未定义 `OPEN_PLOG` 时注入日志仍可观测；每帧/高频路径继续直接用 `PLogger`。
+
+根关闭顺序：`SceneService → Flow → Pools → Http（取消并销毁宿主）→ 摘计时器驱动 → Timer → AppLifecycle → Audio → Input → Time`。 [平台契约](../../Contracts/PlatformServices.cs) · [池服务](PoolService.cs) · [日志实现](../DebugSystem/LogService.cs)
+
 ## 场景、资源和订阅
 
 `Scenes.LoadAsync` 接受场景名或路径、加载模式、取消令牌、超时和单请求进度回调。AB 场景优先使用清单中带 `.unity` 的完整路径；编辑器直读模式由 Unity 场景系统加载。全局 `Progress` 会收到所有请求的进度。场景加载和卸载通过同一个队列串行执行。调用方取消或超时后，已经提交给 Unity 的原生加载仍可能完成并切换场景。 [场景服务](SceneService.cs) · [场景 provider 测试](../../../Tests/EditMode/SceneServiceAssetProviderTests.cs)
@@ -42,7 +52,7 @@ scope.Own(services.Timer.Every(1f, RefreshHud, scaled: true));
 | `Config` | 用 `Register<T>(key, value, version, validator)` 登记，`ApplyOverrides` 原地覆盖对象，`Validate` 返回问题清单。调用方自行决定 Error 是否阻断进入游戏。配置服务保留传入对象引用，覆盖按条处理，解析失败只记日志。 |
 | `Flow` | 注册 `IGameState`，用 `StartAsync` 开始，通过 `GoToAsync` 切换。依次执行进入守卫、旧状态退出、新状态进入。守卫拒绝时保留当前状态。进入失败会标记 Failed，但旧状态已执行过退出；旧状态退出本身抛错会留下 Transitioning。 |
 | `AppLifecycle` | 订阅 `PauseChanged`、`FocusChanged`、`LowMemory`、`Quitting`。后台暂停和菜单使用同一套暂停凭据。退出通知是同步的，关键存档应在退出前完成或在通知中同步保存。根节点在就绪前不转发暂停、焦点和低内存通知。 |
-| `Saves` | `Save/Load/Exists` 同步访问 `Application.persistentDataPath/Saves` 下的槽位文件。槽位名需合法，首次缺文件返回 `null`，解析或 I/O 错误会抛出。读取旧格式时不会自动重写槽位。 |
+| `Saves` | `Save/Load/Exists/Delete` 同步访问 `Application.persistentDataPath/Saves` 下的槽位文件。槽位名需合法，首次缺文件返回 `null`，解析或 I/O 错误会抛出。读取旧格式时不会自动重写槽位。 |
 
 `EnterAsync` 和 `ExitAsync` 执行期间持有流程切换闸门；后续状态切换由外部在当前切换完成后发起。根关闭时先关闭 Scenes，再退出当前流程，状态的退出清理须适配这一顺序。 [配置](ConfigService.cs) · [流程](GameFlowController.cs) · [生命周期](AppLifecycleService.cs) · [存档](FileSaveService.cs)
 

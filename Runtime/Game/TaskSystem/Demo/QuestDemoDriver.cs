@@ -1,4 +1,4 @@
-﻿﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UPandaGF.RunTime.TaskSystem
@@ -31,17 +31,26 @@ namespace UPandaGF.RunTime.TaskSystem
         [Tooltip("自动接受所有“可接受”的任务。建议保持开启：目标进度只对 Active 任务累计，关掉后需要手动点面板里的「接受任务」。")]
         public bool autoAcceptAvailableQuests = true;
 
+        [Header("引用（由 QuestDemoInstaller 自动绑定）")]
+        [Tooltip("场景中的 QuestManager；不再自动查找单例。")]
+        public QuestManager manager;
+        [Tooltip("奖励钱包；留空则任务奖励不发。")]
+        public PlayerRewardService wallet;
+
         [Header("显示")]
         public bool showHelp = true;
         public int fontSize = 18;
 
-        private PlayerRewardService wallet;
         private bool acceptingQuests;
 
         private void Start()
         {
-            QuestManager manager = QuestManager.Instance;
-            if (manager == null) return;
+            if (manager == null)
+            {
+                Debug.LogError("[QuestDemo] 未绑定 QuestManager：请用 UPandaGF 菜单重新搭建任务演示场景，或手动拖入。");
+                return;
+            }
+            if (wallet != null) manager.RewardReceiver = wallet;
 
             Debug.Log("[QuestDemo] 初始状态：" + manager.GetDebugSummary());
 
@@ -52,7 +61,6 @@ namespace UPandaGF.RunTime.TaskSystem
 
         private void OnDestroy()
         {
-            QuestManager manager = QuestManager.InstanceOrNull;
             if (manager != null) manager.OnQuestLogChanged -= HandleQuestLogChanged;
         }
 
@@ -66,7 +74,7 @@ namespace UPandaGF.RunTime.TaskSystem
         {
             if (!autoAcceptAvailableQuests) return 0;
 
-            QuestManager manager = QuestManager.InstanceOrNull;
+            QuestManager manager = this.manager;
             if (manager == null || acceptingQuests) return 0;   // 防重入：AcceptQuest 会再抛 OnQuestLogChanged
 
             acceptingQuests = true;
@@ -91,7 +99,7 @@ namespace UPandaGF.RunTime.TaskSystem
         /// <summary>手动接受第一个“可接受”的任务（A 键）。</summary>
         private void AcceptFirstAvailableQuest()
         {
-            QuestManager manager = QuestManager.InstanceOrNull;
+            QuestManager manager = this.manager;
             if (manager == null) return;
 
             List<QuestInstance> available = manager.GetQuestsByStatus(QuestStatus.Available);
@@ -120,18 +128,18 @@ namespace UPandaGF.RunTime.TaskSystem
             // ---- 提交第一个可提交的任务 ----
             if (Input.GetKeyDown(KeyCode.N)) TurnInFirstCompletedQuest();
 
-            QuestManager manager = QuestManager.InstanceOrNull;
+            QuestManager manager = this.manager;
             if (manager == null) return;
 
             // ---- 存档 / 读档 / 重置 ----
-            if (Input.GetKeyDown(KeyCode.S)) manager.SaveToFile();
-            if (Input.GetKeyDown(KeyCode.L)) manager.LoadFromFile();
+            if (Input.GetKeyDown(KeyCode.S)) manager.SaveToSlot();
+            if (Input.GetKeyDown(KeyCode.L)) manager.LoadFromSlot();
             if (Input.GetKeyDown(KeyCode.R)) manager.ResetAllProgress();
         }
 
         private void TurnInFirstCompletedQuest()
         {
-            QuestManager manager = QuestManager.InstanceOrNull;
+            QuestManager manager = this.manager;
             if (manager == null) return;
 
             var completed = manager.GetQuestsByStatus(QuestStatus.Completed);
@@ -141,8 +149,6 @@ namespace UPandaGF.RunTime.TaskSystem
         private void OnGUI()
         {
             if (!showHelp) return;
-
-            if (wallet == null) wallet = PlayerRewardService.Instance;
 
             GUIStyle style = new GUIStyle(GUI.skin.label);
             style.fontSize = fontSize;
@@ -155,7 +161,6 @@ namespace UPandaGF.RunTime.TaskSystem
             GUILayout.Label("K 击杀 ×5   A 接受任务   N 提交任务   J 任务日志面板", style);
             GUILayout.Label("S 存档   L 读档   R 重置", style);
 
-            QuestManager manager = QuestManager.InstanceOrNull;
             if (manager != null) GUILayout.Label(manager.GetDebugSummary(), style);
             if (wallet != null) GUILayout.Label(wallet.GetSummary(), style);
 

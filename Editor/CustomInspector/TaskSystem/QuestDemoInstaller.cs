@@ -1,4 +1,4 @@
-﻿﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -123,15 +123,38 @@ namespace UPandaGF.EditorTools
                 return;
             }
 
+            QuestManager manager = EnsureQuestManager();
+
             QuestUiFactory.EnsureEventSystem();
             Canvas canvas = QuestUiFactory.CreateCanvas("QuestCanvas", 100);
 
-            Transform panel = BuildLogPanel(canvas.transform);
-            BuildHud(canvas.transform);
+            Transform panel = BuildLogPanel(canvas.transform, manager);
+            BuildHud(canvas.transform, manager);
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
             Selection.activeGameObject = panel.gameObject;
             Debug.Log("[QuestDemo] 任务 UI 已搭建：QuestCanvas/QuestLog（面板）+ QuestCanvas/QuestHud（追踪条）。");
+        }
+
+        private static QuestManager EnsureQuestManager()
+        {
+            QuestManager manager = UnityEngine.Object.FindObjectOfType<QuestManager>();
+            if (manager != null) return manager;
+            GameObject go = new GameObject("QuestManager");
+            manager = go.AddComponent<QuestManager>();
+            Undo.RegisterCreatedObjectUndo(go, "Create QuestManager");
+            return manager;
+        }
+
+        /// <summary>场景里没有奖励钱包就创建一个，并作为 QuestManager 的奖励接收端。</summary>
+        private static PlayerRewardService EnsureRewardWallet()
+        {
+            PlayerRewardService wallet = UnityEngine.Object.FindObjectOfType<PlayerRewardService>();
+            if (wallet != null) return wallet;
+            GameObject go = new GameObject("PlayerRewardService");
+            wallet = go.AddComponent<PlayerRewardService>();
+            Undo.RegisterCreatedObjectUndo(go, "Create PlayerRewardService");
+            return wallet;
         }
 
         [MenuItem("UPandaGF/Runtime/任务系统/3. 搭建 3D 演示内容", false, 22)]
@@ -142,6 +165,9 @@ namespace UPandaGF.EditorTools
                 Debug.LogWarning("[QuestDemo] 场景里已经有 QuestDemoDriver 了，跳过 3D 演示内容创建。");
                 return;
             }
+
+            QuestManager manager = EnsureQuestManager();
+            PlayerRewardService wallet = EnsureRewardWallet();
 
             // ---------- 地面（Plane 默认 10x10，放大 4 倍 = 40x40） ----------
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -213,7 +239,9 @@ namespace UPandaGF.EditorTools
 
             // ---------- 键盘驱动 ----------
             GameObject driver = new GameObject("QuestDemoDriver");
-            driver.AddComponent<QuestDemoDriver>();
+            QuestDemoDriver driverComponent = driver.AddComponent<QuestDemoDriver>();
+            driverComponent.manager = manager;
+            driverComponent.wallet = wallet;
             Undo.RegisterCreatedObjectUndo(driver, "Create QuestDemoDriver");
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
@@ -222,7 +250,7 @@ namespace UPandaGF.EditorTools
 
         // ============================== UI 具体搭建 ==============================
 
-        private static Transform BuildLogPanel(Transform canvas)
+        private static Transform BuildLogPanel(Transform canvas, QuestManager manager)
         {
             // 外层常驻（脚本挂这里，保证隐藏面板时 Update 仍在跑，快捷键才能重新打开）
             RectTransform logRoot = QuestUiFactory.CreateUiObject("QuestLog", canvas);
@@ -269,6 +297,7 @@ namespace UPandaGF.EditorTools
             QuestUiFactory.ApplyAnchors((RectTransform)turnInButton.transform, new Vector2(0.68f, 0f), new Vector2(1f, 1f));
 
             QuestLogPanel panel = logRoot.gameObject.AddComponent<QuestLogPanel>();
+            panel.manager = manager;
             panel.panelRoot = body.gameObject;
             panel.titleText = title;
             panel.listContent = content;
@@ -286,7 +315,7 @@ namespace UPandaGF.EditorTools
             return logRoot;
         }
 
-        private static void BuildHud(Transform canvas)
+        private static void BuildHud(Transform canvas, QuestManager manager)
         {
             RectTransform hud = QuestUiFactory.CreateUiObject("QuestHud", canvas);
             QuestUiFactory.ApplyAnchors(hud, new Vector2(0.6f, 0.72f), new Vector2(1f, 1f), 8f, 16f, 16f, 8f);
@@ -310,6 +339,7 @@ namespace UPandaGF.EditorTools
             layout.spacing = 2f;
 
             QuestHudTracker tracker = hud.gameObject.AddComponent<QuestHudTracker>();
+            tracker.manager = manager;
             tracker.container = entries;
             tracker.maxEntries = 3;
 

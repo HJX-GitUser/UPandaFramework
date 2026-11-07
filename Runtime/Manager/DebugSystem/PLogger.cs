@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -175,6 +175,57 @@ namespace UPandaGF
                 return;
             }
             UnityEngine.Debug.LogException(ex);
+        }
+
+        #endregion
+
+        #region 可注入日志的运行时入口（不做编译期剔除）
+
+        /// <summary>
+        /// 按级别输出，<b>不带</b> <c>[Conditional]</c>：即使未定义 OPEN_PLOG 也会保留调用。
+        /// <para>供 <see cref="ILogService"/> 适配器（LogService）使用，保证注入日志"调了就有输出"。</para>
+        /// <para>代价是调用点实参总会求值，因此每帧/高频路径仍应使用 <see cref="Log"/>/<see cref="LogWarning"/>。</para>
+        /// </summary>
+        public static void Write(LogLevel level, object obj)
+        {
+            switch (level)
+            {
+                case LogLevel.Info:
+                    if (!CanLog) return;
+                    UnityEngine.Debug.Log(GenerateLog(Safe(obj)));
+                    break;
+                case LogLevel.Warning:
+                    if (!CanWarning) return;
+                    UnityEngine.Debug.LogWarning(GenerateLog(Safe(obj)));
+                    break;
+                case LogLevel.Error:
+                    if (!CanError) return;
+                    UnityEngine.Debug.LogError(GenerateLog(Safe(obj)));
+                    break;
+                default:
+                    if (!CanError) return;
+                    UnityEngine.Debug.LogError(GenerateLog($"<color=orange>[Exception]</color> {Safe(obj)}"));
+                    break;
+            }
+        }
+
+        /// <summary>异常输出（保留原堆栈），运行时开关同 Error。</summary>
+        public static void WriteException(Exception exception)
+        {
+            if (!CanError) return;
+            if (exception == null) { Write(LogLevel.Exception, null); return; }
+            UnityEngine.Debug.LogException(exception);
+        }
+
+        /// <summary>查询某级别当前是否会输出（运行时开关；不代表编译期宏状态）。</summary>
+        public static bool IsEnabled(LogLevel level)
+        {
+            switch (level)
+            {
+                case LogLevel.Info: return CanLog;
+                case LogLevel.Warning: return CanWarning;
+                default: return CanError;
+            }
         }
 
         #endregion

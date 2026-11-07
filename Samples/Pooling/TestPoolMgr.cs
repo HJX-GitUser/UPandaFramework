@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UPandaGF;
 
@@ -6,8 +6,18 @@ using UPandaGF;
 /// 对象池使用示例：演示取对象（Task / 回调两种异步形式）、回收、预热与统计。
 /// 配套场景：Example/PoolUseScene.unity；配套预制体：Resources/Obj1.prefab、Resources/Obj2.prefab
 /// </summary>
-public class TestPoolMgr : MonoBehaviour
+public class TestPoolMgr : MonoBehaviour, IGameServicesConsumer
 {
+    private IGameServices services;
+    private IPool pool;
+
+    /// <summary>根节点注入；世界对象用服务而不是单例。</summary>
+    public void Configure(IGameServices value)
+    {
+        services = value;
+        pool = value != null ? value.Pools.Shared : null;
+    }
+
     List<GameObject> cubes = new List<GameObject>();
     List<GameObject> spheres = new List<GameObject>();
 
@@ -24,7 +34,6 @@ public class TestPoolMgr : MonoBehaviour
     private void Awake()
     {
         EventCenter.Instance.AddEventListener<GFLoadedEvent>(OnRootStarted);
-        IAssetsLoader loader = UPGameRoot.Instance.GetAssetsLoader();
     }
     void OnDestroy()
     {
@@ -33,11 +42,12 @@ public class TestPoolMgr : MonoBehaviour
 
     private async void OnRootStarted(GFLoadedEvent evt)
     {
+        if (pool == null) { Debug.LogError("TestPoolMgr 未收到服务注入"); return; }
         if (prewarmCount <= 0) return;
 
         // 预热：提前把对象放进池子，避免首次取对象时的加载尖峰
-        await GameObjectPoolMgr.Instance.Prewarm(obj1Path, prewarmCount, loadMethod);
-        await GameObjectPoolMgr.Instance.Prewarm(obj2Path, prewarmCount, loadMethod);
+        await pool.Prewarm(obj1Path, prewarmCount, loadMethod);
+        await pool.Prewarm(obj2Path, prewarmCount, loadMethod);
     }
 
     private void OnGUI()
@@ -56,7 +66,7 @@ public class TestPoolMgr : MonoBehaviour
             PushAll();
         }
 
-        GUI.Label(new Rect(10, 135, 320, 25), $"池中空闲对象：{GameObjectPoolMgr.Instance.TotalPooledCount}");
+        GUI.Label(new Rect(10, 135, 320, 25), $"池中空闲对象：{(pool != null ? pool.TotalPooledCount : 0)}");
     }
 
     private void CreatObj1()
@@ -68,13 +78,13 @@ public class TestPoolMgr : MonoBehaviour
         else
         {
             // 回调形式：后续逻辑写在回调里
-            GameObjectPoolMgr.Instance.GetObjAsync(obj1Path, SetupObj1, loadMethod);
+            pool.GetObjAsync(obj1Path, SetupObj1, loadMethod);
         }
     }
 
     private async void CreatObj1ByTask()
     {
-        GameObject obj = await GameObjectPoolMgr.Instance.GetObjAsync(obj1Path, loadMethod);
+        GameObject obj = await pool.GetObjAsync(obj1Path, loadMethod);
         SetupObj1(obj);
     }
 
@@ -93,7 +103,7 @@ public class TestPoolMgr : MonoBehaviour
 
     private async void CreatObj2()
     {
-        GameObject obj = await GameObjectPoolMgr.Instance.GetObjAsync(obj2Path, loadMethod);
+        GameObject obj = await pool.GetObjAsync(obj2Path, loadMethod);
         if (obj == null)
         {
             Debug.LogError($"Obj2 创建失败：{obj2Path}");
@@ -109,14 +119,14 @@ public class TestPoolMgr : MonoBehaviour
         foreach (GameObject item in cubes)
         {
             ResetRigidbody(item);
-            GameObjectPoolMgr.Instance.PushObj(obj1Path, item);
+            pool.PushObj(obj1Path, item);
         }
         cubes.Clear();
 
         foreach (GameObject item in spheres)
         {
             ResetRigidbody(item);
-            GameObjectPoolMgr.Instance.PushObj(obj2Path, item);
+            pool.PushObj(obj2Path, item);
         }
         spheres.Clear();
     }

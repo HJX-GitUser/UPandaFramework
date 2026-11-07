@@ -28,7 +28,7 @@ namespace UPandaGF
         /// Excel配置的 2进制数据类的 存储位置路径
         /// 路径和ExcelTool里的数据存储路径一致
         /// </summary>
-        private static string DATA_BINARY_PATH = Application.persistentDataPath + "/BinaryData/";
+        private static string DATA_BINARY_PATH = Application.persistentDataPath + "/Data/BinaryData/";
         /// <summary>
         /// 用于存储 所有Excel表数据容器类 的容器
         /// </summary>
@@ -48,81 +48,94 @@ namespace UPandaGF
         /// <typeparam name="K">数据结构类</typeparam>
         public void LoadTable<T, K>()
         {
-            //读取 excel表对应的2进制文件 来进行解析
-            using (FileStream fs = File.Open(DATA_BINARY_PATH + typeof(K).Name + FILE_EXTENSION, FileMode.Open, FileAccess.Read))
+            string tablePath = Path.Combine(DATA_BINARY_PATH, typeof(K).Name + FILE_EXTENSION);
+            if (!File.Exists(tablePath))
+                throw new FileNotFoundException($"Excel 二进制表不存在：{tablePath}。请用 ExcelTool 生成并确认已安装到运行时目录。", tablePath);
+
+            byte[] bytes = File.ReadAllBytes(tablePath);
+            if (bytes.Length < 8)
+                throw new InvalidDataException($"Excel 二进制表损坏（长度不足）：{tablePath}");
+
+            int index = 0;
+            int count = BitConverter.ToInt32(bytes, index); index += 4;
+            int keyNameLength = BitConverter.ToInt32(bytes, index); index += 4;
+            EnsureAvailable(bytes, index, keyNameLength);
+            string keyName = Encoding.UTF8.GetString(bytes, index, keyNameLength); index += keyNameLength;
+            if (count < 0) throw new InvalidDataException($"Excel 二进制表行数无效：{tablePath}");
+
+            Type containerType = typeof(T);
+            object containerObj = Activator.CreateInstance(containerType);
+            Type classType = typeof(K);
+            FieldInfo[] infos = classType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            FieldInfo keyField = classType.GetField(keyName, BindingFlags.Public | BindingFlags.Instance);
+            if (keyField == null) throw new InvalidDataException($"Excel 表 {classType.Name} 缺少主键字段：{keyName}");
+
+            for (int i = 0; i < count; i++)
             {
-                //声明字节容器
-                byte[] bytes = new byte[fs.Length];
-                //路径下的文件内容读进字节容器里
-                fs.Read(bytes, 0, bytes.Length);
-                fs.Close();
-
-                //用于记录当前读取了多少字节了
-                int index = 0;
-
-                //读取一共有多少行数据
-                int count = BitConverter.ToInt32(bytes, index);
-                index += 4;
-
-                //读取主键的名字
-                int keyNameLength = BitConverter.ToInt32(bytes, index);
-                index += 4;
-                string keyName = Encoding.UTF8.GetString(bytes, index, keyNameLength);
-                index += keyNameLength;
-
-                //创建容器类对象
-                Type contaninerType = typeof(T);
-                object contaninerObj = Activator.CreateInstance(contaninerType);
-                //得到数据结构类的Type
-                Type classType = typeof(K);
-                //通过反射 得到数据结构类 所有字段的信息
-                FieldInfo[] infos = classType.GetFields();
-                //读取每一行的信息
-                for (int i = 0; i < count; i++)
+                object dataObj = Activator.CreateInstance(classType);
+                foreach (FieldInfo info in infos)
                 {
-                    //实例化一个数据结构类 对象
-                    object dataObj = Activator.CreateInstance(classType);
-                    foreach (FieldInfo info in infos)
+                    if (info.FieldType == typeof(int))
                     {
-                        if (info.FieldType == typeof(int))
-                        {
-                            //相当于就是把2进制数据转为int 然后赋值给了对应的字段
-                            info.SetValue(dataObj, BitConverter.ToInt32(bytes, index));
-                            index += 4;
-                        }
-                        else if (info.FieldType == typeof(float))
-                        {
-                            info.SetValue(dataObj, BitConverter.ToSingle(bytes, index));
-                            index += 4;
-                        }
-                        else if (info.FieldType == typeof(bool))
-                        {
-                            info.SetValue(dataObj, BitConverter.ToBoolean(bytes, index));
-                            index += 4;
-                        }
-                        else if (info.FieldType == typeof(string))
-                        {
-                            //先读取字符串字节数组的长度
-                            int length = BitConverter.ToInt32(bytes, index);
-                            index += 4;
-                            info.SetValue(dataObj, Encoding.UTF8.GetString(bytes, index, length));
-                            index += length;
-                        }
+                        EnsureAvailable(bytes, index, 4);
+                        info.SetValue(dataObj, BitConverter.ToInt32(bytes, index));
+                        index += 4;
                     }
-                    //读取完一行的数据了 应该把这个数据添加到容器对象中
-                    //得到容器对象中的 字典对象
-                    object dicObject = contaninerType.GetField("dataDic").GetValue(contaninerObj);
-                    //通过字典对象得到其中的 Add方法
-                    MethodInfo mInfo = dicObject.GetType().GetMethod("Add");
-                    //得到数据结构类对象中 指定主键字段的值
-                    object keyValue = classType.GetField(keyName).GetValue(dataObj);
-                    mInfo.Invoke(dicObject, new object[] { keyValue, dataObj });
+                    else if (info.FieldType == typeof(float))
+                    {
+                        EnsureAvailable(bytes, index, 4);
+                        info.SetValue(dataObj, BitConverter.ToSingle(bytes, index));
+                        index += 4;
+                    }
+                    else if (info.FieldType == typeof(bool))
+                    {
+                        // 生成端按 ExcelBinaryFormat.BoolByteSize（4 字节）写入，读取端必须一致推进。
+                        EnsureAvailable(bytes, index, ExcelBinaryFormat.BoolByteSize);
+                        info.SetValue(dataObj, BitConverter.ToInt32(bytes, index) != 0);
+                        index += ExcelBinaryFormat.BoolByteSize;
+                    }
+                    else if (info.FieldType == typeof(string))
+                    {
+                        EnsureAvailable(bytes, index, 4);
+                        int length = BitConverter.ToInt32(bytes, index);
+                        index += 4;
+                        if (length < 0) throw new InvalidDataException($"Excel 表 {classType.Name} 字符串长度无效。");
+                        EnsureAvailable(bytes, index, length);
+                        info.SetValue(dataObj, Encoding.UTF8.GetString(bytes, index, length));
+                        index += length;
+                    }
+                    else
+                    {
+                        throw new InvalidDataException(
+                            $"Excel 表 {classType.Name} 字段 {info.Name} 类型不支持：{info.FieldType.Name}（只支持 int / float / bool / string）");
+                    }
                 }
-                //把读取完的表记录下来
-                tableDic.Add(typeof(T).Name, contaninerObj);
 
-                fs.Close();
+                FieldInfo dicField = containerType.GetField("dataDic", BindingFlags.Public | BindingFlags.Instance);
+                object dicObject = dicField != null ? dicField.GetValue(containerObj) : null;
+                if (dicObject == null)
+                    throw new InvalidDataException($"Excel 容器 {containerType.Name} 缺少 dataDic 字段。");
+                MethodInfo addMethod = dicObject.GetType().GetMethod("Add");
+                if (addMethod == null)
+                    throw new InvalidDataException($"Excel 容器 {containerType.Name} 的 dataDic 没有 Add 方法。");
+                addMethod.Invoke(dicObject, new object[] { keyField.GetValue(dataObj), dataObj });
             }
+
+            if (tableDic.ContainsKey(containerType.Name))
+            {
+                PLogger.LogWarning($"Excel 表 {containerType.Name} 重复加载，已替换旧数据。");
+                tableDic[containerType.Name] = containerObj;
+            }
+            else
+            {
+                tableDic.Add(containerType.Name, containerObj);
+            }
+        }
+
+        private static void EnsureAvailable(byte[] bytes, int index, int size)
+        {
+            if (index < 0 || size < 0 || index > bytes.Length - size)
+                throw new InvalidDataException("Excel 二进制表数据不完整（字段长度越界）。");
         }
         /// <summary>
         /// 得到一张表的信息

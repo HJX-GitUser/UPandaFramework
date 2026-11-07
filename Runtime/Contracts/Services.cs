@@ -25,6 +25,8 @@ namespace UPandaGF
         void Save<T>(string slot, T data) where T : class;
         T Load<T>(string slot) where T : class;
         bool Exists(string slot);
+        /// <summary>删除槽位；文件不存在返回 false。槽位校验规则与 Save/Load 一致。</summary>
+        bool Delete(string slot);
     }
     public interface IInputService
     {
@@ -82,5 +84,11 @@ namespace UPandaGF
         IConfigService Config { get; }
         IGameFlowService Flow { get; }
         IAppLifecycle AppLifecycle { get; }
+        /// <summary>HTTP 请求（全局头、并发上限、可取消的 Task 接口）。</summary>
+        IHttpService Http { get; }
+        /// <summary>对象池工厂：根生命周期共享池 + 作用域池。</summary>
+        IPoolService Pools { get; }
+        /// <summary>可注入日志服务（不参与 OPEN_PLOG 编译期剔除）。</summary>
+        ILogService Log { get; }
     }
 }

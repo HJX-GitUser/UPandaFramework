@@ -26,9 +26,10 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
         //然后结合 PlayerPrefs来进行存储
 
         #region 第一步 获取传入数据对象的所有字段
+        if (data == null) throw new ArgumentNullException(nameof(data), "PlayerPrefsDataMgr.SaveData 的 data 不能为空。");
         Type dataType = data.GetType();
-        //得到所有的字段
-        FieldInfo[] infos = dataType.GetFields();
+        //得到所有的字段（只取公开实例字段，静态字段不参与存档）
+        FieldInfo[] infos = dataType.GetFields(BindingFlags.Public | BindingFlags.Instance);
         #endregion
 
         #region 第二步 自己定义一个key的规则 进行数据存储
@@ -72,12 +73,17 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
     /// <param name="keyName">数据的Key</param>
     private void SaveValue(object value, string keyName)
     {
-        //直接通过PlayerPrefs来进行存储了
-        //就是根据数据类型的不同 来决定使用哪一个API来进行存储
-        //PlayerPrefs只支持3种类型存储
-        //判断 数据类型 是什么类型 然后调用具体的方法来存储
+        // null 不能取 Type；直接删键，避免把空引用写坏/抛 NRE。
+        if (value == null) { PlayerPrefs.DeleteKey(keyName); return; }
+
         Type fieldType = value.GetType();
-        //类型判断
+        // 枚举按底层整型存储，避免被当成嵌套对象。
+        if (fieldType.IsEnum)
+        {
+            PlayerPrefs.SetInt(keyName, Convert.ToInt32(value));
+            return;
+        }
+
         if (fieldType == typeof(int))
         {
             MyDebug($"{keyName}存储int,类型成员{fieldType.Name}");
@@ -102,8 +108,16 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
             //自己定的存储bool的规则，1 true,0 false
             PlayerPrefs.SetInt(keyName, (bool)value ? 1 : 0);
         }
-        //如果是List数组类型
-        else if (typeof(IList).IsAssignableFrom(fieldType))
+        //数组：先存长度，再按索引存元素（读取端用 Array.CreateInstance 还原）
+        else if (fieldType.IsArray)
+        {
+            Array array = (Array)value;
+            PlayerPrefs.SetInt(keyName, array.Length);
+            for (int i = 0; i < array.Length; i++)
+                SaveValue(array.GetValue(i), keyName + i);
+        }
+        //如果是List类型
+        else if (typeof(IList).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
         {
             MyDebug($"{keyName}存储List数组,类型成员{fieldType.Name}");
             //父类装子类
@@ -119,7 +133,7 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
             }
         }
         //判断是不是Dictionary类型 通过Dictionary的父类来判断
-        else if (typeof(IDictionary).IsAssignableFrom(fieldType))
+        else if (typeof(IDictionary).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
         {
             MyDebug($"{keyName}存储Dictionary,类型成员{fieldType.Name}");
             //父类装子类
@@ -159,10 +173,16 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
         //依据你存储数据时  key的拼接规则 来进行数据的获取赋值 返回出去
 
         //根据传入的Type 创建一个对象 用于存储数据
-        object data = Activator.CreateInstance(type);
+        if (type == null) throw new ArgumentNullException(nameof(type));
+        object data;
+        try { data = Activator.CreateInstance(type); }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException($"类型 {type.FullName} 需要公开无参构造函数才能用 PlayerPrefsDataMgr 读取。", e);
+        }
         //要往这个new出来的对象中存储数据 填充数据
-        //得到所有字段
-        FieldInfo[] infos = type.GetFields();
+        //得到所有字段（只取公开实例字段，静态字段不参与存档）
+        FieldInfo[] infos = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
         //用于拼接key的字符串
         string loadKeyName = "";
         //用于存储 单个字段信息的 对象
@@ -187,6 +207,10 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
     private object LoadValue(Type fieldType, string keyName)
     {
         //根据 字段类型 来判断 用哪个API来读取
+        if (fieldType.IsEnum)
+        {
+            return Enum.ToObject(fieldType, PlayerPrefs.GetInt(keyName, 0));
+        }
         if (fieldType == typeof(int))
         {
             //TODO:如果存储时有加密操作，要在这里进行解密
@@ -205,13 +229,23 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
             //根据自定义存储bool的规则 来进行值的获取
             return PlayerPrefs.GetInt(keyName, 0) == 1 ? true : false;
         }
-        else if (typeof(IList).IsAssignableFrom(fieldType))
+        else if (fieldType.IsArray)
+        {
+            int count = PlayerPrefs.GetInt(keyName, 0);
+            Type elementType = fieldType.GetElementType();
+            Array array = Array.CreateInstance(elementType, count);
+            for (int i = 0; i < count; i++)
+                array.SetValue(LoadValue(elementType, keyName + i), i);
+            return array;
+        }
+        else if (typeof(IList).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
         {
             //得到长度
             int count = PlayerPrefs.GetInt(keyName, 0);
             //实例化一个List对象 来进行赋值
             //用了反射中双A中 Activator进行快速实例化List对象
             IList list = Activator.CreateInstance(fieldType) as IList;
+            if (list == null) throw new InvalidOperationException("无法创建列表类型：" + fieldType.FullName);
             for (int i = 0; i < count; i++)
             {
                 //目的是要得到 List中泛型的类型
@@ -219,7 +253,7 @@ public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
             }
             return list;
         }
-        else if (typeof(IDictionary).IsAssignableFrom(fieldType))
+        else if (typeof(IDictionary).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
         {
             //得到字典的长度
             int count = PlayerPrefs.GetInt(keyName, 0);

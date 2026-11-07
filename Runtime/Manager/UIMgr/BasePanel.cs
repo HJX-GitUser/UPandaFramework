@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -16,7 +16,13 @@ namespace UPandaGF
     /// </summary>
     public abstract class BasePanel : MonoBehaviour
     {
-        protected UIManager uiManager => UIManager.Instance;
+        /// <summary>创建该面板的 UIManager（由 UIManager 在实例化后注入）。</summary>
+        private UIManager owner;
+        /// <summary>
+        /// 所属 UI 管理器。在 OnOpen 及之后可用；Awake/OnEnable 阶段尚未注入，请勿依赖。
+        /// </summary>
+        protected UIManager uiManager => owner;
+        internal void AttachManager(UIManager manager) { owner = manager; }
         /// <summary>
         /// UI组件容器
         /// UIBehaviour是所有UI组件的基类，UI组件都是直接或者间接继承UIBehaviour这个抽象类的，

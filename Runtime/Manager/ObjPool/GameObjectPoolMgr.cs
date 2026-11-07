@@ -68,7 +68,7 @@ namespace UPandaGF
     }
 
     /// <summary>主线程对象池。一个条目持有一份预制体加载引用，实例共享凭据直到各自销毁。</summary>
-    public class GameObjectPoolMgr : LazySingletonBase<GameObjectPoolMgr>, IDisposable
+    public class GameObjectPoolMgr : IPool, IDisposable
     {
         private sealed class Entry
         {
@@ -83,12 +83,12 @@ namespace UPandaGF
         public static bool isOpenLayout = true;
         public int maxCountPerKey;
         public float loadTimeout = 15f;
+        /// <summary>IPool 视图：每个路径的空闲实例上限；0 表示不限。</summary>
+        public int MaxCountPerKey { get { return maxCountPerKey; } set { maxCountPerKey = Mathf.Max(0, value); } }
         private readonly Dictionary<string, Entry> entries = new Dictionary<string, Entry>();
         private readonly HashSet<GameObject> pooledObjects = new HashSet<GameObject>();
         private readonly HashSet<PoolInstanceLease> instances = new HashSet<PoolInstanceLease>();
         private GameObject poolObj;
-        private ResourcesLoader resourcesLoader;
-        private IAssetsLoader assetsLoader;
         private IAssetService assetService;
         public void Configure(IAssetService service)
         {
@@ -148,12 +148,9 @@ namespace UPandaGF
             if (entry.prefab != null && entry.prefab.Asset == null) { entry.prefab.Dispose(); entry.prefab = null; }
             if (entry.prefab == null)
             {
-                if (assetService != null) throw new InvalidOperationException("注入资源服务的对象池请使用 GetObjAsync 或先 Prewarm。");
-                var loader = ResourcesLoaderRef;
-                var acquired = loader != null ? loader.Acquire<GameObject>(path) : null;
-                // 同步接管异步 Resources 请求时，异步续体可能已先提交同一条目。
-                if (entry.prefab == null) entry.prefab = acquired;
-                else acquired?.Dispose();
+                if (assetService == null)
+                    throw new InvalidOperationException("对象池未注入资源服务：请通过 IPoolService 创建池，或先调用 Configure(IAssetService)。");
+                throw new InvalidOperationException("注入资源服务的对象池请使用 GetObjAsync 或先 Prewarm。");
             }
             return Current(entry) && entry.prefab != null ? Create(entry, entry.prefab) : null;
         }
@@ -218,19 +215,11 @@ namespace UPandaGF
         {
             try { (await task)?.Dispose(); } catch (Exception e) { Debug.LogException(e); }
         }
-        private async Task<AssetLease<GameObject>> LoadLease(string path, AssetLoadMethod method)
+        private Task<AssetLease<GameObject>> LoadLease(string path, AssetLoadMethod method)
         {
-            if (assetService != null) return await assetService.AcquireAsync<GameObject>(path, method);
-            if (method == AssetLoadMethod.Resources)
-            {
-                var loader = ResourcesLoaderRef;
-                return loader != null ? await loader.AcquireAsync<GameObject>(path) : null;
-            }
-            if (method != AssetLoadMethod.AssetBundle) return null;
-            var assets = AssetsLoaderRef;
-            if (assets is AssetsLoader owned) return await owned.AcquireAsync<GameObject>(path);
-            var prefab = assets != null ? await assets.LoadAsync<GameObject>(path) : null;
-            return prefab != null ? new AssetLease<GameObject>(prefab, null) : null;
+            if (assetService == null)
+                throw new InvalidOperationException("对象池未注入资源服务：请通过 IPoolService 创建池，或先调用 Configure(IAssetService)。");
+            return assetService.AcquireAsync<GameObject>(path, method);
         }
         private GameObject Create(Entry entry, AssetLease<GameObject> prefab)
         {
@@ -246,6 +235,7 @@ namespace UPandaGF
                 var tag = obj.AddComponent<PoolInstanceLease>(); tag.hideFlags = HideFlags.HideInInspector;
                 tag.owner = this; tag.path = entry.path; tag.method = entry.method; tag.generation = generation;
                 tag.lease = retained; retained = null; tag.transitioning = true;
+                tag.CaptureInitialTransform();
                 instances.Add(tag);
                 obj.SetActive(true); PoolData.NotifySpawn(obj);
                 if (!Current(entry) || obj == null) { if (obj != null) UnityEngine.Object.Destroy(obj); return null; }
@@ -265,6 +255,7 @@ namespace UPandaGF
             tag.container = null; tag.cached = false; tag.transitioning = true;
             try
             {
+                tag.ResetTransform();
                 obj.SetActive(true); PoolData.NotifySpawn(obj);
                 if (!Current(entry) || obj == null) { if (obj != null) UnityEngine.Object.Destroy(obj); return null; }
                 tag.transitioning = false; return obj;
@@ -289,6 +280,7 @@ namespace UPandaGF
                 if (creating > 0) { PLogger.LogWarning("实例化期间不能归还尚未交付的对象"); return; }
                 tag = obj.AddComponent<PoolInstanceLease>(); tag.hideFlags = HideFlags.HideInInspector;
                 tag.owner = this; tag.path = name; tag.method = AssetLoadMethod.Resources; tag.generation = generation; instances.Add(tag);
+                tag.CaptureInitialTransform();
             }
             if (tag.cached || tag.transitioning) { PLogger.LogWarning("忽略重复或重入归还：" + name); return; }
             var entry = EntryFor(name, tag.method);
@@ -335,17 +327,6 @@ namespace UPandaGF
             if (!isOpenLayout) return null;
             if (poolObj == null) poolObj = new GameObject("Pool");
             return poolObj;
-        }
-        private ResourcesLoader ResourcesLoaderRef => resourcesLoader != null ? resourcesLoader : (resourcesLoader = ResourcesLoader.Instance);
-        private IAssetsLoader AssetsLoaderRef
-        {
-            get
-            {
-                if (assetsLoader is UnityEngine.Object unity && unity == null) assetsLoader = null;
-                if (assetsLoader != null) return assetsLoader;
-                var root = UPGameRoot.Instance;
-                return root != null && root.IsInited ? (assetsLoader = root.GetAssetsLoader()) : null;
-            }
         }
     }
 }

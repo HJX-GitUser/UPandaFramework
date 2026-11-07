@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +14,8 @@ namespace UPandaGF.RunTime.TaskSystem
     public class QuestHudTracker : MonoBehaviour
     {
         [Header("引用（可留空）")]
+        [Tooltip("任务管理器；留空则本组件不工作（不再自动查找单例）。")]
+        public QuestManager manager;
         [Tooltip("追踪条目的父节点；留空则自动生成。")]
         public Transform container;
         [Tooltip("条目预制体；留空则用代码生成。")]
@@ -27,7 +29,6 @@ namespace UPandaGF.RunTime.TaskSystem
         [Tooltip("只显示被追踪的任务；关闭则显示所有活跃任务。")]
         public bool showOnlyTracked = true;
 
-        private QuestManager manager;
         private readonly Dictionary<string, QuestHudEntryView> rows = new Dictionary<string, QuestHudEntryView>();
 
         private void Awake()
@@ -56,8 +57,11 @@ namespace UPandaGF.RunTime.TaskSystem
         {
             if (!Application.isPlaying) return;
 
-            manager = QuestManager.Instance;
-            if (manager == null) return;
+            if (manager == null)
+            {
+                Debug.LogError("[QuestHudTracker] 未绑定 QuestManager：请在 Inspector 指定，或用 QuestDemoInstaller 重新搭建场景。");
+                return;
+            }
 
             manager.OnQuestLogChanged += Rebuild;
             manager.OnObjectiveProgressChanged += HandleObjectiveProgressChanged;

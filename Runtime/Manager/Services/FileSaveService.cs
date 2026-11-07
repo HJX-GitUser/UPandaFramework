@@ -1,4 +1,4 @@
-﻿/* ==========================================================================================
+/* ==========================================================================================
  * FileSaveService —— 版本化存档适配器
  *
  * 【职责】按“槽位名”读写存档文件，目录固定、格式沿用 VersionedDataSerializer。
@@ -44,5 +44,14 @@ namespace UPandaGF
         }
         /// <summary>槽位是否有存档文件。</summary>
         public bool Exists(string slot) => File.Exists(PathFor(slot));
+
+        /// <summary>删除槽位；不存在返回 false（不是异常）。</summary>
+        public bool Delete(string slot)
+        {
+            string path = PathFor(slot);
+            if (!File.Exists(path)) return false;
+            File.Delete(path);
+            return true;
+        }
     }
 }

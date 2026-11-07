@@ -31,7 +31,7 @@ public class CoordinationRegressionTests
         Time.timeScale=previousScale;
         foreach(var go in objects) if(go!=null) Object.DestroyImmediate(go);
         objects.Clear();
-        foreach(var mono in Object.FindObjectsByType<PublicMono>(FindObjectsSortMode.None)) Object.DestroyImmediate(mono.gameObject);
+        foreach(var mono in TestObjectSearch.All<PublicMono>()) Object.DestroyImmediate(mono.gameObject);
         server.Dispose(); PLogger.cfg=previousConfig;
         // A canceled observer cannot undo Unity's native additive load. Drain and unload it.
         for(int i=0;i<4;i++) yield return null;
@@ -92,9 +92,8 @@ public class CoordinationRegressionTests
     {
         var client=Component<HttpClient>(); var failed=Pack("/fail"); var next=Pack(); int failures=0,successes=0;
         failed.OnFailure=e=>{failures++;throw new InvalidOperationException("coordination failure callback");}; next.OnSuccess=(s,c)=>successes++;
-        #if OPEN_PLOG
+        // LogError 不受 OPEN_PLOG 编译剔除，断言必须无条件注册，否则无宏的测试工程会把错误当未处理日志。
         LogAssert.Expect(LogType.Error,new Regex("请求失败（重试已用尽）"));
-#endif
         LogAssert.Expect(LogType.Exception,new Regex("coordination failure callback"));
         client.SendRequest(failed); client.SendRequest(next); yield return Until(()=>successes==1);
         Assert.AreEqual(1,failures);
@@ -103,9 +102,7 @@ public class CoordinationRegressionTests
     {
         var client=Component<HttpClient>(); var failed=new CoordinationCountingPack{Url=server.Url+"/fail",RetryCount=1,throwOnSecond=true};
         var next=Pack(); int failures=0,successes=0; failed.OnFailure=e=>failures++;next.OnSuccess=(s,c)=>successes++;
-#if OPEN_PLOG
         LogAssert.Expect(LogType.Error,new Regex("coordination retry create failure"));
-#endif
         client.SendRequest(failed);client.SendRequest(next);yield return Until(()=>successes==1&&failures==1);
         Assert.AreEqual(1,failures);Assert.IsNull(failed.WebRequest);
     }
@@ -119,9 +116,7 @@ public class CoordinationRegressionTests
     {
         var client=Component<HttpClient>();var pack=Pack("/fail");pack.RetryCount=1;pack.RetryDelay=.05f;int failures=0;
         pack.OnRetry=(n,e)=>Time.timeScale=0;pack.OnFailure=e=>failures++;
-        #if OPEN_PLOG
         LogAssert.Expect(LogType.Error,new Regex("请求失败（重试已用尽）"));
-#endif
         client.SendRequest(pack);yield return Until(()=>failures==1,.8f);Assert.AreEqual(2,pack.AttemptCount);
     }
     [Serializable] private class Payload { public int value; }

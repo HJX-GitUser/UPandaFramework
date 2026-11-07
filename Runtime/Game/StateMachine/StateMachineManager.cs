@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,12 +11,18 @@ namespace UPandaGF.StateMechine
         private readonly Dictionary<string, IState> stateRegistry = new Dictionary<string, IState>();
         private readonly Stack<IState> stateStack = new Stack<IState>();
         private bool transitioning;
+        private IState lastActiveLeaf;
         public string ActiveStatePath { get; private set; } = "None";
         public IState CurrentState => GetCurrentContext();
         public int HistoryCount => stateStack.Count;
         public event Action<string, string> OnStateChanged;
 
-        private void Update() { rootState?.OnUpdate(Time.deltaTime); RefreshActivePath(); }
+        private void Update()
+        {
+            rootState?.OnUpdate(Time.deltaTime);
+            // 活动叶没变就不重建路径；避免每帧 List/HashSet/string 分配。
+            if (!ReferenceEquals(GetCurrentContext(), lastActiveLeaf)) RefreshActivePath();
+        }
         private void FixedUpdate() { rootState?.OnFixedUpdate(); }
         public void RegisterState(IState state, string parentStateID = "")
         {
@@ -134,9 +140,11 @@ namespace UPandaGF.StateMechine
         }
         private void RefreshActivePath()
         {
-            if (rootState == null) { ActiveStatePath = "None"; return; }
+            if (rootState == null) { ActiveStatePath = "None"; lastActiveLeaf = null; return; }
+            var current = GetCurrentContext();
+            lastActiveLeaf = current;
             var names = new List<string>();
-            foreach (var state in Chain(GetCurrentContext())) names.Add(state.StateID);
+            foreach (var state in Chain(current)) names.Add(state.StateID);
             ActiveStatePath = string.Join("/", names);
         }
         public string GetStateInfo()

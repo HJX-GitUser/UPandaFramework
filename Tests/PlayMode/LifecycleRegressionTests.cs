@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -21,6 +21,7 @@ public class LifecycleRegressionTests
     private readonly List<GameObject> objects = new List<GameObject>();
     private readonly List<AudioClip> clips = new List<AudioClip>();
     private readonly List<GameObjectPoolMgr> pools = new List<GameObjectPoolMgr>();
+    private readonly List<AudioMgr> audios = new List<AudioMgr>();
     private LifecycleFixtureConfig fixtures;
     private LifecycleBundleServer server;
     private readonly List<AssetBundle> externalBundles = new List<AssetBundle>();
@@ -42,16 +43,17 @@ public class LifecycleRegressionTests
     }
     [TearDown] public void TearDown()
     {
-        AudioMgr.Release();
+        foreach (var audio in audios) audio.Dispose();
+        audios.Clear();
         foreach (var pool in pools) pool.Dispose();
         foreach (var go in objects) if (go != null) Object.DestroyImmediate(go);
         foreach (var clip in clips) if (clip != null) Object.DestroyImmediate(clip);
         foreach (var bundle in externalBundles) if (bundle != null) bundle.Unload(true);
         externalBundles.Clear();
-        var loaders = Object.FindObjectsByType<ABLoadMgr>(FindObjectsSortMode.None);
+        var loaders = TestObjectSearch.All<ABLoadMgr>();
         foreach (var loader in loaders) Object.DestroyImmediate(loader.gameObject);
-        foreach (var loader in Object.FindObjectsByType<ResourcesLoader>(FindObjectsSortMode.None)) Object.DestroyImmediate(loader.gameObject);
-        foreach (var mono in Object.FindObjectsByType<PublicMono>(FindObjectsSortMode.None)) Object.DestroyImmediate(mono.gameObject);
+        foreach (var loader in TestObjectSearch.All<ResourcesLoader>()) Object.DestroyImmediate(loader.gameObject);
+        foreach (var mono in TestObjectSearch.All<PublicMono>()) Object.DestroyImmediate(mono.gameObject);
         // Only the explicitly created random fixture directory may be removed.
         if (Directory.Exists(directory) && Path.GetFullPath(directory).StartsWith(Path.GetFullPath(Path.Combine(Application.persistentDataPath,"UPandaLifecycleAudit")) + Path.DirectorySeparatorChar))
             Directory.Delete(directory, true);
@@ -67,13 +69,17 @@ public class LifecycleRegressionTests
     private GameObjectPoolMgr Pool(LifecycleDelayedAssets loader = null)
     {
         var pool=new GameObjectPoolMgr(); pools.Add(pool);
-        if(loader!=null)Set(pool,"assetsLoader",loader);
+        pool.Configure(Assets(loader));
         return pool;
+    }
+    private static IAssetService Assets(LifecycleDelayedAssets loader = null)
+    {
+        return loader != null ? (IAssetService)new LifecycleDelayedAssetService(loader) : new AssetService(ResourcesLoader.Instance, null);
     }
     private AudioMgr Audio(LifecycleDelayedAssets loader=null)
     {
-        var audio=AudioMgr.Instance;
-        if(loader!=null)Set(audio,"assetsLoader",loader);
+        var audio=new AudioMgr(Assets(loader), null, LogService.Default, () => PublicMono.Instance);
+        audios.Add(audio);
         return audio;
     }
     private static IEnumerator Wait(Task task, float seconds=10)
@@ -259,9 +265,7 @@ public class LifecycleRegressionTests
     [UnityTest] public IEnumerator PoolTimeoutDiscardsLateResultAndAllowsRetry()
     {
         var loader=new LifecycleDelayedAssets();var pool=Pool(loader);pool.loadTimeout=.02f;var prefab=Go("late prefab");
-#if OPEN_PLOG
         LogAssert.Expect(LogType.Error,new Regex("对象池资源加载超时"));
-#endif
         var task=pool.GetObjAsync("fixture",AssetLoadMethod.AssetBundle);yield return Wait(task);
         Assert.IsNull(task.Result);loader.Complete(prefab);yield return null;Assert.AreEqual(0,pool.TotalPooledCount);
         var retry=pool.GetObjAsync("fixture",AssetLoadMethod.AssetBundle);loader.Complete(prefab);yield return Wait(retry);
@@ -277,7 +281,7 @@ public class LifecycleRegressionTests
     [Test] public void DisposeCompletesStackedWaiterAndLateResultCannotReachNewAudioInstance()
     {
         var loader=new LifecycleDelayedAssets();var audio=Audio(loader);int calls=0;AudioSource received=null;
-        audio.LoadSoundAndPlay("pending",true,AssetLoadMethod.AssetBundle,source=>{calls++;received=source;});AudioMgr.Release();
+        audio.LoadSoundAndPlay("pending",true,AssetLoadMethod.AssetBundle,source=>{calls++;received=source;});audio.Dispose();
         Assert.AreEqual(1,calls);Assert.IsNull(received);
         var next=Audio();next.PlayUniqueSound(Clip("new"));loader.Complete(Clip("old"));
         Assert.AreEqual(1,calls);Assert.AreEqual(0,next.PlayingSoundCount);Assert.AreEqual(0,audio.PlayingSoundCount);
@@ -335,6 +339,18 @@ public class LifecyclePoolable : MonoBehaviour,IPoolable
     public Action onDespawn;
     public void OnSpawn() { if(throwOnSpawn)throw new InvalidOperationException("Audit expected OnSpawn error"); }
     public void OnDespawn() { if(throwOnDespawn)throw new InvalidOperationException("Audit expected OnDespawn error"); onDespawn?.Invoke(); }
+}
+/// <summary>把延迟 IAssetsLoader 适配成 IAssetService：测试注入 AudioMgr/对象池的统一资源入口。</summary>
+public sealed class LifecycleDelayedAssetService : IAssetService
+{
+    private readonly LifecycleDelayedAssets loader;
+    public LifecycleDelayedAssetService(LifecycleDelayedAssets loader) { this.loader = loader; }
+    public Task<AssetLease<T>> AcquireAsync<T>(string path, AssetLoadMethod method = AssetLoadMethod.Resources, System.Threading.CancellationToken token = default) where T : UnityEngine.Object
+    {
+        var completion = new TaskCompletionSource<AssetLease<T>>();
+        loader.LoadAsync<T>(path, asset => completion.TrySetResult(asset != null ? new AssetLease<T>(asset, null) : null));
+        return completion.Task;
+    }
 }
 public class LifecycleDelayedAssets : IAssetsLoader
 {

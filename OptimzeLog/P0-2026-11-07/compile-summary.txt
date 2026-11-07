@@ -1,0 +1,21 @@
+Unity 2022.3.53f1c1
+Project: _verify/UPandaVerify (framework copied to Assets/upanda-framework)
+Packages: com.unity.textmeshpro 3.0.6, com.unity.test-framework 1.1.33, com.unity.ugui 1.0.0
+
+Command:
+  Unity.exe -batchmode -nographics -quit -projectPath <project> -logFile compile-final.log
+
+Result:
+  error CS: 0
+  UPandaGF.Contracts.dll
+  UPandaGF.Runtime.dll
+  UPandaGF.Extensions.dll
+  UPandaGF.Visuals.dll
+  UPandaGF.Samples.dll
+  UPandaGF.Editor.dll
+  UPandaGF.Tests.dll
+  UPandaGF.Tests.EditMode.dll
+
+Log keywords:
+  Batchmode quit successfully invoked - shutting down!
+  Exiting batchmode successfully now!

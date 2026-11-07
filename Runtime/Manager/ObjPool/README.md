@@ -1,15 +1,15 @@
 # GameObject 对象池
 
-对象池以资源路径和加载方式区分条目。空闲实例按后进先出复用；池空时加载 prefab 并创建实例。同一条目共享一次预制体加载，池与借出实例分别保留共享租约。所有入口都在 Unity 主线程使用。 [管理器](GameObjectPoolMgr.cs) · [实例凭据](PoolInstanceLease.cs)
+对象池以资源路径和加载方式区分条目。空闲实例按后进先出复用；池空时加载 prefab 并创建实例。同一条目共享一次预制体加载，池与借出实例分别保留共享租约。所有入口都在 Unity 主线程使用。池由 `IPoolService` 创建，依赖（`IAssetService`）由服务容器注入；`GameObjectPoolMgr` 不再有静态单例。 [管理器](GameObjectPoolMgr.cs) · [实例凭据](PoolInstanceLease.cs) · [池服务](../Services/PoolService.cs)
 
 ## 选择池的生命周期
 
-场景拥有的池通过服务创建。释放场景作用域会销毁该池的空闲实例和借出实例。跨场景复用也可使用 `GameObjectPoolMgr.Instance`，由使用方明确决定清理时机。普通单例的层级收纳节点属于创建时的场景；借出的对象要跨场景存活，需要业务安排父节点或持久化。
+场景拥有的池通过服务创建。释放场景作用域会销毁该池的空闲实例和借出实例。需要跨场景复用时使用 `services.Pools.Shared`，它随服务容器关闭而释放；由使用方明确决定 `Clear()` 时机。池的层级收纳节点属于创建时的场景；借出的对象要跨场景存活，需要业务安排父节点或持久化。
 
 ```csharp
 var scope = services.Scenes.GetScope(gameObject.scene);
-var pool = services.CreatePool(scope);
-pool.maxCountPerKey = 16;
+var pool = services.Pools.CreatePool(scope);
+pool.MaxCountPerKey = 16;
 await pool.Prewarm("Props/Crate", 4);
 
 var crate = await pool.GetObjAsync("Props/Crate");
@@ -36,6 +36,6 @@ Resources 模式使用不带扩展名的路径。AssetBundle 模式用清单中�
 
 ## 组件和异常
 
-将 `IPoolable` 实现挂在 prefab 根节点。新建与复用都在对象激活后调用 `OnSpawn`，回池时在对象停用前调用 `OnDespawn`。池不替业务重置 Transform、刚体、粒子和动画。对象被外部销毁时，实例凭据负责移除池记录并归还资源。租约还在使用中时无需调用底层卸载 API。 [池回调](IPoolable.cs) · [实例资源所有权](PoolInstanceLease.cs)
+将 `IPoolable` 实现挂在 prefab 根节点。新建与复用都在对象激活后调用 `OnSpawn`，回池时在对象停用前调用 `OnDespawn`。复用会恢复到实例首次交付时的局部 Transform；刚体速度、粒子、动画等状态仍由业务在 `OnSpawn` 中重置。对象被外部销毁时，实例凭据负责移除池记录并归还资源。租约还在使用中时无需调用底层卸载 API。 [池回调](IPoolable.cs) · [实例资源所有权](PoolInstanceLease.cs)
 
 `OnSpawn` 抛异常会销毁本次对象并返回空。`OnDespawn` 抛异常时，手动归还的对象仍归调用者，可以修复后重试。预热过程中若 `OnDespawn` 抛异常，当前入口不会把未归还的对象交给业务；预热使用的回调应妥善处理自身错误。空闲池没有按时间自动收缩，使用场景池或在玩法结束时调用 `Clear` 可以明确回收。 [池实现](GameObjectPoolMgr.cs) · [资源、代次和重入回归](../../../Tests/PlayMode/LifecycleRegressionTests.cs)

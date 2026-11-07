@@ -5,15 +5,17 @@
 ## 在场景里接入
 
 1. 从 Assets 的创建菜单选 `UPandaGF → 任务系统 → 任务定义 QuestDefinition`，将定义放到任意 `Resources/Quests` 目录。设置唯一且稳定的 `questId`，填目标类型、目标 ID、数量和奖励。前置任务填其他任务的 ID。
-2. 在场景根对象上放置 `QuestManager`，或在运行中首次访问 `QuestManager.Instance` 让它自动创建。根对象上的管理器会跨场景存活。开启 `autoLoadSaveOnAwake` 可在初始化时读默认文件。
+2. 把 `QuestManager` 组件放到场景里（一键搭建会自动放）。它不再自动创建，也不再有静态 `Instance`；根节点会在场景加载后通过 `IGameServicesConsumer` 注入日志与存档服务。`autoLoadSaveOnAwake` 在注入完成后读取默认槽位。
 3. 在击杀、收集、触发区或对话结束的位置上报事件。确保事件在任务被接受后发出，目标 ID 和任务配置一致。没有开启自动接受时，主动调用 `AcceptQuest`。
 4. 目标满足后任务变为 `Completed`。调用 `TurnInQuest` 发奖并解锁后继任务。可重复任务提交后立即回到可接受状态。演示的重复规则没有按日期刷新。
 
 ```csharp
 using UPandaGF.RunTime.TaskSystem;
 
-var quests = QuestManager.Instance;
-if (quests.AcceptQuest("Quest_KillWolves"))
+// 场景里的 QuestManager 通过 Inspector 引用传给业务脚本；不再使用静态单例。
+public QuestManager quests;
+
+if (quests != null && quests.AcceptQuest("Quest_KillWolves"))
 {
     // 在击杀实际发生时调用。第二个参数可以大于 1。
     GameplayEventBus.RaiseEnemyKilled("wolf", 1);
@@ -27,12 +29,12 @@ if (quests.AcceptQuest("Quest_KillWolves"))
 | 场景 | 入口 |
 | --- | --- |
 | 查询与追踪 | `GetQuest`、`GetQuestsByStatus`、`GetTrackedQuests`、`TrackQuest` |
-| UI 与通知 | `QuestLogPanel` 默认用 J 开关，`QuestHudTracker` 默认显示追踪中的任务。两者按管理器事件刷新 |
-| 发奖 | 设置 `QuestManager.RewardReceiver` 为自己的 `IRewardReceiver`。未设置时使用演示的 `PlayerRewardService` |
+| UI 与通知 | `QuestLogPanel` 默认用 J 开关，`QuestHudTracker` 默认显示追踪中的任务。两者需要 Inspector 指向同一个 `QuestManager`（一键搭建会自动绑定） |
+| 发奖 | 必须设置 `QuestManager.RewardReceiver` 为自己的 `IRewardReceiver`；不再回退到演示的 `PlayerRewardService`。未设置时只记录警告、不发放 |
 | 业务存档 | `SaveToJson(bool pretty = true)`、`LoadFromJson(string json)`，可把 JSON 交给业务存储 |
-| 直接读写 | `SaveToFile(string fileName = null)`、`LoadFromFile(string fileName = null)`，默认 `Application.persistentDataPath/quests.json` |
+| 槽位存档 | `SaveToSlot(string slot = null)`、`LoadFromSlot(...)`、`HasSave(...)`、`DeleteSave(...)`，走注入的 `ISaveService`，默认槽位 `quests` |
 
-存档按任务 ID 恢复现有定义的进度，加载时先重置当前进度。应为需要跨版本保留的任务和目标维护稳定的 ID。文件接口直接覆写文件，WebGL 上的跨页面持久化需由业务存储负责。发奖先于提交状态变更，自定义奖励接收器在部分发放后抛错可能造成重试重复发放。运行中调用 `Initialize(forceReload: true)` 或替换已存在的定义会重建对应实例。 [奖励接口](Rewards/IRewardReceiver.cs) [任务日志](UI/QuestLogPanel.cs) [任务 HUD](UI/QuestHudTracker.cs) [存档模型](Core/QuestSaveData.cs)
+存档按任务 ID 恢复现有定义的进度，加载时先重置当前进度。应为需要跨版本保留的任务和目标维护稳定的 ID。槽位存档使用框架的版本化存档服务（`.save` 文件），旧的 `quests.json` 不会自动迁移。发奖先于提交状态变更，自定义奖励接收器在部分发放后抛错可能造成重试重复发放。运行中调用 `Initialize(forceReload: true)` 或替换已存在的定义会重建对应实例。 [奖励接口](Rewards/IRewardReceiver.cs) [任务日志](UI/QuestLogPanel.cs) [任务 HUD](UI/QuestHudTracker.cs) [存档模型](Core/QuestSaveData.cs)
 
 ## 演示与核对
 

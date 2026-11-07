@@ -1,6 +1,6 @@
 # uGUI 面板管理
 
-`UIManager` 按资源路径管理面板。框架启动时注入资源服务并初始化 Canvas、相机和 Bot、Mid、Top、System 四个层级。`BasePanel` 在 Awake 收集子控件，在 `OnOpen` 和 `OnClose` 调用业务逻辑。 [管理器](UIManager.cs) · [面板基类](BasePanel.cs)
+`UIManager` 按资源路径管理面板。框架启动时由根节点创建，注入 `IAssetService` 与 `ILogService`，初始化 Canvas、相机和 Bot、Mid、Top、System 四个层级。`UIManager` 不再是单例；需要打开面板的场景组件实现 `IUIServiceConsumer`，由根节点注入 `IUIService`。`BasePanel` 在 Awake 收集子控件，在 `OnOpen` 和 `OnClose` 调用业务逻辑。 [管理器](UIManager.cs) · [面板基类](BasePanel.cs) · [UI 契约](IUIService.cs)
 
 ## 接入一个面板
 
@@ -27,13 +27,28 @@ public sealed class InventoryPanel : BasePanel
 ```
 
 ```csharp
-var scope = services.Scenes.GetScope(gameObject.scene);
-var panel = await UIManager.Instance.ShowPanelInScopeAsync<InventoryPanel>(scope);
-if (panel == null)
-    return;
+// 场景组件同时实现两个消费者接口：根节点在场景加载后注入。
+public sealed class InventoryLauncher : MonoBehaviour, IUIServiceConsumer, IGameServicesConsumer
+{
+    private IUIService ui;
+    private IGameServices services;
 
-// 主动关闭也可用 UIManager.Instance.ClosePanel<InventoryPanel>()。
+    public void ConfigureUi(IUIService value) { ui = value; }
+    public void Configure(IGameServices value) { services = value; }
+
+    public async Task OpenInSceneScope()
+    {
+        var scope = services.Scenes.GetScope(gameObject.scene);
+        var panel = await ui.ShowPanelInScopeAsync<InventoryPanel>(scope);
+        if (panel == null)
+            return;
+
+        // 主动关闭也可用 ui.ClosePanel<InventoryPanel>()。
+    }
+}
 ```
+
+`BasePanel.uiManager` 由 `UIManager` 在实例化后注入，`OnOpen`/`OnClose` 中可用；Awake/OnEnable 阶段还没有注入，不要在这两个方法里访问它。
 
 `GetControl<T>(name)` 按 GameObject 名称和控件类型检索子控件。为业务控件使用唯一且稳定的名称。`ShowPanel<T>(panelArg, callBack)` 是回调兼容入口，`GetPanel<T>()` 查询已存在的面板。 [面板声明](UIAttribute/UILoadInfoAttribute.cs) · [加载面板示例](SimpleLoadUI.cs)
 
@@ -41,7 +56,7 @@ if (panel == null)
 
 - 同路径并发打开共享一份加载和面板实例，各成功调用会执行一次自己的 `OnOpen`。同一路径须对应一个面板类型和一个作用域；尝试跨作用域共享会记录异常并返回空。
 - 主动关闭或释放所属作用域会先从登记表移除面板，调用 `OnClose` 后销毁。待加载请求关闭时，等待者返回空，迟到资源会被归还。面板资源租约由实例销毁时归还，业务无需再手动卸载。
-- `Shutdown()` 结束等待并直接销毁面板，当前实现不会逐个调用 `OnClose`。需要覆盖框架销毁的关键清理可放在适当的 Unity 生命周期方法或单独的作用域。
+- `Shutdown()` 结束等待并销毁面板；当前实现会先对已打开面板调用 `OnClose()`，再销毁对象，单个面板回调异常会被隔离。
 - 面板的 Awake 和 OnEnable 在创建过程中同步执行。避免在这些方法里关闭或重新打开同路径面板，当前实现可能在请求被关闭后仍登记旧实例。由调用方在打开任务结束后协调二次开关。
 
 [面板加载和关闭](UIManager.cs) · [资源凭据](PanelResourceLease.cs) · [UI 回归](../../../Tests/PlayMode/FrameworkRegressionTests.cs) · [作用域回归](../../../Tests/PlayMode/P1RegressionTests.cs)

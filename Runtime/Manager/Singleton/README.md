@@ -3,9 +3,9 @@
 | 基类 | 获取和释放 | 使用场景 |
 | --- | --- | --- |
 | [EagerMonoSingletonBase<T>](EagerMonoSingletonBase.cs) | 场景组件在 Awake 登记。访问 `Instance` 时会先找已激活的组件，Play 模式找不到时创建并保持跨场景。 | 需要依靠场景完成装配的 `UPGameRoot`，以及帧驱动 `PublicMono`。 |
-| [LazyMonoSingletonBase<T>](LazyMonoSingletonBase.cs) | 同样优先找到已激活组件，缺失时可在 Play 模式首次访问创建。 | 按需使用的 Unity 组件，如 `ResourcesLoader`、`UIManager`。 |
+| [LazyMonoSingletonBase<T>](LazyMonoSingletonBase.cs) | 同样优先找到已激活组件，缺失时可在 Play 模式首次访问创建。 | 按需使用的 Unity 组件，如 `ResourcesLoader`、`ABLoadMgr`。 |
 | [EagerSingletonBase<T>](EagerSingletonBase.cs) | 在 CLR 类型初始化时创建实例。`Release()` 清空后，下次读取会重建。 | 无需挂到场景的 C# 对象。 |
-| [LazySingletonBase<T>](LazySingletonBase.cs) | 首次读取时按需创建并缓存。`Release()` 会调用 `IDisposable.Dispose()`，清空后可重新创建。 | `EventCenter`、`AudioMgr`、`GameObjectPoolMgr` 等 C# 管理器。 |
+| [LazySingletonBase<T>](LazySingletonBase.cs) | 首次读取时按需创建并缓存。`Release()` 会调用 `IDisposable.Dispose()`，清空后可重新创建。 | `EventCenter`、`BinaryDataMgr` 等 C# 管理器。 |
 
 ## MonoBehaviour 接入
 

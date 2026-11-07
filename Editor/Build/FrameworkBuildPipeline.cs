@@ -107,11 +107,43 @@ namespace UPandaGF.GFEditor
                     + $"请自行确认它与 {bundleTarget} 的 AB 产物一致。");
             }
 
+            ValidateAssetBundleOutput(config);
+
             if (!changed) return;
             File.WriteAllText(path, UPGameRootConfigFile.ToJson(config), new UTF8Encoding(false));
             AssetDatabase.ImportAsset(UPGameRootConfigFile.AssetPath);
             Debug.Log($"[FrameworkBuild] 已把 {UPGameRootConfigFile.AssetPath} 对齐到构建目标 {bundleTarget}"
                 + $"（LoadAssetPath={config.LoadAssetPath}）。");
+        }
+
+        /// <summary>
+        /// 构建 Player 前确认随包 AB 已生成：AB 模式下 LoadAssetPath 指向 StreamingAssets 内的目录，
+        /// 目录缺失或没有 .manifest 时直接报错，避免出包后才发现“Player 找不到 AB”。
+        /// <para>RemotePath 不检查本地目录；Editor 直读模式不要求 AB。</para>
+        /// </summary>
+        public static void ValidateAssetBundleOutput(UPGameRootConfig config)
+        {
+            if (config == null || config.method != AssetLoaddingMethod.Assetbundles) return;
+            if (config.AssetAESConfig != null && config.AssetAESConfig.mainBundleLoadPath == ABLoadPath.RemotePath)
+            {
+                Debug.Log("[FrameworkBuild] 主包来源为 RemotePath，跳过随包 AB 目录检查。");
+                return;
+            }
+
+            string directory = Path.Combine(Application.streamingAssetsPath, config.LoadAssetPath ?? string.Empty);
+            if (!Directory.Exists(directory))
+            {
+                throw new InvalidOperationException(
+                    "AssetBundle 产物目录不存在：" + directory
+                    + "\n请先在 UPandaGF → AB包工具 → AssetBundle Browser 中执行 Build All，"
+                    + "并确认目标平台与 bundleTarget=" + config.bundleTarget + " 一致。");
+            }
+            if (Directory.GetFiles(directory, "*.manifest", SearchOption.TopDirectoryOnly).Length == 0)
+            {
+                throw new InvalidOperationException(
+                    "AssetBundle 产物目录中没有 .manifest：" + directory
+                    + "\n目录可能是旧构建或只拷贝了部分包，请重新执行 Build All。");
+            }
         }
     }
 }

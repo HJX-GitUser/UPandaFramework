@@ -425,12 +425,14 @@ namespace UPandaGF
 
             if (!string.IsNullOrEmpty(path))
             {
-                // 确保路径在Assets目录下
-                if (!path.StartsWith(Application.dataPath))
+                // 确保路径在 Assets 目录下（用目录边界判断，避免 Assets2/ 之类的前缀绕过）
+                if (!EditorDestructiveGuard.IsInsideAssets(path))
                 {
                     Debug.LogError("请将脚本保存在Assets目录内");
                     return null;
                 }
+                if (!EditorDestructiveGuard.ConfirmOverwrite("覆盖 UI 脚本", path))
+                    return null;
 
                 // 创建目录（逐级创建，父目录缺失也能补上；同时兼容绝对路径）
                 EditorAssetPathUtility.EnsureAbsoluteDirectoryForFile(path);
@@ -503,6 +505,7 @@ namespace UPandaGF
         {
             // 清理名称，移除特殊字符
             string cleanName = Regex.Replace(gameObjectName, @"[^a-zA-Z0-9_]", "");
+            if (string.IsNullOrEmpty(cleanName)) cleanName = "ui";
 
             // 如果名称以数字开头，添加前缀
             if (char.IsDigit(cleanName[0]))

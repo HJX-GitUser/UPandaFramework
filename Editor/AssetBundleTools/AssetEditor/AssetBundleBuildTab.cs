@@ -312,6 +312,13 @@ namespace AssetBundleBrowser
         }
         public void ExecuteBuild()
         {
+            // 32 位 Windows 的产物目录与运行时默认的 StandaloneWindows64 不一致，先给出明确提示。
+            if (m_UserData.m_BuildTarget == ValidBuildTarget.StandaloneWindows)
+            {
+                Debug.LogWarning("[AssetBundle] 当前选择的是 StandaloneWindows（32 位），产物目录为 AssetBundles/StandaloneWindows；"
+                    + "框架运行时 Windows 默认查找 StandaloneWindows64。除明确要出 32 位包外，请改选 StandaloneWindows64。");
+            }
+
             // 1. 记录开始时间（Ticks为100纳秒单位）
             long startTicks = System.DateTime.UtcNow.Ticks;
 
@@ -516,7 +523,7 @@ namespace AssetBundleBrowser
         public class BuildTabData
         {
             public List<string> m_OnToggles;
-            public ValidBuildTarget m_BuildTarget = ValidBuildTarget.StandaloneWindows;
+            public ValidBuildTarget m_BuildTarget = ValidBuildTarget.StandaloneWindows64;
             public CompressOptions m_Compression = CompressOptions.StandardCompression;
             public string m_OutputPath = string.Empty;
             public bool m_UseDefaultPath = true;

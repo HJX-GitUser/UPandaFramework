@@ -1,0 +1,8 @@
+﻿Unity 2021.3.45f2c1
+Project: _verify/P1Verify (framework copied to Assets/upanda-framework)
+Command: Unity.exe -batchmode -nographics -quit -projectPath <project> -logFile compile-final2.log
+
+Result:
+  error CS: 0
+  assemblies: UPandaGF.Contracts / Runtime / Extensions / Visuals / Samples / Editor / Tests / Tests.EditMode
+  Batchmode quit successfully invoked - shutting down!

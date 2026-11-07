@@ -75,6 +75,12 @@ namespace UPandaGF
                 Debug.Log("需要选中一个预制体");
                 return;
             }
+            if (!EditorUtility.DisplayDialog("清理 Missing Scripts",
+                "将移除选中物体及其子物体上缺失脚本的组件。\n\n选中：" + select.name
+                + "\n\n该操作会修改场景/预制体，建议先提交或备份。", "继续", "取消"))
+                return;
+
+            Undo.RegisterFullObjectHierarchyUndo(select.gameObject, "Clean Missing Scripts");
             try
             {
                 ProcessPrefab(select);

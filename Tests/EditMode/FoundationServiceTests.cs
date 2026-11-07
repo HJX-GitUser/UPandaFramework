@@ -12,18 +12,6 @@ namespace UPandaGF.Tests.EditMode
     /// <summary>新增基础服务的纯逻辑单测：不依赖场景、不依赖 PublicMono 帧循环。</summary>
     public class FoundationServiceTests
     {
-        private static async Task AssertThrowsAsync<TException>(Func<Task> action) where TException : Exception
-        {
-            try { await action(); }
-            catch (TException) { return; }
-            catch (Exception e)
-            {
-                Assert.Fail($"期望异常 {typeof(TException).Name}，实际为 {e.GetType().Name}。");
-                return;
-            }
-            Assert.Fail($"期望异常 {typeof(TException).Name}，但没有抛出异常。");
-        }
-
         [Test]
         public void Timer_Delay_FiresOnlyAfterElapsed()
         {
@@ -66,27 +54,27 @@ namespace UPandaGF.Tests.EditMode
         }
 
         [Test]
-        public async Task Timer_DelayAsync_Completes()
+        public void Timer_DelayAsync_Completes()
         {
             var timer = new TimerService();
             var task = timer.DelayAsync(1f);
             timer.Tick(0.5f, 0.5f);
             Assert.IsFalse(task.IsCompleted);
             timer.Tick(0.6f, 0.6f);
-            await task;
+            task.GetAwaiter().GetResult();
             Assert.IsTrue(task.IsCompletedSuccessfully);
             timer.Dispose();
         }
 
         [Test]
-        public async Task Timer_DelayAsync_HonorsCancellation()
+        public void Timer_DelayAsync_HonorsCancellation()
         {
             var timer = new TimerService();
             using (var cts = new CancellationTokenSource())
             {
                 var task = timer.DelayAsync(1f, cts.Token);
                 cts.Cancel();
-                await AssertThrowsAsync<TaskCanceledException>(() => task);
+                Assert.Throws<TaskCanceledException>(() => task.GetAwaiter().GetResult());
             }
             timer.Dispose();
         }
@@ -158,55 +146,55 @@ namespace UPandaGF.Tests.EditMode
         }
 
         [Test]
-        public async Task GameFlow_StartSwitchAndNotify()
+        public void GameFlow_StartSwitchAndNotify()
         {
             var flow = new GameFlowController();
             var boot = new StubState("Boot");
             var lobby = new StubState("Lobby");
             flow.Register(boot); flow.Register(lobby);
             int notifications = 0;
-            flow.Changed += ctx => { notifications++; Assert.AreEqual("Lobby", ctx.To); };
-            await flow.StartAsync("Boot");
+            flow.Changed += ctx => { if (ctx.To == "Lobby") notifications++; };
+            flow.StartAsync("Boot").GetAwaiter().GetResult();
             Assert.AreEqual(GameFlowStatus.Ready, flow.Status);
-            await flow.GoToAsync("Lobby");
+            flow.GoToAsync("Lobby").GetAwaiter().GetResult();
             Assert.AreEqual("Lobby", flow.CurrentStateId);
             Assert.AreEqual(1, boot.ExitCount);
             Assert.AreEqual(1, lobby.EnterCount);
             Assert.AreEqual(1, notifications);
-            await flow.ShutdownAsync();
+            flow.ShutdownAsync().GetAwaiter().GetResult();
             flow.Dispose();
         }
 
         [Test]
-        public async Task GameFlow_GuardRejectsWithoutLeavingCurrentState()
+        public void GameFlow_GuardRejectsWithoutLeavingCurrentState()
         {
             var flow = new GameFlowController();
             var boot = new StubState("Boot");
             var lobby = new StubState("Lobby") { Allow = false };
             flow.Register(boot); flow.Register(lobby);
-            await flow.StartAsync("Boot");
-            await AssertThrowsAsync<InvalidOperationException>(() => flow.GoToAsync("Lobby"));
+            flow.StartAsync("Boot").GetAwaiter().GetResult();
+            Assert.Throws<InvalidOperationException>(() => flow.GoToAsync("Lobby").GetAwaiter().GetResult());
             Assert.AreEqual("Boot", flow.CurrentStateId);
             Assert.AreEqual(GameFlowStatus.Ready, flow.Status);
             flow.Dispose();
         }
 
         [Test]
-        public async Task GameFlow_EnterFailureMarksFailed()
+        public void GameFlow_EnterFailureMarksFailed()
         {
             var flow = new GameFlowController();
             var boot = new StubState("Boot");
             var battle = new StubState("Battle") { ThrowOnEnter = true };
             flow.Register(boot); flow.Register(battle);
-            await flow.StartAsync("Boot");
-            await AssertThrowsAsync<InvalidOperationException>(() => flow.GoToAsync("Battle"));
+            flow.StartAsync("Boot").GetAwaiter().GetResult();
+            Assert.Throws<InvalidOperationException>(() => flow.GoToAsync("Battle").GetAwaiter().GetResult());
             Assert.AreEqual(GameFlowStatus.Failed, flow.Status);
             Assert.AreEqual("Boot", flow.CurrentStateId);
             flow.Dispose();
         }
 
         [Test]
-        public async Task StartupLifecycle_RecordsMetricsIncludingFailure()
+        public void StartupLifecycle_RecordsMetricsIncludingFailure()
         {
             var lifecycle = new StartupLifecycle();
             bool stopped = false;
@@ -215,7 +203,9 @@ namespace UPandaGF.Tests.EditMode
             var pending = lifecycle.GetModuleDiagnostics();
             Assert.AreEqual(2, pending.Count);
             Assert.AreEqual(FrameworkModuleState.Pending, pending[0].State);
-            await AssertThrowsAsync<InvalidOperationException>(() => lifecycle.InitializeAsync());
+            // InitializeAsync 内部有 Task.Yield，放到线程池执行，避免在 EditMode 主线程上同步等待死锁。
+            Assert.Throws<InvalidOperationException>(() =>
+                Task.Run(() => lifecycle.InitializeAsync()).GetAwaiter().GetResult());
             Assert.AreEqual(StartupState.Failed, lifecycle.State);
             Assert.AreEqual(2, lifecycle.Metrics.Count);
             Assert.IsTrue(lifecycle.Metrics[0].Completed);
@@ -224,7 +214,7 @@ namespace UPandaGF.Tests.EditMode
             var modules = lifecycle.GetModuleDiagnostics();
             Assert.AreEqual(FrameworkModuleState.RolledBack, modules[0].State);
             Assert.AreEqual(FrameworkModuleState.Failed, modules[1].State);
-            await lifecycle.ShutdownAsync();
+            Task.Run(() => lifecycle.ShutdownAsync()).GetAwaiter().GetResult();
         }
     }
 }

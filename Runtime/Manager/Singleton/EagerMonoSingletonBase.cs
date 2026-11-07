@@ -54,8 +54,12 @@ public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBe
             if (_instance == null)
             {
                 // 在场景中查找是否已存在实例。注意：只搜索**已激活**对象，
-                // 挂在 inactive 物体上的实例会被忽略（FindObjectOfType 系列自 2022.2 起已过时）
+                // 挂在 inactive 物体上的实例会被忽略（2022.2+ 用 FindAnyObjectByType，旧版本用 FindObjectOfType）。
+#if UNITY_2022_2_OR_NEWER
                 _instance = FindAnyObjectByType<T>();
+#else
+                _instance = FindObjectOfType<T>();
+#endif
 
                 if (_instance == null)
                 {

@@ -45,10 +45,10 @@ public static class SaveExample
 
 在 [ExcelTool](../../../Editor/Excel/ExcelTool.cs) 生成数据类、容器和 `.binary`。`K` 是生成的行类型，`T` 是有 `dataDic` 字段的容器类型。`LoadTable<T, K>()` 读入并缓存，之后使用 `GetTable<T>()`，同一个容器类型重复加载会遇到缓存键冲突。
 
-工具默认把文件写到 `StreamingAssets/Data/BinaryData/`，框架根节点初始化后的运行时默认从 `persistentDataPath/Data/` 读取。发布或首次运行时需要把文件送到读取位置。当前 Excel 导出 `bool` 写 1 字节，而运行时读 `bool` 后推进 4 字节。含布尔列的表可能读错后续字段或行，接入前先修正并核对生成和读取的字段布局。 [表读取实现](BineryMgr/BinaryDataMgr.cs)
+工具把文件写到 `StreamingAssets/Data/BinaryData/`；运行时的可写目录为 `persistentDataPath/Data/BinaryData/`。桌面/主机首次启动会按文件长度自动安装表；Android/WebGL 的 StreamingAssets 不是普通目录，需要走索引清单或 AB 安装（P1）。生成端与读取端共用 `ExcelBinaryFormat` 的常量：bool 固定 4 字节，行数使用 `BEGIN_INDEX`，写入前截断文件。 [表读取实现](BineryMgr/BinaryDataMgr.cs) [格式常量](ExcelBinaryFormat.cs)
 
 ## PlayerPrefs 对象适配
 
-`PlayerPrefsDataMgr` 按调用方键名、类型名、字段类型及字段名拼接键。支持 `int`、`float`、`string`、`bool` 和由这些类型或简单对象组成的具体泛型列表及字典。保存会调用 `PlayerPrefs.Save()`，读取缺失的键会用对应类型的默认值填充。用法见 [示例](PlayerPrefs/Test/PlayerPrefsDataTest.cs)。
+`PlayerPrefsDataMgr` 按调用方键名、类型名、字段类型及字段名拼接键。支持 `int`、`float`、`string`、`bool`、枚举、数组，以及由这些类型或简单对象组成的具体泛型列表及字典；空引用会删除对应键。保存会调用 `PlayerPrefs.Save()`，读取缺失的键会用对应类型的默认值填充。用法见 [示例](PlayerPrefs/Test/PlayerPrefsDataTest.cs)。
 
-对象和集合元素必须非空。读取通过无参构造和公开字段还原对象，当前实现会枚举公开静态字段。数组的写入和读取规则不对称，字段改名也会改变存储键。业务已有这类数据时应先验证旧键读回，再安排格式迁移。 [PlayerPrefsDataMgr.cs](PlayerPrefs/PlayerPrefsDataMgr.cs)
+读取通过公开无参构造和公开实例字段还原对象；静态字段不参与存档。字段改名会改变存储键，业务已有这类数据时应先验证旧键读回，再安排格式迁移。 [PlayerPrefsDataMgr.cs](PlayerPrefs/PlayerPrefsDataMgr.cs)

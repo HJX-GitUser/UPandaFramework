@@ -73,11 +73,26 @@ public class LogListenerManager : MonoBehaviour
 
     private void SetEnable(bool isEnable)
     {
-        //if(canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
-        //canvasGroup.alpha = isEnable? 1 : 0;
-        //canvasGroup.interactable = isEnable;
-        //canvasGroup.blocksRaycasts = isEnable;
-        gameObject.SetActive(isEnable);
+        // 只显示/隐藏面板内容，不能停用管理器自身：
+        // Update 里的 F12 开关与错误自动弹出都依赖本组件保持激活。
+        if (logPanel != null)
+        {
+            logPanel.SetActive(isEnable);
+            return;
+        }
+
+        // 兼容旧预制体：没有单独绑定 logPanel 时才退化为停用自身。
+        if (canvasGroup == null) canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = isEnable ? 1f : 0f;
+            canvasGroup.interactable = isEnable;
+            canvasGroup.blocksRaycasts = isEnable;
+        }
+        else
+        {
+            gameObject.SetActive(isEnable);
+        }
     }
 
     // 日志结构
@@ -720,7 +735,7 @@ public class LogListenerManager : MonoBehaviour
     {
         if (logPanel != null)
         {
-            bool newState = !gameObject.activeSelf;
+            bool newState = !logPanel.activeSelf;
             SetEnable(newState);
             if (newState)
             {

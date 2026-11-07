@@ -1,68 +1,35 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using UnityEngine;
 
 namespace UPandaGF.RunTime.TaskSystem
 {
     /// <summary>
-    /// 任务系统核心（单例）。
+    /// 任务系统核心。
     ///
     /// 职责：
-    ///   1. 从 Resources/Quests 加载所有 QuestDefinition（模板）；
+    ///   1. 加载 QuestDefinition 模板（默认 Resources.LoadAll，可通过 DefinitionLoader 替换）；
     ///   2. 为每个模板建立 QuestInstance（运行态，进度与状态都在这里）；
     ///   3. 订阅 GameplayEventBus，把"击杀/拾取/到达/对话"事件推进到匹配的目标上；
     ///   4. 维护状态机（Locked → Available → Active → Completed → TurnedIn）与前置任务解锁；
-    ///   5. 提交任务时通过 IRewardReceiver 发奖励；
-    ///   6. JSON 存档 / 读档。
+    ///   5. 提交任务时通过 IRewardReceiver 发奖励（接收端必须显式赋值）；
+    ///   6. 通过注入的 ISaveService 存档 / 读档（槽位制，不再自己写 json 文件）。
     ///
     /// 本类没有任何 Update 轮询：所有进度变化都由事件驱动，状态变化再通过 C# 事件通知 UI。
+    /// <para>接入方式：把组件放进场景（QuestDemoInstaller 会自动放），根节点在场景加载后注入服务；
+    /// 不再提供静态 Instance，也不会自动创建。</para>
     /// </summary>
     [DisallowMultipleComponent]
-    public class QuestManager : MonoBehaviour
+    public class QuestManager : MonoBehaviour, IGameServicesConsumer
     {
-        /// <summary>默认存档文件名（位于 Application.persistentDataPath）。</summary>
-        public const string DefaultSaveFileName = "quests.json";
-
-        private static QuestManager instance;
-        private static bool isQuitting;
-
-        /// <summary>是否允许在第一次访问时自动创建 QuestManager（默认允许，方便"零配置"接入）。</summary>
-        public static bool AutoCreateInstance = true;
-
-        /// <summary>单例入口：场景里没有会自动创建一个（DontDestroyOnLoad）。</summary>
-        public static QuestManager Instance
-        {
-            get
-            {
-                if (instance != null) return instance;
-                if (isQuitting || !Application.isPlaying) return null;   // 编辑期 / 退出中不自动创建
-                instance = FindObjectOfType<QuestManager>();
-                if (instance == null && AutoCreateInstance)
-                {
-                    GameObject go = new GameObject("QuestManager");
-                    instance = go.AddComponent<QuestManager>();          // Awake 会完成初始化
-                }
-                return instance;
-            }
-        }
-
-        /// <summary>只读取实例：不会主动创建（编辑期 / 退出中返回 null），UI 脚本安全使用。</summary>
-        public static QuestManager InstanceOrNull
-        {
-            get
-            {
-                if (instance != null) return instance;
-                if (isQuitting || !Application.isPlaying) return null;
-                return FindObjectOfType<QuestManager>();
-            }
-        }
+        /// <summary>存档服务中的默认槽位名（不再使用 quests.json 文件）。</summary>
+        public const string DefaultSaveSlot = "quests";
 
         [Header("启动行为")]
-        [Tooltip("进入游戏时自动加载 Resources 下的任务模板。")]
+        [Tooltip("进入游戏时自动加载任务模板。")]
         public bool initializeOnAwake = true;
-        [Tooltip("进入游戏时自动读取本地存档。")]
+        [Tooltip("注入服务后自动读取默认槽位的存档。")]
         public bool autoLoadSaveOnAwake = false;
 
         [Header("HUD")]
@@ -70,6 +37,25 @@ namespace UPandaGF.RunTime.TaskSystem
         public int maxTrackedQuests = 3;
 
         // ------------------------------ 运行时数据 ------------------------------
+
+        private IGameServices services;
+        private ILogService log = LogService.Default;
+        private bool autoLoadDone;
+
+        /// <summary>任务模板加载器；为空时使用 Resources.LoadAll。测试或自定义资源系统可替换。</summary>
+        public Func<QuestDefinition[]> DefinitionLoader { get; set; }
+
+        /// <summary>注入日志与存档服务。根节点在场景加载后调用；也可由创建者显式调用。</summary>
+        public void Configure(IGameServices value)
+        {
+            services = value;
+            if (value != null && value.Log != null) log = value.Log;
+            if (autoLoadSaveOnAwake && !autoLoadDone)
+            {
+                autoLoadDone = true;
+                LoadFromSlot();
+            }
+        }
 
         private readonly Dictionary<string, QuestDefinition> definitions = new Dictionary<string, QuestDefinition>();
         private readonly Dictionary<string, QuestInstance> instances = new Dictionary<string, QuestInstance>();
@@ -83,7 +69,7 @@ namespace UPandaGF.RunTime.TaskSystem
         private bool initialized;
         private bool isSubscribed;
 
-        /// <summary>奖励发放目标；为空时自动使用 PlayerRewardService。</summary>
+        /// <summary>奖励发放目标；必须由创建者显式赋值（不再回退到 PlayerRewardService 单例）。</summary>
         public IRewardReceiver RewardReceiver { get; set; }
 
         // -------------------------------- 对外事件 --------------------------------
@@ -107,22 +93,11 @@ namespace UPandaGF.RunTime.TaskSystem
 
         private void Awake()
         {
-            if (instance != null && instance != this)
-            {
-                Debug.LogWarning("[QuestManager] 场景中存在多个 QuestManager，销毁重复的：" + name);
-                Destroy(gameObject);
-                return;     // 注意：这里必须 return，否则重复实例也会执行初始化
-            }
-
-            instance = this;
-            if (Application.isPlaying && transform.parent == null) DontDestroyOnLoad(gameObject);
-
             if (initializeOnAwake) EnsureInitialized();
         }
 
         private void OnEnable()
         {
-            if (instance != this) return;      // 被销毁的重复实例不订阅，避免进度重复累加
             SubscribeEventBus();
         }
 
@@ -134,12 +109,6 @@ namespace UPandaGF.RunTime.TaskSystem
         private void OnDestroy()
         {
             UnsubscribeEventBus();
-            if (instance == this) instance = null;
-        }
-
-        private void OnApplicationQuit()
-        {
-            isQuitting = true;
         }
 
         // ============================ 事件总线订阅（入站） ============================
@@ -186,7 +155,10 @@ namespace UPandaGF.RunTime.TaskSystem
         {
             definitions.Clear();
 
-            QuestDefinition[] loaded = Resources.LoadAll<QuestDefinition>(QuestDefinition.ResourceFolder);
+            QuestDefinition[] loaded = DefinitionLoader != null
+                ? DefinitionLoader()
+                : Resources.LoadAll<QuestDefinition>(QuestDefinition.ResourceFolder);
+            if (loaded == null) loaded = Array.Empty<QuestDefinition>();
             for (int i = 0; i < loaded.Length; i++)
             {
                 QuestDefinition definition = loaded[i];
@@ -195,25 +167,25 @@ namespace UPandaGF.RunTime.TaskSystem
                 string questId = definition.GetQuestId();
                 if (string.IsNullOrEmpty(questId))
                 {
-                    Debug.LogWarning("[QuestManager] 跳过没有 ID 的任务资产：" + definition.name);
+                    log.Warning("[QuestManager] 跳过没有 ID 的任务资产：" + definition.name);
                     continue;
                 }
                 if (definitions.ContainsKey(questId))
                 {
-                    Debug.LogWarning("[QuestManager] questId 重复，跳过：" + questId + "（" + definition.name + "）");
+                    log.Warning("[QuestManager] questId 重复，跳过：" + questId + "（" + definition.name + "）");
                     continue;
                 }
 
                 List<string> errors = new List<string>();
                 if (!definition.ValidateQuest(errors))
                 {
-                    Debug.LogWarning("[QuestManager] 任务 " + questId + " 配置有问题：" + string.Join("；", errors));
+                    log.Warning("[QuestManager] 任务 " + questId + " 配置有问题：" + string.Join("；", errors));
                 }
 
                 definitions.Add(questId, definition);
             }
 
-            Debug.Log("[QuestManager] 已加载任务模板 " + definitions.Count + " 个（Resources/" + QuestDefinition.ResourceFolder + "）");
+            log.Info("[QuestManager] 已加载任务模板 " + definitions.Count + " 个（" + (DefinitionLoader != null ? "自定义加载器" : "Resources/" + QuestDefinition.ResourceFolder) + "）");
         }
 
         /// <summary>按当前模板重建全部实例（清空进度）。</summary>
@@ -237,7 +209,7 @@ namespace UPandaGF.RunTime.TaskSystem
             string questId = definition.GetQuestId();
             if (string.IsNullOrEmpty(questId))
             {
-                Debug.LogWarning("[QuestManager] 注册失败：任务没有 ID。");
+                log.Warning("[QuestManager] 注册失败：任务没有 ID。");
                 return;
             }
 
@@ -352,7 +324,7 @@ namespace UPandaGF.RunTime.TaskSystem
                 QuestInstance prerequisite = GetQuest(prerequisiteId);
                 if (prerequisite == null)
                 {
-                    Debug.LogWarning("[QuestManager] 任务 " + definition.GetQuestId() + " 的前置 " + prerequisiteId + " 不存在。");
+                    log.Warning("[QuestManager] 任务 " + definition.GetQuestId() + " 的前置 " + prerequisiteId + " 不存在。");
                     return false;
                 }
                 if (prerequisite.status != QuestStatus.Completed && prerequisite.status != QuestStatus.TurnedIn) return false;
@@ -391,7 +363,7 @@ namespace UPandaGF.RunTime.TaskSystem
             QuestInstance quest = GetQuest(questId);
             if (quest == null)
             {
-                Debug.LogWarning("[QuestManager] 接受失败：找不到任务 " + questId);
+                log.Warning("[QuestManager] 接受失败：找不到任务 " + questId);
                 return false;
             }
             if (quest.status == QuestStatus.Active || quest.status == QuestStatus.Completed)
@@ -401,7 +373,7 @@ namespace UPandaGF.RunTime.TaskSystem
             if (quest.status == QuestStatus.TurnedIn && !quest.IsRepeatable) return false;
             if (quest.status == QuestStatus.Locked && !ArePrerequisitesMet(quest.definition))
             {
-                Debug.LogWarning("[QuestManager] 接受失败：前置任务未完成 " + questId);
+                log.Warning("[QuestManager] 接受失败：前置任务未完成 " + questId);
                 return false;
             }
 
@@ -421,12 +393,12 @@ namespace UPandaGF.RunTime.TaskSystem
             QuestInstance quest = GetQuest(questId);
             if (quest == null)
             {
-                Debug.LogWarning("[QuestManager] 提交失败：找不到任务 " + questId);
+                log.Warning("[QuestManager] 提交失败：找不到任务 " + questId);
                 return false;
             }
             if (quest.status != QuestStatus.Completed)
             {
-                Debug.LogWarning("[QuestManager] 提交失败：任务尚有目标未完成 " + questId);
+                log.Warning("[QuestManager] 提交失败：任务尚有目标未完成 " + questId);
                 return false;
             }
 
@@ -518,7 +490,7 @@ namespace UPandaGF.RunTime.TaskSystem
                 if (quest.AreAllObjectivesCompleted)
                 {
                     SetStatus(quest, QuestStatus.Completed);
-                    Debug.Log("[QuestManager] 任务完成，等待提交：" + quest.Title);
+                    log.Info("[QuestManager] 任务完成，等待提交：" + quest.Title);
                     if (OnQuestCompleted != null) OnQuestCompleted(quest);
                 }
             }
@@ -540,16 +512,15 @@ namespace UPandaGF.RunTime.TaskSystem
 
         // ================================ 奖励发放 ================================
 
-        /// <summary>把任务奖励交给 IRewardReceiver（默认 PlayerRewardService）。</summary>
+        /// <summary>把任务奖励交给显式注入的 IRewardReceiver；没有接收端时只记录、不发放。</summary>
         public void GrantRewards(QuestInstance quest)
         {
             if (quest == null || quest.Reward == null) return;
 
             IRewardReceiver receiver = RewardReceiver;
-            if (receiver == null) receiver = PlayerRewardService.Instance;   // 默认发给演示钱包
             if (receiver == null)
             {
-                Debug.LogWarning("[QuestManager] 没有奖励接收端，奖励未发放：" + quest.Title);
+                log.Warning("[QuestManager] 没有奖励接收端，奖励未发放：" + quest.Title);
                 return;
             }
 
@@ -569,20 +540,24 @@ namespace UPandaGF.RunTime.TaskSystem
 
         // ================================ 存档 / 读档 ================================
 
-        /// <summary>序列化当前进度为 JSON 字符串。</summary>
-        public string SaveToJson(bool pretty = true)
+        /// <summary>收集当前进度为可序列化快照（槽位存档与 JSON 调试共用）。</summary>
+        private QuestSaveData BuildSaveData()
         {
             EnsureInitialized();
-
             QuestSaveData data = new QuestSaveData();
             data.version = QuestSaveData.CurrentVersion;
             data.savedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
             foreach (QuestInstance quest in instances.Values)
             {
                 data.quests.Add(quest.ToSaveRecord());
             }
+            return data;
+        }
 
+        /// <summary>序列化当前进度为 JSON 字符串（调试 / 备份用；正式存档请用 SaveToSlot）。</summary>
+        public string SaveToJson(bool pretty = true)
+        {
+            QuestSaveData data = BuildSaveData();
             return pretty ? JsonUtility.ToJson(data, true) : JsonUtility.ToJson(data, false);
         }
 
@@ -596,7 +571,7 @@ namespace UPandaGF.RunTime.TaskSystem
 
             if (string.IsNullOrEmpty(json))
             {
-                Debug.LogWarning("[QuestManager] 读档失败：内容为空。");
+                log.Warning("[QuestManager] 读档失败：内容为空。");
                 return false;
             }
 
@@ -607,13 +582,25 @@ namespace UPandaGF.RunTime.TaskSystem
             }
             catch (Exception exception)
             {
-                Debug.LogError("[QuestManager] 读档失败：JSON 解析异常 " + exception.Message);
+                log.Error("[QuestManager] 读档失败：JSON 解析异常 " + exception.Message);
                 return false;
             }
 
             if (data == null || data.quests == null)
             {
-                Debug.LogWarning("[QuestManager] 读档失败：数据结构不匹配。");
+                log.Warning("[QuestManager] 读档失败：数据结构不匹配。");
+                return false;
+            }
+
+            return ApplySaveData(data);
+        }
+
+        /// <summary>把存档内容套用到当前实例（先归零，再按记录恢复，最后重新评估解锁）。</summary>
+        private bool ApplySaveData(QuestSaveData data)
+        {
+            if (data == null || data.quests == null)
+            {
+                log.Warning("[QuestManager] 读档失败：数据结构不匹配。");
                 return false;
             }
 
@@ -637,7 +624,7 @@ namespace UPandaGF.RunTime.TaskSystem
                 QuestInstance quest = GetQuest(record.questId);
                 if (quest == null)
                 {
-                    Debug.LogWarning("[QuestManager] 存档里有未知任务，已忽略：" + record.questId);
+                    log.Warning("[QuestManager] 存档里有未知任务，已忽略：" + record.questId);
                     continue;
                 }
 
@@ -648,71 +635,80 @@ namespace UPandaGF.RunTime.TaskSystem
             // 3) 重新评估解锁（存档里是 Locked 但现在前置已满足的，会重新变为可接受）
             EvaluateAvailability();
             RaiseQuestLogChanged();
-            Debug.Log("[QuestManager] 读档完成，共 " + data.quests.Count + " 条任务记录。");
+            log.Info("[QuestManager] 读档完成，共 " + data.quests.Count + " 条任务记录。");
             return true;
         }
 
-        /// <summary>存档文件完整路径。</summary>
-        public string GetSaveFilePath(string fileName = null)
-        {
-            if (string.IsNullOrEmpty(fileName)) fileName = DefaultSaveFileName;
-            return Path.Combine(Application.persistentDataPath, fileName);
-        }
+        // ---- 槽位存档（ISaveService）：不再自己拼 persistentDataPath 文件路径 ----
 
-        public bool HasSaveFile(string fileName = null)
-        {
-            return File.Exists(GetSaveFilePath(fileName));
-        }
+        private static string NormalizeSlot(string slot) { return string.IsNullOrWhiteSpace(slot) ? DefaultSaveSlot : slot; }
 
-        /// <summary>写档到 persistentDataPath（WebGL 不支持本地文件，请改用 SaveToJson + 平台存储）。</summary>
-        public bool SaveToFile(string fileName = null)
+        /// <summary>写入注入的存档服务（默认槽位 quests）；未注入服务返回 false。</summary>
+        public bool SaveToSlot(string slot = null)
         {
-            string path = GetSaveFilePath(fileName);
+            EnsureInitialized();
+            string key = NormalizeSlot(slot);
+            ISaveService saves = services != null ? services.Saves : null;
+            if (saves == null)
+            {
+                log.Error("[QuestManager] 未注入 ISaveService，无法存档。");
+                return false;
+            }
             try
             {
-                File.WriteAllText(path, SaveToJson(), new UTF8Encoding(false));
-                Debug.Log("[QuestManager] 已存档：" + path);
+                saves.Save(key, BuildSaveData());
+                log.Info("[QuestManager] 已存档到槽位：" + key);
                 return true;
             }
             catch (Exception exception)
             {
-                Debug.LogError("[QuestManager] 存档失败：" + exception.Message);
+                log.Error("[QuestManager] 存档失败：" + exception.Message);
                 return false;
             }
         }
 
-        /// <summary>从 persistentDataPath 读档；文件不存在时返回 false。</summary>
-        public bool LoadFromFile(string fileName = null)
+        /// <summary>从注入的存档服务读取；槽位不存在返回 false。</summary>
+        public bool LoadFromSlot(string slot = null)
         {
-            string path = GetSaveFilePath(fileName);
+            EnsureInitialized();
+            string key = NormalizeSlot(slot);
+            ISaveService saves = services != null ? services.Saves : null;
+            if (saves == null)
+            {
+                log.Error("[QuestManager] 未注入 ISaveService，无法读档。");
+                return false;
+            }
             try
             {
-                if (!File.Exists(path))
+                QuestSaveData data = saves.Load<QuestSaveData>(key);
+                if (data == null)
                 {
-                    Debug.LogWarning("[QuestManager] 读档失败：找不到文件 " + path);
+                    log.Warning("[QuestManager] 读档失败：槽位不存在 " + key);
                     return false;
                 }
-                return LoadFromJson(File.ReadAllText(path));
+                return ApplySaveData(data);
             }
             catch (Exception exception)
             {
-                Debug.LogError("[QuestManager] 读档失败：" + exception.Message);
+                log.Error("[QuestManager] 读档失败：" + exception.Message);
                 return false;
             }
         }
 
-        public bool DeleteSaveFile(string fileName = null)
+        public bool HasSave(string slot = null)
         {
-            string path = GetSaveFilePath(fileName);
-            try
-            {
-                if (!File.Exists(path)) return false;
-                File.Delete(path);
-                return true;
-            }
+            ISaveService saves = services != null ? services.Saves : null;
+            return saves != null && saves.Exists(NormalizeSlot(slot));
+        }
+
+        public bool DeleteSave(string slot = null)
+        {
+            ISaveService saves = services != null ? services.Saves : null;
+            if (saves == null) return false;
+            try { return saves.Delete(NormalizeSlot(slot)); }
             catch (Exception exception)
             {
-                Debug.LogError("[QuestManager] 删除存档失败：" + exception.Message);
+                log.Error("[QuestManager] 删除存档失败：" + exception.Message);
                 return false;
             }
         }
@@ -736,7 +732,7 @@ namespace UPandaGF.RunTime.TaskSystem
 
             EvaluateAvailability();
             RaiseQuestLogChanged();
-            Debug.Log("[QuestManager] 已重置所有任务进度。");
+            log.Info("[QuestManager] 已重置所有任务进度。");
         }
 
         /// <summary>一行文本快照，方便调试面板 / 日志输出。</summary>

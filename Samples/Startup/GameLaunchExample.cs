@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -12,7 +12,7 @@ using UPandaGF;
 /// <para>进场景统一走 <see cref="ISceneService"/>：<see cref="firstScene"/> 在 AB 清单里就先准备场景包，
 /// 不在清单但打进 Build Settings 则直接加载，调用方不需要区分。</para>
 /// </summary>
-public class GameLaunchExample : MonoBehaviour
+public class GameLaunchExample : MonoBehaviour, IUIServiceConsumer
 {
     [Header("加载热更程序集")]
     public bool loadHotUpdateScripts = false;//HybridCLR
@@ -30,7 +30,7 @@ public class GameLaunchExample : MonoBehaviour
     private const float SceneAssetEnd = 0.8f;
 
     IAssetsLoader sourcesLoad;
-    private UIManager uiManager;
+    private IUIService ui;
     private SimpleLoadUI simpleLoadUI;
     private ISceneService scenes;
     /// <summary>全部热更程序集加载成功后的回调（HybridCLR 的泛型注册挂这里）。</summary>
@@ -52,6 +52,12 @@ public class GameLaunchExample : MonoBehaviour
         EventCenter.Instance.RemoveEventListener<GFLoadedFailedEvent>(OnGFLoadedFailed);
         // 场景加载中途被销毁时，AB 进度监听可能还挂着（正常路径已在 finally 里退订）
         EventCenter.Instance.RemoveEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
+    }
+
+    /// <summary>根节点在场景就绪后注入 UI 服务；GFLoadedEvent 之前一定会完成。</summary>
+    public void ConfigureUi(IUIService service)
+    {
+        ui = service;
     }
 
     /// <summary>
@@ -80,10 +86,9 @@ public class GameLaunchExample : MonoBehaviour
         {
             PLogger.Log_white("框架加载结束，进入游戏逻辑");
 
-            uiManager = UIManager.Instance;
-            if (uiManager == null) { Fail("UIManager 未初始化，无法启动加载流程"); return; }
+            if (ui == null) { Fail("UI 服务未注入，无法启动加载流程"); return; }
 
-            simpleLoadUI = await uiManager.ShowPanelAsync<SimpleLoadUI>();
+            simpleLoadUI = await ui.ShowPanelAsync<SimpleLoadUI>();
             if (simpleLoadUI == null) { Fail("加载界面 SimpleLoadUI 打开失败"); return; }
 
             UPGameRoot gr = UPGameRoot.Instance;
@@ -108,7 +113,7 @@ public class GameLaunchExample : MonoBehaviour
 
             // ── 4. 收尾
             SetProgress(1f, "场景加载完成");
-            uiManager.ClosePanel<SimpleLoadUI>();
+            ui.ClosePanel<SimpleLoadUI>();
             PLogger.Log("<color=blue>进入场景</color>");
         }
         catch (Exception e)

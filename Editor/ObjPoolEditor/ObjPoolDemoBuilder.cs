@@ -221,7 +221,7 @@ namespace UPandaGF.GFEditor
 
             gameRoot.Config.method = RootLoadMethod;
             gameRoot.Config.enableAssetUpdate = false;                       // 原型：不启动资源更新
-            gameRoot.Config.LoadAssetPath = "AssetBundles/StandaloneWindows/";
+            gameRoot.Config.LoadAssetPath = "AssetBundles/StandaloneWindows64/";
             gameRoot.Config.remoteURL = "http://127.0.0.1:80/";
             gameRoot.Config.EnableDebugModel = false;
 

@@ -1,0 +1,25 @@
+{
+  "name": "com.upanda.framework",
+  "version": "0.3.0",
+  "displayName": "UPandaFramework",
+  "description": "Unity client framework: ordered startup, service composition, asset leasing, transactional content update, UI/audio/save/logging and optional gameplay modules.",
+  "unity": "2021.3",
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.6"
+  },
+  "keywords": [
+    "unity",
+    "framework",
+    "assetbundle",
+    "hot-update",
+    "ui",
+    "save"
+  ],
+  "author": {
+    "name": "He Jinxian",
+    "url": "https://gitee.com/he-jinxian/upanda-framework"
+  },
+  "documentationUrl": "https://gitee.com/he-jinxian/upanda-framework/blob/master/README.md",
+  "changelogUrl": "https://gitee.com/he-jinxian/upanda-framework/blob/master/CHANGELOG.md",
+  "licensesUrl": "https://gitee.com/he-jinxian/upanda-framework/blob/master/LICENSE"
+}

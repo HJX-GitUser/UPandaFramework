@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -103,7 +103,7 @@ public class FrameworkRegressionTests
         var loader = Component<ResourcesLoader>();
         var manager = Component<UIManager>();
         manager.Init();
-        manager.SetResourcesLoader(null, loader);
+        manager.Configure(new AssetService(loader, null));
         var eventSystem = Object.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
         if (eventSystem != null) objects.Add(eventSystem.gameObject);
         var first = manager.ShowPanelAsync<FrameworkTestPanel>();
@@ -121,7 +121,7 @@ public class FrameworkRegressionTests
         var loader = Component<ResourcesLoader>();
         var manager = Component<UIManager>();
         manager.Init();
-        manager.SetResourcesLoader(null, loader);
+        manager.Configure(new AssetService(loader, null));
         var eventSystem = Object.FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
         if (eventSystem != null) objects.Add(eventSystem.gameObject);
         var pending = manager.ShowPanelAsync<FrameworkTestPanel>();
@@ -252,15 +252,11 @@ public class FrameworkRegressionTests
     [UnityTest] public IEnumerator AssetInitializationFailureDoesNotReportReady()
     {
         var loader = Component<AssetsLoader>();
-#if OPEN_PLOG
         LogAssert.Expect(LogType.Error, new Regex("资源关联数据缺少主包信息"));
-#endif
         yield return Wait(loader.Init(AssetLoaddingMethod.Assetbundles, "", "", new ABSourcesRelated()));
         Assert.IsFalse(loader.IsInitialized);
         bool called = false;
-#if OPEN_PLOG
         LogAssert.Expect(LogType.Error, new Regex("该资源不存在"));
-#endif
         loader.LoadAsync<GameObject>("missing", value => { called = true; Assert.IsNull(value); });
         Assert.IsTrue(called, "失败也必须结束回调请求");
     }

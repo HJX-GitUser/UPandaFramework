@@ -161,27 +161,44 @@ namespace UPandaGF.GFEditor
                     continue;
                 }
 
+                if (EditorDestructiveGuard.PathsOverlap(rule.sourcePath, rule.targetPath))
+                {
+                    Debug.LogError($"源目录与目标目录不能相同或互相包含，已跳过规则。源：{rule.sourcePath} 目标：{rule.targetPath}");
+                    continue;
+                }
+
+                // 先枚举源文件：源为空/路径写错时绝不能先清空目标。
+                SearchOption searchOption = rule.includeSubfolders ?
+                    SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+                string[] files = Directory.GetFiles(rule.sourcePath, rule.filePattern, searchOption);
+                if (files.Length == 0)
+                {
+                    Debug.LogWarning($"源目录没有匹配 {rule.filePattern} 的文件，已跳过（未清空目标）：{rule.sourcePath}");
+                    continue;
+                }
+
                 // 确保目标目录存在
                 if (!Directory.Exists(rule.targetPath))
                 {
                     Directory.CreateDirectory(rule.targetPath);
                 }
 
-                // 清理目标目录
+                // 清理目标目录：确认 + 只清顶层（与原行为保持一致）
                 if (config.clearTargetBeforeCopy)
                 {
+                    if (!EditorDestructiveGuard.ConfirmDelete(
+                        "清空 DLL 目标目录",
+                        rule.targetPath,
+                        $"将删除目标目录顶层的全部文件，然后复制 {files.Length} 个文件。",
+                        rule.sourcePath))
+                        continue;
+
                     string[] existingFiles = Directory.GetFiles(rule.targetPath, "*.*");
                     foreach (string file in existingFiles)
                     {
                         File.Delete(file);
                     }
                 }
-
-                // 获取文件
-                SearchOption searchOption = rule.includeSubfolders ?
-                    SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-
-                string[] files = Directory.GetFiles(rule.sourcePath, rule.filePattern, searchOption);
 
                 int success = 0;
                 foreach (string file in files)

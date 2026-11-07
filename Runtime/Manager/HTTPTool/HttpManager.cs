@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using UPandaGF;
@@ -10,21 +12,22 @@ using UPandaGF;
 /// 内部持有一个 HttpClient 负责请求排队与发送。
 ///
 /// 特性：
-///   - 懒加载单例：首次访问 Instance 时创建并 DontDestroyOnLoad，跨场景常驻
+///   - 由 GameServices 创建并持有（不再有静态单例入口）；也可在测试里直接 AddComponent
 ///   - 全局请求头：SetGlobalHeader 设置的头部会自动合并进之后发出的每个请求
 ///   - 泛型反序列化：JsonUtility 自动把响应体转成 T（T 为 string 时返回原文）
 ///   - 失败重试：默认失败重试 3 次，重试过程回调 OnRetry，彻底失败才回调 OnFailure
 ///   - 可取消：返回的数据包可 Cancel()，也可 CancelAll() 一次性取消
 ///   - 进度回调：为数据包设置 OnProgress 即可拿到 0~1 的下载进度
+///   - 契约：实现 IHttpService，业务侧通过 IGameServices.Http 使用可 await 的 Task API
 ///
 /// 所有回调都在主线程触发，因此可以直接在其中操作 Unity 对象。
 /// </summary>
-public class HttpManager : LazyMonoSingletonBase<HttpManager>
+public class HttpManager : MonoBehaviour, IHttpService
 {
     private HttpClient _client;
     private readonly Dictionary<string, string> _globalHeaders = new Dictionary<string, string>();
 
-    protected override void OnAwake()
+    private void Awake()
     {
         EnsureClient();
     }
@@ -141,6 +144,39 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
         return SendInternal(HttpRequestType.Delete, BuildUrlWithParams(url, parameters), null, null, onSuccess, onFailure);
     }
 
+    // ==================== 契约接口（IHttpService） ====================
+
+    /// <summary>
+    /// GET：query 会 URL 编码后拼到查询串。失败以 <see cref="HttpResult{T}"/> 返回，不抛异常；
+    /// 取消时返回取消态 Task。
+    /// </summary>
+    public Task<HttpResult<T>> GetAsync<T>(string url, IReadOnlyDictionary<string, string> query = null,
+        HttpRequestOptions options = null, CancellationToken token = default) where T : class
+    {
+        return SendContractAsync<T>(HttpRequestType.Get, BuildUrlWithParams(url, ToDictionary(query)), null, options, token);
+    }
+
+    /// <summary>POST：data 为 string 时视为 JSON 原文，其它类型走 JsonUtility；null 表示无请求体。</summary>
+    public Task<HttpResult<T>> PostAsync<T>(string url, object body = null,
+        HttpRequestOptions options = null, CancellationToken token = default) where T : class
+    {
+        return SendContractAsync<T>(HttpRequestType.Post, url, BuildBody(body), options, token);
+    }
+
+    /// <summary>PUT（请求体规则同 POST）。</summary>
+    public Task<HttpResult<T>> PutAsync<T>(string url, object body = null,
+        HttpRequestOptions options = null, CancellationToken token = default) where T : class
+    {
+        return SendContractAsync<T>(HttpRequestType.Put, url, BuildBody(body), options, token);
+    }
+
+    /// <summary>DELETE（query 可拼到查询串）。</summary>
+    public Task<HttpResult<T>> DeleteAsync<T>(string url, IReadOnlyDictionary<string, string> query = null,
+        HttpRequestOptions options = null, CancellationToken token = default) where T : class
+    {
+        return SendContractAsync<T>(HttpRequestType.Delete, BuildUrlWithParams(url, ToDictionary(query)), null, options, token);
+    }
+
     // ==================== 高级接口 ====================
 
     /// <summary>
@@ -148,11 +184,11 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
     /// 进度回调 / 重试回调的场景，配置完成后调用 Send(pack) 入队。
     ///
     /// 示例：
-    ///   var pack = HttpManager.Instance.CreateRequest&lt;MyData&gt;(HttpRequestType.Post, url, json);
+    ///   var pack = http.CreateRequest&lt;MyData&gt;(HttpRequestType.Post, url, json);
     ///   pack.Headers["Authorization"] = "Bearer xxx";
     ///   pack.Timeout = 30;
     ///   pack.OnProgress = p => Debug.Log(p);
-    ///   HttpManager.Instance.Send(pack);
+    ///   http.Send(pack);
     /// </summary>
     public GenericHttpPack<T> CreateRequest<T>(HttpRequestType type, string url, string body = null) where T : class
     {
@@ -178,7 +214,70 @@ public class HttpManager : LazyMonoSingletonBase<HttpManager>
 
     // ==================== 内部实现 ====================
 
-    /// <summary>确保 HttpClient 已挂载在单例物体上</summary>
+    /// <summary>
+    /// Task 契约的统一出口：把回调式数据包桥接成 Task，并处理取消。
+    /// <para>取消时调用 pack.Cancel() 并让 Task 进入取消态；取消后不会再触发成功/失败回调。
+    /// 取消注册在 Task 完成时释放，避免长生命周期 token 持有请求对象。</para>
+    /// </summary>
+    private Task<HttpResult<T>> SendContractAsync<T>(HttpRequestType type, string url, string body,
+        HttpRequestOptions options, CancellationToken token) where T : class
+    {
+        if (token.IsCancellationRequested) return Task.FromCanceled<HttpResult<T>>(token);
+
+        var pack = new GenericHttpPack<T> { Type = type, Url = url, Parameters = body };
+        ApplyOptions(pack, options);
+
+        var completion = new TaskCompletionSource<HttpResult<T>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        pack.OnSuccess = (data, code) => completion.TrySetResult(HttpResult<T>.Ok(data, code));
+        pack.OnFailure = error => completion.TrySetResult(HttpResult<T>.Fail(error));
+
+        CancellationTokenRegistration registration = default;
+        if (token.CanBeCanceled)
+        {
+            registration = token.Register(() =>
+            {
+                pack.Cancel();
+                completion.TrySetCanceled(token);
+            });
+        }
+        // 完成（成功/失败/取消）后释放注册；ExecuteSynchronously 会在主线程回调里直接执行。
+        _ = completion.Task.ContinueWith(_ => registration.Dispose(),
+            CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+
+        try
+        {
+            if (!SendInternal(pack, ToDictionary(options?.Headers)))
+                completion.TrySetResult(HttpResult<T>.Fail("HTTP 请求未入队。"));
+        }
+        catch (Exception e)
+        {
+            completion.TrySetResult(HttpResult<T>.Fail("HTTP 请求失败：" + e.Message));
+        }
+        return completion.Task;
+    }
+
+    /// <summary>把契约层的可选参数映射到数据包；null 表示全部使用数据包默认值。</summary>
+    private static void ApplyOptions(HttpPack pack, HttpRequestOptions options)
+    {
+        if (pack == null || options == null) return;
+        pack.RetryCount = Mathf.Max(0, options.RetryCount);
+        pack.RetryNonIdempotent = options.RetryNonIdempotent;
+        if (options.TimeoutSeconds > 0) pack.Timeout = options.TimeoutSeconds;
+        pack.RetryDelay = Mathf.Max(0f, options.RetryDelay);
+    }
+
+    /// <summary>只读字典 → 内部可变字典；已经是 Dictionary 时直接复用，避免每次请求分配。</summary>
+    private static Dictionary<string, string> ToDictionary(IReadOnlyDictionary<string, string> source)
+    {
+        if (source == null || source.Count == 0) return null;
+        var dictionary = source as Dictionary<string, string>;
+        if (dictionary != null) return dictionary;
+        dictionary = new Dictionary<string, string>(source.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in source) dictionary[pair.Key] = pair.Value;
+        return dictionary;
+    }
+
+    /// <summary>确保 HttpClient 已挂载在本对象上</summary>
     private void EnsureClient()
     {
         if (_client != null) return;

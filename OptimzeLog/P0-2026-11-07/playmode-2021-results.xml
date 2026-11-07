@@ -1,0 +1,1437 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="294" result="Passed" total="294" passed="294" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:08Z" duration="7.7817385">
+  <test-suite type="TestSuite" id="1000" name="Framework Validation" fullname="Framework Validation" runstate="Runnable" testcasecount="294" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:08Z" duration="7.781739" total="294" passed="294" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <test-suite type="Assembly" id="1330" name="UPandaGF.Tests.dll" fullname="D:/MySouce/Unity框架/_verify2021/Library/ScriptAssemblies/UPandaGF.Tests.dll" runstate="Runnable" testcasecount="294" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:08Z" duration="7.776573" total="294" passed="294" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="5648" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+      </properties>
+      <test-suite type="TestFixture" id="1002" name="CoordinationRegressionTests" fullname="CoordinationRegressionTests" classname="CoordinationRegressionTests" runstate="Runnable" testcasecount="41" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:01Z" duration="1.064094" total="41" passed="41" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1020" name="CancelContinuationMayDisableSchedulerWithoutCorruptingJobIteration" fullname="CoordinationRegressionTests.CancelContinuationMayDisableSchedulerWithoutCorruptingJobIteration" methodname="CancelContinuationMayDisableSchedulerWithoutCorruptingJobIteration" classname="CoordinationRegressionTests" runstate="Runnable" seed="967178297" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.024892" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+        <test-case id="1038" name="CancelDisposesNestedIteratorsAndRunsFinally" fullname="CoordinationRegressionTests.CancelDisposesNestedIteratorsAndRunsFinally" methodname="CancelDisposesNestedIteratorsAndRunsFinally" classname="CoordinationRegressionTests" runstate="Runnable" seed="553532610" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.002016" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+        <test-case id="1028" name="CanceledBeforeSubmissionReleasesItsNativeRequest" fullname="CoordinationRegressionTests.CanceledBeforeSubmissionReleasesItsNativeRequest" methodname="CanceledBeforeSubmissionReleasesItsNativeRequest" classname="CoordinationRegressionTests" runstate="Runnable" seed="1554429383" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.007613" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1013" name="CancellationInsideProgressStopsDeliveryAndAllowsFreshRequests" fullname="CoordinationRegressionTests.CancellationInsideProgressStopsDeliveryAndAllowsFreshRequests" methodname="CancellationInsideProgressStopsDeliveryAndAllowsFreshRequests" classname="CoordinationRegressionTests" runstate="Runnable" seed="1612794082" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.017033" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1017" name="ClearAndRegisterNewEventListenerDoesNotReviveOldBatch" fullname="CoordinationRegressionTests.ClearAndRegisterNewEventListenerDoesNotReviveOldBatch" methodname="ClearAndRegisterNewEventListenerDoesNotReviveOldBatch" classname="CoordinationRegressionTests" runstate="Runnable" seed="1271031846" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.003738" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1036" name="ClearStopsRemainingEventBusBatch" fullname="CoordinationRegressionTests.ClearStopsRemainingEventBusBatch" methodname="ClearStopsRemainingEventBusBatch" classname="CoordinationRegressionTests" runstate="Runnable" seed="832699572" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.002099" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1034" name="ClearStopsRemainingEventCenterBatch" fullname="CoordinationRegressionTests.ClearStopsRemainingEventCenterBatch" methodname="ClearStopsRemainingEventCenterBatch" classname="CoordinationRegressionTests" runstate="Runnable" seed="2048854497" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.000734" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1015" name="CompletedPackCannotBeSentAgain" fullname="CoordinationRegressionTests.CompletedPackCannotBeSentAgain" methodname="CompletedPackCannotBeSentAgain" classname="CoordinationRegressionTests" runstate="Runnable" seed="1871920794" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.003604" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1005" name="DestroyCancelsQueuedAndRunningHttpRequests" fullname="CoordinationRegressionTests.DestroyCancelsQueuedAndRunningHttpRequests" methodname="DestroyCancelsQueuedAndRunningHttpRequests" classname="CoordinationRegressionTests" runstate="Runnable" seed="800177700" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.201925" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1033" name="DestroyedOwnerCannotBecomeAnOwnerlessSubscription" fullname="CoordinationRegressionTests.DestroyedOwnerCannotBecomeAnOwnerlessSubscription" methodname="DestroyedOwnerCannotBecomeAnOwnerlessSubscription" classname="CoordinationRegressionTests" runstate="Runnable" seed="683043831" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.001043" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1035" name="DestroyedUnityEventBusSubscriberIsRemoved" fullname="CoordinationRegressionTests.DestroyedUnityEventBusSubscriberIsRemoved" methodname="DestroyedUnityEventBusSubscriberIsRemoved" classname="CoordinationRegressionTests" runstate="Runnable" seed="1784885094" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.001274" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1014" name="DisabledClientCancelsOldBatchAndCanServeAfterReenable" fullname="CoordinationRegressionTests.DisabledClientCancelsOldBatchAndCanServeAfterReenable" methodname="DisabledClientCancelsOldBatchAndCanServeAfterReenable" classname="CoordinationRegressionTests" runstate="Runnable" seed="1587146952" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.002888" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1042" name="DisableDuringFirstMoveCannotLeaveARegisteredJob" fullname="CoordinationRegressionTests.DisableDuringFirstMoveCannotLeaveARegisteredJob" methodname="DisableDuringFirstMoveCannotLeaveARegisteredJob" classname="CoordinationRegressionTests" runstate="Runnable" seed="1329139835" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.001586" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+        <test-case id="1018" name="FrameRemovalAfterReRegistrationDoesNotRemoveTheOldTombstoneTwice" fullname="CoordinationRegressionTests.FrameRemovalAfterReRegistrationDoesNotRemoveTheOldTombstoneTwice" methodname="FrameRemovalAfterReRegistrationDoesNotRemoveTheOldTombstoneTwice" classname="CoordinationRegressionTests" runstate="Runnable" seed="1416818836" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.002559" asserts="0">
+          <properties />
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+        <test-case id="1030" name="HostDestroyedInsideRequestCreationCannotRepopulateItsQueue" fullname="CoordinationRegressionTests.HostDestroyedInsideRequestCreationCannotRepopulateItsQueue" methodname="HostDestroyedInsideRequestCreationCannotRepopulateItsQueue" classname="CoordinationRegressionTests" runstate="Runnable" seed="1595407385" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.000968" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1040" name="InactiveHostRejectsCoroutineWithoutDanglingTask" fullname="CoordinationRegressionTests.InactiveHostRejectsCoroutineWithoutDanglingTask" methodname="InactiveHostRejectsCoroutineWithoutDanglingTask" classname="CoordinationRegressionTests" runstate="Runnable" seed="1645833935" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.001186" asserts="0">
+          <properties />
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+        <test-case id="1043" name="InvalidSceneFaultsTaskInsteadOfHanging" fullname="CoordinationRegressionTests.InvalidSceneFaultsTaskInsteadOfHanging" methodname="InvalidSceneFaultsTaskInsteadOfHanging" classname="CoordinationRegressionTests" runstate="Runnable" seed="842253690" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.010282" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1011" name="JsonSuccessListenersAreIsolatedAndStateIsCommittedBeforeCallbacks" fullname="CoordinationRegressionTests.JsonSuccessListenersAreIsolatedAndStateIsCommittedBeforeCallbacks" methodname="JsonSuccessListenersAreIsolatedAndStateIsCommittedBeforeCallbacks" classname="CoordinationRegressionTests" runstate="Runnable" seed="103356520" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.006453" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[InvalidOperationException: typed success failure
+]]></output>
+        </test-case>
+        <test-case id="1037" name="NestedCoroutineFailureFaultsItsTask" fullname="CoordinationRegressionTests.NestedCoroutineFailureFaultsItsTask" methodname="NestedCoroutineFailureFaultsItsTask" classname="CoordinationRegressionTests" runstate="Runnable" seed="1968048852" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.002062" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 协程内部抛异常：System.InvalidOperationException: coordination nested failure
+  at CoordinationRegressionTests+<ChildFailure>d__11.MoveNext () [0x0002e] in D:\MySouce\Unity框架\_verify2021\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:57 
+  at PublicMono+<RunCoroutineTracked>d__42.MoveNext () [0x0006a] in D:\MySouce\Unity框架\_verify2021\Assets\upanda-framework\Runtime\Manager\PublicMono\PublicMono.cs:314 
+]]></output>
+        </test-case>
+        <test-case id="1024" name="NestedCoroutineNormalCompletionRunsInnerAndOuterFinally" fullname="CoordinationRegressionTests.NestedCoroutineNormalCompletionRunsInnerAndOuterFinally" methodname="NestedCoroutineNormalCompletionRunsInnerAndOuterFinally" classname="CoordinationRegressionTests" runstate="Runnable" seed="148674189" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.012751" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+        <test-case id="1019" name="NestedFrameDispatchCanClearListenersWithoutInvalidatingOuterIteration" fullname="CoordinationRegressionTests.NestedFrameDispatchCanClearListenersWithoutInvalidatingOuterIteration" methodname="NestedFrameDispatchCanClearListenersWithoutInvalidatingOuterIteration" classname="CoordinationRegressionTests" runstate="Runnable" seed="398665562" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.001177" asserts="0">
+          <properties />
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+        <test-case id="1031" name="OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation" fullname="CoordinationRegressionTests.OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation" methodname="OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation" classname="CoordinationRegressionTests" runstate="Runnable" seed="2143544160" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.001270" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1016" name="OrdinaryEventRemovalStillUsesCurrentSnapshot" fullname="CoordinationRegressionTests.OrdinaryEventRemovalStillUsesCurrentSnapshot" methodname="OrdinaryEventRemovalStillUsesCurrentSnapshot" classname="CoordinationRegressionTests" runstate="Runnable" seed="1301353355" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.001326" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1032" name="OwnerDestroyedEarlierInDispatchIsSkipped" fullname="CoordinationRegressionTests.OwnerDestroyedEarlierInDispatchIsSkipped" methodname="OwnerDestroyedEarlierInDispatchIsSkipped" classname="CoordinationRegressionTests" runstate="Runnable" seed="303883067" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.000857" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1039" name="PreCanceledCoroutineDoesNotExecuteUserCode" fullname="CoordinationRegressionTests.PreCanceledCoroutineDoesNotExecuteUserCode" methodname="PreCanceledCoroutineDoesNotExecuteUserCode" classname="CoordinationRegressionTests" runstate="Runnable" seed="715640682" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.001462" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+        <test-case id="1029" name="PurgedOwnerDoesNotRemainStronglyHeldByCachedSnapshot" fullname="CoordinationRegressionTests.PurgedOwnerDoesNotRemainStronglyHeldByCachedSnapshot" methodname="PurgedOwnerDoesNotRemainStronglyHeldByCachedSnapshot" classname="CoordinationRegressionTests" runstate="Runnable" seed="2023989911" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.005442" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1003" name="RequestHeadersOverrideGlobalDefaults" fullname="CoordinationRegressionTests.RequestHeadersOverrideGlobalDefaults" methodname="RequestHeadersOverrideGlobalDefaults" classname="CoordinationRegressionTests" runstate="Runnable" seed="338504649" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.001201" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1009" name="RetryCancellationDoesNotRecreateCanceledRequest" fullname="CoordinationRegressionTests.RetryCancellationDoesNotRecreateCanceledRequest" methodname="RetryCancellationDoesNotRecreateCanceledRequest" classname="CoordinationRegressionTests" runstate="Runnable" seed="1749856058" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:00Z" duration="0.003840" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1008" name="RetryCreationFailureDoesNotBlockFollowingRequest" fullname="CoordinationRegressionTests.RetryCreationFailureDoesNotBlockFollowingRequest" methodname="RetryCreationFailureDoesNotBlockFollowingRequest" classname="CoordinationRegressionTests" runstate="Runnable" seed="544524558" result="Passed" start-time="2026-11-07 16:21:00Z" end-time="2026-11-07 16:21:01Z" duration="0.505713" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[<###>  00:21:01.444  ThreadID:1
+[HttpClient] 请求失败（重试已用尽）。URL: http://127.0.0.1:14306/fail, 原因: HTTP 请求启动失败：coordination retry create failure
+]]></output>
+        </test-case>
+        <test-case id="1010" name="RetryDelayUsesRealtimeWhenGameIsPaused" fullname="CoordinationRegressionTests.RetryDelayUsesRealtimeWhenGameIsPaused" methodname="RetryDelayUsesRealtimeWhenGameIsPaused" classname="CoordinationRegressionTests" runstate="Runnable" seed="800720660" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.055538" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[<###>  00:21:01.502  ThreadID:1
+[HttpClient] 请求失败（重试已用尽）。URL: http://127.0.0.1:14310/fail, 原因: HTTP Request Failed. URL: http://127.0.0.1:14310/fail, Code: 503, Error: HTTP/1.1 503 Service Unavailable, Body: {"value":1}
+]]></output>
+        </test-case>
+        <test-case id="1004" name="SamePackCannotBeQueuedTwice" fullname="CoordinationRegressionTests.SamePackCannotBeQueuedTwice" methodname="SamePackCannotBeQueuedTwice" classname="CoordinationRegressionTests" runstate="Runnable" seed="393764952" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.001042" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1026" name="SceneCallbackIsDeliveredOnceAndIsolatesMulticastExceptions" fullname="CoordinationRegressionTests.SceneCallbackIsDeliveredOnceAndIsolatesMulticastExceptions" methodname="SceneCallbackIsDeliveredOnceAndIsolatesMulticastExceptions" classname="CoordinationRegressionTests" runstate="Runnable" seed="1432275069" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.008789" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[LazySingleton] 创建 EditorSourcesMgr 实例
+InvalidOperationException: scene success callback failure
+]]></output>
+        </test-case>
+        <test-case id="1027" name="SceneCancellationStopsProgressAndDoesNotClaimNativeRollback" fullname="CoordinationRegressionTests.SceneCancellationStopsProgressAndDoesNotClaimNativeRollback" methodname="SceneCancellationStopsProgressAndDoesNotClaimNativeRollback" classname="CoordinationRegressionTests" runstate="Runnable" seed="1639492792" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.102634" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1041" name="StopAllCoroutinesAlsoCompletesManagedTasks" fullname="CoordinationRegressionTests.StopAllCoroutinesAlsoCompletesManagedTasks" methodname="StopAllCoroutinesAlsoCompletesManagedTasks" classname="CoordinationRegressionTests" runstate="Runnable" seed="1252548905" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.001726" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+        <test-case id="1021" name="StopBatchRejectsReentrantJobsButAllowsLaterUse" fullname="CoordinationRegressionTests.StopBatchRejectsReentrantJobsButAllowsLaterUse" methodname="StopBatchRejectsReentrantJobsButAllowsLaterUse" classname="CoordinationRegressionTests" runstate="Runnable" seed="176280025" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.002203" asserts="0">
+          <properties />
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+        <test-case id="1006" name="SuccessCallbackExceptionDoesNotTriggerFailure" fullname="CoordinationRegressionTests.SuccessCallbackExceptionDoesNotTriggerFailure" methodname="SuccessCallbackExceptionDoesNotTriggerFailure" classname="CoordinationRegressionTests" runstate="Runnable" seed="1116114363" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.003306" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[InvalidOperationException: coordination success failure
+]]></output>
+        </test-case>
+        <test-case id="1007" name="ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues" fullname="CoordinationRegressionTests.ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues" methodname="ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues" classname="CoordinationRegressionTests" runstate="Runnable" seed="519509282" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.005523" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[<###>  00:21:01.625  ThreadID:1
+[HttpClient] 请求失败（重试已用尽）。URL: http://127.0.0.1:9193/fail, 原因: HTTP Request Failed. URL: http://127.0.0.1:9193/fail, Code: 503, Error: HTTP/1.1 503 Service Unavailable, Body: {"value":1}
+InvalidOperationException: coordination failure callback
+]]></output>
+        </test-case>
+        <test-case id="1012" name="ThrowingRetryListenerDoesNotBlockOtherListenersOrRetry" fullname="CoordinationRegressionTests.ThrowingRetryListenerDoesNotBlockOtherListenersOrRetry" methodname="ThrowingRetryListenerDoesNotBlockOtherListenersOrRetry" classname="CoordinationRegressionTests" runstate="Runnable" seed="124150422" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.004618" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[InvalidOperationException: retry listener failure
+]]></output>
+        </test-case>
+        <test-case id="1023" name="TimeoutRunsFinallyDuringGamePause" fullname="CoordinationRegressionTests.TimeoutRunsFinallyDuringGamePause" methodname="TimeoutRunsFinallyDuringGamePause" classname="CoordinationRegressionTests" runstate="Runnable" seed="1026711505" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.033097" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 协程超时（0.03 秒）
+]]></output>
+        </test-case>
+        <test-case id="1025" name="ValidSceneTaskCompletesAndThrowingProgressListenerDoesNotBlockIt" fullname="CoordinationRegressionTests.ValidSceneTaskCompletesAndThrowingProgressListenerDoesNotBlockIt" methodname="ValidSceneTaskCompletesAndThrowingProgressListenerDoesNotBlockIt" classname="CoordinationRegressionTests" runstate="Runnable" seed="198005457" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.003148" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[InvalidOperationException: scene progress listener failure
+]]></output>
+        </test-case>
+        <test-case id="1022" name="WorkerCancellationCleansUpOnUnityThread" fullname="CoordinationRegressionTests.WorkerCancellationCleansUpOnUnityThread" methodname="WorkerCancellationCleansUpOnUnityThread" classname="CoordinationRegressionTests" runstate="Runnable" seed="318679939" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.001797" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1044" name="FrameworkRegressionTests" fullname="FrameworkRegressionTests" classname="FrameworkRegressionTests" runstate="Runnable" testcasecount="15" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.279237" total="15" passed="15" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1059" name="AssetInitializationFailureDoesNotReportReady" fullname="FrameworkRegressionTests.AssetInitializationFailureDoesNotReportReady" methodname="AssetInitializationFailureDoesNotReportReady" classname="FrameworkRegressionTests" runstate="Runnable" seed="1519196524" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.006722" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[<###>  00:21:01.674  ThreadID:1
+资源关联数据缺少主包信息 mainBundleInfo
+<###>  00:21:01.676  ThreadID:1
+该资源不存在：missing
+]]></output>
+        </test-case>
+        <test-case id="1057" name="CanceledDownloadCompletesWithTimeoutDisabled" fullname="FrameworkRegressionTests.CanceledDownloadCompletesWithTimeoutDisabled" methodname="CanceledDownloadCompletesWithTimeoutDisabled" classname="FrameworkRegressionTests" runstate="Runnable" seed="1655673538" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.030525" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1047" name="ClearCancelsWaiterAndDoesNotCorruptNewLoad" fullname="FrameworkRegressionTests.ClearCancelsWaiterAndDoesNotCorruptNewLoad" methodname="ClearCancelsWaiterAndDoesNotCorruptNewLoad" classname="FrameworkRegressionTests" runstate="Runnable" seed="746461183" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.008286" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1050" name="CloseWhileLoadingPreventsLatePanelCreation" fullname="FrameworkRegressionTests.CloseWhileLoadingPreventsLatePanelCreation" methodname="CloseWhileLoadingPreventsLatePanelCreation" classname="FrameworkRegressionTests" runstate="Runnable" seed="853972810" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.016199" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1049" name="ConcurrentPanelRequestsShareInstanceAndReleaseReference" fullname="FrameworkRegressionTests.ConcurrentPanelRequestsShareInstanceAndReleaseReference" methodname="ConcurrentPanelRequestsShareInstanceAndReleaseReference" classname="FrameworkRegressionTests" runstate="Runnable" seed="1253096913" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.006221" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1053" name="CorruptReplayReturnsNull" fullname="FrameworkRegressionTests.CorruptReplayReturnsNull" methodname="CorruptReplayReturnsNull" classname="FrameworkRegressionTests" runstate="Runnable" seed="947259627" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.036569" asserts="0">
+          <properties />
+          <output><![CDATA[[ReplaySystem] 读取失败：不是支持的旧 NRBF 数据
+[ReplaySystem] 读取失败：回放时间戳无效或未排序
+]]></output>
+        </test-case>
+        <test-case id="1058" name="DestroyedDownloaderCompletesPendingTask" fullname="FrameworkRegressionTests.DestroyedDownloaderCompletesPendingTask" methodname="DestroyedDownloaderCompletesPendingTask" classname="FrameworkRegressionTests" runstate="Runnable" seed="862631041" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.027082" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1052" name="LegacyReplayDtoRemainsReadable" fullname="FrameworkRegressionTests.LegacyReplayDtoRemainsReadable" methodname="LegacyReplayDtoRemainsReadable" classname="FrameworkRegressionTests" runstate="Runnable" seed="306710010" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.028467" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1045" name="MissingResourceCanBeRequestedAgain" fullname="FrameworkRegressionTests.MissingResourceCanBeRequestedAgain" methodname="MissingResourceCanBeRequestedAgain" classname="FrameworkRegressionTests" runstate="Runnable" seed="1295961622" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.002394" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[资源加载失败：__missing_framework_test___T_UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+资源加载失败：__missing_framework_test___T_UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+]]></output>
+        </test-case>
+        <test-case id="1051" name="ReplayRoundTripPreservesComponentState" fullname="FrameworkRegressionTests.ReplayRoundTripPreservesComponentState" methodname="ReplayRoundTripPreservesComponentState" classname="FrameworkRegressionTests" runstate="Runnable" seed="11530663" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.022031" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1056" name="SeekRestoresObjectsAbsentFromAdjacentSparseFrames" fullname="FrameworkRegressionTests.SeekRestoresObjectsAbsentFromAdjacentSparseFrames" methodname="SeekRestoresObjectsAbsentFromAdjacentSparseFrames" classname="FrameworkRegressionTests" runstate="Runnable" seed="1583176192" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.007034" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1046" name="ThrowingResourceCallbackDoesNotBlockOtherWaiters" fullname="FrameworkRegressionTests.ThrowingResourceCallbackDoesNotBlockOtherWaiters" methodname="ThrowingResourceCallbackDoesNotBlockOtherWaiters" classname="FrameworkRegressionTests" runstate="Runnable" seed="1925852862" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.002646" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[InvalidOperationException: expected callback failure
+]]></output>
+        </test-case>
+        <test-case id="1048" name="TypeAndGenericReleaseKeepCacheUntilRequested" fullname="FrameworkRegressionTests.TypeAndGenericReleaseKeepCacheUntilRequested" methodname="TypeAndGenericReleaseKeepCacheUntilRequested" classname="FrameworkRegressionTests" runstate="Runnable" seed="2125126927" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.001630" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1055" name="UpdateBatchCommitsFilesAndManifest" fullname="FrameworkRegressionTests.UpdateBatchCommitsFilesAndManifest" methodname="UpdateBatchCommitsFilesAndManifest" classname="FrameworkRegressionTests" runstate="Runnable" seed="1871601789" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.018865" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1054" name="UpdateBatchRollsBackIfLaterFileIsLocked" fullname="FrameworkRegressionTests.UpdateBatchRollsBackIfLaterFileIsLocked" methodname="UpdateBatchRollsBackIfLaterFileIsLocked" classname="FrameworkRegressionTests" runstate="Runnable" seed="1337148619" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:01Z" duration="0.062665" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1060" name="HotUpdateRegressionTests" fullname="HotUpdateRegressionTests" classname="HotUpdateRegressionTests" runstate="Runnable" testcasecount="40" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:04Z" duration="2.742672" total="40" passed="40" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1066" name="BundledPersistentReferenceProtectsOldOwnedBundle" fullname="HotUpdateRegressionTests.BundledPersistentReferenceProtectsOldOwnedBundle" methodname="BundledPersistentReferenceProtectsOldOwnedBundle" classname="HotUpdateRegressionTests" runstate="Runnable" seed="735402407" result="Passed" start-time="2026-11-07 16:21:01Z" end-time="2026-11-07 16:21:02Z" duration="0.202631" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1075" name="CacheBudgetDoesNotEvictProtectedCurrentFiles" fullname="HotUpdateRegressionTests.CacheBudgetDoesNotEvictProtectedCurrentFiles" methodname="CacheBudgetDoesNotEvictProtectedCurrentFiles" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1005863045" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.132707" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1082" name="CancellationClosesStageWithoutUnityContinuation" fullname="HotUpdateRegressionTests.CancellationClosesStageWithoutUnityContinuation" methodname="CancellationClosesStageWithoutUnityContinuation" classname="HotUpdateRegressionTests" runstate="Runnable" seed="871405930" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.032606" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1094" name="CancellationDuringCommitRestoresCompleteOldVersion" fullname="HotUpdateRegressionTests.CancellationDuringCommitRestoresCompleteOldVersion" methodname="CancellationDuringCommitRestoresCompleteOldVersion" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1620398474" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.049296" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1096" name="CappedHandlerRejectsChunkAndResumeBeforeExceedingBudget" fullname="HotUpdateRegressionTests.CappedHandlerRejectsChunkAndResumeBeforeExceedingBudget" methodname="CappedHandlerRejectsChunkAndResumeBeforeExceedingBudget" classname="HotUpdateRegressionTests" runstate="Runnable" seed="736356619" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.003315" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1073" name="ChangedStagedManifestIsRejectedBeforeAnyTargetWrites" fullname="HotUpdateRegressionTests.ChangedStagedManifestIsRejectedBeforeAnyTargetWrites" methodname="ChangedStagedManifestIsRejectedBeforeAnyTargetWrites" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1636247734" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.121904" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1080" name="ConcurrentSessionIsRefusedAndCanOpenAfterClose" fullname="HotUpdateRegressionTests.ConcurrentSessionIsRefusedAndCanOpenAfterClose" methodname="ConcurrentSessionIsRefusedAndCanOpenAfterClose" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1371925267" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.012264" asserts="0">
+          <properties />
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1092" name="ControlFilesCannotBeBundleTargets" fullname="HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets" classname="HotUpdateRegressionTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.202620" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1087" name="ControlFilesCannotBeBundleTargets(&quot;.update-recovery/journal&quot;)" fullname="HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets(&quot;.update-recovery/journal&quot;)" methodname="ControlFilesCannotBeBundleTargets" classname="HotUpdateRegressionTests" runstate="Runnable" seed="658750219" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.044086" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1088" name="ControlFilesCannotBeBundleTargets(&quot;.update-stage&quot;)" fullname="HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets(&quot;.update-stage&quot;)" methodname="ControlFilesCannotBeBundleTargets" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1759944179" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.037425" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1089" name="ControlFilesCannotBeBundleTargets(&quot;.update-state/ledger&quot;)" fullname="HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets(&quot;.update-state/ledger&quot;)" methodname="ControlFilesCannotBeBundleTargets" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1170620922" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.026422" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1090" name="ControlFilesCannotBeBundleTargets(&quot;.update.lock&quot;)" fullname="HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets(&quot;.update.lock&quot;)" methodname="ControlFilesCannotBeBundleTargets" classname="HotUpdateRegressionTests" runstate="Runnable" seed="721184884" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.045691" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1091" name="ControlFilesCannotBeBundleTargets(&quot;assetData.assetref&quot;)" fullname="HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets(&quot;assetData.assetref&quot;)" methodname="ControlFilesCannotBeBundleTargets" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1792608537" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.047811" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1071" name="CorruptLedgerDisablesCollectionWithoutDeletingFiles" fullname="HotUpdateRegressionTests.CorruptLedgerDisablesCollectionWithoutDeletingFiles" methodname="CorruptLedgerDisablesCollectionWithoutDeletingFiles" classname="HotUpdateRegressionTests" runstate="Runnable" seed="225205312" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.136659" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1072" name="CurrentVersionSurvivesFailedNextCommitAndPreCommitGc" fullname="HotUpdateRegressionTests.CurrentVersionSurvivesFailedNextCommitAndPreCommitGc" methodname="CurrentVersionSurvivesFailedNextCommitAndPreCommitGc" classname="HotUpdateRegressionTests" runstate="Runnable" seed="819170402" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.100283" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1076" name="DeviceSpaceBudgetIncludesBackupAndTargetGrowth" fullname="HotUpdateRegressionTests.DeviceSpaceBudgetIncludesBackupAndTargetGrowth" methodname="DeviceSpaceBudgetIncludesBackupAndTargetGrowth" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1473231448" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:02Z" duration="0.030237" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1070" name="DisabledCollectionRetainsOwnedFiles" fullname="HotUpdateRegressionTests.DisabledCollectionRetainsOwnedFiles" methodname="DisabledCollectionRetainsOwnedFiles" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1197573867" result="Passed" start-time="2026-11-07 16:21:02Z" end-time="2026-11-07 16:21:03Z" duration="0.117525" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1099" name="DisableFromStartCallbackDoesNotUseDisposedNativeRequest" fullname="HotUpdateRegressionTests.DisableFromStartCallbackDoesNotUseDisposedNativeRequest" methodname="DisableFromStartCallbackDoesNotUseDisposedNativeRequest" classname="HotUpdateRegressionTests" runstate="Runnable" seed="982033950" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.003788" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1098" name="DisablingDownloaderSettlesAwaitersAndClosesFile" fullname="HotUpdateRegressionTests.DisablingDownloaderSettlesAwaitersAndClosesFile" methodname="DisablingDownloaderSettlesAwaitersAndClosesFile" classname="HotUpdateRegressionTests" runstate="Runnable" seed="308485628" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.053315" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1068" name="ExternallyChangedOwnedFileIsNotDeleted" fullname="HotUpdateRegressionTests.ExternallyChangedOwnedFileIsNotDeleted" methodname="ExternallyChangedOwnedFileIsNotDeleted" classname="HotUpdateRegressionTests" runstate="Runnable" seed="453819597" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.196048" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1101" name="FileMaintenanceGateDefersNewBundleLoadWithoutBlockingMainThread" fullname="HotUpdateRegressionTests.FileMaintenanceGateDefersNewBundleLoadWithoutBlockingMainThread" methodname="FileMaintenanceGateDefersNewBundleLoadWithoutBlockingMainThread" classname="HotUpdateRegressionTests" runstate="Runnable" seed="594794751" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.003244" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1086" name="InvalidResourceRootIsRefused" fullname="HotUpdateRegressionTests.InvalidResourceRootIsRefused" classname="HotUpdateRegressionTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.004828" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1083" name="InvalidResourceRootIsRefused(&quot;../outside&quot;)" fullname="HotUpdateRegressionTests.InvalidResourceRootIsRefused(&quot;../outside&quot;)" methodname="InvalidResourceRootIsRefused" classname="HotUpdateRegressionTests" runstate="Runnable" seed="994991609" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.001319" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1084" name="InvalidResourceRootIsRefused(&quot;/absolute&quot;)" fullname="HotUpdateRegressionTests.InvalidResourceRootIsRefused(&quot;/absolute&quot;)" methodname="InvalidResourceRootIsRefused" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1936721964" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.001048" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1085" name="InvalidResourceRootIsRefused(&quot;AssetBundles/../../outside&quot;)" fullname="HotUpdateRegressionTests.InvalidResourceRootIsRefused(&quot;AssetBundles/../../outside&quot;)" methodname="InvalidResourceRootIsRefused" classname="HotUpdateRegressionTests" runstate="Runnable" seed="545467965" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.002069" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1102" name="LargeFileHashAllowsUnityFramesToAdvance" fullname="HotUpdateRegressionTests.LargeFileHashAllowsUnityFramesToAdvance" methodname="LargeFileHashAllowsUnityFramesToAdvance" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1962955661" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.141795" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[HOTUPDATE_BACKGROUND_HASH bytes=16777216 frames=1870 ms=57
+]]></output>
+        </test-case>
+        <test-case id="1067" name="LastTwoManifestReferencesExpireOnThirdVersion" fullname="HotUpdateRegressionTests.LastTwoManifestReferencesExpireOnThirdVersion" methodname="LastTwoManifestReferencesExpireOnThirdVersion" classname="HotUpdateRegressionTests" runstate="Runnable" seed="630878208" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.237703" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1095" name="LegacyConfigReceivesDiskManagementDefaults" fullname="HotUpdateRegressionTests.LegacyConfigReceivesDiskManagementDefaults" methodname="LegacyConfigReceivesDiskManagementDefaults" classname="HotUpdateRegressionTests" runstate="Runnable" seed="213922478" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.001534" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1064" name="MatchingFileIsHashedOnWorker" fullname="HotUpdateRegressionTests.MatchingFileIsHashedOnWorker" methodname="MatchingFileIsHashedOnWorker" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1952810147" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.051035" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1063" name="MissingAndSameLengthCorruptFilesDownloadAgain" fullname="HotUpdateRegressionTests.MissingAndSameLengthCorruptFilesDownloadAgain" methodname="MissingAndSameLengthCorruptFilesDownloadAgain" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1558628414" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:03Z" duration="0.127156" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1069" name="MissingBundledManifestDisablesGarbageCollection" fullname="HotUpdateRegressionTests.MissingBundledManifestDisablesGarbageCollection" methodname="MissingBundledManifestDisablesGarbageCollection" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1534034376" result="Passed" start-time="2026-11-07 16:21:03Z" end-time="2026-11-07 16:21:04Z" duration="0.123872" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1079" name="MissingSizeCannotCreateUnboundedHotUpdate" fullname="HotUpdateRegressionTests.MissingSizeCannotCreateUnboundedHotUpdate" methodname="MissingSizeCannotCreateUnboundedHotUpdate" classname="HotUpdateRegressionTests" runstate="Runnable" seed="318137695" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.034720" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1097" name="NativeDownloadCannotWriteBeyondCap" fullname="HotUpdateRegressionTests.NativeDownloadCannotWriteBeyondCap" methodname="NativeDownloadCannotWriteBeyondCap" classname="HotUpdateRegressionTests" runstate="Runnable" seed="698873745" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.005297" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1061" name="NewVersionCommitsBundlesLedgerAndManifestTogether" fullname="HotUpdateRegressionTests.NewVersionCommitsBundlesLedgerAndManifestTogether" methodname="NewVersionCommitsBundlesLedgerAndManifestTogether" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1448858795" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.102882" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1065" name="ObsoleteOwnedBundleIsCollectedAndUnknownFileSurvives" fullname="HotUpdateRegressionTests.ObsoleteOwnedBundleIsCollectedAndUnknownFileSurvives" methodname="ObsoleteOwnedBundleIsCollectedAndUnknownFileSurvives" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1196296820" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.192829" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1100" name="RetryCancellationDoesNotDependOnTimeScale" fullname="HotUpdateRegressionTests.RetryCancellationDoesNotDependOnTimeScale" methodname="RetryCancellationDoesNotDependOnTimeScale" classname="HotUpdateRegressionTests" runstate="Runnable" seed="883883634" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.005325" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1077" name="SpaceIsCheckedAgainBeforeCommit" fullname="HotUpdateRegressionTests.SpaceIsCheckedAgainBeforeCommit" methodname="SpaceIsCheckedAgainBeforeCommit" classname="HotUpdateRegressionTests" runstate="Runnable" seed="395763288" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.050786" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1081" name="StageCleanupRequiresValidOwnerMarker" fullname="HotUpdateRegressionTests.StageCleanupRequiresValidOwnerMarker" methodname="StageCleanupRequiresValidOwnerMarker" classname="HotUpdateRegressionTests" runstate="Runnable" seed="854881259" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.045082" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1074" name="StagingBudgetRejectsBeforeBundleDownloads" fullname="HotUpdateRegressionTests.StagingBudgetRejectsBeforeBundleDownloads" methodname="StagingBudgetRejectsBeforeBundleDownloads" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1469288870" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.053641" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1078" name="UnknownDeviceSpaceFailsWithReserveAndWorksWhenProbeDisabled" fullname="HotUpdateRegressionTests.UnknownDeviceSpaceFailsWithReserveAndWorksWhenProbeDisabled" methodname="UnknownDeviceSpaceFailsWithReserveAndWorksWhenProbeDisabled" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1048444239" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.051209" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1093" name="UnsafeJournalRejectsAllTargetsBeforeRecovery" fullname="HotUpdateRegressionTests.UnsafeJournalRejectsAllTargetsBeforeRecovery" methodname="UnsafeJournalRejectsAllTargetsBeforeRecovery" classname="HotUpdateRegressionTests" runstate="Runnable" seed="1007552098" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.009388" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1062" name="ValidExistingFileDoesNotDownloadOrBecomeOwned" fullname="HotUpdateRegressionTests.ValidExistingFileDoesNotDownloadOrBecomeOwned" methodname="ValidExistingFileDoesNotDownloadOrBecomeOwned" classname="HotUpdateRegressionTests" runstate="Runnable" seed="630036509" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.100178" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1103" name="LifecycleRegressionTests" fullname="LifecycleRegressionTests" classname="LifecycleRegressionTests" runstate="Runnable" testcasecount="26" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:06Z" duration="2.080072" total="26" passed="26" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1127" name="AssetsLoaderReadinessTracksClearAndCanceledInitialization" fullname="LifecycleRegressionTests.AssetsLoaderReadinessTracksClearAndCanceledInitialization" methodname="AssetsLoaderReadinessTracksClearAndCanceledInitialization" classname="LifecycleRegressionTests" runstate="Runnable" seed="2010663155" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.026161" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 创建 EventCenter 实例
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1116" name="AudioRebindsToRecreatedPublicMono" fullname="LifecycleRegressionTests.AudioRebindsToRecreatedPublicMono" methodname="AudioRebindsToRecreatedPublicMono" classname="LifecycleRegressionTests" runstate="Runnable" seed="2115375688" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.006536" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1117" name="BorrowedInstancesKeepOnePrefabReferenceUntilDestroyed" fullname="LifecycleRegressionTests.BorrowedInstancesKeepOnePrefabReferenceUntilDestroyed" methodname="BorrowedInstancesKeepOnePrefabReferenceUntilDestroyed" classname="LifecycleRegressionTests" runstate="Runnable" seed="191074490" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.008377" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1121" name="CallbackReentryDoesNotDuplicatePoolMembership" fullname="LifecycleRegressionTests.CallbackReentryDoesNotDuplicatePoolMembership" methodname="CallbackReentryDoesNotDuplicatePoolMembership" classname="LifecycleRegressionTests" runstate="Runnable" seed="1086754441" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.003041" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1126" name="ClearDuringAssetLoadCompletesWaiterAndSupportsReinitialization" fullname="LifecycleRegressionTests.ClearDuringAssetLoadCompletesWaiterAndSupportsReinitialization" methodname="ClearDuringAssetLoadCompletesWaiterAndSupportsReinitialization" classname="LifecycleRegressionTests" runstate="Runnable" seed="648069637" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:04Z" duration="0.037645" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1106" name="ClearInvalidatesRemoteTaskAndPreventsCacheWrite" fullname="LifecycleRegressionTests.ClearInvalidatesRemoteTaskAndPreventsCacheWrite" methodname="ClearInvalidatesRemoteTaskAndPreventsCacheWrite" classname="LifecycleRegressionTests" runstate="Runnable" seed="840228810" result="Passed" start-time="2026-11-07 16:21:04Z" end-time="2026-11-07 16:21:05Z" duration="0.607454" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1108" name="ClearPreservesIndependentlyOwnedBundles" fullname="LifecycleRegressionTests.ClearPreservesIndependentlyOwnedBundles" methodname="ClearPreservesIndependentlyOwnedBundles" classname="LifecycleRegressionTests" runstate="Runnable" seed="1752103602" result="Passed" start-time="2026-11-07 16:21:05Z" end-time="2026-11-07 16:21:05Z" duration="0.007892" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1107" name="DestroyedCallbackHostCompletesCallerExactlyOnce" fullname="LifecycleRegressionTests.DestroyedCallbackHostCompletesCallerExactlyOnce" methodname="DestroyedCallbackHostCompletesCallerExactlyOnce" classname="LifecycleRegressionTests" runstate="Runnable" seed="473843374" result="Passed" start-time="2026-11-07 16:21:05Z" end-time="2026-11-07 16:21:06Z" duration="1.256964" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1124" name="DisposeCompletesStackedWaiterAndLateResultCannotReachNewAudioInstance" fullname="LifecycleRegressionTests.DisposeCompletesStackedWaiterAndLateResultCannotReachNewAudioInstance" methodname="DisposeCompletesStackedWaiterAndLateResultCannotReachNewAudioInstance" classname="LifecycleRegressionTests" runstate="Runnable" seed="1323619467" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.006752" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+[LazySingleton] 创建 AudioMgr 实例
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1110" name="DisposePreventsPendingPrewarmFromRecreatingOldPool" fullname="LifecycleRegressionTests.DisposePreventsPendingPrewarmFromRecreatingOldPool" methodname="DisposePreventsPendingPrewarmFromRecreatingOldPool" classname="LifecycleRegressionTests" runstate="Runnable" seed="1665618511" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.003270" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1113" name="LaterDirectBgmInvalidatesDelayedRequest" fullname="LifecycleRegressionTests.LaterDirectBgmInvalidatesDelayedRequest" methodname="LaterDirectBgmInvalidatesDelayedRequest" classname="LifecycleRegressionTests" runstate="Runnable" seed="622434836" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002626" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1114" name="LaterDirectUniqueSoundInvalidatesDelayedRequest" fullname="LifecycleRegressionTests.LaterDirectUniqueSoundInvalidatesDelayedRequest" methodname="LaterDirectUniqueSoundInvalidatesDelayedRequest" classname="LifecycleRegressionTests" runstate="Runnable" seed="1666510566" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002528" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1104" name="MixedDependencyLocationsLoadSuccessfully" fullname="LifecycleRegressionTests.MixedDependencyLocationsLoadSuccessfully" methodname="MixedDependencyLocationsLoadSuccessfully" classname="LifecycleRegressionTests" runstate="Runnable" seed="394427752" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.023544" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1129" name="NewPoolCanRetireBorrowerFromDisposedOwner" fullname="LifecycleRegressionTests.NewPoolCanRetireBorrowerFromDisposedOwner" methodname="NewPoolCanRetireBorrowerFromDisposedOwner" classname="LifecycleRegressionTests" runstate="Runnable" seed="820056644" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002547" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1118" name="OldInstanceReleaseCannotDecrementNewResourcesGeneration" fullname="LifecycleRegressionTests.OldInstanceReleaseCannotDecrementNewResourcesGeneration" methodname="OldInstanceReleaseCannotDecrementNewResourcesGeneration" classname="LifecycleRegressionTests" runstate="Runnable" seed="1194296382" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.005824" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1125" name="OwnerlessFrameListenerSurvivesWhileDestroyedOwnerIsRemoved" fullname="LifecycleRegressionTests.OwnerlessFrameListenerSurvivesWhileDestroyedOwnerIsRemoved" methodname="OwnerlessFrameListenerSurvivesWhileDestroyedOwnerIsRemoved" classname="LifecycleRegressionTests" runstate="Runnable" seed="2012930928" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002222" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1109" name="PoolReturnsResourcesCountAfterAllIdleInstancesAreCleared" fullname="LifecycleRegressionTests.PoolReturnsResourcesCountAfterAllIdleInstancesAreCleared" methodname="PoolReturnsResourcesCountAfterAllIdleInstancesAreCleared" classname="LifecycleRegressionTests" runstate="Runnable" seed="1230865116" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002374" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1122" name="PoolTimeoutDiscardsLateResultAndAllowsRetry" fullname="LifecycleRegressionTests.PoolTimeoutDiscardsLateResultAndAllowsRetry" methodname="PoolTimeoutDiscardsLateResultAndAllowsRetry" classname="LifecycleRegressionTests" runstate="Runnable" seed="1609615677" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.024069" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[<###>  00:21:06.729  ThreadID:1
+对象池资源加载超时：fixture
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1123" name="SameBgmEarlyReturnStillCancelsOlderPendingIntent" fullname="LifecycleRegressionTests.SameBgmEarlyReturnStillCancelsOlderPendingIntent" methodname="SameBgmEarlyReturnStillCancelsOlderPendingIntent" classname="LifecycleRegressionTests" runstate="Runnable" seed="1317674448" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002724" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1112" name="SharedClipReleaseCrossCheck" fullname="LifecycleRegressionTests.SharedClipReleaseCrossCheck" methodname="SharedClipReleaseCrossCheck" classname="LifecycleRegressionTests" runstate="Runnable" seed="1004876013" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.005735" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1119" name="StaleBorrowerReturnIsDestroyedInsteadOfRepopulatingPool" fullname="LifecycleRegressionTests.StaleBorrowerReturnIsDestroyedInsteadOfRepopulatingPool" methodname="StaleBorrowerReturnIsDestroyedInsteadOfRepopulatingPool" classname="LifecycleRegressionTests" runstate="Runnable" seed="2126426672" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002248" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1115" name="StopAllSoundCancelsPendingStackedSoundExactlyOnce" fullname="LifecycleRegressionTests.StopAllSoundCancelsPendingStackedSoundExactlyOnce" methodname="StopAllSoundCancelsPendingStackedSoundExactlyOnce" classname="LifecycleRegressionTests" runstate="Runnable" seed="147505950" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002407" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1128" name="StopCancellationCallbackMayStartANewUniqueRequest" fullname="LifecycleRegressionTests.StopCancellationCallbackMayStartANewUniqueRequest" methodname="StopCancellationCallbackMayStartANewUniqueRequest" classname="LifecycleRegressionTests" runstate="Runnable" seed="1653698852" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002468" asserts="0">
+          <properties />
+          <output><![CDATA[[LazySingleton] 创建 AudioMgr 实例
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1105" name="TaskAndCallbackShareNativeInflightRequest" fullname="LifecycleRegressionTests.TaskAndCallbackShareNativeInflightRequest" methodname="TaskAndCallbackShareNativeInflightRequest" classname="LifecycleRegressionTests" runstate="Runnable" seed="873094983" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.023289" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1111" name="ThrowingDespawnAllowsLaterReturn" fullname="LifecycleRegressionTests.ThrowingDespawnAllowsLaterReturn" methodname="ThrowingDespawnAllowsLaterReturn" classname="LifecycleRegressionTests" runstate="Runnable" seed="1915538331" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002337" asserts="0">
+          <properties />
+          <output><![CDATA[InvalidOperationException: Audit expected OnDespawn error
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1120" name="ThrowingSpawnDestroysFailedInstanceWithoutPoisoningPool" fullname="LifecycleRegressionTests.ThrowingSpawnDestroysFailedInstanceWithoutPoisoningPool" methodname="ThrowingSpawnDestroysFailedInstanceWithoutPoisoningPool" classname="LifecycleRegressionTests" runstate="Runnable" seed="2106768462" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002361" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[InvalidOperationException: Audit expected OnSpawn error
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1130" name="P0StartupRegressionTests" fullname="P0StartupRegressionTests" classname="P0StartupRegressionTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.034557" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1135" name="CleanupFailureDoesNotSkipEarlierServices" fullname="P0StartupRegressionTests.CleanupFailureDoesNotSkipEarlierServices" methodname="CleanupFailureDoesNotSkipEarlierServices" classname="P0StartupRegressionTests" runstate="Runnable" seed="1229516161" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.005733" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1137" name="DestroyingRootDuringStartupSettlesWaiters" fullname="P0StartupRegressionTests.DestroyingRootDuringStartupSettlesWaiters" methodname="DestroyingRootDuringStartupSettlesWaiters" classname="P0StartupRegressionTests" runstate="Runnable" seed="590818908" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.006866" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.UPGameRoot] EagerMonoSingleton Awake初始化
+DontDestroyOnLoad only works for root GameObjects or components on root GameObjects.
+]]></output>
+        </test-case>
+        <test-case id="1132" name="FailedStepAlsoRollsBackAndLaterStepsNeverRun" fullname="P0StartupRegressionTests.FailedStepAlsoRollsBackAndLaterStepsNeverRun" methodname="FailedStepAlsoRollsBackAndLaterStepsNeverRun" classname="P0StartupRegressionTests" runstate="Runnable" seed="2015022740" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.001829" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1136" name="RootReadyCanBeAwaitedLateAndShutdownRejectsAccess" fullname="P0StartupRegressionTests.RootReadyCanBeAwaitedLateAndShutdownRejectsAccess" methodname="RootReadyCanBeAwaitedLateAndShutdownRejectsAccess" classname="P0StartupRegressionTests" runstate="Runnable" seed="1003237302" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.013349" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.UPGameRoot] EagerMonoSingleton Awake初始化
+DontDestroyOnLoad only works for root GameObjects or components on root GameObjects.
+[PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 创建单例实例(Eager)
+[LazySingleton] 创建 BinaryDataMgr 实例
+[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 创建 AudioMgr 实例
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1133" name="ShutdownDuringInitializationCancelsAndRollsBack" fullname="P0StartupRegressionTests.ShutdownDuringInitializationCancelsAndRollsBack" methodname="ShutdownDuringInitializationCancelsAndRollsBack" classname="P0StartupRegressionTests" runstate="Runnable" seed="2079614860" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002126" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1131" name="StartupRunsOnceAndClosesInReverseOrder" fullname="P0StartupRegressionTests.StartupRunsOnceAndClosesInReverseOrder" methodname="StartupRunsOnceAndClosesInReverseOrder" classname="P0StartupRegressionTests" runstate="Runnable" seed="712552054" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.001879" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1134" name="WaiterCancellationDoesNotCancelSharedStartup" fullname="P0StartupRegressionTests.WaiterCancellationDoesNotCancelSharedStartup" methodname="WaiterCancellationDoesNotCancelSharedStartup" classname="P0StartupRegressionTests" runstate="Runnable" seed="1664671256" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.001759" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1138" name="P0StateMachineRegressionTests" fullname="P0StateMachineRegressionTests" classname="P0StateMachineRegressionTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.005611" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1141" name="AncestorGuardIsAlsoChecked" fullname="P0StateMachineRegressionTests.AncestorGuardIsAlsoChecked" methodname="AncestorGuardIsAlsoChecked" classname="P0StateMachineRegressionTests" runstate="Runnable" seed="919671073" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002157" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1139" name="CrossBranchActivatesAncestorsAndHistoryRestoresLeaf" fullname="P0StateMachineRegressionTests.CrossBranchActivatesAncestorsAndHistoryRestoresLeaf" methodname="CrossBranchActivatesAncestorsAndHistoryRestoresLeaf" classname="P0StateMachineRegressionTests" runstate="Runnable" seed="462926918" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000316" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1145" name="DefaultChildIsEnteredWhenActivatingNewBranch" fullname="P0StateMachineRegressionTests.DefaultChildIsEnteredWhenActivatingNewBranch" methodname="DefaultChildIsEnteredWhenActivatingNewBranch" classname="P0StateMachineRegressionTests" runstate="Runnable" seed="1176478150" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000202" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1146" name="DestroyExitsActiveHierarchy" fullname="P0StateMachineRegressionTests.DestroyExitsActiveHierarchy" methodname="DestroyExitsActiveHierarchy" classname="P0StateMachineRegressionTests" runstate="Runnable" seed="4127357" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000159" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1143" name="FailedBackKeepsHistoryAndSameStateDoesNotReenter" fullname="P0StateMachineRegressionTests.FailedBackKeepsHistoryAndSameStateDoesNotReenter" methodname="FailedBackKeepsHistoryAndSameStateDoesNotReenter" classname="P0StateMachineRegressionTests" runstate="Runnable" seed="2105627980" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.001256" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1140" name="IdAndPathBothRespectActualLeafGuard" fullname="P0StateMachineRegressionTests.IdAndPathBothRespectActualLeafGuard" methodname="IdAndPathBothRespectActualLeafGuard" classname="P0StateMachineRegressionTests" runstate="Runnable" seed="1948407934" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000229" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1142" name="InvalidDeepPathHasNoLifecycleSideEffects" fullname="P0StateMachineRegressionTests.InvalidDeepPathHasNoLifecycleSideEffects" methodname="InvalidDeepPathHasNoLifecycleSideEffects" classname="P0StateMachineRegressionTests" runstate="Runnable" seed="1862146697" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000195" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1144" name="NotificationCannotReenterAndCorruptBackHistory" fullname="P0StateMachineRegressionTests.NotificationCannotReenterAndCorruptBackHistory" methodname="NotificationCannotReenterAndCorruptBackHistory" classname="P0StateMachineRegressionTests" runstate="Runnable" seed="1852041151" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000315" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1181" name="P1NativeSceneTests" fullname="P1NativeSceneTests" classname="P1NativeSceneTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.009352" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1182" name="LegacyLoaderUsesManagedFullPathAndPreservesCallbackOrder" fullname="P1NativeSceneTests.LegacyLoaderUsesManagedFullPathAndPreservesCallbackOrder" methodname="LegacyLoaderUsesManagedFullPathAndPreservesCallbackOrder" classname="P1NativeSceneTests" runstate="Runnable" seed="93265167" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.004335" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1183" name="NativeAdditiveLoadsHaveDistinctScopesAndUnloadCleansOwnership" fullname="P1NativeSceneTests.NativeAdditiveLoadsHaveDistinctScopesAndUnloadCleansOwnership" methodname="NativeAdditiveLoadsHaveDistinctScopesAndUnloadCleansOwnership" classname="P1NativeSceneTests" runstate="Runnable" seed="1861187569" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.004573" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1171" name="P1ResourceIntegrationTests" fullname="P1ResourceIntegrationTests" classname="P1ResourceIntegrationTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.125097" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1174" name="LegacyRawResourceRemainsExplicitlyOwnedWhenManagedLeaseEnds" fullname="P1ResourceIntegrationTests.LegacyRawResourceRemainsExplicitlyOwnedWhenManagedLeaseEnds" methodname="LegacyRawResourceRemainsExplicitlyOwnedWhenManagedLeaseEnds" classname="P1ResourceIntegrationTests" runstate="Runnable" seed="833742553" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.026989" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1175" name="LegacySceneNamePreparationFindsUniqueFullManifestPath" fullname="P1ResourceIntegrationTests.LegacySceneNamePreparationFindsUniqueFullManifestPath" methodname="LegacySceneNamePreparationFindsUniqueFullManifestPath" classname="P1ResourceIntegrationTests" runstate="Runnable" seed="1479316304" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.023473" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1176" name="MissingAssetDoesNotKeepDependencyPinned" fullname="P1ResourceIntegrationTests.MissingAssetDoesNotKeepDependencyPinned" methodname="MissingAssetDoesNotKeepDependencyPinned" classname="P1ResourceIntegrationTests" runstate="Runnable" seed="673213311" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.025261" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1173" name="OldGenerationLeaseCannotDecrementNewBundlePins" fullname="P1ResourceIntegrationTests.OldGenerationLeaseCannotDecrementNewBundlePins" methodname="OldGenerationLeaseCannotDecrementNewBundlePins" classname="P1ResourceIntegrationTests" runstate="Runnable" seed="1824298890" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.022398" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1177" name="SceneScopePoolAndAudioUseInjectedResourceOwnership" fullname="P1ResourceIntegrationTests.SceneScopePoolAndAudioUseInjectedResourceOwnership" methodname="SceneScopePoolAndAudioUseInjectedResourceOwnership" classname="P1ResourceIntegrationTests" runstate="Runnable" seed="179566956" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.005215" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 创建 AudioMgr 实例
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+        <test-case id="1172" name="TwoManagedHoldersProtectTargetAndSharedDependencyUntilLastRelease" fullname="P1ResourceIntegrationTests.TwoManagedHoldersProtectTargetAndSharedDependencyUntilLastRelease" methodname="TwoManagedHoldersProtectTargetAndSharedDependencyUntilLastRelease" classname="P1ResourceIntegrationTests" runstate="Runnable" seed="719962427" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.020806" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1184" name="P1RootCompositionTests" fullname="P1RootCompositionTests" classname="P1RootCompositionTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.008571" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1185" name="RootInjectsConsumerFreezesConfigAndShutdownRestoresPause" fullname="P1RootCompositionTests.RootInjectsConsumerFreezesConfigAndShutdownRestoresPause" methodname="RootInjectsConsumerFreezesConfigAndShutdownRestoresPause" classname="P1RootCompositionTests" runstate="Runnable" seed="1487721653" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.007068" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[[UPandaGF.UPGameRoot] EagerMonoSingleton Awake初始化
+DontDestroyOnLoad only works for root GameObjects or components on root GameObjects.
+[ResourcesLoader] 创建单例实例(Lazy)
+[LazySingleton] 创建 AudioMgr 实例
+[LazySingleton] 释放 AudioMgr 实例
+]]></output>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1164" name="P1SceneCoordinationTests" fullname="P1SceneCoordinationTests" classname="P1SceneCoordinationTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.030770" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1168" name="BackendFailureDoesNotPoisonQueueAndProgressHasUniqueIds" fullname="P1SceneCoordinationTests.BackendFailureDoesNotPoisonQueueAndProgressHasUniqueIds" methodname="BackendFailureDoesNotPoisonQueueAndProgressHasUniqueIds" classname="P1SceneCoordinationTests" runstate="Runnable" seed="337623275" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002885" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1166" name="CanceledQueuedRequestNeverReachesBackend" fullname="P1SceneCoordinationTests.CanceledQueuedRequestNeverReachesBackend" methodname="CanceledQueuedRequestNeverReachesBackend" classname="P1SceneCoordinationTests" runstate="Runnable" seed="468890024" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.001163" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1165" name="CancelingNativeWaitDoesNotStartNextRequestEarly" fullname="P1SceneCoordinationTests.CancelingNativeWaitDoesNotStartNextRequestEarly" methodname="CancelingNativeWaitDoesNotStartNextRequestEarly" classname="P1SceneCoordinationTests" runstate="Runnable" seed="145192166" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.002395" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1169" name="ExternalSceneUnloadCancelsAndDisposesScope" fullname="P1SceneCoordinationTests.ExternalSceneUnloadCancelsAndDisposesScope" methodname="ExternalSceneUnloadCancelsAndDisposesScope" classname="P1SceneCoordinationTests" runstate="Runnable" seed="804851587" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000679" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1167" name="ShutdownWaitsForNativeThenReleasesAllScopes" fullname="P1SceneCoordinationTests.ShutdownWaitsForNativeThenReleasesAllScopes" methodname="ShutdownWaitsForNativeThenReleasesAllScopes" classname="P1SceneCoordinationTests" runstate="Runnable" seed="545094354" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.001285" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1170" name="TimeoutCancelsWaitButKeepsNativeSerialized" fullname="P1SceneCoordinationTests.TimeoutCancelsWaitButKeepsNativeSerialized" methodname="TimeoutCancelsWaitButKeepsNativeSerialized" classname="P1SceneCoordinationTests" runstate="Runnable" seed="646307421" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.021513" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1147" name="P1ScopeAndInputTests" fullname="P1ScopeAndInputTests" classname="P1ScopeAndInputTests" runstate="Runnable" testcasecount="15" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:07Z" duration="0.033242" total="15" passed="15" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1155" name="CanceledAcquireDisposesLateAssetExactlyOnce" fullname="P1ScopeAndInputTests.CanceledAcquireDisposesLateAssetExactlyOnce" methodname="CanceledAcquireDisposesLateAssetExactlyOnce" classname="P1ScopeAndInputTests" runstate="Runnable" seed="49303667" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.001466" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1151" name="CancelingScopeRejectsAndReleasesNewOwnershipBeforeFinalDispose" fullname="P1ScopeAndInputTests.CancelingScopeRejectsAndReleasesNewOwnershipBeforeFinalDispose" methodname="CancelingScopeRejectsAndReleasesNewOwnershipBeforeFinalDispose" classname="P1ScopeAndInputTests" runstate="Runnable" seed="275078849" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000260" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1162" name="ConfigChecksTargetUrlAesAndDuplicateActions" fullname="P1ScopeAndInputTests.ConfigChecksTargetUrlAesAndDuplicateActions" methodname="ConfigChecksTargetUrlAesAndDuplicateActions" classname="P1ScopeAndInputTests" runstate="Runnable" seed="262113047" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000293" asserts="0">
+          <properties />
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1161" name="ConfigRejectsInvalidBundleRoot" fullname="P1ScopeAndInputTests.ConfigRejectsInvalidBundleRoot" classname="P1ScopeAndInputTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000774" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1158" name="ConfigRejectsInvalidBundleRoot(&quot;../escape/&quot;)" fullname="P1ScopeAndInputTests.ConfigRejectsInvalidBundleRoot(&quot;../escape/&quot;)" methodname="ConfigRejectsInvalidBundleRoot" classname="P1ScopeAndInputTests" runstate="Runnable" seed="273066174" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000357" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1159" name="ConfigRejectsInvalidBundleRoot(&quot;C:/outside/&quot;)" fullname="P1ScopeAndInputTests.ConfigRejectsInvalidBundleRoot(&quot;C:/outside/&quot;)" methodname="ConfigRejectsInvalidBundleRoot" classname="P1ScopeAndInputTests" runstate="Runnable" seed="72913197" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000076" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1160" name="ConfigRejectsInvalidBundleRoot(&quot;/absolute/&quot;)" fullname="P1ScopeAndInputTests.ConfigRejectsInvalidBundleRoot(&quot;/absolute/&quot;)" methodname="ConfigRejectsInvalidBundleRoot" classname="P1ScopeAndInputTests" runstate="Runnable" seed="1225093498" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000062" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1157" name="ConfigSnapshotDoesNotShareNestedObjectsAndRejectsInvalidSettings" fullname="P1ScopeAndInputTests.ConfigSnapshotDoesNotShareNestedObjectsAndRejectsInvalidSettings" methodname="ConfigSnapshotDoesNotShareNestedObjectsAndRejectsInvalidSettings" classname="P1ScopeAndInputTests" runstate="Runnable" seed="511734123" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000340" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1156" name="ContractsAndRuntimeDoNotReferenceBusinessOrSamples" fullname="P1ScopeAndInputTests.ContractsAndRuntimeDoNotReferenceBusinessOrSamples" methodname="ContractsAndRuntimeDoNotReferenceBusinessOrSamples" classname="P1ScopeAndInputTests" runstate="Runnable" seed="1823545574" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000340" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1153" name="InputContextsCanBeReleasedOutOfOrderAndBindingsAreSnapshots" fullname="P1ScopeAndInputTests.InputContextsCanBeReleasedOutOfOrderAndBindingsAreSnapshots" methodname="InputContextsCanBeReleasedOutOfOrderAndBindingsAreSnapshots" classname="P1ScopeAndInputTests" runstate="Runnable" seed="2074531278" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000537" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1152" name="NestedPauseRestoresPriorScaleAndPreservesMenuInput" fullname="P1ScopeAndInputTests.NestedPauseRestoresPriorScaleAndPreservesMenuInput" methodname="NestedPauseRestoresPriorScaleAndPreservesMenuInput" classname="P1ScopeAndInputTests" runstate="Runnable" seed="1566839845" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000384" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1154" name="PauseDisposalRestoresGlobalStateAndInvalidScaleIsRejected" fullname="P1ScopeAndInputTests.PauseDisposalRestoresGlobalStateAndInvalidScaleIsRejected" methodname="PauseDisposalRestoresGlobalStateAndInvalidScaleIsRejected" classname="P1ScopeAndInputTests" runstate="Runnable" seed="1957514787" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:06Z" duration="0.000359" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1163" name="SaveServiceRoundTripsAndRejectsTraversal" fullname="P1ScopeAndInputTests.SaveServiceRoundTripsAndRejectsTraversal" methodname="SaveServiceRoundTripsAndRejectsTraversal" classname="P1ScopeAndInputTests" runstate="Runnable" seed="800571065" result="Passed" start-time="2026-11-07 16:21:06Z" end-time="2026-11-07 16:21:07Z" duration="0.024638" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1148" name="ScopeCancelsBeforeReleasingInReverseEvenIfCleanupThrows" fullname="P1ScopeAndInputTests.ScopeCancelsBeforeReleasingInReverseEvenIfCleanupThrows" methodname="ScopeCancelsBeforeReleasingInReverseEvenIfCleanupThrows" classname="P1ScopeAndInputTests" runstate="Runnable" seed="1287606636" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.000573" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1150" name="ScopedSubscriptionDoesNotRemoveIdenticalExternalListener" fullname="P1ScopeAndInputTests.ScopedSubscriptionDoesNotRemoveIdenticalExternalListener" methodname="ScopedSubscriptionDoesNotRemoveIdenticalExternalListener" classname="P1ScopeAndInputTests" runstate="Runnable" seed="473687531" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001757" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1149" name="ScopeUnsubscribesOnlyItsOwnListener" fullname="P1ScopeAndInputTests.ScopeUnsubscribesOnlyItsOwnListener" methodname="ScopeUnsubscribesOnlyItsOwnListener" classname="P1ScopeAndInputTests" runstate="Runnable" seed="69669925" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.000325" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1178" name="P1UIOwnershipTests" fullname="P1UIOwnershipTests" classname="P1UIOwnershipTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.005769" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1180" name="CanceledPendingScopeCannotCloseReopenedPanelAndLateLeaseIsReturned" fullname="P1UIOwnershipTests.CanceledPendingScopeCannotCloseReopenedPanelAndLateLeaseIsReturned" methodname="CanceledPendingScopeCannotCloseReopenedPanelAndLateLeaseIsReturned" classname="P1UIOwnershipTests" runstate="Runnable" seed="1658891078" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.003935" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1179" name="DisposingSceneScopeClosesPanelAndReturnsPrefabLease" fullname="P1UIOwnershipTests.DisposingSceneScopeClosesPanelAndReturnsPrefabLease" methodname="DisposingSceneScopeClosesPanelAndReturnsPrefabLease" classname="P1UIOwnershipTests" runstate="Runnable" seed="592585762" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001269" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1186" name="PlatformCompatibilityTests" fullname="PlatformCompatibilityTests" classname="PlatformCompatibilityTests" runstate="Runnable" testcasecount="18" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.135267" total="18" passed="18" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1197" name="AssetBundlePathHelpersShareUrlSafeComposition" fullname="PlatformCompatibilityTests.AssetBundlePathHelpersShareUrlSafeComposition" methodname="AssetBundlePathHelpersShareUrlSafeComposition" classname="PlatformCompatibilityTests" runstate="Runnable" seed="526633184" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001633" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1200" name="CooperativeLoggerBoundsQueueAndTracksDroppedMessages" fullname="PlatformCompatibilityTests.CooperativeLoggerBoundsQueueAndTracksDroppedMessages" methodname="CooperativeLoggerBoundsQueueAndTracksDroppedMessages" classname="PlatformCompatibilityTests" runstate="Runnable" seed="1401076191" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.030092" asserts="0">
+          <properties />
+          <output><![CDATA[PLATFORM_QUEUE_0
+PLATFORM_QUEUE_1
+PLATFORM_QUEUE_2
+PLATFORM_QUEUE_3
+PLATFORM_QUEUE_4
+PLATFORM_QUEUE_5
+PLATFORM_QUEUE_6
+PLATFORM_QUEUE_7
+]]></output>
+        </test-case>
+        <test-case id="1202" name="CooperativeLoggerDrainsAtMostConfiguredBatchEachFrame" fullname="PlatformCompatibilityTests.CooperativeLoggerDrainsAtMostConfiguredBatchEachFrame" methodname="CooperativeLoggerDrainsAtMostConfiguredBatchEachFrame" classname="PlatformCompatibilityTests" runstate="Runnable" seed="803004013" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.005243" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+          <output><![CDATA[PLATFORM_BATCH_0
+PLATFORM_BATCH_1
+PLATFORM_BATCH_2
+PLATFORM_BATCH_3
+PLATFORM_BATCH_4
+PLATFORM_BATCH_5
+PLATFORM_BATCH_6
+PLATFORM_BATCH_7
+]]></output>
+        </test-case>
+        <test-case id="1203" name="CooperativeLogStripsFormattingAndDisableStopsWriter" fullname="PlatformCompatibilityTests.CooperativeLogStripsFormattingAndDisableStopsWriter" methodname="CooperativeLogStripsFormattingAndDisableStopsWriter" classname="PlatformCompatibilityTests" runstate="Runnable" seed="1121222952" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.016464" asserts="0">
+          <properties />
+          <output><![CDATA[<color=red>PLATFORM_RICH</color>
+]]></output>
+        </test-case>
+        <test-case id="1206" name="DesktopSpaceProbeAndFlushComplete" fullname="PlatformCompatibilityTests.DesktopSpaceProbeAndFlushComplete" methodname="DesktopSpaceProbeAndFlushComplete" classname="PlatformCompatibilityTests" runstate="Runnable" seed="1427932103" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002224" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1199" name="DeviceProbeWorksForExistingAndNotYetCreatedDirectories" fullname="PlatformCompatibilityTests.DeviceProbeWorksForExistingAndNotYetCreatedDirectories" methodname="DeviceProbeWorksForExistingAndNotYetCreatedDirectories" classname="PlatformCompatibilityTests" runstate="Runnable" seed="466817454" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001393" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1198" name="FileUriEscapesSpecialCharactersExactlyOnce" fullname="PlatformCompatibilityTests.FileUriEscapesSpecialCharactersExactlyOnce" methodname="FileUriEscapesSpecialCharactersExactlyOnce" classname="PlatformCompatibilityTests" runstate="Runnable" seed="2035291604" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001114" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1191" name="LocalPathsKeepRawFileNames" fullname="PlatformCompatibilityTests.LocalPathsKeepRawFileNames" methodname="LocalPathsKeepRawFileNames" classname="PlatformCompatibilityTests" runstate="Runnable" seed="1903476137" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.000947" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1201" name="LoggerRepeatedInitKeepsExistingSessionAndClosesHandle" fullname="PlatformCompatibilityTests.LoggerRepeatedInitKeepsExistingSessionAndClosesHandle" methodname="LoggerRepeatedInitKeepsExistingSessionAndClosesHandle" classname="PlatformCompatibilityTests" runstate="Runnable" seed="905998173" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.018636" asserts="0">
+          <properties />
+          <output><![CDATA[PLATFORM_SESSION_MARKER
+]]></output>
+        </test-case>
+        <test-case id="1205" name="PortableDelayUsesRealTimeAndCanCancel" fullname="PlatformCompatibilityTests.PortableDelayUsesRealTimeAndCanCancel" methodname="PortableDelayUsesRealTimeAndCanCancel" classname="PlatformCompatibilityTests" runstate="Runnable" seed="1799962764" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.027401" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1196" name="RelativePathsRejectTraversalAndDriveReplacement" fullname="PlatformCompatibilityTests.RelativePathsRejectTraversalAndDriveReplacement" classname="PlatformCompatibilityTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.004888" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1192" name="RelativePathsRejectTraversalAndDriveReplacement(&quot;../escape&quot;)" fullname="PlatformCompatibilityTests.RelativePathsRejectTraversalAndDriveReplacement(&quot;../escape&quot;)" methodname="RelativePathsRejectTraversalAndDriveReplacement" classname="PlatformCompatibilityTests" runstate="Runnable" seed="1030480205" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001293" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1193" name="RelativePathsRejectTraversalAndDriveReplacement(&quot;a/../../escape&quot;)" fullname="PlatformCompatibilityTests.RelativePathsRejectTraversalAndDriveReplacement(&quot;a/../../escape&quot;)" methodname="RelativePathsRejectTraversalAndDriveReplacement" classname="PlatformCompatibilityTests" runstate="Runnable" seed="1305968082" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001195" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1194" name="RelativePathsRejectTraversalAndDriveReplacement(&quot;a:b&quot;)" fullname="PlatformCompatibilityTests.RelativePathsRejectTraversalAndDriveReplacement(&quot;a:b&quot;)" methodname="RelativePathsRejectTraversalAndDriveReplacement" classname="PlatformCompatibilityTests" runstate="Runnable" seed="451727649" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001031" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1195" name="RelativePathsRejectTraversalAndDriveReplacement(&quot;a/./b&quot;)" fullname="PlatformCompatibilityTests.RelativePathsRejectTraversalAndDriveReplacement(&quot;a/./b&quot;)" methodname="RelativePathsRejectTraversalAndDriveReplacement" classname="PlatformCompatibilityTests" runstate="Runnable" seed="1112540496" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.000935" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1204" name="ThreadedLogStopsBeforeDestroyDisposesWakeHandle" fullname="PlatformCompatibilityTests.ThreadedLogStopsBeforeDestroyDisposesWakeHandle" methodname="ThreadedLogStopsBeforeDestroyDisposesWakeHandle" classname="PlatformCompatibilityTests" runstate="Runnable" seed="270090127" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.019404" asserts="0">
+          <properties />
+          <output><![CDATA[PLATFORM_THREAD
+]]></output>
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1189" name="UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators" fullname="PlatformCompatibilityTests.UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators" classname="PlatformCompatibilityTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.003040" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1187" name="UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators(&quot;https://example.com/StreamingAssets&quot;,&quot;https://example.com/StreamingAssets/Probe/%E7%A9%BA%20%E6%A0%BC/%E5%86%85%E5%AE%B9%231.txt&quot;)" fullname="PlatformCompatibilityTests.UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators(&quot;https://example.com/StreamingAssets&quot;,&quot;https://example.com/StreamingAssets/Probe/%E7%A9%BA%20%E6%A0%BC/%E5%86%85%E5%AE%B9%231.txt&quot;)" methodname="UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators" classname="PlatformCompatibilityTests" runstate="Runnable" seed="2060738519" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001535" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1188" name="UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators(&quot;jar:file:///data/base.apk!/assets&quot;,&quot;jar:file:///data/base.apk!/assets/Probe/%E7%A9%BA%20%E6%A0%BC/%E5%86%85%E5%AE%B9%231.txt&quot;)" fullname="PlatformCompatibilityTests.UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators(&quot;jar:file:///data/base.apk!/assets&quot;,&quot;jar:file:///data/base.apk!/assets/Probe/%E7%A9%BA%20%E6%A0%BC/%E5%86%85%E5%AE%B9%231.txt&quot;)" methodname="UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators" classname="PlatformCompatibilityTests" runstate="Runnable" seed="2144548267" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001003" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1190" name="UrlPathsTreatLiteralPercentAsFileName" fullname="PlatformCompatibilityTests.UrlPathsTreatLiteralPercentAsFileName" methodname="UrlPathsTreatLiteralPercentAsFileName" classname="PlatformCompatibilityTests" runstate="Runnable" seed="142718908" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001193" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1207" name="ReplayPerformanceTests" fullname="ReplayPerformanceTests" classname="ReplayPerformanceTests" runstate="Runnable" testcasecount="39" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.550174" total="39" passed="39" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1243" name="AnimatorValuesAreSharedWhenOnlyTransformChanges" fullname="ReplayPerformanceTests.AnimatorValuesAreSharedWhenOnlyTransformChanges" methodname="AnimatorValuesAreSharedWhenOnlyTransformChanges" classname="ReplayPerformanceTests" runstate="Runnable" seed="1779649462" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.010424" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1239" name="AsyncCancellationDeletesOnlyItsTemporaryFile" fullname="ReplayPerformanceTests.AsyncCancellationDeletesOnlyItsTemporaryFile" methodname="AsyncCancellationDeletesOnlyItsTemporaryFile" classname="ReplayPerformanceTests" runstate="Runnable" seed="959201965" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.016179" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1240" name="AsyncManagerSaveCoalescesAndClearCancels" fullname="ReplayPerformanceTests.AsyncManagerSaveCoalescesAndClearCancels" methodname="AsyncManagerSaveCoalescesAndClearCancels" classname="ReplayPerformanceTests" runstate="Runnable" seed="2096286801" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.007122" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1238" name="AsyncSaveFreezesPrefixAndAllowsFramesToAdvance" fullname="ReplayPerformanceTests.AsyncSaveFreezesPrefixAndAllowsFramesToAdvance" methodname="AsyncSaveFreezesPrefixAndAllowsFramesToAdvance" classname="ReplayPerformanceTests" runstate="Runnable" seed="644931309" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.057132" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1220" name="ClearReleasesFramesIndexesAndCapacity" fullname="ReplayPerformanceTests.ClearReleasesFramesIndexesAndCapacity" methodname="ClearReleasesFramesIndexesAndCapacity" classname="ReplayPerformanceTests" runstate="Runnable" seed="1885478883" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001719" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1245" name="ControllerReplacementCapturesNewParameterNamesAndPersistsCompleteness" fullname="ReplayPerformanceTests.ControllerReplacementCapturesNewParameterNamesAndPersistsCompleteness" methodname="ControllerReplacementCapturesNewParameterNamesAndPersistsCompleteness" classname="ReplayPerformanceTests" runstate="Runnable" seed="112857976" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.012678" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1217" name="CustomPayloadEstimatorParticipatesInMemoryBudget" fullname="ReplayPerformanceTests.CustomPayloadEstimatorParticipatesInMemoryBudget" methodname="CustomPayloadEstimatorParticipatesInMemoryBudget" classname="ReplayPerformanceTests" runstate="Runnable" seed="1897518117" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001482" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1242" name="DestroyedManagerCannotAdoptPendingRead" fullname="ReplayPerformanceTests.DestroyedManagerCannotAdoptPendingRead" methodname="DestroyedManagerCannotAdoptPendingRead" classname="ReplayPerformanceTests" runstate="Runnable" seed="959263025" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.027858" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1212" name="DestroyedRegisteredTargetIsPrunedWithoutHoldingCaptureState" fullname="ReplayPerformanceTests.DestroyedRegisteredTargetIsPrunedWithoutHoldingCaptureState" methodname="DestroyedRegisteredTargetIsPrunedWithoutHoldingCaptureState" classname="ReplayPerformanceTests" runstate="Runnable" seed="1913889638" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002067" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1218" name="DurationBudgetStopsRecordingWithoutGrowingDataPastLimit" fullname="ReplayPerformanceTests.DurationBudgetStopsRecordingWithoutGrowingDataPastLimit" methodname="DurationBudgetStopsRecordingWithoutGrowingDataPastLimit" classname="ReplayPerformanceTests" runstate="Runnable" seed="817855850" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001218" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1215" name="FrameBudgetStopsBeforeIncompleteFrameIsAdded" fullname="ReplayPerformanceTests.FrameBudgetStopsBeforeIncompleteFrameIsAdded" methodname="FrameBudgetStopsBeforeIncompleteFrameIsAdded" classname="ReplayPerformanceTests" runstate="Runnable" seed="1367358530" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001405" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1236" name="InvalidSnapshotDoesNotPublishPartialFile" fullname="ReplayPerformanceTests.InvalidSnapshotDoesNotPublishPartialFile" methodname="InvalidSnapshotDoesNotPublishPartialFile" classname="ReplayPerformanceTests" runstate="Runnable" seed="2060134958" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002979" asserts="0">
+          <properties />
+          <output><![CDATA[[ReplaySystem] 保存失败：回放坐标无效
+]]></output>
+        </test-case>
+        <test-case id="1241" name="LatestAsyncLoadWinsAndOldReadCannotReplaceIt" fullname="ReplayPerformanceTests.LatestAsyncLoadWinsAndOldReadCannotReplaceIt" methodname="LatestAsyncLoadWinsAndOldReadCannotReplaceIt" classname="ReplayPerformanceTests" runstate="Runnable" seed="1539153853" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.020838" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1244" name="LegacySparseAnimatorValuesSurviveForwardAndReverseSeek" fullname="ReplayPerformanceTests.LegacySparseAnimatorValuesSurviveForwardAndReverseSeek" methodname="LegacySparseAnimatorValuesSurviveForwardAndReverseSeek" classname="ReplayPerformanceTests" runstate="Runnable" seed="1604522626" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002748" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1237" name="LoadOverCurrentBudgetPreservesExistingRecording" fullname="ReplayPerformanceTests.LoadOverCurrentBudgetPreservesExistingRecording" methodname="LoadOverCurrentBudgetPreservesExistingRecording" classname="ReplayPerformanceTests" runstate="Runnable" seed="1816554775" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.009859" asserts="0">
+          <properties />
+          <output><![CDATA[[ReplaySystem] 录制数据超过当前预算，保留现有数据
+]]></output>
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1235" name="MalformedOrUnsupportedStreamIsRejected" fullname="ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected" classname="ReplayPerformanceTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.038316" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1229" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:3,\&quot;frames\&quot;:[]}&quot;)" fullname="ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:3,\&quot;frames\&quot;:[]}&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="ReplayPerformanceTests" runstate="Runnable" seed="1175821231" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.006234" asserts="0">
+            <properties />
+            <output><![CDATA[[ReplaySystem] 读取失败：回放 JSON 版本/结尾无效
+]]></output>
+          </test-case>
+          <test-case id="1230" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:0,\&quot;snapshots\&quot;:[]}]}garbage&quot;)" fullname="ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:0,\&quot;snapshots\&quot;:[]}]}garbage&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="ReplayPerformanceTests" runstate="Runnable" seed="1280315811" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.005923" asserts="0">
+            <properties />
+            <output><![CDATA[[ReplaySystem] 读取失败：回放 JSON 版本/结尾无效
+]]></output>
+          </test-case>
+          <test-case id="1231" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:2,\&quot;snapshots\&quot;:[]},{\&quot;time\&quot;:1,\&quot;snapshots\&quot;:[]}]}&quot;)" fullname="ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:2,\&quot;snapshots\&quot;:[]},{\&quot;time\&quot;:1,\&quot;snapshots\&quot;:[]}]}&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="ReplayPerformanceTests" runstate="Runnable" seed="1086848713" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.006853" asserts="0">
+            <properties />
+            <output><![CDATA[[ReplaySystem] 读取失败：时间戳未排序或数据量过大
+]]></output>
+          </test-case>
+          <test-case id="1232" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:0,\&quot;snapshots\&quot;:[]}&quot;)" fullname="ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:0,\&quot;snapshots\&quot;:[]}&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="ReplayPerformanceTests" runstate="Runnable" seed="1774736327" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.006224" asserts="0">
+            <properties />
+            <output><![CDATA[[ReplaySystem] 读取失败：无效回放 JSON 结构
+]]></output>
+          </test-case>
+          <test-case id="1233" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:null}&quot;)" fullname="ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:null}&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="ReplayPerformanceTests" runstate="Runnable" seed="1592949352" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.005941" asserts="0">
+            <properties />
+            <output><![CDATA[[ReplaySystem] 读取失败：无效回放 JSON 结构
+]]></output>
+          </test-case>
+          <test-case id="1234" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;version\&quot;:2,\&quot;frames\&quot;:[]}&quot;)" fullname="ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;version\&quot;:2,\&quot;frames\&quot;:[]}&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="ReplayPerformanceTests" runstate="Runnable" seed="2042481782" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.006229" asserts="0">
+            <properties />
+            <output><![CDATA[[ReplaySystem] 读取失败：无效回放版本
+]]></output>
+          </test-case>
+        </test-suite>
+        <test-case id="1228" name="ReaderAcceptsVersionAfterFramesAndUnknownRootProperties" fullname="ReplayPerformanceTests.ReaderAcceptsVersionAfterFramesAndUnknownRootProperties" methodname="ReaderAcceptsVersionAfterFramesAndUnknownRootProperties" classname="ReplayPerformanceTests" runstate="Runnable" seed="2079456840" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.005396" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1221" name="ReentrantCaptureClearDoesNotAppendStaleFrame" fullname="ReplayPerformanceTests.ReentrantCaptureClearDoesNotAppendStaleFrame" methodname="ReentrantCaptureClearDoesNotAppendStaleFrame" classname="ReplayPerformanceTests" runstate="Runnable" seed="1098742699" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001375" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1222" name="RegisteredMetadataRefreshCapturesRenamingAndReparenting" fullname="ReplayPerformanceTests.RegisteredMetadataRefreshCapturesRenamingAndReparenting" methodname="RegisteredMetadataRefreshCapturesRenamingAndReparenting" classname="ReplayPerformanceTests" runstate="Runnable" seed="1110399301" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001526" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1209" name="RegisteredTargetCanBeRemovedAndNewTargetAddedDuringRecording" fullname="ReplayPerformanceTests.RegisteredTargetCanBeRemovedAndNewTargetAddedDuringRecording" methodname="RegisteredTargetCanBeRemovedAndNewTargetAddedDuringRecording" classname="ReplayPerformanceTests" runstate="Runnable" seed="51215309" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001610" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1208" name="RegisteredTargetsAvoidFullSceneSearchAndDeduplicateChildren" fullname="ReplayPerformanceTests.RegisteredTargetsAvoidFullSceneSearchAndDeduplicateChildren" methodname="RegisteredTargetsAvoidFullSceneSearchAndDeduplicateChildren" classname="ReplayPerformanceTests" runstate="Runnable" seed="501664222" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001395" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1219" name="RestartClearsPreviousTimelineAndDisableReleasesCapture" fullname="ReplayPerformanceTests.RestartClearsPreviousTimelineAndDisableReleasesCapture" methodname="RestartClearsPreviousTimelineAndDisableReleasesCapture" classname="ReplayPerformanceTests" runstate="Runnable" seed="45685726" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001638" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1225" name="RigidbodyAndGlobalPhysicsRestoreAfterPlaybackDisable" fullname="ReplayPerformanceTests.RigidbodyAndGlobalPhysicsRestoreAfterPlaybackDisable" methodname="RigidbodyAndGlobalPhysicsRestoreAfterPlaybackDisable" classname="ReplayPerformanceTests" runstate="Runnable" seed="428993166" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002822" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1226" name="SamplingRateLimitsCaptureWhileMovementContinues" fullname="ReplayPerformanceTests.SamplingRateLimitsCaptureWhileMovementContinues" methodname="SamplingRateLimitsCaptureWhileMovementContinues" classname="ReplayPerformanceTests" runstate="Runnable" seed="693901238" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.261779" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1210" name="SceneDiscoveryIsPeriodicAndManualRefreshFindsSpawnedObject" fullname="ReplayPerformanceTests.SceneDiscoveryIsPeriodicAndManualRefreshFindsSpawnedObject" methodname="SceneDiscoveryIsPeriodicAndManualRefreshFindsSpawnedObject" classname="ReplayPerformanceTests" runstate="Runnable" seed="1723822484" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002297" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1216" name="SnapshotBudgetDoesNotPublishPartialTargetSet" fullname="ReplayPerformanceTests.SnapshotBudgetDoesNotPublishPartialTargetSet" methodname="SnapshotBudgetDoesNotPublishPartialTargetSet" classname="ReplayPerformanceTests" runstate="Runnable" seed="1665382568" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001343" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1223" name="StaticCaptureAvoidsPerTargetAllocationBlocks" fullname="ReplayPerformanceTests.StaticCaptureAvoidsPerTargetAllocationBlocks" methodname="StaticCaptureAvoidsPerTargetAllocationBlocks" classname="ReplayPerformanceTests" runstate="Runnable" seed="1172181643" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.012232" asserts="0">
+          <properties />
+          <output><![CDATA[REPLAY_OPTIMIZED objects=200 samples=100 allocationBlocks=100
+]]></output>
+        </test-case>
+        <test-case id="1213" name="StaticSamplingCoalescesFramesAndPreservesDuration" fullname="ReplayPerformanceTests.StaticSamplingCoalescesFramesAndPreservesDuration" methodname="StaticSamplingCoalescesFramesAndPreservesDuration" classname="ReplayPerformanceTests" runstate="Runnable" seed="1918832689" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.005692" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1246" name="StationaryRigidbodyUsesChangeRecorderWithoutRepeatedBoxing" fullname="ReplayPerformanceTests.StationaryRigidbodyUsesChangeRecorderWithoutRepeatedBoxing" methodname="StationaryRigidbodyUsesChangeRecorderWithoutRepeatedBoxing" classname="ReplayPerformanceTests" runstate="Runnable" seed="417058148" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001546" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1214" name="StationaryToMovingSeekKeepsHoldBeforeInterpolation" fullname="ReplayPerformanceTests.StationaryToMovingSeekKeepsHoldBeforeInterpolation" methodname="StationaryToMovingSeekKeepsHoldBeforeInterpolation" classname="ReplayPerformanceTests" runstate="Runnable" seed="1599282111" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001409" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1227" name="SynchronousSaveRemainsVersionTwoAndSupportsEscapedText" fullname="ReplayPerformanceTests.SynchronousSaveRemainsVersionTwoAndSupportsEscapedText" methodname="SynchronousSaveRemainsVersionTwoAndSupportsEscapedText" classname="ReplayPerformanceTests" runstate="Runnable" seed="819260322" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.021358" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1224" name="TimelineReferencesOriginalSnapshotsAndReverseSeekWorks" fullname="ReplayPerformanceTests.TimelineReferencesOriginalSnapshotsAndReverseSeekWorks" methodname="TimelineReferencesOriginalSnapshotsAndReverseSeekWorks" classname="ReplayPerformanceTests" runstate="Runnable" seed="2054462687" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001764" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1247" name="UiDestroyUnsubscribesExternalButtons" fullname="ReplayPerformanceTests.UiDestroyUnsubscribesExternalButtons" methodname="UiDestroyUnsubscribesExternalButtons" classname="ReplayPerformanceTests" runstate="Runnable" seed="1698982303" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.005821" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1211" name="UiObjectsAreExcludedAndCanBeIncludedExplicitly" fullname="ReplayPerformanceTests.UiObjectsAreExcludedAndCanBeIncludedExplicitly" methodname="UiObjectsAreExcludedAndCanBeIncludedExplicitly" classname="ReplayPerformanceTests" runstate="Runnable" seed="1667125536" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001500" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1248" name="ReporterRegressionTests" fullname="ReporterRegressionTests" classname="ReporterRegressionTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.037420" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1250" name="CollapseCountOnlyIncludesRetainedRecords" fullname="ReporterRegressionTests.CollapseCountOnlyIncludesRetainedRecords" methodname="CollapseCountOnlyIncludesRetainedRecords" classname="ReporterRegressionTests" runstate="Runnable" seed="1732549633" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.005878" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1252" name="MemoryLimitEvictsOldestInsteadOfClearingEverything" fullname="ReporterRegressionTests.MemoryLimitEvictsOldestInsteadOfClearingEverything" methodname="MemoryLimitEvictsOldestInsteadOfClearingEverything" classname="ReporterRegressionTests" runstate="Runnable" seed="255102213" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002481" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1253" name="OpenAndInitializeAreIdempotentAndDisablingStopsCapture" fullname="ReporterRegressionTests.OpenAndInitializeAreIdempotentAndDisablingStopsCapture" methodname="OpenAndInitializeAreIdempotentAndDisablingStopsCapture" classname="ReporterRegressionTests" runstate="Runnable" seed="1094470502" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.007948" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1257" name="PendingQueueAlsoHasAByteBudget" fullname="ReporterRegressionTests.PendingQueueAlsoHasAByteBudget" methodname="PendingQueueAlsoHasAByteBudget" classname="ReporterRegressionTests" runstate="Runnable" seed="825370202" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002639" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1249" name="RetentionEvictsGroupsAndCountsTogether" fullname="ReporterRegressionTests.RetentionEvictsGroupsAndCountsTogether" methodname="RetentionEvictsGroupsAndCountsTogether" classname="ReporterRegressionTests" runstate="Runnable" seed="844616832" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002790" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1251" name="SeverityIsPartOfTheCollapseKeyAndStackIsSearchable" fullname="ReporterRegressionTests.SeverityIsPartOfTheCollapseKeyAndStackIsSearchable" methodname="SeverityIsPartOfTheCollapseKeyAndStackIsSearchable" classname="ReporterRegressionTests" runstate="Runnable" seed="124943216" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002082" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1255" name="VisibleRangeIsBoundedByViewport" fullname="ReporterRegressionTests.VisibleRangeIsBoundedByViewport" methodname="VisibleRangeIsBoundedByViewport" classname="ReporterRegressionTests" runstate="Runnable" seed="194281841" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002137" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1256" name="VisibleReporterWorksWithoutAssignedImages" fullname="ReporterRegressionTests.VisibleReporterWorksWithoutAssignedImages" methodname="VisibleReporterWorksWithoutAssignedImages" classname="ReporterRegressionTests" runstate="Runnable" seed="1733075405" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.006360" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+        <test-case id="1254" name="WorkerThreadBurstIsBoundedAndDrainedInBatches" fullname="ReporterRegressionTests.WorkerThreadBurstIsBoundedAndDrainedInBatches" methodname="WorkerThreadBurstIsBoundedAndDrainedInBatches" classname="ReporterRegressionTests" runstate="Runnable" seed="920875138" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.003773" asserts="0">
+          <properties>
+            <property name="_JOINTYPE" value="UnityCombinatorial" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1258" name="SerializationMigrationTests" fullname="SerializationMigrationTests" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="59" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:08Z" duration="0.630780" total="59" passed="59" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="ParameterizedMethod" id="1329" name="ActualEditorCacheTypesMigrateIncludingPrivateCollections" fullname="SerializationMigrationTests.ActualEditorCacheTypesMigrateIncludingPrivateCollections" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.086137" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1327" name="ActualEditorCacheTypesMigrateIncludingPrivateCollections(&quot;Build&quot;)" fullname="SerializationMigrationTests.ActualEditorCacheTypesMigrateIncludingPrivateCollections(&quot;Build&quot;)" methodname="ActualEditorCacheTypesMigrateIncludingPrivateCollections" classname="SerializationMigrationTests" runstate="Runnable" seed="937011673" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.044744" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1328" name="ActualEditorCacheTypesMigrateIncludingPrivateCollections(&quot;Inspect&quot;)" fullname="SerializationMigrationTests.ActualEditorCacheTypesMigrateIncludingPrivateCollections(&quot;Inspect&quot;)" methodname="ActualEditorCacheTypesMigrateIncludingPrivateCollections" classname="SerializationMigrationTests" runstate="Runnable" seed="464097433" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.041038" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1289" name="BinaryDataMgrKeepsPublicApiAndMigratesLegacySave" fullname="SerializationMigrationTests.BinaryDataMgrKeepsPublicApiAndMigratesLegacySave" methodname="BinaryDataMgrKeepsPublicApiAndMigratesLegacySave" classname="SerializationMigrationTests" runstate="Runnable" seed="2126260594" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.070502" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1281" name="CategoryAndRootTypeMustMatch" fullname="SerializationMigrationTests.CategoryAndRootTypeMustMatch" methodname="CategoryAndRootTypeMustMatch" classname="SerializationMigrationTests" runstate="Runnable" seed="1060625394" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002421" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1308" name="ChangingEncryptionConfigurationDoesNotBlockRegenerationOrLoseOriginal" fullname="SerializationMigrationTests.ChangingEncryptionConfigurationDoesNotBlockRegenerationOrLoseOriginal" methodname="ChangingEncryptionConfigurationDoesNotBlockRegenerationOrLoseOriginal" classname="SerializationMigrationTests" runstate="Runnable" seed="686634497" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.067628" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1287" name="CorruptFileIsPreservedWithoutMigrationBackup" fullname="SerializationMigrationTests.CorruptFileIsPreservedWithoutMigrationBackup" methodname="CorruptFileIsPreservedWithoutMigrationBackup" classname="SerializationMigrationTests" runstate="Runnable" seed="280002154" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.002962" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1271" name="CustomSerializationIsRejectedWithoutExecutingItsReader" fullname="SerializationMigrationTests.CustomSerializationIsRejectedWithoutExecutingItsReader" methodname="CustomSerializationIsRejectedWithoutExecutingItsReader" classname="SerializationMigrationTests" runstate="Runnable" seed="2104963594" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001671" asserts="0">
+          <properties />
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1316" name="DateTimeKindsAndWallClockTicksArePreserved" fullname="SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:08Z" duration="0.016591" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1310" name="DateTimeKindsAndWallClockTicksArePreserved(False,Utc)" fullname="SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(False,Utc)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="SerializationMigrationTests" runstate="Runnable" seed="1489516847" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001602" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1311" name="DateTimeKindsAndWallClockTicksArePreserved(False,Local)" fullname="SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(False,Local)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="SerializationMigrationTests" runstate="Runnable" seed="275312762" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.005976" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1312" name="DateTimeKindsAndWallClockTicksArePreserved(False,Unspecified)" fullname="SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(False,Unspecified)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="SerializationMigrationTests" runstate="Runnable" seed="852552331" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001321" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1313" name="DateTimeKindsAndWallClockTicksArePreserved(True,Utc)" fullname="SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(True,Utc)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="SerializationMigrationTests" runstate="Runnable" seed="194133765" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001346" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1314" name="DateTimeKindsAndWallClockTicksArePreserved(True,Local)" fullname="SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(True,Local)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="SerializationMigrationTests" runstate="Runnable" seed="1682568887" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:07Z" duration="0.001307" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1315" name="DateTimeKindsAndWallClockTicksArePreserved(True,Unspecified)" fullname="SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(True,Unspecified)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="SerializationMigrationTests" runstate="Runnable" seed="441446314" result="Passed" start-time="2026-11-07 16:21:07Z" end-time="2026-11-07 16:21:08Z" duration="0.004056" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-suite type="ParameterizedMethod" id="1300" name="EncryptedManifestRetainsBothFormatCompatibility" fullname="SerializationMigrationTests.EncryptedManifestRetainsBothFormatCompatibility" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.004545" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1298" name="EncryptedManifestRetainsBothFormatCompatibility(False)" fullname="SerializationMigrationTests.EncryptedManifestRetainsBothFormatCompatibility(False)" methodname="EncryptedManifestRetainsBothFormatCompatibility" classname="SerializationMigrationTests" runstate="Runnable" seed="1851507608" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001824" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1299" name="EncryptedManifestRetainsBothFormatCompatibility(True)" fullname="SerializationMigrationTests.EncryptedManifestRetainsBothFormatCompatibility(True)" methodname="EncryptedManifestRetainsBothFormatCompatibility" classname="SerializationMigrationTests" runstate="Runnable" seed="1420338942" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.002292" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1288" name="ExistingBackupIsNotOverwritten" fullname="SerializationMigrationTests.ExistingBackupIsNotOverwritten" methodname="ExistingBackupIsNotOverwritten" classname="SerializationMigrationTests" runstate="Runnable" seed="2143821465" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.033060" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1283" name="FileTypeNamesCannotSelectArbitraryRuntimeTypes" fullname="SerializationMigrationTests.FileTypeNamesCannotSelectArbitraryRuntimeTypes" methodname="FileTypeNamesCannotSelectArbitraryRuntimeTypes" classname="SerializationMigrationTests" runstate="Runnable" seed="657284036" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001990" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1317" name="GenericFieldIdentityDoesNotDependOnAssemblyVersion" fullname="SerializationMigrationTests.GenericFieldIdentityDoesNotDependOnAssemblyVersion" methodname="GenericFieldIdentityDoesNotDependOnAssemblyVersion" classname="SerializationMigrationTests" runstate="Runnable" seed="774250047" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.002106" asserts="0">
+          <properties />
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1280" name="InvalidEnvelopeIsRejectedBeforeObjectCreation" fullname="SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.010207" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1274" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(0)" fullname="SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(0)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="SerializationMigrationTests" runstate="Runnable" seed="1350405513" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001998" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1275" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(1)" fullname="SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(1)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="SerializationMigrationTests" runstate="Runnable" seed="274488336" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001170" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1276" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(2)" fullname="SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(2)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="SerializationMigrationTests" runstate="Runnable" seed="79490955" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001336" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1277" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(3)" fullname="SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(3)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="SerializationMigrationTests" runstate="Runnable" seed="1971391453" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001316" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1278" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(4)" fullname="SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(4)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="SerializationMigrationTests" runstate="Runnable" seed="989327557" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.002262" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1279" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(5)" fullname="SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(5)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="SerializationMigrationTests" runstate="Runnable" seed="149775513" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001326" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1296" name="InvalidKnownTypeRegistrationCannotPoisonOtherOperations" fullname="SerializationMigrationTests.InvalidKnownTypeRegistrationCannotPoisonOtherOperations" methodname="InvalidKnownTypeRegistrationCannotPoisonOtherOperations" classname="SerializationMigrationTests" runstate="Runnable" seed="2039930038" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001653" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1309" name="InvalidManifestCannotReplacePreviousValidFile" fullname="SerializationMigrationTests.InvalidManifestCannotReplacePreviousValidFile" methodname="InvalidManifestCannotReplacePreviousValidFile" classname="SerializationMigrationTests" runstate="Runnable" seed="919291452" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.013922" asserts="0">
+          <properties />
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1326" name="InvalidManifestRelationsAreRejected" fullname="SerializationMigrationTests.InvalidManifestRelationsAreRejected" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.005262" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1322" name="InvalidManifestRelationsAreRejected(0)" fullname="SerializationMigrationTests.InvalidManifestRelationsAreRejected(0)" methodname="InvalidManifestRelationsAreRejected" classname="SerializationMigrationTests" runstate="Runnable" seed="1123249788" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001411" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1323" name="InvalidManifestRelationsAreRejected(1)" fullname="SerializationMigrationTests.InvalidManifestRelationsAreRejected(1)" methodname="InvalidManifestRelationsAreRejected" classname="SerializationMigrationTests" runstate="Runnable" seed="257696101" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001068" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1324" name="InvalidManifestRelationsAreRejected(2)" fullname="SerializationMigrationTests.InvalidManifestRelationsAreRejected(2)" methodname="InvalidManifestRelationsAreRejected" classname="SerializationMigrationTests" runstate="Runnable" seed="104227283" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001095" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1325" name="InvalidManifestRelationsAreRejected(3)" fullname="SerializationMigrationTests.InvalidManifestRelationsAreRejected(3)" methodname="InvalidManifestRelationsAreRejected" classname="SerializationMigrationTests" runstate="Runnable" seed="496862567" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001054" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1272" name="KnownPolymorphicTypeIsExplicitlyRegistered" fullname="SerializationMigrationTests.KnownPolymorphicTypeIsExplicitlyRegistered" methodname="KnownPolymorphicTypeIsExplicitlyRegistered" classname="SerializationMigrationTests" runstate="Runnable" seed="1009214735" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001551" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1261" name="LegacyFieldsAndContainerValuesRemainReadableWithoutFormatter" fullname="SerializationMigrationTests.LegacyFieldsAndContainerValuesRemainReadableWithoutFormatter" methodname="LegacyFieldsAndContainerValuesRemainReadableWithoutFormatter" classname="SerializationMigrationTests" runstate="Runnable" seed="662568780" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.002979" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1285" name="LegacyFileIsBackedUpAndRewrittenOnlyAfterSuccessfulConversion" fullname="SerializationMigrationTests.LegacyFileIsBackedUpAndRewrittenOnlyAfterSuccessfulConversion" methodname="LegacyFileIsBackedUpAndRewrittenOnlyAfterSuccessfulConversion" classname="SerializationMigrationTests" runstate="Runnable" seed="15419732" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.047158" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1284" name="LegacyZeroCapacityPaddingIsAcceptedButOtherTrailingDataIsNot" fullname="SerializationMigrationTests.LegacyZeroCapacityPaddingIsAcceptedButOtherTrailingDataIsNot" methodname="LegacyZeroCapacityPaddingIsAcceptedButOtherTrailingDataIsNot" classname="SerializationMigrationTests" runstate="Runnable" seed="28899348" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.002080" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1297" name="MetadataLimitsAreMeasuredInUtf8Bytes" fullname="SerializationMigrationTests.MetadataLimitsAreMeasuredInUtf8Bytes" methodname="MetadataLimitsAreMeasuredInUtf8Bytes" classname="SerializationMigrationTests" runstate="Runnable" seed="1445756276" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001760" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1301" name="MigrationDetectsSourceChangeInsteadOfOverwritingNewerFile" fullname="SerializationMigrationTests.MigrationDetectsSourceChangeInsteadOfOverwritingNewerFile" methodname="MigrationDetectsSourceChangeInsteadOfOverwritingNewerFile" classname="SerializationMigrationTests" runstate="Runnable" seed="55913893" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.018825" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1259" name="NewFormatPreservesPrivateFieldsContainersUnicodeAndValueTypes" fullname="SerializationMigrationTests.NewFormatPreservesPrivateFieldsContainersUnicodeAndValueTypes" methodname="NewFormatPreservesPrivateFieldsContainersUnicodeAndValueTypes" classname="SerializationMigrationTests" runstate="Runnable" seed="1593440654" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001655" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1260" name="NewFormatSupportsExplicitUnityValueTypesWithoutSerializingComputedProperties" fullname="SerializationMigrationTests.NewFormatSupportsExplicitUnityValueTypesWithoutSerializingComputedProperties" methodname="NewFormatSupportsExplicitUnityValueTypesWithoutSerializingComputedProperties" classname="SerializationMigrationTests" runstate="Runnable" seed="1446065872" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.002100" asserts="0">
+          <properties />
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1267" name="OrdinalIgnoreCaseDictionaryPreservesComparer" fullname="SerializationMigrationTests.OrdinalIgnoreCaseDictionaryPreservesComparer" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.004188" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1265" name="OrdinalIgnoreCaseDictionaryPreservesComparer(False)" fullname="SerializationMigrationTests.OrdinalIgnoreCaseDictionaryPreservesComparer(False)" methodname="OrdinalIgnoreCaseDictionaryPreservesComparer" classname="SerializationMigrationTests" runstate="Runnable" seed="1226830070" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001925" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1266" name="OrdinalIgnoreCaseDictionaryPreservesComparer(True)" fullname="SerializationMigrationTests.OrdinalIgnoreCaseDictionaryPreservesComparer(True)" methodname="OrdinalIgnoreCaseDictionaryPreservesComparer" classname="SerializationMigrationTests" runstate="Runnable" seed="882183192" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001655" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1282" name="OversizedArrayDeclarationIsRejectedWithoutAllocatingIt" fullname="SerializationMigrationTests.OversizedArrayDeclarationIsRejectedWithoutAllocatingIt" methodname="OversizedArrayDeclarationIsRejectedWithoutAllocatingIt" classname="SerializationMigrationTests" runstate="Runnable" seed="1031978360" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001678" asserts="0">
+          <properties />
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1270" name="ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks" fullname="SerializationMigrationTests.ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.002868" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1268" name="ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks(False)" fullname="SerializationMigrationTests.ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks(False)" methodname="ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks" classname="SerializationMigrationTests" runstate="Runnable" seed="161751548" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001309" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1269" name="ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks(True)" fullname="SerializationMigrationTests.ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks(True)" methodname="ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks" classname="SerializationMigrationTests" runstate="Runnable" seed="220157714" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001143" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1286" name="ReadOnlyLegacyModeDoesNotRewriteSource" fullname="SerializationMigrationTests.ReadOnlyLegacyModeDoesNotRewriteSource" methodname="ReadOnlyLegacyModeDoesNotRewriteSource" classname="SerializationMigrationTests" runstate="Runnable" seed="660410777" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.020992" asserts="0">
+          <properties />
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1295" name="RectangularAndPolymorphicArrayShapesSurvive" fullname="SerializationMigrationTests.RectangularAndPolymorphicArrayShapesSurvive" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.004333" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1293" name="RectangularAndPolymorphicArrayShapesSurvive(False)" fullname="SerializationMigrationTests.RectangularAndPolymorphicArrayShapesSurvive(False)" methodname="RectangularAndPolymorphicArrayShapesSurvive" classname="SerializationMigrationTests" runstate="Runnable" seed="1313182132" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001837" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1294" name="RectangularAndPolymorphicArrayShapesSurvive(True)" fullname="SerializationMigrationTests.RectangularAndPolymorphicArrayShapesSurvive(True)" methodname="RectangularAndPolymorphicArrayShapesSurvive" classname="SerializationMigrationTests" runstate="Runnable" seed="1987619298" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001981" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-suite type="ParameterizedMethod" id="1292" name="RegisteredDerivedRootCanBeLoadedThroughBaseType" fullname="SerializationMigrationTests.RegisteredDerivedRootCanBeLoadedThroughBaseType" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.002971" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1290" name="RegisteredDerivedRootCanBeLoadedThroughBaseType(False)" fullname="SerializationMigrationTests.RegisteredDerivedRootCanBeLoadedThroughBaseType(False)" methodname="RegisteredDerivedRootCanBeLoadedThroughBaseType" classname="SerializationMigrationTests" runstate="Runnable" seed="871758813" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001392" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1291" name="RegisteredDerivedRootCanBeLoadedThroughBaseType(True)" fullname="SerializationMigrationTests.RegisteredDerivedRootCanBeLoadedThroughBaseType(True)" methodname="RegisteredDerivedRootCanBeLoadedThroughBaseType" classname="SerializationMigrationTests" runstate="Runnable" seed="29314872" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001185" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1318" name="RegisteringUnityValueDtoDoesNotBlockUnrelatedLegacyReads" fullname="SerializationMigrationTests.RegisteringUnityValueDtoDoesNotBlockUnrelatedLegacyReads" methodname="RegisteringUnityValueDtoDoesNotBlockUnrelatedLegacyReads" classname="SerializationMigrationTests" runstate="Runnable" seed="2135573739" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001521" asserts="0">
+          <properties />
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1321" name="RuntimeManifestLoaderReadsBothFormats" fullname="SerializationMigrationTests.RuntimeManifestLoaderReadsBothFormats" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.003343" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1319" name="RuntimeManifestLoaderReadsBothFormats(False)" fullname="SerializationMigrationTests.RuntimeManifestLoaderReadsBothFormats(False)" methodname="RuntimeManifestLoaderReadsBothFormats" classname="SerializationMigrationTests" runstate="Runnable" seed="1500019471" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001555" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1320" name="RuntimeManifestLoaderReadsBothFormats(True)" fullname="SerializationMigrationTests.RuntimeManifestLoaderReadsBothFormats(True)" methodname="RuntimeManifestLoaderReadsBothFormats" classname="SerializationMigrationTests" runstate="Runnable" seed="1622384993" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001430" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1304" name="SavingBeforeLoadingStillBacksUpLegacyBytes" fullname="SerializationMigrationTests.SavingBeforeLoadingStillBacksUpLegacyBytes" methodname="SavingBeforeLoadingStillBacksUpLegacyBytes" classname="SerializationMigrationTests" runstate="Runnable" seed="261196598" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.036598" asserts="0">
+          <properties />
+        </test-case>
+        <test-suite type="ParameterizedMethod" id="1264" name="SharedAndCyclicReferencesRemainIntact" fullname="SerializationMigrationTests.SharedAndCyclicReferencesRemainIntact" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.004405" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1262" name="SharedAndCyclicReferencesRemainIntact(False)" fullname="SerializationMigrationTests.SharedAndCyclicReferencesRemainIntact(False)" methodname="SharedAndCyclicReferencesRemainIntact" classname="SerializationMigrationTests" runstate="Runnable" seed="1724978039" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.002221" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1263" name="SharedAndCyclicReferencesRemainIntact(True)" fullname="SerializationMigrationTests.SharedAndCyclicReferencesRemainIntact(True)" methodname="SharedAndCyclicReferencesRemainIntact" classname="SerializationMigrationTests" runstate="Runnable" seed="1417351309" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.001734" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-suite type="ParameterizedMethod" id="1307" name="SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput" fullname="SerializationMigrationTests.SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput" classname="SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.100032" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-case id="1305" name="SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput(False)" fullname="SerializationMigrationTests.SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput(False)" methodname="SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput" classname="SerializationMigrationTests" runstate="Runnable" seed="1396188542" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.051403" asserts="0">
+            <properties />
+          </test-case>
+          <test-case id="1306" name="SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput(True)" fullname="SerializationMigrationTests.SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput(True)" methodname="SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput" classname="SerializationMigrationTests" runstate="Runnable" seed="476399475" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.048193" asserts="0">
+            <properties />
+          </test-case>
+        </test-suite>
+        <test-case id="1302" name="TruncatedAndMutatedLegacyRecordsFailWithoutExecutingCallbacks" fullname="SerializationMigrationTests.TruncatedAndMutatedLegacyRecordsFailWithoutExecutingCallbacks" methodname="TruncatedAndMutatedLegacyRecordsFailWithoutExecutingCallbacks" classname="SerializationMigrationTests" runstate="Runnable" seed="415122705" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.002081" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1303" name="UnknownFutureFileDoesNotFallbackToLegacyReaderOrRewriteAnything" fullname="SerializationMigrationTests.UnknownFutureFileDoesNotFallbackToLegacyReaderOrRewriteAnything" methodname="UnknownFutureFileDoesNotFallbackToLegacyReaderOrRewriteAnything" classname="SerializationMigrationTests" runstate="Runnable" seed="1934491792" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.018235" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1273" name="UnsupportedValueCannotOverwriteExistingSave" fullname="SerializationMigrationTests.UnsupportedValueCannotOverwriteExistingSave" methodname="UnsupportedValueCannotOverwriteExistingSave" classname="SerializationMigrationTests" runstate="Runnable" seed="879400824" result="Passed" start-time="2026-11-07 16:21:08Z" end-time="2026-11-07 16:21:08Z" duration="0.023435" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -38,6 +38,12 @@ public abstract class HttpPack
     /// <summary>失败后的重试次数（不含首次请求），默认 3，即最多请求 1+3 次</summary>
     public int RetryCount { get; set; } = 3;
 
+    /// <summary>
+    /// 是否允许对 POST/PUT 这类非幂等请求做自动重试（默认 false）。
+    /// <para>超时后服务端可能已经执行；没有幂等保证时重试会造成重复提交。</para>
+    /// </summary>
+    public bool RetryNonIdempotent { get; set; } = false;
+
     /// <summary>超时时间（秒），默认 15</summary>
     public int Timeout { get; set; } = 15;
 

@@ -6,7 +6,7 @@
 
 1. 使用 asmdef 的业务程序集添加对 `UPandaGF.Contracts` 的引用，然后在 C# 中引入 `UPandaGF` 命名空间。
 2. 让场景组件实现 `IGameServicesConsumer.Configure(IGameServices services)`，保存实际需要的接口。启动完成后，根节点扫描当前场景，以后在场景加载通知中再次扫描。
-3. 在组件的 `Configure` 或更晚阶段使用注入的服务。运行中创建的预制体需要由创建方显式注入。需要直接等待框架启动的程序集同时引用 `UPandaGF.Runtime`，并通过 `UPGameRoot.WaitUntilReadyAsync` 等待。
+3. 在组件的 `Configure` 或更晚阶段使用注入的服务。运行中创建的预制体用 `services.Inject(gameObject)` 补注入。需要直接等待框架启动的程序集同时引用 `UPandaGF.Runtime`，并通过 `UPGameRoot.WaitUntilReadyAsync` 等待。
 
 [消费者接口](Services.cs) · [根节点](../Manager/GameRoot/README.md)
 
@@ -20,8 +20,11 @@
 | `IInputService`、`IPauseService`、`IGameClock` | 动作输入、输入上下文、可嵌套暂停和时钟。 |
 | `ITimerService` | `Delay`、`Every`、`DelayAsync`，支持 scaled 和 unscaled 时间。 |
 | `IConfigService`、`IGameFlowService`、`IAppLifecycle` | 运行期配置、业务流程状态机、应用生命周期通知。 |
+| `IHttpService`、`HttpResult<T>` | 可取消的 Task HTTP 请求、全局请求头、并发上限；失败以结果返回。 |
+| `IPoolService`、`IPool` | 创建根生命周期池 / 作用域池，异步取还实例、预热与容量控制。 |
+| `ILogService` | 不参与 `OPEN_PLOG` 编译期剔除的可注入日志；级别查询与异常输出。 |
 
-`IGameServices` 聚合这些接口。自定义实现和测试替身须实现当前成员；只验证部分功能的替身可以对未涉及的服务返回 `null`。 [通用契约](Services.cs) · [基础契约](FoundationServices.cs) · [音频管理器](../Manager/AudioMgr/README.md)
+`IGameServices` 聚合这些接口（另有 `Http`、`Pools`、`Log`）。自定义实现和测试替身须实现当前成员；只验证部分功能的替身可以对未涉及的服务返回 `null`。运行期 Instantiate 的对象用 `services.Inject(gameObject)` 补注入；场景扫描覆盖不到它们。 [通用契约](Services.cs) · [基础契约](FoundationServices.cs) · [平台能力契约](PlatformServices.cs) · [音频管理器](../Manager/AudioMgr/README.md)
 
 ## 资源持有
 

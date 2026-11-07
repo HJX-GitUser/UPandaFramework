@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using UPandaGF;
 
 public class ExcelTool : EditorWindow
 {
@@ -23,18 +24,13 @@ public class ExcelTool : EditorWindow
     /// </summary>
     public string DATA_CONTAINER_PATH = "Scripts/ExcelData/Container/";// = Application.dataPath + "/Scripts/ExcelData/Container/";
     /// <summary>
-    /// 2进制数据存储位置路径
-    /// 这个必须和BinaryDataMgr里的读取路径一致
-    /// </summary>
-    public string DATA_BINARY_PATH = "Data/BinaryData/";// = Application.streamingAssetsPath + "/BinaryData/";
-    /// <summary>
     /// Excel表中真正内容开始的行号
     /// </summary>
     public int BEGIN_INDEX = 4;
     /// <summary>
     /// 二进制数据文件后缀
     /// </summary>
-    public string SUFFIX = ".binary";
+    public string SUFFIX = ExcelBinaryFormat.FileExtension;
 
     private Vector2 vec2Pos;
 
@@ -68,7 +64,7 @@ public class ExcelTool : EditorWindow
         GUILayout.Space(5);
         EditorGUILayout.LabelField("数据类存储位置", DATA_CLASS_PATH);
         EditorGUILayout.LabelField("数据容器类存储位置", DATA_CONTAINER_PATH);
-        EditorGUILayout.LabelField("数据存储路径", DATA_BINARY_PATH);
+        EditorGUILayout.LabelField("数据存储路径", ExcelBinaryFormat.RelativeFolder + "/");
         EditorGUILayout.LabelField("数据文件后缀", SUFFIX);
         EditorGUILayout.LabelField("Excel配置开始的行号", BEGIN_INDEX.ToString());
         GUILayout.Space(5);
@@ -197,16 +193,17 @@ public class ExcelTool : EditorWindow
     /// <param name="table"></param>
     private void GenerateExcelBinary(DataTable table)
     {
-        string path = Application.streamingAssetsPath + "/" + DATA_BINARY_PATH;
+        string path = ExcelBinaryFormat.StreamingAssetsDirectory;
         //没有路径创建路径
         if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-        //创建一个2进制文件进行写入
-        using (FileStream fs = new FileStream(path + table.TableName + SUFFIX, FileMode.OpenOrCreate, FileAccess.Write))
+        string filePath = Path.Combine(path, table.TableName + SUFFIX);
+        // FileMode.Create：表变短时必须截断，否则旧文件尾部会残留，读端无法判断。
+        using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
         {
             //存储具体的excel对应的2进制信息
             //1.先要存储 需要写多少行的数据 方便读取
-            //  -4的原因是因为 前面4行是配置规则 并不是需要记录的数据内容
-            fs.Write(BitConverter.GetBytes(table.Rows.Count - 4), 0, 4);
+            // 行数必须与读取循环使用同一个起点，不能硬编码 -4。
+            fs.Write(BitConverter.GetBytes(Math.Max(0, table.Rows.Count - BEGIN_INDEX)), 0, 4);
             //2.存储主键的变量名
             string keyName = GetVariableNameRow(table)[GetKeyIndex(table)].ToString();
             byte[] bytes = Encoding.UTF8.GetBytes(keyName);
@@ -226,34 +223,62 @@ public class ExcelTool : EditorWindow
                 //遍历列
                 for (int j = 0; j < table.Columns.Count; j++)
                 {
-                    switch (rowType[j].ToString())
+                    string type = rowType[j].ToString().Trim();
+                    string cell = row[j] == null || row[j] == DBNull.Value ? string.Empty : row[j].ToString().Trim();
+                    switch (type)
                     {
                         case "int":
-                            fs.Write(BitConverter.GetBytes(int.Parse(row[j].ToString())), 0, 4);
+                            fs.Write(BitConverter.GetBytes(ParseIntCell(cell, table.TableName, j)), 0, 4);
                             break;
                         case "float":
-                            fs.Write(BitConverter.GetBytes(float.Parse(row[j].ToString())), 0, 4);
+                            fs.Write(BitConverter.GetBytes(ParseFloatCell(cell, table.TableName, j)), 0, 4);
                             break;
                         case "bool":
-                            fs.Write(BitConverter.GetBytes(bool.Parse(row[j].ToString())), 0, 1);
+                            // 与读取端 ExcelBinaryFormat.BoolByteSize 对齐（4 字节），不能写 1 字节。
+                            fs.Write(BitConverter.GetBytes(ParseBoolCell(cell, table.TableName, j) ? 1 : 0), 0, 4);
                             break;
                         case "string":
-                            //bytes这个变量前面声明过，而且内容也写入内存了，所以拿来继续装其他内容
-                            bytes = Encoding.UTF8.GetBytes(row[j].ToString());
-                            //写入字符串字节数组的长度
+                            bytes = Encoding.UTF8.GetBytes(cell);
                             fs.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
-                            //写入字符串字节数组
                             fs.Write(bytes, 0, bytes.Length);
                             break;
                         default:
-                            Debug.LogError($"写入出错！数据类型出错！目前只支持int float bool string\n出错{rowType[j]}，列：{j}");
-                            break;
+                            throw new InvalidDataException(
+                                $"Excel 表 {table.TableName} 第 {j + 1} 列类型无效：{type}（只支持 int / float / bool / string）");
                     }
                 }
             }
             fs.Close();
         }
         AssetDatabase.Refresh();
+    }
+
+    private static int ParseIntCell(string value, string table, int column)
+    {
+        if (string.IsNullOrEmpty(value)) { Debug.LogWarning($"[ExcelTool] {table} 第 {column + 1} 列为空，按 0 处理"); return 0; }
+        int result;
+        if (!int.TryParse(value, out result))
+            throw new InvalidDataException($"Excel 表 {table} 第 {column + 1} 列不是 int：{value}");
+        return result;
+    }
+
+    private static float ParseFloatCell(string value, string table, int column)
+    {
+        if (string.IsNullOrEmpty(value)) { Debug.LogWarning($"[ExcelTool] {table} 第 {column + 1} 列为空，按 0 处理"); return 0f; }
+        float result;
+        if (!float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out result))
+            throw new InvalidDataException($"Excel 表 {table} 第 {column + 1} 列不是 float：{value}");
+        return result;
+    }
+
+    private static bool ParseBoolCell(string value, string table, int column)
+    {
+        if (string.IsNullOrEmpty(value)) { Debug.LogWarning($"[ExcelTool] {table} 第 {column + 1} 列为空，按 false 处理"); return false; }
+        bool result;
+        if (bool.TryParse(value, out result)) return result;
+        if (value == "1" || value.Equals("true", StringComparison.OrdinalIgnoreCase)) return true;
+        if (value == "0" || value.Equals("false", StringComparison.OrdinalIgnoreCase)) return false;
+        throw new InvalidDataException($"Excel 表 {table} 第 {column + 1} 列不是 bool：{value}");
     }
 
     /// <summary>

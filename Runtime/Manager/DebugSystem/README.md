@@ -23,6 +23,19 @@ PLogger.LogWarning("使用随包清单");
 PLogger.LogError("资源初始化失败");
 ```
 
+## 可注入日志（ILogService）
+
+需要把日志作为依赖注入（或希望在未定义 `OPEN_PLOG` 时仍然可观测）时，使用 `IGameServices.Log`：
+
+```csharp
+services.Log.Info("场景加载开始");
+services.Log.Warning("使用随包清单");
+services.Log.Error("资源初始化失败");
+services.Log.LogException(exception);
+```
+
+`LogService` 转调 `PLogger.Write/WriteException`（**不带** `[Conditional]`），因此调用不会被编译期剔除，但仍受 `openLog/openWarning/openError` 运行时开关控制。代价是调用点实参总会求值：每帧/高频路径继续使用 `PLogger.Log/LogWarning`，把编译期零成本留在热路径上。 [LogService.cs](LogService.cs)
+
 ## 文件输出
 
 启用当前目标的 `OPEN_PLOG` 和 `logSave` 后，`PLogger` 将 `logFileSavePath` 原样交给 `PLogHelper`。当前默认值 `Output Log/` 由 `Path.GetFullPath` 相对进程工作目录解析。诊断页展示的 `PLogHelper.LogFilePath` 是实际位置，按 `LogConfig.LogFileSavePath` 推导的目录可能不同。移动端还需确认目录可写。`PLogHelper` 用有界队列接收线程日志，常规平台由后台线程写入，WebGL 使用每帧处理预算。停止时会尝试退订、排空并关闭文件。 [PLogger.cs](PLogger.cs) · [PLogHelper.cs](PLogHelper.cs) · [平台存储](../AssetsMgr/README.md)
@@ -36,7 +49,7 @@ PLogger.LogError("资源初始化失败");
 | Reporter | 在 `UPGameRoot` Inspector 打开调试模式并检查 `reporter` 引用，运行后通过 FPS 按钮或 `ShowLogWindows()` 打开。 | 直接捕获 Unity 日志，有独立队列、日志保留预算与框架诊断页。 |
 | uGUI 日志面板 | 使用 `UPandaGF → 日志系统 → UGUI日志面板创建器` 生成预制体，按面板需要设置日志文件路径。 | 可跟读日志文件并展示、过滤、导出。大量积压会在一次更新中取走队列并重建文本，适合调试。 |
 
-`EnableDebugModel` 和 `showFPS` 控制显示。当前 `DebugerInit` 在更新和绘制路径中会读取整个根配置的快照。使用性能分析工具时，可将这部分开销与业务帧开销区分。 [Reporter](Reporter/README.md) · [uGUI 面板](UGUIDebug/LogListenerManager.cs)
+`EnableDebugModel` 和 `showFPS` 控制显示。`UPGameRoot.Config` 仍返回防御性副本（每次访问都会复制，适合诊断/低频读取）；`DebugerInit` 只在初始化时取一次 `EnableDebugModel`，更新/绘制路径不再触发配置 JSON 往返。运行中切换该开关需要重新进入播放。uGUI 面板的 `F12`/错误自动弹出依赖管理器保持激活，面板内容单独显示/隐藏。 [Reporter](Reporter/README.md) · [uGUI 面板](UGUIDebug/LogListenerManager.cs)
 
 ## 诊断和验证
 

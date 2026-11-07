@@ -119,8 +119,14 @@ public class HttpClient : MonoBehaviour
             return false;
         }
         string error = BuildErrorMessage(pack.WebRequest);
+        bool retryable = IsRetryable(pack);
         SafeDispose(pack);
-        if (pack.RetryCount <= 0) { Fail(pack, error); return false; }
+        if (pack.RetryCount <= 0 || !retryable)
+        {
+            if (pack.RetryCount > 0) PLogger.LogWarning("[HttpClient] 本次失败不可安全重试（方法/状态码）：" + error);
+            Fail(pack, error);
+            return false;
+        }
         pack.RetryCount--;
         _runningRequests.Remove(pack); _runningCount = _runningRequests.Count;
         PLogger.LogWarning("[HttpClient] 请求失败，准备重试。URL: " + pack.Url + ", 原因: " + error);
@@ -156,6 +162,22 @@ public class HttpClient : MonoBehaviour
             Debug.LogException(e);
         }
     }
+    /// <summary>
+    /// 是否允许自动重试：网络/超时/429/5xx 可重试；4xx（除 408/429）不重试；
+    /// POST/PUT 默认不重试，除非显式开启 <see cref="HttpPack.RetryNonIdempotent"/>。
+    /// </summary>
+    private static bool IsRetryable(HttpPack pack)
+    {
+        if (pack == null) return false;
+        if ((pack.Type == HttpRequestType.Post || pack.Type == HttpRequestType.Put) && !pack.RetryNonIdempotent)
+            return false;
+
+        UnityWebRequest request = pack.WebRequest;
+        long code = request != null ? request.responseCode : 0;
+        if (code >= 400 && code < 500) return code == 408 || code == 429;
+        return true;
+    }
+
     private static string BuildErrorMessage(UnityWebRequest request)
     {
         if (request == null) return "请求对象为空";

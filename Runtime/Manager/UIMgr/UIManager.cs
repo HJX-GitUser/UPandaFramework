@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -22,11 +22,12 @@ namespace UPandaGF
     }
 
     /// <summary>
-    /// UI管理器
-    /// 1.管理所有显示的面板
-    /// 2.提供给外部 显示和隐藏等等接口
+    /// UI管理器：管理所有显示的面板，提供显示/隐藏等接口。
+    /// <para>由 UPGameRoot 创建并持有（不再有静态单例）。依赖只有 IAssetService 与 ILogService，
+    /// 都通过 <see cref="Configure(IAssetService, ILogService)"/> 注入；不再回退到 ResourcesLoader 全局实例。</para>
+    /// <para>需要 UI 能力的场景组件实现 <see cref="IUIServiceConsumer"/>，由根节点注入 <see cref="IUIService"/>。</para>
     /// </summary>
-    public class UIManager : LazyMonoSingletonBase<UIManager>
+    public class UIManager : MonoBehaviour, IUIService
     {
         public Dictionary<string, BasePanel> panelDic = new Dictionary<string, BasePanel>();
 
@@ -49,13 +50,32 @@ namespace UPandaGF
         private EventSystem uiEventSystem;
         private RectTransform canvasRectTransform;
 
-        private ResourcesLoader resourcesLoader;
-        private IAssetsLoader assetsLoader;
         private IAssetService assetService;
+        private ILogService log = LogService.Default;
         private readonly Dictionary<string, ILifetimeScope> panelScopes = new Dictionary<string, ILifetimeScope>();
         internal int DiagnosticOpenPanelCount => panelDic.Count;
         internal int DiagnosticPendingPanelCount => pendingPanels.Count;
-        public void Configure(IAssetService service) { assetService = service ?? throw new ArgumentNullException(nameof(service)); }
+
+        /// <summary>注入 UI 的资源与日志依赖。资源服务必填；日志为空时使用默认 LogService。</summary>
+        public void Configure(IAssetService service, ILogService logger = null)
+        {
+            assetService = service ?? throw new ArgumentNullException(nameof(service));
+            if (logger != null) log = logger;
+        }
+
+        /// <summary>
+        /// 兼容旧接入：把旧的资源门面转成 IAssetService（内部仍然只有一条加载路径）。
+        /// </summary>
+        [Obsolete("UIManager 只通过 IAssetService 取资源；请改用 Configure(IAssetService) 或 services.Assets。")]
+        public void SetResourcesLoader(IAssetsLoader loader, ResourcesLoader resources)
+        {
+            if (assetService != null) return;
+            log.Warning("[UIManager] SetResourcesLoader 已过时：内部将转换为 IAssetService。");
+            if (loader != null && !(loader is AssetsLoader))
+                log.Warning("[UIManager] 传入的 IAssetsLoader 不是 AssetsLoader，无法转换，已忽略。");
+            if (resources == null && !(loader is AssetsLoader)) return;
+            Configure(new AssetService(resources, loader as AssetsLoader), log);
+        }
 
 
         void Reset()
@@ -104,12 +124,6 @@ namespace UPandaGF
             mid = canvasRectTransform.Find("Mid");
             top = canvasRectTransform.Find("Top");
             system = canvasRectTransform.Find("System");
-        }
-
-        public void SetResourcesLoader(IAssetsLoader arg1, ResourcesLoader arg2)
-        {
-            assetsLoader = arg1;
-            resourcesLoader = arg2;
         }
 
         private Camera InitCamera()
@@ -199,7 +213,7 @@ namespace UPandaGF
         {
             T panel = null;
             try { panel = await ShowPanelAsync<T>(panelArg); }
-            catch (Exception e) { Debug.LogException(e); }
+            catch (Exception e) { log.LogException(e); }
             ResourcesLoader.InvokeCallbacks(callBack, panel);
         }
 
@@ -215,7 +229,7 @@ namespace UPandaGF
             var info = typeof(T).GetCustomAttribute<UILoadInfoAttribute>();
             if (info == null || string.IsNullOrEmpty(info.loadPath))
             {
-                Debug.LogError(typeof(T).Name + " 必须标记有效的 UILoadInfo 特性");
+                log.Error(typeof(T).Name + " 必须标记有效的 UILoadInfo 特性");
                 return null;
             }
             try
@@ -248,7 +262,7 @@ namespace UPandaGF
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                log.LogException(e);
                 return null;
             }
         }
@@ -256,34 +270,14 @@ namespace UPandaGF
         private async Task CreatePanel<T>(UILoadInfoAttribute info, PendingPanel pending) where T : BasePanel
         {
             GameObject instance = null;
-            ResourcesLoader loader = null;
-            bool acquired = false;
             AssetLease<GameObject> prefabLease = null;
             try
             {
-                GameObject prefab = null;
-                if (assetService != null)
-                {
-                    prefabLease = await assetService.AcquireAsync<GameObject>(info.loadPath, info.loadMethod,
-                        pending.scope?.Token ?? CancellationToken.None);
-                    prefab = prefabLease?.Asset;
-                }
-                else switch (info.loadMethod)
-                {
-                    case AssetLoadMethod.Resources:
-                        loader = resourcesLoader != null ? resourcesLoader : ResourcesLoader.Instance;
-                        if (loader == null) throw new InvalidOperationException("ResourcesLoader 不可用");
-                        var loaded = new TaskCompletionSource<GameObject>();
-                        loader.LoadAsync<GameObject>(info.loadPath, asset => loaded.TrySetResult(asset));
-                        prefab = await loaded.Task;
-                        acquired = prefab != null;
-                        break;
-                    case AssetLoadMethod.AssetBundle:
-                        if (assetsLoader == null) throw new InvalidOperationException("AssetsLoader 尚未初始化");
-                        if (assetsLoader is AssetsLoader owned) { prefabLease = await owned.AcquireAsync<GameObject>(info.loadPath); prefab = prefabLease?.Asset; }
-                        else prefab = await assetsLoader.LoadAsync<GameObject>(info.loadPath);
-                        break;
-                }
+                if (assetService == null)
+                    throw new InvalidOperationException("UIManager 尚未注入 IAssetService：请通过 GameServices/UPGameRoot 装配后再打开面板。");
+                prefabLease = await assetService.AcquireAsync<GameObject>(info.loadPath, info.loadMethod,
+                    pending.scope?.Token ?? CancellationToken.None);
+                GameObject prefab = prefabLease?.Asset;
                 PendingPanel current;
                 if (destroyed || !pendingPanels.TryGetValue(info.loadPath, out current)
                     || !ReferenceEquals(current, pending)) return;
@@ -299,17 +293,13 @@ namespace UPandaGF
                 rect.localScale = Vector3.one;
                 rect.offsetMin = rect.offsetMax = Vector2.zero;
                 T panel = instance.GetOrAddComponent<T>();
-                if (acquired)
-                {
-                    var lease = instance.AddComponent<PanelResourceLease>();
-                    lease.Initialize(loader, info.loadPath);
-                    acquired = false; // 从此由实例销毁时归还引用，支持外部直接 Destroy。
-                }
                 if (prefabLease != null)
                 {
                     instance.AddComponent<PanelResourceLease>().Initialize(prefabLease);
                     prefabLease = null;
                 }
+                // 面板的依赖由创建者注入；BasePanel 不再反查 UIManager 单例。
+                panel.AttachManager(this);
                 if (pending.scope != null && pending.scope.Token.IsCancellationRequested) return;
                 panelDic[info.loadPath] = panel;
                 panelScopes[info.loadPath] = pending.scope;
@@ -319,13 +309,12 @@ namespace UPandaGF
                 pending.completion.TrySetResult(panel);
             }
             catch (OperationCanceledException) { }
-            catch (Exception e) { Debug.LogException(e); }
+            catch (Exception e) { log.LogException(e); }
             finally
             {
                 pending.cancellation.Dispose();
                 prefabLease?.Dispose();
                 if (instance != null) Destroy(instance);
-                if (acquired && loader != null) loader.UnLoadAsset<GameObject>(info.loadPath, true);
                 PendingPanel current;
                 if (pendingPanels.TryGetValue(info.loadPath, out current) && ReferenceEquals(current, pending))
                     pendingPanels.Remove(info.loadPath);
@@ -367,15 +356,21 @@ namespace UPandaGF
             var requests = new List<PendingPanel>(pendingPanels.Values);
             pendingPanels.Clear();
             foreach (var request in requests) request.completion.TrySetResult(null);
-            foreach (var panel in panelDic.Values)
-                if (panel != null) Destroy(panel.gameObject);
-            panelDic.Clear(); panelScopes.Clear();
+            var panels = new List<BasePanel>(panelDic.Values);
+            panelDic.Clear();
+            panelScopes.Clear();
+            foreach (var panel in panels)
+            {
+                if (panel == null) continue;
+                try { panel.OnClose(); }
+                catch (Exception e) { log.LogException(e); }
+                Destroy(panel.gameObject);
+            }
         }
 
-        protected override void OnDestroyed()
+        private void OnDestroy()
         {
             Shutdown();
-            base.OnDestroyed();
         }
 
         /// <summary>
@@ -390,7 +385,7 @@ namespace UPandaGF
             // 检查当前类是否包含特性
             if (uiLoadInfo == null)
             {
-                Debug.LogError($"继承自BasePanel的类:({typeof(T).Name})必须标记UILoadInfo特性！！！");
+                log.Error($"继承自BasePanel的类:({typeof(T).Name})必须标记UILoadInfo特性！！！");
                 return null;
             }
 

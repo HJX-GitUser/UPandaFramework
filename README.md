@@ -1,8 +1,15 @@
 # UPandaFramework
 
-Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行时提供场景、资源、热更、UI、音频、存档、输入和帧调度，`Runtime/Game` 提供可选玩法组件，`Editor` 提供打包与内容工具。框架作为源码目录放在宿主项目的 `Assets/upanda-framework`，导入时应一并保留 `.meta`，以便 Unity 恢复脚本、场景、预制体和材质引用。
+Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行时提供场景、资源、热更、UI、音频、存档、输入、HTTP、对象池、日志和帧调度，`Runtime/Game` 提供可选玩法组件，`Editor` 提供打包与内容工具。框架作为源码目录放在宿主项目的 `Assets/upanda-framework`，导入时应一并保留 `.meta`，以便 Unity 恢复脚本、场景、预制体和材质引用。
 
-[Gitee](https://gitee.com/he-jinxian/upanda-framework.git) · [GitHub](https://github.com/UserHandJ/UPandaFramework.git)
+安装方式二选一：
+
+- **UPM（推荐）**：Package Manager → Add package from git URL，填 `https://gitee.com/he-jinxian/upanda-framework.git#master`。需要宿主已安装 Git，并确认 TextMeshPro 依赖可解析。
+- **源码拷贝**：把整个 `upanda-framework` 目录（含 `.meta`）复制到 `Assets/upanda-framework`。
+
+要求 **Unity 2021.3 LTS 或更高**；2021.3.45f2c1 与 2022.3.53f1c1 均已编译并跑通 EditMode/PlayMode 回归。
+
+[Gitee](https://gitee.com/he-jinxian/upanda-framework.git) · [GitHub](https://github.com/UserHandJ/UPandaFramework.git) · [变更记录](CHANGELOG.md) · [优化计划](OPTIMIZATION_PLAN.md)
 
 ## 集成到 Unity 项目
 1. 导入框架目录及 `.meta`，在 Package Manager 确认 uGUI 和 TextMeshPro 可用。运行时输入的默认后端使用旧 Input Manager。使用 HybridCLR 程序集加载、URP 效果或运行测试时，再核对对应宿主依赖。
@@ -27,7 +34,7 @@ public static class AppEntry
 }
 ```
 
-`WaitUntilReadyAsync` 可等待已有的共享启动结果。调用者负责处理异常和自己的加载界面。接入了 `GameLaunchExample` 的场景由该示例负责首场景跳转。运行时实例化的业务对象可显式接收需要的服务，已有场景消费者也可实现 `IGameServicesConsumer`。 [服务装配](Runtime/Manager/Services/README.md)
+`WaitUntilReadyAsync` 可等待已有的共享启动结果。调用者负责处理异常和自己的加载界面。接入了 `GameLaunchExample` 的场景由该示例负责首场景跳转。运行时实例化的业务对象用 `services.Inject(gameObject)` 补注入；已有场景消费者实现 `IGameServicesConsumer` / `IUIServiceConsumer`。 [服务装配](Runtime/Manager/Services/README.md)
 
 ## 程序集
 

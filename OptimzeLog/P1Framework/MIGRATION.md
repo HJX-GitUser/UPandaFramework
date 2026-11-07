@@ -1,5 +1,7 @@
 # P1 使用与迁移
 
+> **历史文档（0.2.0 时期）**：0.3.0 已移除 `UIManager.Instance`、`AudioMgr.Instance/Release`、`QuestManager.Instance`、`HttpManager.Instance`、`GameObjectPoolMgr.Instance`；UI 改实现 `IUIServiceConsumer`，任务改为场景持有 `QuestManager`，HTTP/池/日志统一走 `IGameServices.Http/Pools/Log`。现行用法见各模块 README 与 `OptimzeLog/P1Services-2026-11-08/README.md`。
+
 ## 业务接收服务
 
 场景中的对象实现 IGameServicesConsumer，框架就绪后或场景加载完成时由根节点注入。动态实例由工厂显式注入。

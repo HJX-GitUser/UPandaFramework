@@ -166,7 +166,7 @@ namespace UPandaGF.GFEditor
 
             if (GUILayout.Button("重置相对路径"))
             {
-                component.Config.LoadAssetPath = "AssetBundles/StandaloneWindows/";
+                component.Config.LoadAssetPath = "AssetBundles/StandaloneWindows64/";
                 EditorUtility.SetDirty(component);
             }
         }

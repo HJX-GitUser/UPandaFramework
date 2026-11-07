@@ -1,4 +1,4 @@
-﻿﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -22,6 +22,8 @@ namespace UPandaGF.RunTime.TaskSystem
     public class QuestLogPanel : MonoBehaviour
     {
         [Header("引用（可留空）")]
+        [Tooltip("任务管理器；留空则本组件不工作（不再自动查找单例）。")]
+        public QuestManager manager;
         [Tooltip("被显示/隐藏的面板本体；建议指向子物体。留空 = 用 CanvasGroup 控制可见性。")]
         public GameObject panelRoot;
         public Text titleText;
@@ -52,7 +54,6 @@ namespace UPandaGF.RunTime.TaskSystem
         private readonly Dictionary<string, QuestLogEntryView> rows = new Dictionary<string, QuestLogEntryView>();
         private readonly StringBuilder detailBuilder = new StringBuilder();
 
-        private QuestManager manager;
         private QuestInstance selected;
         private CanvasGroup canvasGroup;
         private bool isVisible;
@@ -73,8 +74,11 @@ namespace UPandaGF.RunTime.TaskSystem
         {
             if (!Application.isPlaying) return;
 
-            manager = QuestManager.Instance;      // 没有就自动创建
-            if (manager == null) return;
+            if (manager == null)
+            {
+                Debug.LogError("[QuestLogPanel] 未绑定 QuestManager：请在 Inspector 指定，或用 QuestDemoInstaller 重新搭建场景。");
+                return;
+            }
 
             // 只订阅事件，不做轮询
             manager.OnQuestLogChanged += RebuildList;

@@ -1,4 +1,4 @@
-// =============================================================================
+﻿// =============================================================================
 //  UPGameRootConfig.cs —— UPGameRoot 的配置对象（Inspector 面板与 Json 共用一个对象）
 // -----------------------------------------------------------------------------
 //  真源与优先级：
@@ -39,7 +39,7 @@ namespace UPandaGF
         public bool enableAssetUpdate = false;
 
         [Tooltip("资源相对路径；同时决定远端 URL 与 persistentDataPath 下的子目录")]
-        public string LoadAssetPath = "AssetBundles/StandaloneWindows/";
+        public string LoadAssetPath = "AssetBundles/StandaloneWindows64/";
 
         [Tooltip("远端（热更）根地址")]
         public string remoteURL = "http://127.0.0.1:80/";

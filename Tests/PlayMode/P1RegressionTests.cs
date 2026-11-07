@@ -257,7 +257,8 @@ public class P1ResourceIntegrationTests
     private sealed class AssetsOnlyServices : IGameServices
     {
         public IAssetService Assets { get; }
-        public AssetsOnlyServices(IAssetService assets) { Assets = assets; }
+        private readonly PoolService pools;
+        public AssetsOnlyServices(IAssetService assets) { Assets = assets; pools = new PoolService(assets); }
         public IAudioService Audio => null;
         public ISaveService Saves => null;
         public ISceneService Scenes => null;
@@ -268,6 +269,9 @@ public class P1ResourceIntegrationTests
         public IConfigService Config => null;
         public IGameFlowService Flow => null;
         public IAppLifecycle AppLifecycle => null;
+        public IHttpService Http => null;
+        public IPoolService Pools => pools;
+        public ILogService Log => null;
     }
     private string relative, folder; private LifecycleFixtureConfig fixtures;
     [SetUp] public void Setup()
@@ -277,9 +281,8 @@ public class P1ResourceIntegrationTests
     }
     [TearDown] public void Cleanup()
     {
-        AudioMgr.Release();
-        foreach (var go in Object.FindObjectsByType<ABLoadMgr>(FindObjectsSortMode.None)) Object.DestroyImmediate(go.gameObject);
-        foreach (var go in Object.FindObjectsByType<ResourcesLoader>(FindObjectsSortMode.None)) Object.DestroyImmediate(go.gameObject);
+        foreach (var go in TestObjectSearch.All<ABLoadMgr>()) Object.DestroyImmediate(go.gameObject);
+        foreach (var go in TestObjectSearch.All<ResourcesLoader>()) Object.DestroyImmediate(go.gameObject);
         if (Directory.Exists(folder)) Directory.Delete(folder, true);
     }
     private IEnumerator Initialize()
@@ -348,10 +351,14 @@ public class P1ResourceIntegrationTests
         pool.PushObj(fixtures.resourceKey + "/AudioPrefab", load.Result);
         scope.Dispose(); yield return null; Assert.IsTrue(load.Result == null); Assert.IsTrue(active.Result == null);
         Assert.AreEqual(0, resources.GetAssetsRefCount<GameObject>(fixtures.resourceKey + "/AudioPrefab"));
-        var audio = AudioMgr.Instance; audio.Configure(assets);
-        var clip = new TaskCompletionSource<AudioSource>();
-        audio.LoadSoundAndPlay(fixtures.resourceKey + "/Clip", true, callBack: source => clip.SetResult(source));
-        yield return P1TestWait.For(clip.Task); Assert.IsNotNull(clip.Task.Result); audio.StopAllSound(); yield return null; Assert.AreEqual(0, audio.PlayingSoundCount);
+        var audio = new AudioMgr(assets);
+        try
+        {
+            var clip = new TaskCompletionSource<AudioSource>();
+            audio.LoadSoundAndPlay(fixtures.resourceKey + "/Clip", true, callBack: source => clip.SetResult(source));
+            yield return P1TestWait.For(clip.Task); Assert.IsNotNull(clip.Task.Result); audio.StopAllSound(); yield return null; Assert.AreEqual(0, audio.PlayingSoundCount);
+        }
+        finally { audio.Dispose(); }
     }
 }
 
@@ -470,6 +477,7 @@ public class P1RootCompositionTests
         {
             var start = root.WaitUntilReadyAsync(); yield return P1TestWait.For(start); Assert.IsFalse(start.IsFaulted, start.Exception?.ToString());
             Assert.AreSame(root.Services, consumer.Services); Assert.IsNotNull(root.Services.Audio); Assert.IsNotNull(root.Services.Saves);
+            Assert.IsNotNull(root.Services.Http); Assert.IsNotNull(root.Services.Pools); Assert.IsNotNull(root.Services.Log);
             var snapshot = root.Config; snapshot.remoteURL = "https://changed.invalid"; snapshot.inputBindings[0].action = "Changed";
             Assert.AreNotEqual(snapshot.remoteURL, root.Config.remoteURL); Assert.AreEqual("MoveVertical", root.Config.inputBindings[0].action);
             Assert.Throws<InvalidOperationException>(() => root.SetConfig(new UPGameRootConfig()));
@@ -478,6 +486,8 @@ public class P1RootCompositionTests
             menu.Open(); Object.DestroyImmediate(menuObject); Assert.IsFalse(root.Services.Pause.IsPaused);
             var sceneScope = root.Services.Scenes.GetScope(consumerObject.scene); var heldPause = sceneScope.Own(root.Services.Pause.Pause());
             var stop = root.ShutdownAsync(); yield return P1TestWait.For(stop); Assert.IsFalse(stop.IsFaulted, stop.Exception?.ToString());
+            yield return null;
+            Assert.IsNull(UnityEngine.Object.FindObjectOfType<HttpManager>());   // 容器创建的 HTTP 宿主随关闭销毁
             Assert.IsTrue(sceneScope.IsDisposed); Assert.AreEqual(previousScale, Time.timeScale); Assert.AreEqual(previousAudio, AudioListener.pause);
             heldPause.Dispose(); Assert.Throws<InvalidOperationException>(() => { var unused = root.Services; });
         }

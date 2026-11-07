@@ -68,10 +68,19 @@ namespace UPandaGF
         /// </summary>
         [SerializeField] private UPGameRootConfig config = new UPGameRootConfig();
 
-        /// <summary>当前配置（外部读用；要改就改这个对象上的字段）</summary>
+        /// <summary>启动期冻结的配置（只读；运行期修改请重建根节点或走 SetConfig 之前的阶段）。</summary>
         private UPGameRootConfig runtimeConfig;
         private GameServices services;
+
+        /// <summary>
+        /// 当前配置的防御性副本。每次访问都会复制，适合诊断/低频读取；不要放在每帧路径里。
+        /// <para>框架内部需要高频读取时使用 <see cref="ConfigRuntime"/>（同程序集 internal）。</para>
+        /// </summary>
         public UPGameRootConfig Config => runtimeConfig != null ? UPGameRootConfigFile.Snapshot(runtimeConfig) : config;
+
+        /// <summary>运行期配置本体（只读约定，不复制）；仅供框架内部高频读取。</summary>
+        internal UPGameRootConfig ConfigRuntime => runtimeConfig != null ? runtimeConfig : config;
+
         public IGameServices Services => IsInited && State == StartupState.Ready ? services : throw new InvalidOperationException("请先等待框架就绪。");
 
         /// <summary>整体替换配置（读 Json / 工具回填用），并做空值兜底</summary>
@@ -90,7 +99,7 @@ namespace UPandaGF
             if (config.AssetAESConfig == null)
                 config.AssetAESConfig = new AssetBundleClassificationWindowConfig { enable = false };
             if (string.IsNullOrEmpty(config.LoadAssetPath))
-                config.LoadAssetPath = "AssetBundles/StandaloneWindows/";
+                config.LoadAssetPath = "AssetBundles/StandaloneWindows64/";
         }
 
         public const string assetData = "assetData.assetref";
@@ -119,6 +128,9 @@ namespace UPandaGF
         internal GameServices RuntimeServices => services;
         internal AssetsLoader AssetLoader => sourcesLoadMgr;
         internal UIManager RootUIManager => _UIManager;
+
+        /// <summary>UI 服务（根节点持有；未就绪前为 null）。场景组件优先实现 <see cref="IUIServiceConsumer"/> 拿注入。</summary>
+        public IUIService UI => _UIManager;
 
         /// <summary>最近一次热更的文件阶段统计（下载等待时间另计）。</summary>
         public HotUpdateStatistics LastHotUpdateStatistics => contentUpdate?.LastHotUpdateStatistics;
@@ -198,9 +210,8 @@ namespace UPandaGF
                     if (services != null) await services.ShutdownAsync();
                 });
                 lifecycle.Add("UI", ct => {
-                    _UIManager.Configure(services.Assets);
+                    _UIManager.Configure(services.Assets, services.Log);
                     _UIManager.Init();
-                    _UIManager.SetResourcesLoader(sourcesLoadMgr, ResourcesLoader.Instance);
                     return Task.CompletedTask;
                 }, () => { _UIManager?.Shutdown(); return Task.CompletedTask; });
                 try { ConfigureLifecycle?.Invoke(lifecycle); }
@@ -368,9 +379,7 @@ namespace UPandaGF
             if (!scene.IsValid() || !scene.isLoaded) return;
             services.SceneService.GetScope(scene);
             foreach (var root in scene.GetRootGameObjects())
-                foreach (var behaviour in root.GetComponentsInChildren<MonoBehaviour>(true))
-                    if (behaviour is IGameServicesConsumer consumer)
-                        try { consumer.Configure(services); } catch (Exception e) { Debug.LogException(e); }
+                services.Inject(root, _UIManager);
         }
         private void OnApplicationPause(bool paused)
         {

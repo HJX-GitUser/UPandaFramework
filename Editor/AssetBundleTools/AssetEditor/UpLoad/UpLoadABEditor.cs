@@ -119,7 +119,7 @@ internal class UpLoadABEditor
             }
 
             Debug.Log($"开始复制AssetBundle: {LocalABPath} -> {config.targetDirectory}");
-            ClearTargetDirectory();
+            if (!ClearTargetDirectory()) return;
             // 复制所有文件和子目录
             CopyDirectory(LocalABPath, config.targetDirectory);
 
@@ -378,10 +378,17 @@ internal class UpLoadABEditor
     }
 
     /// <summary>
-    /// 清空目标目录
+    /// 清空目标目录。返回 false 表示用户取消或路径被护栏拒绝。
     /// </summary>
-    private void ClearTargetDirectory()
+    private bool ClearTargetDirectory()
     {
+        if (!EditorDestructiveGuard.ConfirmDelete(
+            "清空 AB 目标目录",
+            config.targetDirectory,
+            "将递归删除目标目录下全部文件与子目录，再复制本次 AB 产物。请确认目标不是工程根、Assets 或源目录。",
+            LocalABPath))
+            return false;
+
         if (Directory.Exists(config.targetDirectory))
         {
             Debug.Log($"清空目标目录: {config.targetDirectory}");
@@ -408,6 +415,7 @@ internal class UpLoadABEditor
             Directory.CreateDirectory(config.targetDirectory);
             Debug.Log($"创建目标目录: {config.targetDirectory}");
         }
+        return true;
     }
 
     /// <summary>
