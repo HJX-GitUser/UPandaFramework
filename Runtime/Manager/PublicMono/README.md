@@ -85,7 +85,7 @@ catch (Exception e) { /* 协程内部出错 */ }
 
 ## 6. 与框架的关系
 
-- **启动链**：`UPGameRoot.Init()` 用 `await PublicMono.Instance.RunCoroutine(debugerInit.Init())` 驱动日志系统初始化；`SceneMgr` 用 `PublicMono.RunCoroutine` 托管场景加载等待。
+- **启动链**：`UPGameRoot.Init()` 用 `await PublicMono.Instance.RunCoroutine(debugerInit.Init())` 驱动日志系统初始化。
 - **帧驱动**：`AudioMgr` 等纯 C# 管理器通过 `AddUpdateListener` 拿到 `Update`（`AudioMgr` 在 `Dispose` 时注销，见 `Runtime/Manager/AudioMgr/README.md`）。
 - **异常隔离是框架级保障**：正因为这里逐个 `try/catch`，各模块自己的 `Update` 里即使漏了异常保护，也不会连累其它模块。
 

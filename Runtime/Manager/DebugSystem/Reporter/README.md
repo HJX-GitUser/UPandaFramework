@@ -19,14 +19,14 @@
 |---|---|
 | Reporter.cs | 保留组件与公开接口；订阅/退订、线程队列、限量主线程处理、配置和导出 |
 | ReporterLogStore.cs | 原始记录与折叠索引统一保留/淘汰、级别计数和搜索 |
-| Reporter.View.cs | 原生 IMGUI 绘制、样式缓存、虚拟列表、详情、设备设置与框架诊断 |
+| Reporter.View.cs | 原生 IMGUI 绘制、样式缓存、虚拟列表、详情、页签切换、设置与框架诊断 |
 | ReporterGUI.cs | 唯一绘制入口，显示/隐藏复用同一个组件 |
 
 框架数据由 `../FrameworkDiagnostics.cs` 汇总，Reporter 不复制维护模块或资源计数。
 
 ## 新界面
 
-- 顶部为标题、设备信息和关闭入口。
+- 顶部为页签（运行日志 / 显示设置 / 框架诊断）和关闭入口；窄屏时页签自动收缩为纯图标，极窄时换行。
 - 搜索支持消息和堆栈的 OrdinalIgnoreCase 匹配；三类级别按钮显示当前保留记录的总计数。
 - 工具条支持清空、折叠、暂停视图、跟随、换场清空、可选元数据、复制、导出；窄屏可横向拖动工具条。
 - 宽度 >= 1000px 时列表/详情左右分栏，窄屏上下分栏；分隔条可拖动调整比例。
@@ -34,7 +34,7 @@
 - 日志正文禁用富文本解析；详情可选择复制，修改不会写回日志。复制按钮复制完整原文和堆栈。
 - Ctrl/Cmd+F 聚焦搜索，Esc 关闭；列表滚轮/拖动、滚动条与跟随状态配合。
 - 状态栏显示可见/保留条数、帧率、托管内存、待处理和溢出丢弃计数，以及导出结果。
-- 信息页下方显示模块状态、启动逐步耗时及 Resources / AB / 场景 / UI 统计；仅页面可见时每 0.5 秒刷新。
+- 「框架诊断」页签显示框架状态、模块状态、启动逐步耗时及 Resources / AB / 场景 / UI 统计；仅页签可见时每 0.5 秒刷新，与「显示设置」页签相互独立。
 - 使用已重设计的图标与浅色表面；缺少 images/GUISkin 配置时使用文字与运行时样式兜底。
 
 ## 兼容与 API
@@ -43,7 +43,7 @@
 
 新增主线程 API：HideLogWindows、ClearLogs、SetFilter、SetCollapse、SetSeverityFilters；RetainedLogCount、PendingLogCount、DroppedLogCount 用于观察。
 
-显示设置沿用 Reporter_* PlayerPrefs 键，关闭或退出时保存。移除旧的不可达 Snapshot 页面和未真正绘制曲线的 Graph 占位流程；不改变 ReplaySystem。
+显示设置沿用 Reporter_* PlayerPrefs 键，关闭或退出时保存。移除旧的不可达 Snapshot 页面和未真正绘制曲线的 Graph 占位流程；框架诊断已从设置页拆到独立页签（ReportView.Settings / Diagnostics）；不改变 ReplaySystem。
 
 ## 限制与语义
 

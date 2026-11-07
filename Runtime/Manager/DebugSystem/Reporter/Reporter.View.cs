@@ -53,7 +53,9 @@ public partial class Reporter
             {
                 GUI.DrawTexture(new Rect(0, 0, window.width, window.height), surface);
                 float y = DrawHeader(window.width);
-                if (currentView == ReportView.Info) DrawInformation(new Rect(0, y, window.width, Mathf.Max(1, window.height - y)));
+                Rect page = new Rect(0, y, window.width, Mathf.Max(1, window.height - y));
+                if (currentView == ReportView.Settings) DrawSettings(page);
+                else if (currentView == ReportView.Diagnostics) DrawDiagnostics(page);
                 else
                 {
                     y = DrawFilters(window.width, y);
@@ -142,31 +144,41 @@ public partial class Reporter
             showSearchText = true; currentView = ReportView.Logs; focusSearch = true; e.Use();
         }
     }
+    private static readonly string[] ViewTabs = { "运行日志", "显示设置", "框架诊断" };
+    private static readonly ReportView[] ViewPages = { ReportView.Logs, ReportView.Settings, ReportView.Diagnostics };
+
     private float DrawHeader(float width)
     {
         bool compact = width < 600;
         float h = ControlHeight + 16;
         float closeWidth = compact ? 72 : 104;
-        float switchWidth = compact ? 112 : 176;
-        float actionsWidth = closeWidth + switchWidth + 28;
-        bool stacked = width - actionsWidth < 180;
-        float buttonY = stacked ? h : 8;
+        bool stacked = width < 380;
         float totalHeight = stacked ? h * 2 : h;
         GUI.DrawTexture(new Rect(0, 0, width, totalHeight), toolbarSurface);
-        GUI.Label(new Rect(14, 0, Mathf.Max(1, stacked ? width - 28 : width - actionsWidth - 14), h),
-            currentView == ReportView.Info ? "设备 / 框架诊断" : "运行日志", titleStyle);
-        if (stacked)
+        float available = (stacked ? width : width - closeWidth - 28) - 20;
+        float tabWidth = Mathf.Clamp((available - 8) / 3f, 24, compact ? 148 : 184);
+        bool withText = tabWidth >= 112;
+        float tabY = stacked ? h : 0;
+        float x = 10;
+        for (int i = 0; i < ViewTabs.Length; i++)
         {
-            closeWidth = Mathf.Min(closeWidth, (width - 36) * .4f);
-            switchWidth = Mathf.Max(1, width - closeWidth - 36);
+            if (IconButton(new Rect(x, tabY + 8, tabWidth, h - 16), TabIcon(i), ViewTabs[i], currentView == ViewPages[i], withText))
+                SelectView(ViewPages[i]);
+            x += tabWidth + 4;
         }
-        if (IconButton(new Rect(width - closeWidth - switchWidth - 20, buttonY, switchWidth, h - 16),
-            currentView == ReportView.Info ? images.backImage : images.infoImage,
-            currentView == ReportView.Info ? "返回日志" : "显示设置", currentView == ReportView.Info, true))
-            currentView = currentView == ReportView.Info ? ReportView.Logs : ReportView.Info;
-        if (IconButton(new Rect(width - closeWidth - 12, buttonY, closeWidth, h - 16), images.closeImage, "关闭", false, true)) HideLogWindows();
-        h = totalHeight;
-        return h;
+        if (IconButton(new Rect(width - closeWidth - 12, 8, closeWidth, h - 16), images.closeImage, "关闭", false, true)) HideLogWindows();
+        return totalHeight;
+    }
+    private Texture2D TabIcon(int index)
+    {
+        if (index == 1) return images.infoImage;
+        return index == 2 ? images.systemInfoImage : images.logImage;
+    }
+    private void SelectView(ReportView view)
+    {
+        if (currentView == view) return;
+        currentView = view;
+        infoScroll = Vector2.zero;
     }
     private bool IconButton(Rect rect, Texture2D image, string label, bool active, bool withText = false)
     {
@@ -395,19 +407,15 @@ public partial class Reporter
                 paused ? "  ·  已暂停 · 待处理 " + PendingLogCount + " 条" : "", DroppedLogCount > 0 ? "  ·  已丢弃 " + DroppedLogCount : "");
         GUI.Label(new Rect(rect.x + 12, rect.y, rect.width - 24, rect.height), text, mutedStyle);
     }
-    private void DrawInformation(Rect rect)
+    private void DrawSettings(Rect rect)
     {
-        if (frameworkDiagnostics == null || Time.realtimeSinceStartup >= nextDiagnosticsAt)
-        {
-            frameworkDiagnostics = FrameworkDiagnostics.Capture(UPGameRoot.Instance);
-            nextDiagnosticsAt = Time.realtimeSinceStartup + .5f;
-        }
         float line = ControlHeight + 10;
-        int diagnosticRows = 13 + Math.Max(1, frameworkDiagnostics.Modules.Count) + Math.Max(1, frameworkDiagnostics.StartupSteps.Count)
-            + (string.IsNullOrEmpty(frameworkDiagnostics.InitializationError) ? 0 : 1);
-        float contentHeight = line * (19 + diagnosticRows) + 120;
+        int columns = rect.width >= 650 ? 4 : 2;
+        int toggleRows = (8 + columns - 1) / columns;
+        float contentHeight = line * (15 + toggleRows) + 60;
         infoScroll = GUI.BeginScrollView(rect, infoScroll, new Rect(0, 0, Mathf.Max(1, rect.width - 16), contentHeight), false, true, GUIStyle.none, viewSkin.verticalScrollbar);
         float y = 8;
+        DiagnosticSection(ref y, rect.width, line, "应用 / 设备");
         InfoLine(ref y, rect.width, "应用", Application.productName + "  " + Application.version, images.softwareImage);
         InfoLine(ref y, rect.width, "设备", SystemInfo.deviceModel + " / " + SystemInfo.deviceName, images.systemInfoImage);
         InfoLine(ref y, rect.width, "系统", SystemInfo.operatingSystem, images.softwareImage);
@@ -418,6 +426,7 @@ public partial class Reporter
         InfoLine(ref y, rect.width, "启动", logDate, images.dateImage);
         InfoLine(ref y, rect.width, "用户", string.IsNullOrEmpty(UserData) ? "未设置" : UserData, images.userImage);
         InfoLine(ref y, rect.width, "缓冲", store.Count + " 条 / 估算 " + TotalMemUsage.ToString("0.00") + " MB", images.showMemoryImage);
+        DiagnosticSection(ref y, rect.width, line, "界面显示");
         GUI.Label(new Rect(16, y, 100, line), "界面尺寸", textStyle);
         float scale = GUI.HorizontalSlider(new Rect(125, y + line / 2 - 16, Mathf.Max(1, rect.width - 165), 32), size.y, 16, 64);
         if (!Mathf.Approximately(scale, size.y)) size = new Vector2(scale, scale);
@@ -425,10 +434,9 @@ public partial class Reporter
         GUI.Label(new Rect(16, y, 105, line), "不透明度 " + Mathf.RoundToInt(panelOpacity * 100) + "%", textStyle);
         panelOpacity = GUI.HorizontalSlider(new Rect(125, y + line / 2 - 16, Mathf.Max(1, rect.width - 165), 32), panelOpacity, .2f, 1f);
         y += line;
-        GUI.Label(new Rect(16, y, rect.width - 32, line), "工具栏显示", titleStyle); y += line;
+        DiagnosticSection(ref y, rect.width, line, "工具栏显示");
         var settings = new[] { "换场清空", "时间", "场景", "内存", "帧率", "搜索", "复制", "导出" };
         bool[] values = { showClearOnNewSceneLoadedButton, showTimeButton, showSceneButton, showMemButton, showFpsButton, showSearchText, showCopyButton, showSaveButton };
-        int columns = rect.width >= 650 ? 4 : 2;
         float cell = (rect.width - 40) / columns;
         for (int i = 0; i < settings.Length; i++)
         {
@@ -436,8 +444,28 @@ public partial class Reporter
             if (GUI.Button(box, (values[i] ? "✓ " : "") + settings[i], values[i] ? activeStyle : buttonStyle)) values[i] = !values[i];
         }
         showClearOnNewSceneLoadedButton = values[0]; showTimeButton = values[1]; showSceneButton = values[2]; showMemButton = values[3]; showFpsButton = values[4]; showSearchText = values[5]; showCopyButton = values[6]; showSaveButton = values[7];
-        DrawFrameworkDiagnostics(ref y, rect.width, line, frameworkDiagnostics);
         GUI.EndScrollView();
+    }
+    private void DrawDiagnostics(Rect rect)
+    {
+        var snapshot = CaptureDiagnostics();
+        float line = ControlHeight + 10;
+        int rows = 10 + Math.Max(1, snapshot.Modules.Count) + Math.Max(1, snapshot.StartupSteps.Count)
+            + (string.IsNullOrEmpty(snapshot.InitializationError) ? 0 : 1);
+        float contentHeight = line * rows + 80;
+        infoScroll = GUI.BeginScrollView(rect, infoScroll, new Rect(0, 0, Mathf.Max(1, rect.width - 16), contentHeight), false, true, GUIStyle.none, viewSkin.verticalScrollbar);
+        float y = 8;
+        DrawFrameworkDiagnostics(ref y, rect.width, line, snapshot);
+        GUI.EndScrollView();
+    }
+    private FrameworkDiagnosticsSnapshot CaptureDiagnostics()
+    {
+        if (frameworkDiagnostics == null || Time.realtimeSinceStartup >= nextDiagnosticsAt)
+        {
+            frameworkDiagnostics = FrameworkDiagnostics.Capture(UPGameRoot.Instance);
+            nextDiagnosticsAt = Time.realtimeSinceStartup + .5f;
+        }
+        return frameworkDiagnostics;
     }
     private void DrawFrameworkDiagnostics(ref float y, float width, float line, FrameworkDiagnosticsSnapshot snapshot)
     {

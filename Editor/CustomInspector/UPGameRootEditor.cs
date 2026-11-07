@@ -169,6 +169,9 @@ namespace UPandaGF.GFEditor
 
             ShowArg("config.enableAssetUpdate", "启动资源更新");
             EditorGUILayout.Space();
+            ShowArg("config.bundleTarget", "AB 目标平台（须与构建平台一致）");
+            if (GUILayout.Button("跟随当前平台（bundleTarget + 相对路径）")) AlignToActiveBuildTarget();
+            EditorGUILayout.Space();
             ShowArg("config.remoteURL", "远程加载URL");
             ShowArg("config.LoadAssetPath", "相对路径");
             ShowArg("config.downloadBatchTimeout", "下载等待超时（秒）");
@@ -180,6 +183,36 @@ namespace UPandaGF.GFEditor
                 component.Config.LoadAssetPath = "AssetBundles/StandaloneWindows/";
                 EditorUtility.SetDirty(component);
             }
+        }
+
+        /// <summary>
+        /// 把 bundleTarget / LoadAssetPath 对齐到当前激活平台。
+        /// <para>这两项必须与实际构建平台一致，否则构建时被 FrameworkConfigBuildValidator 拦下，
+        /// 且 Player 启动的 Configuration 步骤也会因同一项校验失败而进不了 GFLoadedEvent。</para>
+        /// </summary>
+        private void AlignToActiveBuildTarget()
+        {
+            SerializedProperty bundleTargetProperty = serializedObject.FindProperty("config.bundleTarget");
+            SerializedProperty loadPathProperty = serializedObject.FindProperty("config.LoadAssetPath");
+            if (bundleTargetProperty == null || loadPathProperty == null)
+            {
+                Debug.LogError("[UPGameRootEditor] 找不到 config.bundleTarget / config.LoadAssetPath 字段，请同步更新本工具");
+                return;
+            }
+
+            string bundleTarget = UPandaGF.GFEditor.FrameworkBuildPipeline.BundleTargetName(EditorUserBuildSettings.activeBuildTarget);
+            bundleTargetProperty.stringValue = bundleTarget;
+            // 只接管默认的 "AssetBundles/<目标>/" 形态，自定义输出目录不覆盖
+            if (string.IsNullOrEmpty(loadPathProperty.stringValue)
+                || loadPathProperty.stringValue.StartsWith("AssetBundles/", StringComparison.Ordinal))
+            {
+                loadPathProperty.stringValue = "AssetBundles/" + bundleTarget + "/";
+            }
+
+            serializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(component);
+            Debug.Log($"[UPGameRootEditor] 已对齐到当前平台 {bundleTarget}"
+                + $"（相对路径 {loadPathProperty.stringValue}）；记得点「保存到 Json」写回文件。");
         }
 
         /// <summary>

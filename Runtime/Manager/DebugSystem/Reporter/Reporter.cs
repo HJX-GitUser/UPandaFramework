@@ -1,4 +1,4 @@
-using System;
+﻿    using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -111,7 +111,7 @@ public partial class Reporter : MonoBehaviour
     private bool showClearOnNewSceneLoadedButton = true, showTimeButton = true, showSceneButton = true;
     private bool showMemButton = true, showFpsButton = true, showSearchText = true, showCopyButton = true, showSaveButton = true;
     private string filterText = "";
-    private enum ReportView { None, Logs, Info, Snapshot }
+    private enum ReportView { None, Logs, Settings, Diagnostics }
     private ReportView currentView = ReportView.Logs;
     private Log selectedLog;
     public float TotalMemUsage => store.EstimatedBytes / (1024f * 1024f);

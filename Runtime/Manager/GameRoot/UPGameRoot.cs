@@ -185,9 +185,6 @@ namespace UPandaGF
                 }, () => { sourcesLoadMgr?.Shutdown(); return Task.CompletedTask; });
                 lifecycle.Add("Services", ct => {
                     services = new GameServices(ResourcesLoader.Instance, sourcesLoadMgr, runtimeConfig, Path.Combine(Application.persistentDataPath, "Saves"));
-#pragma warning disable CS0618 // SceneMgr 是旧业务兼容层，框架内部仍需完成适配
-                    SceneMgr.Instance.Configure(services.SceneService);
-#pragma warning restore CS0618
                     sourcesLoadMgr.ConfigureScenes(services.Scenes);
                     return Task.CompletedTask;
                 }, async () => {

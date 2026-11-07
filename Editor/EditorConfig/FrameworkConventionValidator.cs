@@ -28,9 +28,6 @@ namespace UPandaGF.GFEditor
                 Message = "请使用 IAssetService / ResourcesLoader，不要直接 Resources.Load。", AllowFiles = new[] { "ResourcesLoader.cs" } },
             new Rule { Id = "NO_FIND_OBJECT", Pattern = new Regex(@"\bFindObjectOfType\s*\(|\bFindObjectsOfType\s*\(", RegexOptions.Compiled),
                 Message = "FindObjectOfType 已过时且有隐式查找成本，请显式注入或用 FindFirstObjectByType。", AllowFiles = new string[0] },
-            new Rule { Id = "NO_LEGACY_SCENE", Pattern = new Regex(@"\bSceneMgr\s*\.\s*Instance", RegexOptions.Compiled),
-                Message = "SceneMgr 已标记 Obsolete，请使用 ISceneService（UPGameRoot.Services.Scenes）。",
-                AllowFiles = new[] { "UPGameRoot.cs", "GameServices.cs", "AssetsLoader.cs" } },
         };
 
         [MenuItem("UPandaGF/框架/校验编码规范")]

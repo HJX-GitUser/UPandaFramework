@@ -232,7 +232,7 @@ loader.LoadSceneAsync("Assets/Scenes/Main.unity", assetLoadComplete, sceneLoadCo
 ### 5.4 错误处理约定（调用方必读）
 
 - 资源缺失 / AB 未就绪：打印错误日志并返回 `null`（异步）或回调 `null`（回调式），**不抛异常**，调用方必须判空。
-- `LoadSceneAsync` **没有失败回调**：AB 模式下资源缺失只会回调 `assetLoadComplete`，`sceneLoadComplete` 不会触发。
+- `LoadSceneAsync` **没有失败回调**：场景统一走 `ISceneService`，失败或取消时两个回调都不会触发（只 `Debug.LogException`）；需要失败语义请直接 `await Services.Scenes.LoadAsync(...)`。
 - `LoadAssemblyAsync` 可能返回 `null`。
 
 ---
@@ -348,7 +348,7 @@ AssetBundles/StandaloneWindows/<其它包名>
 打包时的加密开关必须与运行时 `UPGameRoot.AssetAESConfig` 一致（`Key` / `IV` 也要一致）。注意配置有两份存储，见"已知限制 11"。
 
 **Q6：AB 模式下场景加载卡住不回调？**
-`LoadSceneAsync` 没有失败回调，资源缺失时 `sceneLoadComplete` 不会触发，启动流程需自备超时兜底（参考 `GameLaunchExample`）。
+`LoadSceneAsync` 没有失败回调：场景统一走 `ISceneService`，失败或取消时两个回调都不会触发，启动流程需自备超时兜底（参考 `GameLaunchExample`），或直接 `await Services.Scenes.LoadAsync(...)` 拿异常。
 
 **Q7：能只打一个包吗？**
 可以：在资源分类窗口右键 → `Build This Bundle`（只打该包）或 `Build This Bundle + Dependencies`（含依赖）。注意单包构建后仍建议重新点「更新配置」刷新清单。

@@ -224,34 +224,43 @@ public class CoordinationRegressionTests
     private static IEnumerator Inner(List<int> order) {try{yield return new WaitForSecondsRealtime(.01f);}finally{order.Add(1);} }
     [UnityTest] public IEnumerator ValidSceneTaskCompletesAndThrowingProgressListenerDoesNotBlockIt()
     {
-        UnityAction<SceneMgr_SceneAsynLoadProgress> listener=e=>throw new InvalidOperationException("scene progress listener failure");
+        var service=new SceneService(new UnitySceneBackend());
+        Action<SceneTransitionProgress> listener=e=>throw new InvalidOperationException("scene progress listener failure");
         // Throw only once to avoid an expectation for every native frame.
-        UnityAction<SceneMgr_SceneAsynLoadProgress> once=null;once=e=>{EventCenter.Instance.RemoveEventListener(once);listener(e);};
-#if OPEN_PLOG
-        LogAssert.Expect(LogType.Error,new Regex("scene progress listener failure"));
-#endif
-        EventCenter.Instance.AddEventListener(once);
-        try {var task=new SceneMgr().LoadSceneAsyn(CoordinationFixtures.ScenePath,LoadSceneMode.Additive);yield return Until(()=>task.IsCompleted);Assert.IsFalse(task.IsCanceled||task.IsFaulted);Assert.IsTrue(SceneManager.GetSceneByPath(CoordinationFixtures.ScenePath).isLoaded);}
-        finally{EventCenter.Instance.RemoveEventListener(once);}
+        Action<SceneTransitionProgress> once=null;once=e=>{service.Progress-=once;listener(e);};
+        LogAssert.Expect(LogType.Exception,new Regex("scene progress listener failure"));
+        service.Progress+=once;
+        try{var task=service.LoadAsync(CoordinationFixtures.ScenePath,LoadSceneMode.Additive);yield return Until(()=>task.IsCompleted);Assert.IsFalse(task.IsCanceled||task.IsFaulted);Assert.IsTrue(SceneManager.GetSceneByPath(CoordinationFixtures.ScenePath).isLoaded);}
+        finally{service.Progress-=once;_=service.ShutdownAsync();}
     }
     [UnityTest] public IEnumerator SceneCallbackIsDeliveredOnceAndIsolatesMulticastExceptions()
     {
+        var loader=Component<AssetsLoader>();
+        var service=new SceneService(new UnitySceneBackend(),loader);
         int hits=0;UnityAction callback=()=>{hits++;throw new InvalidOperationException("scene success callback failure");};callback+=()=>hits++;
         LogAssert.Expect(LogType.Exception,new Regex("scene success callback failure"));
-        new SceneMgr().LoadSceneAsyn(CoordinationFixtures.ScenePath,LoadSceneMode.Additive,callback);yield return Until(()=>hits==2);
-        yield return null;Assert.AreEqual(2,hits);
+        try
+        {
+            var init=loader.Init(AssetLoaddingMethod.Editor,"http://localhost/","Unused",null);yield return Until(()=>init.IsCompleted);
+            loader.ConfigureScenes(service);
+            loader.LoadSceneAsync(CoordinationFixtures.ScenePath,LoadSceneMode.Additive,()=>{},callback);
+            yield return Until(()=>hits==2);
+            yield return null;Assert.AreEqual(2,hits);
+        }
+        finally{_=service.ShutdownAsync();}
     }
     [UnityTest] public IEnumerator SceneCancellationStopsProgressAndDoesNotClaimNativeRollback()
     {
-        var token=new CancellationTokenSource();int progress=0;UnityAction<SceneMgr_SceneAsynLoadProgress> listener=e=>{progress++;token.Cancel();};
-        EventCenter.Instance.AddEventListener(listener);
+        var service=new SceneService(new UnitySceneBackend());
+        var token=new CancellationTokenSource();int progress=0;Action<SceneTransitionProgress> listener=e=>{progress++;token.Cancel();};
+        service.Progress+=listener;
         try
         {
-            var task=new SceneMgr().LoadSceneAsync(CoordinationFixtures.ScenePath,LoadSceneMode.Additive,token.Token);
+            var task=service.LoadAsync(CoordinationFixtures.ScenePath,LoadSceneMode.Additive,token.Token);
             yield return Until(()=>task.IsCompleted);Assert.IsTrue(task.IsCanceled);int canceledAt=progress;
             yield return new WaitForSecondsRealtime(.1f);Assert.AreEqual(canceledAt,progress);
         }
-        finally{EventCenter.Instance.RemoveEventListener(listener);token.Dispose();}
+        finally{service.Progress-=listener;token.Dispose();_=service.ShutdownAsync();}
     }
     [Test] public void CanceledBeforeSubmissionReleasesItsNativeRequest()
     {
@@ -348,15 +357,12 @@ public class CoordinationRegressionTests
     }
     [UnityTest] public IEnumerator InvalidSceneFaultsTaskInsteadOfHanging()
     {
-        LogAssert.Expect(LogType.Error,new Regex("coordination_missing_scene"));
-        var task=new SceneMgr().LoadSceneAsyn("coordination_missing_scene_"+Guid.NewGuid().ToString("N"));
-        yield return Until(()=>task.IsCompleted,.3f);Assert.IsTrue(task.IsFaulted);var observed=task.Exception;
-    }
-    [UnityTest] public IEnumerator SceneWaiterCancelsWhenSchedulerIsDestroyed()
-    {
-        var task=new SceneMgr().LoadSceneAsyn(CoordinationFixtures.ScenePath,LoadSceneMode.Additive);
-        Object.DestroyImmediate(PublicMono.Instance.gameObject);
-        yield return Until(()=>task.IsCompleted,.3f);Assert.IsTrue(task.IsCanceled);
+        var service=new SceneService(new UnitySceneBackend());
+        var task=service.LoadAsync("coordination_missing_scene_"+Guid.NewGuid().ToString("N"));
+        yield return Until(()=>task.IsCompleted,.3f);
+        Assert.IsTrue(task.IsFaulted);var observed=task.Exception;
+        Assert.IsInstanceOf<ArgumentException>(observed.InnerException);
+        _=service.ShutdownAsync();
     }
 }
 

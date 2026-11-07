@@ -18,7 +18,7 @@ namespace UPandaGF.EditorTools
             try
             {
                 var config = UPGameRootConfigFile.FromJson(File.ReadAllText(path));
-                UPGameRootConfigFile.SnapshotAndValidate(config, false, report.summary.platform.ToString());
+                UPGameRootConfigFile.SnapshotAndValidate(config, false, UPandaGF.GFEditor.FrameworkBuildPipeline.BundleTargetName(report.summary.platform));
             }
             catch (System.Exception e) { throw new BuildFailedException("框架发布配置校验失败：" + e.Message); }
         }

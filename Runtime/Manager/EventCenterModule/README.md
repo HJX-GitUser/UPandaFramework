@@ -294,7 +294,7 @@ string report = UPandaGF.EditorTools.EventCenterSelfCheck.RunSilent();   // 返�
 | B | ⑥每个监听者单独 try/catch；⑦`AddEventListener(owner, action)` 自动清理已销毁 owner；⑧退订比较改 `ReferenceEquals`；⑨`Count` 先清理死引用；⑩用户回调一律锁外执行 + 快照缓存（派发零分配） |
 | C | ⑪`AddEventListenerOnce`；⑫`priority` 优先级；⑬监听清空时删除空壳容器；⑭调试 API（`GetDebugSnapshot` 等）；⑮事件调试窗口 + 事件模块自检（28 项）；⑯框架 README 补选型指南 |
 
-**兼容性**：`EventCenter` 的公共 API **只增不改**，既有调用点（`GFLoadedEvent`、`TaskTipsInfoEvent`、`SceneMgr_SceneAsynLoadProgress`、`ABLoadProgressEvent` 等）无需改动。
+**兼容性**：`EventCenter` 的公共 API **只增不改**，既有调用点（`GFLoadedEvent`、`GFLoadedFailedEvent`、`TaskTipsInfoEvent`、`ABLoadProgressEvent` 等）无需改动。
 **唯一行为变化**：`EventBus` 的派发顺序由"倒序"改为"订阅顺序"（改造前 `EventBus` 在项目里没有任何调用点）。
 
 ## 2026-11-06 联合生命周期补充

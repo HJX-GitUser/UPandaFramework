@@ -23,11 +23,12 @@ namespace UPandaGF
         void LoadAsync(string path, System.Type type, UnityAction<UnityEngine.Object> callback);
 
         /// <summary>
-        /// 场景加载
+        /// 场景加载。实际由 UPGameRoot 装配的 ISceneService 执行（串行队列 / 进度 / 取消 / 作用域归还），
+        /// 不要直接调用 SceneManager 绕过串行队列与场景作用域。
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="assetLoadComplete">场景资源加载结束回调</param>
-        /// <param name="sceneLoadComplete">场景加载结束回调</param>
+        /// <param name="path">场景路径（AB 模式为清单里登记的完整路径，如 Assets/Scenes/GameScene.unity）</param>
+        /// <param name="assetLoadComplete">场景资源就绪回调（进入 Loading 阶段前触发一次）</param>
+        /// <param name="sceneLoadComplete">场景加载完成回调（仅成功时触发）</param>
         void LoadSceneAsync(string path, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null);
         void LoadSceneAsync(string path, LoadSceneMode loadSceneMode, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null);
 

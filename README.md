@@ -101,7 +101,6 @@ upanda-framework/
 │   │   ├── DownloadMgr/         下载器（含本目录 README.md）
 │   │   ├── UIMgr/               UI 管理
 │   │   ├── AudioMgr/            音频管理
-│   │   ├── SceneMgr/            场景管理
 │   │   ├── HTTPTool/            网络请求
 │   │   ├── ObjPool/             对象池（含 Example 示例与本目录 README.md）
 │   │   ├── StorageDataMgr/      数据存储
@@ -158,7 +157,7 @@ upanda-framework/
 | 服务 | 接口 | 说明 |
 |---|---|---|
 | 资源 | `IAssetService` | `AssetLease<T>` 引用计数凭据，支持场景作用域自动归还 |
-| 场景 | `ISceneService` | 串行队列、请求进度、超时 / 取消；`SceneMgr` 已标记 `[Obsolete]`，仅为旧业务兼容 |
+| 场景 | `ISceneService` | 串行队列、请求进度、超时 / 取消、场景作用域自动归还资源；旧 `SceneMgr` 已删除，统一走 `Services.Scenes` |
 | 输入 / 暂停 / 时钟 | `IInputService` / `IPauseService` / `IGameClock` | 动作映射、上下文栈、嵌套暂停 |
 | 计时器 | `ITimerService` | `Delay / Every / DelayAsync`；scaled 受暂停影响，回调异常隔离，可取消 / 可 await |
 | 配置中心 | `IConfigService` | 注册 → JSON 覆盖（环境 / 渠道）→ 统一校验（`ConfigIssue`） |
@@ -238,7 +237,7 @@ services.Config.Register("battle", battleConfig, validator: ValidateBattle);
    - AssetBundle 支持本地加载、远程加载，或资源热更下载到本地后加载。
    - **错误处理约定（调用方必须注意）**：
      - 资源缺失 / AB 初始化失败时，加载器打印错误日志并安全返回，**不抛异常**；异步 `LoadAsync` 返回 `null`、回调式则回调 `null`，调用方需自行判空。
-     - `LoadSceneAsync` **没有失败回调**：AB 模式下资源缺失时只会回调 `assetLoadComplete`，`sceneLoadComplete` 不会触发，启动流程需自备兜底。
+     - `LoadSceneAsync` **没有失败回调**：场景现在统一走 `ISceneService`（串行队列 / 进度 / 取消 / 场景作用域归还），失败或取消时 `assetLoadComplete` 与 `sceneLoadComplete` **都不会触发**（只 `Debug.LogException`）；需要失败/取消语义时直接 `await UPGameRoot.Instance.Services.Scenes.LoadAsync(...)`。
      - `LoadAssemblyAsync` 可能返回 `null`（内部已对 dll 资源与 `Assembly.Load` 加保护），调用方需判空。
 
 3. **ResourcesLoader**
@@ -273,9 +272,9 @@ services.Config.Register("battle", battleConfig, validator: ValidateBattle);
 
 - 背景音乐支持**双路交叉淡入淡出**（切歌不硬切）、暂停 / 恢复 / 淡出停止与音量调节；唯一音效（新音效加载完成后才顶掉上一个，失败不打断）；叠加音效播完自动回收；支持 Resources 与 AssetBundle 两种加载方式，并在换曲 / 回收时**归还 `ResourcesLoader` 的引用计数**（避免 `AudioClip` 常驻内存）。用法与限制见 `Runtime/Manager/AudioMgr/README.md`。
 
-### 场景管理（Manager/SceneMgr）
+### 场景管理（Contracts/ISceneService + Manager/Services/SceneService）
 
-- 同步 / 异步场景加载，支持 `Single` 与 `Additive` 模式，异步加载进度通过 `SceneMgr_SceneAsynLoadProgress` 事件广播。
+- 串行队列 + 请求进度（`ISceneService.Progress`）+ 超时 / 取消；每个场景一个 `LifetimeScope`，场景包资源在 `sceneUnloaded` 时随作用域自动归还。旧 `SceneMgr` / `SceneMgr_SceneAsynLoadProgress` 已删除，`AssetsLoader.LoadSceneAsync` 直接转发到本服务。
 
 ### 网络请求（Manager/HTTPTool）
 

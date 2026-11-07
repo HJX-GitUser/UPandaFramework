@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -27,6 +28,8 @@ namespace UPandaGF.GFEditor
             if (scenes.Length == 0)
                 throw new InvalidOperationException("Build Settings 中没有启用的场景，无法构建。");
 
+            AlignGameRootConfig(target);
+
             string version = Environment.GetEnvironmentVariable("UPANDA_VERSION");
             if (!string.IsNullOrWhiteSpace(version)) PlayerSettings.bundleVersion = version;
 
@@ -49,6 +52,65 @@ namespace UPandaGF.GFEditor
             else
                 Debug.LogError($"[FrameworkBuild] {target} 构建失败：{summary.result}，错误 {summary.totalErrors}。详见 Console。");
             return report;
+        }
+
+        /// <summary>
+        /// 构建目标 → AB 目标目录名。与 AB 打包输出目录 <c>AssetBundles/&lt;BuildTarget&gt;</c>、
+        /// 以及运行时 <see cref="UPGameRoot"/> 的 RuntimePlatform 映射保持一致。
+        /// </summary>
+        public static string BundleTargetName(BuildTarget target)
+        {
+            switch (target)
+            {
+                case BuildTarget.StandaloneWindows:
+                case BuildTarget.StandaloneWindows64: return "StandaloneWindows64";
+                case BuildTarget.Android: return "Android";
+                case BuildTarget.iOS: return "iOS";
+                case BuildTarget.WebGL: return "WebGL";
+                case BuildTarget.StandaloneOSX: return "StandaloneOSX";
+                case BuildTarget.StandaloneLinux64: return "StandaloneLinux64";
+                default: return target.ToString();
+            }
+        }
+
+        /// <summary>
+        /// 把 GameRootConfig.json 的 bundleTarget / LoadAssetPath 对齐到本次构建目标。
+        /// <para>不对齐时，切平台后会连续被 FrameworkConfigBuildValidator 拦下
+        /// （bundleTarget 与目标平台不匹配）；即使绕过校验，Player 启动的 Configuration 步骤
+        /// 也会因同一项校验失败而进不了 GFLoadedEvent。</para>
+        /// </summary>
+        private static void AlignGameRootConfig(BuildTarget target)
+        {
+            string path = UPGameRootConfigFile.AbsolutePath;
+            if (!File.Exists(path))
+                throw new InvalidOperationException("缺少框架启动配置：" + UPGameRootConfigFile.AssetPath
+                    + "，请先在 UPGameRoot 面板点「保存到 Json」。");
+
+            var config = UPGameRootConfigFile.FromJson(File.ReadAllText(path, Encoding.UTF8));
+            if (config == null)
+                throw new InvalidOperationException("框架启动配置解析失败：" + UPGameRootConfigFile.AssetPath);
+
+            string bundleTarget = BundleTargetName(target);
+            bool changed = false;
+            if (config.bundleTarget != bundleTarget) { config.bundleTarget = bundleTarget; changed = true; }
+
+            string expectedPath = "AssetBundles/" + bundleTarget + "/";
+            if (string.IsNullOrEmpty(config.LoadAssetPath)
+                || config.LoadAssetPath.StartsWith("AssetBundles/", StringComparison.Ordinal))
+            {
+                if (config.LoadAssetPath != expectedPath) { config.LoadAssetPath = expectedPath; changed = true; }
+            }
+            else
+            {
+                Debug.LogWarning($"[FrameworkBuild] LoadAssetPath 为自定义路径「{config.LoadAssetPath}」，"
+                    + $"请自行确认它与 {bundleTarget} 的 AB 产物一致。");
+            }
+
+            if (!changed) return;
+            File.WriteAllText(path, UPGameRootConfigFile.ToJson(config), new UTF8Encoding(false));
+            AssetDatabase.ImportAsset(UPGameRootConfigFile.AssetPath);
+            Debug.Log($"[FrameworkBuild] 已把 {UPGameRootConfigFile.AssetPath} 对齐到构建目标 {bundleTarget}"
+                + $"（LoadAssetPath={config.LoadAssetPath}）。");
         }
     }
 }

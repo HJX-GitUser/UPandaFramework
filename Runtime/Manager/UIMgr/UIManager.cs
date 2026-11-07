@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -57,6 +57,11 @@ namespace UPandaGF
         internal int DiagnosticPendingPanelCount => pendingPanels.Count;
         public void Configure(IAssetService service) { assetService = service ?? throw new ArgumentNullException(nameof(service)); }
 
+
+        void Reset()
+        {
+            Init();
+        }
         /// <summary>
         /// 重置Canvas
         /// </summary>
