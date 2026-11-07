@@ -73,7 +73,7 @@ public partial class Reporter : MonoBehaviour
     public Images images = new Images();
     public bool show;
     public Vector2 size = new Vector2(32, 32);
-    [Tooltip("保留日志估算内存上限（MiB），0 表示不限；采用淘汰最旧记录而非整体清空。")]
+    [Tooltip("保留日志估算内存上限(MiB),0 表示不限；采用淘汰最旧记录而非整体清空。")]
     public float maxSize = 20;
     public int maxLogCount = 3000;
     public int numOfCircleToShow = 1; // 保留旧场景字段；显式 ShowLogWindows 仍为主要入口。

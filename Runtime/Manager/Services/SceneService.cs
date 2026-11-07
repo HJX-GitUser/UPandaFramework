@@ -5,6 +5,7 @@
  *   ISceneAssetProvider：加载场景前先把它依赖的 AB 准备好（由 AssetsLoader 实现）。
  *   ISceneBackend：真正调用 SceneManager 的那一层（可替换，便于单测）。
  *   SceneService：门面。负责排队、取消、超时、进度阶段，以及“场景 ↔ 资源作用域”的绑定。
+ *   Editor 直读模式（UPGameRootConfig.method = Editor）不装配 provider：场景直接由 Build Settings 加载，不经过 AB。
  *
  * 【为什么拆两层】让 SceneService 不依赖资源层；单测可只替换 backend，而不拉起整个资源系统。
  *
@@ -92,6 +93,8 @@ namespace UPandaGF
     /// 一个场景加载或卸载在跑，其余请求排队；<see cref="pending"/> 只用于关闭时等待所有在飞任务。</para>
     /// <para>资源归属：每个已加载场景对应一个 <see cref="LifetimeScope"/>，场景包凭据挂在作用域上，
     /// 由 SceneManager.sceneUnloaded 触发释放 —— 所以"场景卸载"就等于"归还该场景占用的资源"。</para>
+    /// <para>模式差异：Editor 直读模式装配时传入 null provider（见 <see cref="SelectAssetProvider"/>），
+    /// 加载只走 <see cref="UnitySceneBackend"/>，即从 Build Settings 直接加载场景。</para>
     /// </summary>
     public sealed class SceneService : ISceneService
     {
@@ -127,6 +130,15 @@ namespace UPandaGF
             this.backend = backend ?? throw new ArgumentNullException(nameof(backend));
             this.assets = assets;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
+        }
+        /// <summary>
+        /// 按资源加载方式决定要不要接“加载前准备场景包”。
+        /// <para>Editor 直读模式下场景由 Build Settings 直接提供（<see cref="UnitySceneBackend"/> 里就是 SceneManager），
+        /// 返回 null 让加载流程完全不触碰 AB/清单 —— 不依赖 provider 内部是否记得判模式。</para>
+        /// </summary>
+        public static ISceneAssetProvider SelectAssetProvider(AssetLoaddingMethod method, ISceneAssetProvider assets)
+        {
+            return method == AssetLoaddingMethod.Editor ? null : assets;
         }
         ILifetimeScope ISceneService.GetScope(Scene scene) => GetScope(scene);
         /// <summary>

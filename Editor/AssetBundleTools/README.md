@@ -119,7 +119,7 @@ flowchart TB
 - **右键菜单**：`Build This Bundle`（只打该包）/ `Build This Bundle + Dependencies`（含全部依赖）/ 详细信息 / 在 Project 中高亮 / 复制包名 / 在资源管理器中显示 / 复制 AssetBundle 路径 / 复制 MD5 码。
 
 > ⚠️ 单包构建会用"只包含这些包"的 manifest **覆盖输出目录里的主包**，其它包的依赖信息会丢失。正式出包 / 上传前请用 `Build All` 做一次全量打包，再点「更新配置」。
-- **加密设置折叠面板**：显示清单的存放位置（StreamingAssets 下 `/Data/`）、文件名（`assetData`）、后缀（`.assetref`），提供 AES `Key` / `IV` / `使用加密` 开关；下方还会**检测场景中 `UPGameRoot.Config.AssetAESConfig` 与本窗口配置是否一致**（不一致时给出黄色警告），并提供「同步到场景中的 UPGameRoot」按钮（已带 `Undo`，记得保存场景；**运行时真源是 `StreamingAssets/Data/GameRootConfig.json`，同步完要在 UPGameRoot 面板再点一次「保存到 Json」**）。
+- **加密设置折叠面板**：显示清单的存放位置（StreamingAssets 下 `/Data/`）、文件名（`assetData`）、后缀（`.assetref`），提供 AES `Key` / `IV` / `使用加密` 开关；下方还会**检测场景中 `UPGameRoot.Config.AssetAESConfig` 与本窗口配置是否一致**（不一致时给出黄色警告），并提供「同步到场景中的 UPGameRoot」按钮（已带 `Undo`，记得保存场景；**保存场景时面板配置会自动写入 `StreamingAssets/Data/GameRootConfig.json`，构建时也以这份 Json 为准**）。
 
 ### 3.4 生成清单
 
@@ -195,8 +195,8 @@ public enum ABLoadPath { StreamingAssetsPath, PersistentDataPath, RemotePath }
 | `downloadBatchTimeout` | 等待一批下载完成的超时（秒，默认 300） |
 | `AssetAESConfig` | 清单 AES 配置（必须与 3.3 的「使用加密」成对配置） |
 
-> **优先级：Json > 面板。** `UPGameRoot.Init()` 的第一步读 `GameRootConfig.json`，读到就以它为准；Json 缺失 / 解析失败 / 内容为空才用面板（代码）里的值。所以**只改面板不点「保存到 Json」对启动无效**；想让某个场景用不同配置，改那个 Json 或直接删掉它。
-> 面板底部提供「保存到 Json」/「从 Json 读取」/「定位文件」三个按钮（详细流程见 `Runtime/Manager/GameRoot/README.md` 第 5 节）。
+> **优先级：编辑器以面板为准，Player 以 Json 为准。** 编辑器 / Play Mode 的 `Configuration` 步骤直接使用面板值（不读 Json）；Player 启动第一步读 `GameRootConfig.json`，读到就以它为准，缺失 / 解析失败 / 内容为空才用打包时序列化进场景的值。面板改动在**保存场景（Ctrl+S）时自动写入 Json**，构建前还会再写一次并按 Player 规则校验。
+> 面板底部提供「从 Json 读取」/「定位文件」两个按钮（详细流程见 `Runtime/Manager/GameRoot/README.md` 第 5 节）。
 
 ### 5.2 调用方式
 
@@ -284,7 +284,7 @@ flowchart TB
 | 3 | **单包 / 含依赖构建会用只含这些包的 manifest 覆盖输出目录里的主包** | 其它包的依赖信息会丢；正式出包/上传前请用 `Build All` 全量打包再「更新配置」 |
 | 4 | 清单已迁移为版本化字段图 | 旧运行端无法读取新清单，发布时需配套客户端升级 |
 | 5 | `ClearAB()` 后必须重新 `Init` | 已一并清理 `manifest`，之后 `GetAssetBundle` 会以"主包未加载"报错，属预期行为 |
-| 6 | AES 配置实际有三处：`AssetBundleBuildConfig.json`（打包端）、`UPGameRoot.Config.AssetAESConfig`（场景）、`GameRootConfig.json`（**运行时真源**） | 工具能检测「打包端 vs 场景」是否一致并一键同步（见 3.3）；但启动时以 `GameRootConfig.json` 为准，同步后需在 UPGameRoot 面板再点一次「保存到 Json」，否则仍会按旧 Json 运行 |
+| 6 | AES 配置实际有三处：`AssetBundleBuildConfig.json`（打包端）、`UPGameRoot.Config.AssetAESConfig`（场景）、`GameRootConfig.json`（**打包运行时真源**） | 工具能检测「打包端 vs 场景」是否一致并一键同步（见 3.3）；打包运行时以 `GameRootConfig.json` 为准，同步后保存一次场景即自动写入该 Json（构建前也会再写一次） |
 | 7 | 打包期间编辑器阻塞、没有真实进度 | `BuildPipeline` 是同步调用，只给"正在构建…"提示（不再假装有百分比） |
 | 8 | 上传页签只自动挑输出目录里的"无后缀文件 + `.txt`" | 清单请用「只上传清单（assetData.assetref）」按钮上传 |
 | 9 | `AssetBundelUpdataMgr` 类仍存在（标 `[Obsolete]`） | 已从 `PoolUseScene.unity` 移除组件引用；其逻辑本身有缺陷（成功/失败分支判反、`ABCompareInfo.txt.txt` 双后缀、重复键抛异常），勿使用 |
@@ -295,9 +295,9 @@ flowchart TB
 
 **2026-09-16**
 
-- 配置来源变更：`UPGameRoot` 上的散字段（`method` / `enableAssetUpdate` / `LoadAssetPath` / `remoteURL` / `downloadBatchTimeout` / `EnableDebugModel` / `AssetAESConfig`）已封装进 `UPGameRootConfig` 对象（`UPGameRoot.Config`），并支持落地为 `Assets/StreamingAssets/Data/GameRootConfig.json`：`UPGameRoot` 启动的**第一步**读该 Json（读到即以它为准），面板改完点「保存到 Json」写回。
+- 配置来源变更：`UPGameRoot` 上的散字段（`method` / `enableAssetUpdate` / `LoadAssetPath` / `remoteURL` / `downloadBatchTimeout` / `EnableDebugModel` / `AssetAESConfig`）已封装进 `UPGameRootConfig` 对象（`UPGameRoot.Config`），并支持落地为 `Assets/StreamingAssets/Data/GameRootConfig.json`：**编辑器以面板为准（不读 Json），保存场景时自动写入该 Json；打包运行时以 Json 为准**（面板的「保存到 Json」按钮已移除）。
 - 本窗口 3.3 的「同步到场景中的 UPGameRoot」写入位置改为 `UPGameRoot.Config.AssetAESConfig`（原来直接写 `UPGameRoot.AssetAESConfig`）。
-- 旧场景 / Prefab 里遗留的 `reomoteURL` / `EnableDebugModel` 等序列化键**不再被读取**（字段已搬进 `config` 对象）——请在面板重设一次并保存到 Json。
+- 旧场景 / Prefab 里遗留的 `reomoteURL` / `EnableDebugModel` 等序列化键**不再被读取**（字段已搬进 `config` 对象）——请在面板重设一次，保存场景即可自动落盘。
 - 详见 `Runtime/Manager/GameRoot/README.md`（配置项与 Json 优先级）。
 
 **2026-09-11**

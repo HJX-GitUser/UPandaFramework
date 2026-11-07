@@ -121,16 +121,16 @@ flowchart LR
 - `LogListenerManager` 找不到实例时会**自动创建空 GameObject**（Reference 没填时注意这一点）；
 - 用 `Editor/PLogger/LogListenerUIPrefabCreator.cs` 可一键生成 UGUI 面板预制体。
 
-### 6.1 Reporter 框架诊断（2026-11-06）
+### 6.1 Reporter 框架诊断（2026-11-07 独立页签）
 
-打开 Reporter 右上角的「显示设置」，在设备信息和界面设置下方查看：
+打开 Reporter 顶部的「框架诊断」页签查看（已从「显示设置」拆出；「显示设置」只保留应用 / 设备信息、界面尺寸与不透明度、工具栏开关）：
 
 - **框架状态**：`StartupState`、当前启动步骤、累计启动耗时和初始化错误；
 - **模块状态**：所有已注册启动模块的等待 / 运行中 / 就绪 / 失败 / 已回滚状态，以及 SceneService、GameFlow、AppLifecycle 的运行状态；
 - **启动步骤耗时**：逐步毫秒数与完成状态，包含外部 `IStartupModule` 和失败步骤；
 - **资源统计**：Resources 缓存 / 加载中 / 总引用 / 零引用条目，AB 已加载 / 包请求 / 资源请求 / 退役中 / 凭据引用，场景作用域与请求数，UI 已打开与加载中面板数。
 
-诊断只在信息页打开时每 **0.5 秒**从主线程采集一次，关闭页面不刷新。代码也可调用 `FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 获取 `FrameworkDiagnosticsSnapshot`。
+诊断只在「框架诊断」页签打开时每 **0.5 秒**从主线程采集一次，切到其它页签不刷新。代码也可调用 `FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 获取 `FrameworkDiagnosticsSnapshot`。
 
 > 资源统计是框架内部缓存、引用和请求的**数量快照**，不是 Unity 原生 / GPU 资源内存字节数；AB 引用包含依赖包的 LeasePin。精确内存仍应使用 Unity Profiler / Memory Profiler。
 

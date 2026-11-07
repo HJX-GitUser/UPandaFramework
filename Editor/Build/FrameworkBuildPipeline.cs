@@ -78,13 +78,14 @@ namespace UPandaGF.GFEditor
         /// <para>不对齐时，切平台后会连续被 FrameworkConfigBuildValidator 拦下
         /// （bundleTarget 与目标平台不匹配）；即使绕过校验，Player 启动的 Configuration 步骤
         /// 也会因同一项校验失败而进不了 GFLoadedEvent。</para>
+        /// <para>构建前由 <see cref="UPGameRootConfigBuildGuard"/> 在写入面板配置后调用。</para>
         /// </summary>
-        private static void AlignGameRootConfig(BuildTarget target)
+        public static void AlignGameRootConfig(BuildTarget target)
         {
             string path = UPGameRootConfigFile.AbsolutePath;
             if (!File.Exists(path))
                 throw new InvalidOperationException("缺少框架启动配置：" + UPGameRootConfigFile.AssetPath
-                    + "，请先在 UPGameRoot 面板点「保存到 Json」。");
+                    + "，请先打开启动场景并保存一次场景（面板会自动写入该文件）。");
 
             var config = UPGameRootConfigFile.FromJson(File.ReadAllText(path, Encoding.UTF8));
             if (config == null)

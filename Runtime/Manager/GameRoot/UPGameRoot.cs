@@ -62,8 +62,9 @@ namespace UPandaGF
         #region Config
         /// <summary>
         /// 面板 / Json 配置（唯一真源）。
-        /// <para>启动时 <see cref="InitializeAsync"/> 的第一步先读 StreamingAssets/Data/GameRootConfig.json：
-        /// 读到就以它为准，读不到 / 解析失败才用面板上的值；面板改完点 Inspector 的「保存到 Json」写回。</para>
+        /// <para>编辑器：始终以面板为准，启动时不读 Json；面板改动在保存场景（Ctrl+S）时自动写入 Json。</para>
+        /// <para>Player：启动第一步读 StreamingAssets/Data/GameRootConfig.json，读到就以它为准，
+        /// 读不到 / 解析失败才用打包时序列化进场景的值。</para>
         /// </summary>
         [SerializeField] private UPGameRootConfig config = new UPGameRootConfig();
 
@@ -163,9 +164,15 @@ namespace UPandaGF
             {
                 lifecycle = new StartupLifecycle();
                 lifecycle.Add("Configuration", async ct => {
-                    await LoadConfigAsync(); ct.ThrowIfCancellationRequested();
+                    // 编辑器里始终以面板为准（Json 只是打包运行时的载体，想套用就点面板上的「从 Json 读取」）；
+                    // Player 里以 Json 为准，读不到 / 解析失败才退回打包时序列化进场景的值。
+                    if (Application.isEditor) EnsureConfigValid();
+                    else await LoadConfigAsync();
+                    ct.ThrowIfCancellationRequested();
                     string target = Application.isEditor ? null : BundleTargetFor(Application.platform);
                     runtimeConfig = UPGameRootConfigFile.SnapshotAndValidate(config, Application.isEditor, target);
+                    if (Application.isEditor)
+                        PLogger.Log($"[UPGameRoot] 编辑器模式：使用面板配置（加载方式={config.method}，热更={config.enableAssetUpdate}，URL={config.remoteURL}）");
                 });
                 lifecycle.Add("Logging", async ct => {
                     await PublicMono.Instance.RunCoroutine(debugerInit.Init(), cancellationToken: ct);
@@ -234,9 +241,10 @@ namespace UPandaGF
 
         /// <summary>
         /// 读配置文件（StreamingAssets/Data/GameRootConfig.json）并覆盖当前配置。
+        /// <para>只在 Player 里调用：编辑器以面板为准，不读这份 Json。</para>
         /// <para>用 StreamingAssetsLoader 的异步接口：Android / WebGL 上 StreamingAssets 在包内，
         /// 不能用 File 直读；桌面平台它内部走 Task.Run，不会卡主线程。</para>
-        /// <para>任何异常都只降级（用面板 / 代码里的值），不能影响启动链。</para>
+        /// <para>任何异常都只降级（用打包时序列化进场景的值），不能影响启动链。</para>
         /// </summary>
         private async Task LoadConfigAsync()
         {
@@ -247,8 +255,8 @@ namespace UPandaGF
                                 && Application.platform != RuntimePlatform.WebGLPlayer;
             if (canCheckFile && !File.Exists(UPGameRootConfigFile.AbsolutePath))
             {
-                PLogger.Log($"[UPGameRoot] 未找到配置文件 {UPGameRootConfigFile.AssetPath}，使用面板 / 代码里的配置"
-                            + "（可在 UPGameRoot 的 Inspector 上点「保存到 Json」生成）");
+                PLogger.Log($"[UPGameRoot] 未找到配置文件 {UPGameRootConfigFile.AssetPath}，使用打包时序列化进场景的配置"
+                            + "（打包前保存一次场景即可自动生成该文件）");
                 return;
             }
 

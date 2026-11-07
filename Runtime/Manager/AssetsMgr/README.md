@@ -22,7 +22,7 @@ AB 清单的格式、结构检查与 AES 包裹统一由 AssetReferenceSerialize
 
 ## 运行诊断
 
-`ResourcesLoader.GetDiagnostics()` 在主线程返回缓存条目、加载中条目、总引用和零引用条目数。Reporter 信息页通过 `FrameworkDiagnostics` 展示这些计数；它们是缓存状态，不是资源内存估算。
+`ResourcesLoader.GetDiagnostics()` 在主线程返回缓存条目、加载中条目、总引用和零引用条目数。Reporter 的「框架诊断」页签通过 `FrameworkDiagnostics` 展示这些计数；它们是缓存状态，不是资源内存估算。
 
 ## P0 资源入口关闭（2026-11-06）
 

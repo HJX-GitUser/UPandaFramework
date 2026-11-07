@@ -2,10 +2,11 @@
 //  UPGameRootConfig.cs —— UPGameRoot 的配置对象（Inspector 面板与 Json 共用一个对象）
 // -----------------------------------------------------------------------------
 //  真源与优先级：
-//      ① 启动时 UPGameRoot.Init() 的第一步会读 StreamingAssets/Data/GameRootConfig.json，
-//         读到就用它覆盖面板上的值（读不到 / 解析失败才退回面板 / 代码里的默认值）；
-//      ② Inspector 面板改完点「保存到 Json」写回文件；
-//      ③ 手改 Json 同样生效（下次启动读入）。
+//      ① Player：启动第一步读 StreamingAssets/Data/GameRootConfig.json，读到就以它为准
+//         （读不到 / 解析失败才用打包时序列化进场景的面板值）；
+//      ② 编辑器：始终以面板为准，启动时不读 Json；
+//      ③ 面板改动在保存场景（Ctrl+S）时自动写回 Json，构建前再写一次并按 Player 规则校验；
+//      ④ 手改 Json 仍然有效（打包运行时生效；想在编辑器里套用，点面板的「从 Json 读取」）。
 //
 //  为什么放 StreamingAssets：随包发布、不走 AB 就能被读到（Android 上也能用
 //  StreamingAssetsLoader 的 UnityWebRequest 分支读）。

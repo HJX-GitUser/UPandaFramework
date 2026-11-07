@@ -9,8 +9,8 @@ using UPandaGF;
 /// <summary>
 /// 游戏启动案例。
 /// <para>职责：等框架初始化完成 → 打开加载界面 → （可选）加载热更程序集 → 加载首个场景 → 关闭加载界面。</para>
-/// <para>两种进场景方式：<see cref="sceneIsAB"/> = true 走 AssetBundle（SceneService 会先准备场景所在包）；
-/// false 表示场景直接打进包（Build Settings），走 SceneManager。</para>
+/// <para>进场景统一走 <see cref="ISceneService"/>：<see cref="firstScene"/> 在 AB 清单里就先准备场景包，
+/// 不在清单但打进 Build Settings 则直接加载，调用方不需要区分。</para>
 /// </summary>
 public class GameLaunchExample : MonoBehaviour
 {
@@ -18,8 +18,6 @@ public class GameLaunchExample : MonoBehaviour
     public bool loadHotUpdateScripts = false;//HybridCLR
     [Header("热更程序集资源列表")]
     public string[] HybridCLRScriptsList;
-    [Header("场景是否是AB包加载")]
-    public bool sceneIsAB = true;
     [Header("加载场景")]
     public string firstScene = "Assets/Scenes/InitScene.unity";
 
@@ -103,11 +101,10 @@ public class GameLaunchExample : MonoBehaviour
             if (loadHotUpdateScripts && !await LoadHotUpdateAssembliesAsync())
                 return;
 
-            // ── 3. 场景
+            // ── 3. 场景：AB 场景与随包场景由 SceneService 自动区分，这里只有一个入口
             if (string.IsNullOrEmpty(firstScene)) { Fail("启动失败：未配置启动场景"); return; }
 
-            if (sceneIsAB) await LoadSceneFromAssetBundleAsync();
-            else await LoadBuiltinSceneAsync();
+            await LoadSceneAsync();
 
             // ── 4. 收尾
             SetProgress(1f, "场景加载完成");
@@ -164,12 +161,14 @@ public class GameLaunchExample : MonoBehaviour
     }
 
     /// <summary>
-    /// sceneIsAB = true：交给 ISceneService 加载（串行化 + 先准备场景所在 AB + 进度 + 场景资源作用域）。
+    /// 交给 ISceneService 加载（串行化 + 进度 + 场景资源作用域）。
+    /// <para>AB 场景与随包（Build Settings）场景都走这一条：AssetsLoader 先查资源清单，
+    /// 清单里没有再确认是不是 Unity 能直接加载的随包场景，调用方不必区分，也不会出现“编辑器能跑、真机才炸”的分叉。</para>
     /// <para>用 await 而不是旧的 fire-and-forget 回调：失败会抛到这里，能反馈给玩家，而不是永远卡在进度条上。</para>
     /// </summary>
-    private async Task LoadSceneFromAssetBundleAsync()
+    private async Task LoadSceneAsync()
     {
-        // 事件是全局的：只在本次场景加载期间监听，避免把其它资源的加载/下载也算进进度
+        // 事件是全局的：只在本次场景加载期间监听，避免把其它资源的加载/下载也算进进度（随包场景不会触发）
         EventCenter.Instance.AddEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
         try
         {
@@ -178,27 +177,6 @@ public class GameLaunchExample : MonoBehaviour
         finally
         {
             EventCenter.Instance.RemoveEventListener<ABLoadProgressEvent>(AssetLoadProgressEvent);
-        }
-    }
-
-    /// <summary>
-    /// sceneIsAB = false：场景随包打进 Build Settings，直接用 SceneManager 加载。
-    /// <para>不走 SceneService —— 它会在加载前按资源清单准备 AB，而随包场景不在清单里。</para>
-    /// </summary>
-    private async Task LoadBuiltinSceneAsync()
-    {
-        if (!Application.CanStreamedLevelBeLoaded(firstScene))
-            throw new InvalidOperationException($"场景不在 Build Settings 中：{firstScene}（sceneIsAB=false 时必须是随包场景）");
-
-        AsyncOperation operation = SceneManager.LoadSceneAsync(firstScene, LoadSceneMode.Single);
-        if (operation == null)
-            throw new InvalidOperationException($"Unity 未能创建场景加载操作：{firstScene}");
-
-        // progress 到 0.9 就停（剩下 0.1 是激活阶段），归一化后映射到 0.5~1
-        while (!operation.isDone)
-        {
-            SetProgress(HotUpdateEnd + (1f - HotUpdateEnd) * Mathf.Clamp01(operation.progress / 0.9f), "场景加载中...");
-            await Task.Yield();
         }
     }
 
@@ -228,7 +206,7 @@ public class GameLaunchExample : MonoBehaviour
         }
     }
 
-    /// <summary>AB 准备阶段的逐包进度（仅在本次场景加载期间订阅，见 LoadSceneFromAssetBundleAsync）。</summary>
+    /// <summary>AB 准备阶段的逐包进度（仅在本次场景加载期间订阅，见 LoadSceneAsync）。</summary>
     private void AssetLoadProgressEvent(ABLoadProgressEvent arg0)
     {
         if (arg0 == null) return;

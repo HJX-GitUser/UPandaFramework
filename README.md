@@ -51,7 +51,7 @@ public class GameLaunchExample : MonoBehaviour
 }
 ```
 
-> `UPGameRoot` 的 Inspector 面板可配置：资源加载方式（Editor / Assetbundles）、是否启用资源热更、远程地址、AES 加密配置等；面板底部有「保存到 Json」/「从 Json 读取」，配置落地在 `Assets/StreamingAssets/Data/GameRootConfig.json`，**启动时优先读这个 Json**（读不到才用面板值）。
+> `UPGameRoot` 的 Inspector 面板可配置：资源加载方式（Editor / Assetbundles）、是否启用资源热更、远程地址、AES 加密配置等；配置落地在 `Assets/StreamingAssets/Data/GameRootConfig.json`。**编辑器里以面板为准（不读 Json）；保存场景时自动写入 Json，打包运行时以 Json 为准**（面板底部保留「从 Json 读取」/「定位文件」）。
 
 ## 示例场景
 
@@ -135,8 +135,8 @@ upanda-framework/
 
 ### 启动入口（Manager/GameRoot）
 
-- **UPGameRoot**：框架根节点，`Awake` 时自动挂载并初始化 `DebugerInit`（日志）、`Downloader`（下载）、`AssetsLoader`（资源）、`BinaryDataMgrInit`（存储）、`UIManager`（UI）五个子系统；开启热更时下载远程清单 / 按 MD5 增量下载，**只有全部下载成功才提交新清单**（否则降级：上一次成功的本地清单 → 随包清单），完成后广播 `GFLoadedEvent`；失败则广播 `GFLoadedFailedEvent`（并提供 `IsInited` / `IsInitFailed` / `GetAssetsLoader()` 就绪约定），不会静默卡在加载界面。清单 AES 默认关闭（`config.AssetAESConfig.enable = false`）。配置集中在可序列化对象 `UPGameRootConfig`（`UPGameRoot.Config`）里，**启动第一步先读 `StreamingAssets/Data/GameRootConfig.json`**（面板改完点「保存到 Json」写回；Json 缺失 / 解析失败才降级用面板值）。详见 `Runtime/Manager/GameRoot/README.md`。
-- **GameLaunchExample**：进入游戏的示例入口，演示"热更程序集加载 → 场景加载"的完整流程，并内置完整的失败兜底。
+- **UPGameRoot**：框架根节点，`Awake` 时自动挂载并初始化 `DebugerInit`（日志）、`Downloader`（下载）、`AssetsLoader`（资源）、`BinaryDataMgrInit`（存储）、`UIManager`（UI）五个子系统；开启热更时下载远程清单 / 按 MD5 增量下载，**只有全部下载成功才提交新清单**（否则降级：上一次成功的本地清单 → 随包清单），完成后广播 `GFLoadedEvent`；失败则广播 `GFLoadedFailedEvent`（并提供 `IsInited` / `IsInitFailed` / `GetAssetsLoader()` 就绪约定），不会静默卡在加载界面。清单 AES 默认关闭（`config.AssetAESConfig.enable = false`）。配置集中在可序列化对象 `UPGameRootConfig`（`UPGameRoot.Config`）里：**编辑器以面板为准（启动不读 Json），保存场景时自动写入 `StreamingAssets/Data/GameRootConfig.json`；打包运行时以该 Json 为准**（读不到 / 解析失败才降级用打包时序列化进场景的面板值）。详见 `Runtime/Manager/GameRoot/README.md`。
+- **GameLaunchExample**：进入游戏的示例入口，演示"热更程序集加载 → 场景加载"的完整流程，并内置完整的失败兜底；场景加载统一走 `ISceneService`（AB 场景与随包场景由框架自动区分，调用方只有一条路径）。
 - **SourcesLoadMgr**：资源加载抽象层，编辑器下用 `EditorSourcesMgr` 直读资源，出包后切换为 `AssetsLoader` 走 AssetBundle。
 
 #### 启动流程（`GameLaunchExample.OnGFLoadedEvent`）
@@ -144,7 +144,7 @@ upanda-framework/
 1. 打开加载界面 `SimpleLoadUI`（`UIManager.ShowPanelAsync`）。
 2. 取 `UPGameRoot.Instance.GetAssetsLoader()` 得到 `IAssetsLoader`。
 3. 若勾选 `loadHotUpdateScripts`：遍历 `HybridCLRScriptsList` 逐个 `LoadAssemblyAsync`，统计成功数量并提示"程序热更完成 / 失败"，随后触发 `onAssemblyLoaded`（供泛型注册使用）。
-4. 校验 `firstScene` 非空后调用 `LoadSceneAsync`，同时监听 `ABLoadProgressEvent` 刷新"加载 / 下载"进度，进入场景后关闭加载界面。
+4. 校验 `firstScene` 非空后调用 `LoadSceneAsync`（内部 `await scenes.LoadAsync(...)`，AB 场景与随包场景由 `AssetsLoader.ClassifyScenePath` 自动区分），同时监听 `ABLoadProgressEvent` 刷新"加载 / 下载"进度，进入场景后关闭加载界面。
 
 整个流程包在 `try/catch` 中：`UIManager` / `SimpleLoadUI` / `UPGameRoot` / 资源加载器 / 热更列表 / `firstScene` 任一缺失都会打印明确的 `PLogger.LogError` 并中止，不会抛空引用异常。
 
@@ -157,7 +157,7 @@ upanda-framework/
 | 服务 | 接口 | 说明 |
 |---|---|---|
 | 资源 | `IAssetService` | `AssetLease<T>` 引用计数凭据，支持场景作用域自动归还 |
-| 场景 | `ISceneService` | 串行队列、请求进度、超时 / 取消、场景作用域自动归还资源；旧 `SceneMgr` 已删除，统一走 `Services.Scenes` |
+| 场景 | `ISceneService` | 串行队列、请求进度、超时 / 取消、场景作用域自动归还资源；AB 场景与随包（Build Settings）场景统一入口，`method = Editor` 时直接从 Build Settings 加载；旧 `SceneMgr` 已删除，统一走 `Services.Scenes` |
 | 输入 / 暂停 / 时钟 | `IInputService` / `IPauseService` / `IGameClock` | 动作映射、上下文栈、嵌套暂停 |
 | 计时器 | `ITimerService` | `Delay / Every / DelayAsync`；scaled 受暂停影响，回调异常隔离，可取消 / 可 await |
 | 配置中心 | `IConfigService` | 注册 → JSON 覆盖（环境 / 渠道）→ 统一校验（`ConfigIssue`） |
@@ -186,7 +186,7 @@ services.Config.Register("battle", battleConfig, validator: ValidateBattle);
 ### 日志系统（Manager/DebugSystem）
 
 - **PLogger**：普通日志 / Warning 由 `[Conditional("OPEN_PLOG")]` 编译期剔除（实参不求值），Error / Exception 常驻；运行时由 `LogConfig`（`StreamingAssets/Data/LogConfig.json`）控制分级、前缀 / 时间 / 线程号与单条截断。
-- **PLogHelper**：后台线程把日志落盘；**Reporter / LogListenerManager**：两套真机日志面板（IMGUI / UGUI）。Reporter 信息页另提供模块状态、启动逐步耗时和资源缓存 / 引用 / 请求统计。
+- **PLogHelper**：后台线程把日志落盘；**Reporter / LogListenerManager**：两套真机日志面板（IMGUI / UGUI）。Reporter 的「框架诊断」页签另提供模块状态、启动逐步耗时和资源缓存 / 引用 / 请求统计。
 - 菜单 `UPandaGF -> 日志系统`：启动日志 / 剔除日志 / 日志系统诊断 / 日志自检（19 项断言）。
 
 > 用法、日志链路、面板对比、FAQ 与已知限制：见 `Runtime/Manager/DebugSystem/README.md`。
@@ -228,7 +228,7 @@ services.Config.Register("battle", battleConfig, validator: ValidateBattle);
      | `void LoadAsync<T>(string path, UnityAction<T> callback)` | 泛型回调式加载 |
      | `Task<Object> LoadAsync(string path, Type type)` | 按类型异步加载 |
      | `void LoadAsync(string path, Type type, UnityAction<Object> callback)` | 按类型回调式加载 |
-     | `void LoadSceneAsync(string path, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null)` | 异步加载场景（另有 `LoadSceneMode` 重载） |
+     | `void LoadSceneAsync(string path, UnityAction assetLoadComplete = null, UnityAction sceneLoadComplete = null)` | 异步加载场景（另有 `LoadSceneMode` 重载）；AB 场景与随包（Build Settings）场景由 `ISceneService` 自动区分 |
      | `void LoadAssemblyAsync(string path, UnityAction<Assembly> callback)` | 加载程序集（回调式） |
      | `Task<Assembly> LoadAssemblyAsync(string path)` | 加载程序集（异步） |
      | `void ClearAB()` | 清空已加载的 AB |
@@ -275,6 +275,8 @@ services.Config.Register("battle", battleConfig, validator: ValidateBattle);
 ### 场景管理（Contracts/ISceneService + Manager/Services/SceneService）
 
 - 串行队列 + 请求进度（`ISceneService.Progress`）+ 超时 / 取消；每个场景一个 `LifetimeScope`，场景包资源在 `sceneUnloaded` 时随作用域自动归还。旧 `SceneMgr` / `SceneMgr_SceneAsynLoadProgress` 已删除，`AssetsLoader.LoadSceneAsync` 直接转发到本服务。
+- **场景来源自动识别**（`AssetsLoader.ClassifyScenePath`）：AB 清单里登记的场景先准备场景包；清单里没有、但 Unity 能直接加载的场景按随包（Build Settings）场景处理，不准备 AB；两者都登记时按 AB 加载并打一条警告。
+- **`UPGameRootConfig.method = Editor`**：`SceneService` 装配时根本不接资源提供者（`SceneService.SelectAssetProvider`），加载只走 `UnitySceneBackend`，即从 Build Settings 直接加载，不读清单、不产生 AB 凭据。
 
 ### 网络请求（Manager/HTTPTool）
 
@@ -344,7 +346,7 @@ services.Config.Register("battle", battleConfig, validator: ValidateBattle);
 - **UIAutoGenerator**：UI 自动生成。
 - **HyBridCLREditor**：HybridCLR 热更程序集拷贝配置（`DLLCopyConfigWindow`）。
 - **CustomInspector**：
-  - `UPGameRootEditor`：启动根节点面板（资源加载方式、热更开关、远程地址、AES 配置等 + 配置文件的「保存到 Json」/「从 Json 读取」）。
+  - `UPGameRootEditor`：启动根节点面板（资源加载方式、热更开关、远程地址、AES 配置等 + 配置文件的「从 Json 读取」/「定位文件」，写盘在保存场景与构建前自动完成）。
   - `EventCenterModule/`：事件调试窗口 + 事件模块自检（菜单 `UPandaGF/Runtime/事件系统/…`），用法见事件模块文档。
   - `InteractiveTaskScoringSystem/`：任务流程校验器 / 运行逻辑自检 / 回放复盘查看器 / 演示场景生成器 + 各组件自定义 Inspector（菜单 `UPandaGF/Runtime/交互任务评分系统/…`），用法见评分系统文档。
 - **模块示例场景生成器**（菜单 `UPandaGF/Runtime/<模块>/…`，每个都是「新建场景」+「在当前场景追加」两个入口，按原型场景逐项重建位置 / 参数 / 引用）：
@@ -391,7 +393,7 @@ services.Config.Register("battle", battleConfig, validator: ValidateBattle);
 - **命名沿袭**：为兼容既有配置与场景，部分历史命名未做改动（如 `OpearationExecute`、`AddErroTimes`、`erroTimes`、部分接口无 `I` 前缀、`TaskTriggerExample` 位于全局命名空间）。
 - **改动后自检**：涉及交互式任务评分系统时，改完先跑「任务流程校验器」再跑「运行逻辑自检」，可覆盖绝大多数配置错误与逻辑回归。
 - **编码规范自检**：菜单 `UPandaGF -> 框架 -> 校验编码规范`，检查 Runtime 是否直接 `Input.*` / `Resources.Load` / `FindObjectOfType` / 绕过 `ISceneService`；CI 可调用 `FrameworkConventionValidator.Validate()` 取违例数。
-- **测试分层**：`Tests/PlayMode` 跑集成回归；`Tests/EditMode`（`UPandaGF.Tests.EditMode`）跑纯逻辑单测（Timer / Config / GameFlow / StartupLifecycle），不需要场景。
+- **测试分层**：`Tests/PlayMode` 跑集成回归；`Tests/EditMode`（`UPandaGF.Tests.EditMode`）跑纯逻辑单测（Timer / Config / GameFlow / StartupLifecycle / 场景归属判定 / 场景资源提供者选择），不需要场景。
 - **构建入口**：菜单 `UPandaGF -> 构建`，或 CI 调 `FrameworkBuildPipeline.Build(...)`；`UPANDA_VERSION` 环境变量可注入版本号。
 - **资产完整性**：`.meta` 必须提交（`.gitignore` 已不再忽略）。历史 clone 若缺 `.meta`，请在 Unity 中重新导入后提交生成的 `.meta`，否则 prefab / 场景引用会丢。
 

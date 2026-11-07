@@ -23,9 +23,12 @@
  * 【场景加载只有一条路】
  *   LoadSceneAsync 不直接调 SceneManager，而是转交 ISceneService（见 Services/SceneService.cs）：
  *   由它负责串行化、AB 准备、进度上报与场景资源作用域。
+ *   随包（Build Settings）场景也走同一条路：清单里查不到、但 Unity 能直接加载时，
+ *   PrepareSceneAsync 返回 null（无需准备 AB），由 UnitySceneBackend 直接加载。
  * ========================================================================================== */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -36,6 +39,21 @@ using UnityEngine.SceneManagement;
 
 namespace UPandaGF
 {
+    /// <summary>
+    /// 场景路径的归属判定（决定 <see cref="SceneService"/> 加载前是否需要准备 AB）。
+    /// </summary>
+    public enum ScenePathKind
+    {
+        /// <summary>AB 清单里有登记：加载前需要准备场景所在包。</summary>
+        Manifest,
+        /// <summary>清单里没有、但 Unity 能直接加载：随包场景（Build Settings），无需准备。</summary>
+        Builtin,
+        /// <summary>清单里有多个同名 .unity：必须改用完整路径。</summary>
+        Ambiguous,
+        /// <summary>既不在清单、Unity 也加载不了：路径写错或资源未打包。</summary>
+        Missing,
+    }
+
     /// <summary>
     /// 资源加载封装。
     /// <para>对外两条路径：旧接口（LoadAsync / LoadSceneAsync / LoadAssemblyAsync）与服务层（AcquireAsync / PrepareSceneAsync）。</para>
@@ -170,9 +188,43 @@ namespace UPandaGF
             return await abLoadMgr.AcquireAsync<T>(arg.bundleName, arg.sourceName, sourceRef.GetABLoadPath(arg));
         }
         /// <summary>
+        /// 判断场景路径属于 AB 清单还是随包场景（<paramref name="canStreamedLevelBeLoaded"/> 固定用 <see cref="Application.CanStreamedLevelBeLoaded"/>）。
+        /// </summary>
+        /// <param name="resolvedPath">Manifest 时为清单里的完整路径，其余情况为 null。</param>
+        public static ScenePathKind ClassifyScenePath(string path, ICollection<string> manifestKeys, out string resolvedPath)
+        {
+            return ClassifyScenePath(path, manifestKeys, Application.CanStreamedLevelBeLoaded, out resolvedPath);
+        }
+        /// <summary>
+        /// 判断场景路径属于 AB 清单还是随包场景。
+        /// <para><b>清单优先</b>：清单里登记的 .unity（完整路径或唯一短名）一律按 AB 处理，
+        /// 即使 Unity 此时也能直接加载 —— 反过来判断会跳过资源准备，进场景时资源缺失。</para>
+        /// <para>清单里没有时，才用 <paramref name="canStreamedLevelBeLoaded"/> 确认是不是随包场景。</para>
+        /// </summary>
+        /// <param name="resolvedPath">Manifest 时为清单里的完整路径，其余情况为 null。</param>
+        public static ScenePathKind ClassifyScenePath(string path, ICollection<string> manifestKeys, Func<string, bool> canStreamedLevelBeLoaded, out string resolvedPath)
+        {
+            resolvedPath = null;
+            if (string.IsNullOrEmpty(path) || manifestKeys == null) return ScenePathKind.Missing;
+            if (manifestKeys.Contains(path)) { resolvedPath = path; return ScenePathKind.Manifest; }
+            // 允许传短名（如 "GameScene"）：在清单里找唯一同名的 .unity，重名必须报错而不是随便挑一个
+            string match = null;
+            int matches = 0;
+            foreach (string key in manifestKeys)
+            {
+                if (!key.EndsWith(".unity", StringComparison.OrdinalIgnoreCase)) continue;
+                if (Path.GetFileNameWithoutExtension(key) != path) continue;
+                match = key; matches++;
+            }
+            if (matches > 1) return ScenePathKind.Ambiguous;
+            if (matches == 1) { resolvedPath = match; return ScenePathKind.Manifest; }
+            if (canStreamedLevelBeLoaded != null && canStreamedLevelBeLoaded(path)) return ScenePathKind.Builtin;
+            return ScenePathKind.Missing;
+        }
+        /// <summary>
         /// 为即将加载的场景准备资源（ISceneAssetProvider 的实现）。
         /// <para>返回值是“场景资源包的持有权”，由 SceneService 挂到该场景的 LifetimeScope 上，场景卸载时自动释放。</para>
-        /// <para>返回 null 表示本模式不需要预加载（Editor：资源由 AssetDatabase 管）。</para>
+        /// <para>返回 null 表示不需要预加载（Editor 直读资源；或场景随包打进 Build Settings、不在 AB 清单里）。</para>
         /// <para>失败时抛异常（SceneService 会把本次加载置为 Failed），不返回 null 混淆“无需准备”。
         /// 取消时 token 抛出，且不会留下已加载的包（WaitForLeaseAsync 会处理迟到资源）。</para>
         /// </summary>
@@ -181,15 +233,21 @@ namespace UPandaGF
             token.ThrowIfCancellationRequested();
             if (!IsInitialized) throw new System.InvalidOperationException("资源服务尚未就绪。");
             // Editor 模式无需准备 AB；返回 null 表示“不需要预加载”
+            // （SceneService 装配时本来就不会传 provider，这里再兜一层，防止被直接调用/被测试替换后端时漏判）
             if (method == AssetLoaddingMethod.Editor) return null;
             AssetRelatedArg arg;
-            // 允许传短名（如 "GameScene"）：在清单里找唯一同名的 .unity，重名/找不到都直接报错
-            if (!sourceRef.sourcesDic.ContainsKey(path))
+            // 场景归属：清单里登记 → 先加载 AB；清单外但 Unity 能直接加载 → 随包场景，无需准备。
+            // 顺序必须是“先清单、后随包”：AB 场景在包加载前 CanStreamedLevelBeLoaded 同样是 false，反着判断会漏准备。
+            string resolved;
+            switch (ClassifyScenePath(path, sourceRef.sourcesDic.Keys, out resolved))
             {
-                var matches = sourceRef.sourcesDic.Keys.Where(key => key.EndsWith(".unity", StringComparison.OrdinalIgnoreCase)
-                    && Path.GetFileNameWithoutExtension(key) == path).ToArray();
-                if (matches.Length != 1) throw new ArgumentException("场景名称未登记或存在重名，请使用完整路径：" + path);
-                path = matches[0];
+                // 清单与 Build Settings 都登记时按 AB 加载（清单优先）：提示一次，避免“改了随包场景却不生效”的困惑
+                case ScenePathKind.Manifest:
+                    if (Application.CanStreamedLevelBeLoaded(resolved))
+                        PLogger.LogWarning("场景同时在 AB 清单与 Build Settings 中，按 AB 加载：" + resolved);
+                    path = resolved; break;
+                case ScenePathKind.Builtin: return null;
+                default: throw new ArgumentException("场景名称未登记或存在重名，请使用完整路径：" + path);
             }
             if (!TryGetAssetArg(path, out arg)) throw new System.ArgumentException("场景资源未登记：" + path);
             // 只加载场景包（不加载包内资源）；等待可取消，迟到资源会自动归还

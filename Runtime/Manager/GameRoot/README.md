@@ -26,7 +26,7 @@ sequenceDiagram
     U->>R: Awake → OnAwake()（重复实例直接 return）
     R->>R: SetComponent()（DebugerInit / Downloader / AssetsLoader / BinaryDataMgrInit / UIManager + UIManager.Init()）
     R->>R: InitAsync()（async void，内部 try/catch）
-    R->>R: await LoadConfigAsync()（优先读 StreamingAssets/Data/GameRootConfig.json，失败则用面板值）
+    R->>R: Configuration 步：编辑器用面板值（EnsureConfigValid）／Player 读 StreamingAssets/Data/GameRootConfig.json（失败退回场景序列化值）
     R->>P: await RunCoroutine(debugerInit.Init())
     R->>R: binaryDataMgr.Init()；sourcesLoadMgr.AssetAESConfig = config.AssetAESConfig
     opt Assetbundles 模式且 config.enableAssetUpdate
@@ -98,7 +98,7 @@ flowchart TD
 | `EnableDebugModel` | 启用运行时日志窗口（Reporter，由 `DebugerInit` 读取） |
 | `reporter` | **不在配置对象里**：Reporter 组件引用仍直接挂在 `UPGameRoot` 上（由 `UPGameRootEditor` 自动填空） |
 
-### 5.1 Json 配置文件（启动时优先读取）
+### 5.1 Json 配置文件（Player 启动时优先读取）
 
 | 项 | 值 |
 |---|---|
@@ -106,43 +106,50 @@ flowchart TD
 | 运行时相对路径 | `/Data/GameRootConfig.json`（`UPGameRootConfigFile.RelativePath`，经 `StreamingAssetsLoader.LoadTextFileAsync` 异步读，兼容 Android / WebGL） |
 | 序列化 | `JsonUtility`（带缩进、不带 BOM），`UPGameRootConfigFile.ToJson / FromJson` |
 
-> 📌 **本工程当前这份 Json（2026-09-16 快照）**：`method: 1`（Assetbundles）、`enableAssetUpdate: true`、`remoteURL: http://127.0.0.1:8090/`、AES 关闭 —— 启动时它会**覆盖**面板上的值，所以想在编辑器里用 Editor 模式直读资源调试时，需先把这个 Json 删掉或把 `method` 改成 `0`。
+> 📌 **本工程当前这份 Json（2026-09-16 快照）**：`method: 1`（Assetbundles）、`enableAssetUpdate: true`、`remoteURL: http://127.0.0.1:8090/`、AES 关闭。它只影响**打包运行时**；编辑器里以面板为准，想看 / 套用它就点面板的「从 Json 读取」。
 
-**优先级：Json > 面板 / 代码里的值。** `Init()` 的第一步就是 `await LoadConfigAsync()`：
+**优先级：编辑器以面板为准，Player 以 Json 为准。** `Configuration` 步骤按 `Application.isEditor` 分支：
 
 ```mermaid
 flowchart TD
-    A[Init 第一步：LoadConfigAsync] --> B{桌面 / 编辑器 且文件不存在?}
-    B -->|是| C[打一条 Log，直接用面板值]
-    B -->|否| D[StreamingAssetsLoader 读文本]
-    D -->|读失败 / 内容为空| E[打警告，用面板值]
+    A["Init 第一步：Configuration"] --> B{Application.isEditor?}
+    B -->|是| C["EnsureConfigValid() → 面板配置直接生效（不读 Json）"]
+    B -->|否| D[LoadConfigAsync 读 StreamingAssets]
+    D -->|读失败 / 内容为空| E[打警告，用打包时序列化进场景的面板值]
     D -->|拿到 json| F{FromJson 成功?}
-    F -->|失败| G[打错误，用面板值]
+    F -->|失败| G[打错误，用打包时序列化进场景的面板值]
     F -->|成功| H["SetConfig(loaded) + EnsureConfigValid() → 以 Json 为准"]
 ```
 
+- 写盘是自动的：**保存场景（Ctrl+S）** 时把面板配置写入 Json（内容没变则跳过）；**构建前**再写一次并按构建目标对齐 `bundleTarget` / `LoadAssetPath`。
 - 任何一步失败都只降级，**不会中断启动链**（保证最后一定会广播 `GFLoadedEvent` / `GFLoadedFailedEvent`）。
 - `EnsureConfigValid()` 负责兜底：`config` / `config.AssetAESConfig` 为 null 时新建，`LoadAssetPath` 为空时回默认值（手改 Json 漏字段也安全）。
 
 ### 5.2 面板上的操作（`UPGameRootEditor`）
 
-Inspector 顶部是「UPGameRoot」，底部是配置文件的路径提示 + 三个按钮：
+Inspector 顶部是「UPGameRoot」，底部是配置文件的路径提示 + 两个按钮：
 
 | 按钮 | 行为 |
 |---|---|
-| 保存到 Json | 把当前 `Config` 写成 `Assets/StreamingAssets/Data/GameRootConfig.json`（UTF-8 无 BOM + 缩进），然后 `AssetDatabase.Refresh()` |
-| 从 Json 读取 | 读回 Json 覆盖面板上的值（带 `Undo.RecordObject`，可撤销） |
+| 从 Json 读取 | 读回 Json 覆盖面板上的值（带 `Undo.RecordObject`，可撤销；Play 中禁止，运行配置已冻结） |
 | 定位文件 | 在资源管理器里选中该 Json |
 
-> 改动面板后**必须点「保存到 Json」**才会影响下次启动（否则启动时被 Json 里的旧值覆盖）。
+写盘已自动化，**面板上不再有「保存到 Json」按钮**：
+
+| 触发点 | 实现 | 说明 |
+|---|---|---|
+| 保存场景（Ctrl+S） | `UPGameRootConfigPersistence`（`EditorSceneManager.sceneSaved`） | 找已打开场景里的 `UPGameRoot`，把它的配置写入 Json；内容一致不写盘 |
+| 构建前 | `UPGameRootConfigBuildGuard`（`IPreprocessBuildWithReport`） | 再写一次面板配置并按构建目标对齐；随后 `FrameworkConfigBuildValidator` 按 Player 规则（禁止 `method = Editor`）校验 |
+
+> 运行时（Play Mode）保存场景不会触发写盘：那时的 `Config` 是启动快照，不是面板值。
 
 ## 6. 注意事项与已知限制
 
 - **重复实例**：场景里出现第二个 `UPGameRoot` 时，基类会销毁它并给出警告；基类不会为重复实例执行 `OnAwake()`，避免被销毁的那个也跑完整套初始化并**再广播一次** `GFLoadedEvent`（否则加载流程会走两遍）。
 - **AES 必须两侧一致**：`AssetAESConfig.enable` 要和打包端（AB 工具窗口「使用加密」）一致。运行端开启但清单是明文 → 解密失败 → AB 模式整体不可用（启动时会打警告）。
-- **AES 有两条来源，别改错**：AB 工具窗口自己的 `Assets/Editor/EditorConfig/AssetBundleBuildConfig.json`（打包端）与 `GameRootConfig.json` 里的 `AssetAESConfig`（运行端）。启动时**以 `GameRootConfig.json` 为准**；`UPGameRootEditor.OnEnable` 会把 AB 窗口那份同步进面板。
-- **配置文件只有一个真源**：Json 存在时，面板上的值在启动时会被覆盖。只改面板不点「保存到 Json」= 改动无效；想删掉 Json 恢复“面板说了算”，直接删除那个文件即可（启动会打一条 Log）。
-- **旧场景数据不再被读取**：配置字段从 `UPGameRoot` 搬到 `config` 对象后，旧场景 / Prefab 里遗留的 `reomoteURL` / `EnableDebugModel: 1` 等键就失效了，需要在面板上重设一次并保存到 Json。
+- **AES 有两条来源，别改错**：AB 工具窗口自己的 `Assets/Editor/EditorConfig/AssetBundleBuildConfig.json`（打包端）与 `GameRootConfig.json` 里的 `AssetAESConfig`（打包运行时）。`UPGameRootEditor.OnEnable` 会把 AB 窗口那份同步进面板，保存场景即自动落盘进 Json；打包运行时以 `GameRootConfig.json` 为准。
+- **编辑器与打包各有一个真源**：编辑器 / Play Mode 以面板为准（启动不读 Json）；打包运行时以 Json 为准。想在编辑器里核对 / 套用发布配置，点面板「从 Json 读取」；Json 缺失时保存一次场景或直接构建即可自动生成。
+- **旧场景数据不再被读取**：配置字段从 `UPGameRoot` 搬到 `config` 对象后，旧场景 / Prefab 里遗留的 `reomoteURL` / `EnableDebugModel: 1` 等键就失效了，需要在面板上重设一次并保存场景（会自动写回 Json）。
 - **Json 字段名敏感**：`JsonUtility` 按字段名匹配，手改 Json 时字段名写错会被静默忽略（保留默认值，不会报错）；新增配置字段时记得同步 `GameRootConfig.json`。
 - **下载器的事件是全局的**：`OnAllDownloadsFinished` 与 `FailedItems` 属于整个 `Downloader`，别的批次会影响它们。所以本流程的成功与否**按本批次自己的 `DownloadItem.state` 判定**，并且等待带超时（下载器要求"无排队 / 无下载中 / 无暂停"才算结束，一旦有任务被暂停，完成事件永远不会来）。
 - **超时后取消本批次**：不会取消其它调用方的任务。未完成的暂存文件不会覆盖正式包，仍被取消中请求占用的文件留待下次启动清理。
@@ -163,7 +170,7 @@ Inspector 顶部是「UPGameRoot」，底部是配置文件的路径提示 + 三
 - 改动 `DownloadBatchAndWait` 时，不要把"成功判定"改回只看下载器的全局事件/失败列表（会被其它批次污染），也不要去掉超时（暂停任务会让完成事件永不触发，启动链会永久挂起）。
 - 新增"初始化阶段"的子系统时，接入 `Init()` 并且失败要能被 `InitAsync` 捕获（保证一定会广播完成或失败事件）。
 - 改动后请用工程外的真实编译校验（`get_errors` 在 Unity 工程里可能是假阴性）：用 `.csproj` 的 `<HintPath>` 作 `/r:`、`<DefineConstants>` 作 `/define:`，`dotnet <sdk>\Roslyn\bincore\csc.dll @"rsp"`。**编辑器程序集要引用刚编译出的 Runtime 程序集**，不能用 `Library/ScriptAssemblies/` 里的旧产物（否则改名/新增成员会报假的 CS1061）。
-- 新增 / 改名配置字段时，要同步三处：① `UPGameRootConfig` 字段；② `UPGameRootEditor` 里的 `ShowArg("config.xxx", …)` 字符串（写错会在面板上报“字段不存在”而不是抛异常，很容易漏）；③ `Assets/StreamingAssets/Data/GameRootConfig.json` 默认值。
+- 新增 / 改名配置字段时，要同步三处：① `UPGameRootConfig` 字段；② `UPGameRootEditor` 里的 `ShowArg("config.xxx", …)` 字符串（写错会在面板上报“字段不存在”而不是抛异常，很容易漏）；③ 保存一次场景（或直接构建）让 `GameRootConfig.json` 用新字段重新生成，手改该文件时注意字段名。
 
 ## 序列化迁移补充（2026-11-06）
 
@@ -178,10 +185,10 @@ Inspector 顶部是「UPGameRoot」，底部是配置文件的路径提示 + 三
 ## 基础设施补强（2026-11-06）
 
 - **启动耗时指标**：`StartupLifecycle` 记录每一步耗时（含失败步骤），通过 `UPGameRoot.StartupMetrics` 读取；`OnInited` 日志输出总耗时（`GameRoot Initialization completed in XX ms!`），用于建立启动性能基线。
-- **模块诊断**：`StartupLifecycle.GetModuleDiagnostics()` 返回全部注册模块的等待 / 运行中 / 就绪 / 失败 / 已回滚状态；`FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 汇总启动指标与运行服务状态，Reporter 信息页每 0.5 秒展示一次。
+- **模块诊断**：`StartupLifecycle.GetModuleDiagnostics()` 返回全部注册模块的等待 / 运行中 / 就绪 / 失败 / 已回滚状态；`FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 汇总启动指标与运行服务状态，Reporter 的「框架诊断」页签每 0.5 秒展示一次。
 - **模块自注册**：新增 `IStartupModule`（`Name / StartAsync / StopAsync`）与 `UPGameRoot.ConfigureLifecycle` 静态事件。外部模块在 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]` 中订阅并 `lifecycle.Add(new MyModule())`，即可插入启动链；失败走统一逆序回滚与 `GFLoadedFailedEvent`，订阅者自身抛异常会中止启动。
 - **应用生命周期**：`OnApplicationPause / OnApplicationFocus / OnApplicationLowMemory / OnApplicationQuit` 统一转发到 `services.AppLifecycle`（实现 `AppLifecycleService`）。业务订阅 `PauseChanged / FocusChanged / LowMemory / Quitting`；前后台暂停仍由 `IPauseService` 嵌套凭据实现，语义与原先一致。
-- **场景入口**：旧 `SceneMgr` 与 `SceneMgr_SceneAsynLoadProgress` 已删除；`AssetsLoader.LoadSceneAsync` 也直接转发到 `ISceneService`。统一使用 `UPGameRoot.Services.Scenes`（`LoadAsync` / `UnloadAsync` / `GetScope`）或订阅 `ISceneService.Progress`。
+- **场景入口**：旧 `SceneMgr` 与 `SceneMgr_SceneAsynLoadProgress` 已删除；`AssetsLoader.LoadSceneAsync` 也直接转发到 `ISceneService`。统一使用 `UPGameRoot.Services.Scenes`（`LoadAsync` / `UnloadAsync` / `GetScope`）或订阅 `ISceneService.Progress`。**`method = Editor` 时 `SceneService` 不装配资源提供者**，场景直接从 Build Settings 加载、不经过 AB 与清单；AB 模式下 `AssetsLoader.PrepareSceneAsync` 先查清单，清单里没有但 Unity 能直接加载时返回 null（随包场景），两者都登记时按 AB 加载并输出警告。归属判定可单独调用 `AssetsLoader.ClassifyScenePath`。
 - **新增服务**：`Timer / Config / Flow / AppLifecycle` 在 `Services` 步随 `GameServices` 一起装配，关闭顺序为 `SceneService → GameFlow → Timer → AppLifecycle → Audio → Input → Time`。
 
 详见 [本轮落地记录](../../../OptimzeLog/FoundationHardening/README.md) 与 [服务文档](../Services/README.md)。

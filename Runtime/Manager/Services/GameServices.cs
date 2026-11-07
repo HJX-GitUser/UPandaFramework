@@ -88,8 +88,9 @@ namespace UPandaGF
             Saves = new FileSaveService(saveDirectory);
             // AudioMgr 是旧单例：这里把它接到新的 IAssetsService 上，之后的音频加载也走统一资源层
             audio = AudioMgr.Instance; audio.Configure(Assets); Audio = audio;
-            // 场景服务：Unity 原生后端 + 用 AssetsLoader 做“加载场景前先准备 AB”
-            SceneService = new SceneService(new UnitySceneBackend(), assets);
+            // 场景服务：Unity 原生后端 + 用 AssetsLoader 做“加载场景前先准备 AB”。
+            // Editor 直读模式不装配 provider：场景直接从 Build Settings 加载，不经过 AB/清单。
+            SceneService = new SceneService(new UnitySceneBackend(), SceneService.SelectAssetProvider(config.method, assets));
             ConfigService = new ConfigService();
             TimerService = new TimerService();
             // 前后台暂停接入同一个 GameTimeService（嵌套暂停，不会与菜单暂停打架）

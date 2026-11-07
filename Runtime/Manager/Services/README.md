@@ -7,7 +7,7 @@
 | --- | --- |
 | `GameServices.cs` | 显式装配及逆序关闭；场景资源、对象池扩展方法；计时器帧驱动 |
 | `AssetService.cs` | Resources/AB 统一凭据、取消等待和迟到资源释放 |
-| `SceneService.cs` | 原生后端、串行队列、请求进度、场景 handle 作用域 |
+| `SceneService.cs` | 原生后端、串行队列、请求进度、场景 handle 作用域；AB 场景与随包（Build Settings）场景统一入口，Editor 直读模式不装配 provider |
 | `LifetimeScope.cs` / `ScopeSubscriptions.cs` | 取消、逆序释放及两套事件的独立作用域订阅 |
 | `InputAndTime.cs` | 输入动作映射、上下文栈、嵌套暂停、游戏时钟 |
 | `TimerService.cs` | 统一计时器：`Delay` / `Every` / `DelayAsync`，可手动 `Tick` 便于纯逻辑测试 |
@@ -83,7 +83,7 @@ await services.Flow.GoToAsync("Lobby");
 
 ## 运行诊断
 
-`FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 汇总 SceneService 的作用域 / 请求数、GameFlow 当前状态、AppLifecycle 前后台与焦点、UI 面板数以及底层资源计数。Reporter 信息页展示同一快照；诊断读取不创建额外服务，也不改变生命周期。
+`FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 汇总 SceneService 的作用域 / 请求数、GameFlow 当前状态、AppLifecycle 前后台与焦点、UI 面板数以及底层资源计数。Reporter 的「框架诊断」页签展示同一快照；诊断读取不创建额外服务，也不改变生命周期。
 
 ## 关闭顺序
 

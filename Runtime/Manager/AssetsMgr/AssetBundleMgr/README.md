@@ -20,7 +20,7 @@
 
 ## 运行诊断
 
-`ABLoadMgr.GetDiagnostics()` 返回已加载包、进行中包请求、进行中资源请求、尚未完成的退役包和 LeasePin 总数。LeasePin 包含共享依赖，不能直接当作资源文件数或内存占用；Reporter 信息页低频读取并展示。
+`ABLoadMgr.GetDiagnostics()` 返回已加载包、进行中包请求、进行中资源请求、尚未完成的退役包和 LeasePin 总数。LeasePin 包含共享依赖，不能直接当作资源文件数或内存占用；Reporter 的「框架诊断」页签低频读取并展示。
 
 ## 所有权边界
 

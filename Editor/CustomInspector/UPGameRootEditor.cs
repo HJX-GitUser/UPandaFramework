@@ -24,7 +24,7 @@ namespace UPandaGF.GFEditor
         /// <summary>
         /// 把 AB 工具窗口的 AES 配置同步到组件的 config.AssetAESConfig 上。
         /// <para>只在实际有差异时才写 + SetDirty：避免白脏场景，也避免把面板上刚改的值静默冲掉；
-        /// 这份值会被「保存到 Json」写进 GameRootConfig.json，启动时以 Json 为准。</para>
+        /// 这份值会在保存场景时随面板配置写入 GameRootConfig.json（打包运行时以该 Json 为准）。</para>
         /// </summary>
         private void SyncAesConfigFromJson()
         {
@@ -80,18 +80,20 @@ namespace UPandaGF.GFEditor
             serializedObject.ApplyModifiedProperties();
         }
 
-        /// <summary>配置文件的路径提示与 保存 / 读取 按钮</summary>
+        /// <summary>配置文件的路径提示与 读取 / 定位 按钮（写盘已自动化，不再提供保存按钮）</summary>
         private void DrawConfigFileBar()
         {
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("配置文件（启动时优先读取）", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("配置文件（打包运行时优先读取）", EditorStyles.boldLabel);
 
             bool exists = File.Exists(UPGameRootConfigFile.AbsolutePath);
             EditorGUILayout.LabelField($"{UPGameRootConfigFile.AssetPath}　{(exists ? "（已存在）" : "（尚未生成）")}", EditorStyles.miniLabel);
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("保存到 Json")) SaveConfigToJson();
-            if (GUILayout.Button("从 Json 读取")) LoadConfigFromJson();
+            using (new EditorGUI.DisabledScope(!exists))
+            {
+                if (GUILayout.Button("从 Json 读取")) LoadConfigFromJson();
+            }
             if (GUILayout.Button("定位文件", GUILayout.Width(80f)))
             {
                 if (exists) EditorUtility.RevealInFinder(UPGameRootConfigFile.AbsolutePath);
@@ -99,40 +101,24 @@ namespace UPandaGF.GFEditor
             }
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.HelpBox("启动流程：UPGameRoot.Init() 的第一步读这个 Json（读到就以它为准，读不到才用面板上的值），然后再初始化资源系统。"
-                                    + "面板上改完记得点「保存到 Json」。", MessageType.None);
+            EditorGUILayout.HelpBox("编辑器 Play 以面板为准（不读 Json）；面板改动在保存场景（Ctrl+S）时自动写入 Json，"
+                                    + "构建前也会再写一次并按 Player 规则校验。打包运行时以这个 Json 为准。", MessageType.None);
         }
 
-        /// <summary>把当前 config 写成 Json（StreamingAssets/Data/GameRootConfig.json）</summary>
-        private void SaveConfigToJson()
-        {
-            try
-            {
-                string path = UPGameRootConfigFile.AbsolutePath;
-                string dir = Path.GetDirectoryName(path);
-                if (!Directory.Exists(dir))
-                    Directory.CreateDirectory(dir);
-
-                string json = UPGameRootConfigFile.ToJson(component.Config);
-                File.WriteAllText(path, json, new UTF8Encoding(false));   // 不带 BOM：方便版本管理与手改
-                AssetDatabase.Refresh();
-                Debug.Log($"[UPGameRootEditor] 配置已保存到 {UPGameRootConfigFile.AssetPath}\n{json}");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[UPGameRootEditor] 保存配置失败：{e}");
-            }
-        }
-
-        /// <summary>从 Json 读回配置覆盖面板上的值</summary>
+        /// <summary>从 Json 读回配置覆盖面板上的值（编辑器里把打包配置拉回面板的唯一入口）</summary>
         private void LoadConfigFromJson()
         {
+            if (EditorApplication.isPlaying)
+            {
+                Debug.LogWarning("[UPGameRootEditor] 运行中配置已冻结，请退出 Play 后再从 Json 读取。");
+                return;
+            }
             try
             {
                 string path = UPGameRootConfigFile.AbsolutePath;
                 if (!File.Exists(path))
                 {
-                    Debug.LogWarning($"[UPGameRootEditor] 配置文件不存在：{UPGameRootConfigFile.AssetPath}，先点「保存到 Json」生成");
+                    Debug.LogWarning($"[UPGameRootEditor] 配置文件不存在：{UPGameRootConfigFile.AssetPath}，保存场景或构建时会自动生成");
                     return;
                 }
 
@@ -212,7 +198,7 @@ namespace UPandaGF.GFEditor
             serializedObject.ApplyModifiedProperties();
             EditorUtility.SetDirty(component);
             Debug.Log($"[UPGameRootEditor] 已对齐到当前平台 {bundleTarget}"
-                + $"（相对路径 {loadPathProperty.stringValue}）；记得点「保存到 Json」写回文件。");
+                + $"（相对路径 {loadPathProperty.stringValue}）；保存场景时会自动写回 {UPGameRootConfigFile.AssetPath}。");
         }
 
         /// <summary>
