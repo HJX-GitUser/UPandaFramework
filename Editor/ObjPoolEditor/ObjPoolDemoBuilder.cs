@@ -34,7 +34,7 @@
 //      Runtime/Assets/ObjPool/Resources/Obj1.prefab、Obj2.prefab）
 //
 //  ---- 与原型的差异（有意为之）----
-//    1. UPGameRoot.method：原型存的是 Assetbundles(1)（需要先烘好 AssetBundle + 清单才能跑）。
+//    1. UPGameRoot.method：原型存的是 AssetBundle(1)（需要先烘好 AssetBundle + 清单才能跑）。
 //       一键创建默认用 Editor(0) —— 编辑器里直接可跑；要复刻原型请改 RootLoadMethod 常量。
 //    2. AES 配置：原型里 UPGameRoot.enable=0 而 AssetsLoader.enable=1（互相矛盾）；
 //       但运行时 UPGameRoot.Init 会用 Root 的值覆盖 AssetsLoader 的，所以这里把两处写成同一份
@@ -76,8 +76,8 @@ namespace UPandaGF.GFEditor
         private const string DefaultSceneName   = "PoolUseSceneDemo.unity";
 
         /// <summary>
-        /// 一键创建时 UPGameRoot 使用的资源加载方式。
-        /// 原型场景存的是 <see cref="AssetLoaddingMethod.Assetbundles"/>（需先打包 AB + 生成清单才能跑）；
+        /// 一键创建时 UPGameRoot 使用的资源加载模式。
+        /// 原型场景存的是 <see cref="AssetLoaddingMethod.AssetBundle"/>（需先打包 AB + 生成清单才能跑）；
         /// 演示场景默认用 <see cref="AssetLoaddingMethod.Editor"/>，编辑器里按下 Play 就能用。
         /// </summary>
         private const AssetLoaddingMethod RootLoadMethod = AssetLoaddingMethod.Editor;

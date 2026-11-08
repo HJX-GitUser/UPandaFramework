@@ -132,13 +132,13 @@ namespace UPandaGF
             SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
         /// <summary>
-        /// 按资源加载方式决定要不要接“加载前准备场景包”。
+        /// 按资源加载模式决定要不要接“加载前准备场景包”。
         /// <para>Editor 直读模式下场景由 Build Settings 直接提供（<see cref="UnitySceneBackend"/> 里就是 SceneManager），
         /// 返回 null 让加载流程完全不触碰 AB/清单 —— 不依赖 provider 内部是否记得判模式。</para>
         /// </summary>
         public static ISceneAssetProvider SelectAssetProvider(AssetLoaddingMethod method, ISceneAssetProvider assets)
         {
-            return method == AssetLoaddingMethod.Editor ? null : assets;
+            return method == AssetLoaddingMethod.Editor || method == AssetLoaddingMethod.NoAssetBundle ? null : assets;
         }
         ILifetimeScope ISceneService.GetScope(Scene scene) => GetScope(scene);
         /// <summary>

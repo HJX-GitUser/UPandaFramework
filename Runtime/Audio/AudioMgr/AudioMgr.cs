@@ -4,7 +4,7 @@
 //  职责：
 //      · 背景音乐：双路 AudioSource 交叉淡入淡出切换，支持暂停 / 恢复 / 停止 / 调音量
 //      · 音效：唯一音效（同时只响一个）+ 叠加音效（播完自动回收）
-//      · 资源：Resources / AssetBundle 两种加载方式；Resources 模式下会把
+//      · 资源：Resources / AssetBundle 两种加载模式；NoAssetBundle 模式下会把
 //              ResourcesLoader 的引用计数还回去，避免 AudioClip 常驻内存
 //
 //  为什么是两路 AudioSource？

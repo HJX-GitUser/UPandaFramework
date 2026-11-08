@@ -182,7 +182,7 @@ namespace UPandaGF
                 lifecycle.Add("Data", ct => { binaryDataMgr.Init(); return Task.CompletedTask; });
                 lifecycle.Add("ContentUpdate", async ct => {
                     contentUpdate = new ContentUpdateService(runtimeConfig, downloader);
-                    if (runtimeConfig.method == AssetLoaddingMethod.Assetbundles)
+                    if (runtimeConfig.method == AssetLoaddingMethod.AssetBundle)
                         sourceRef = await contentUpdate.ExecuteAsync();
                     ct.ThrowIfCancellationRequested();
                 }, async () => { if (contentUpdate != null) await contentUpdate.ShutdownAsync(); sourceRef = null; });

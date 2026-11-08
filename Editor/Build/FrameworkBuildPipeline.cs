@@ -221,7 +221,7 @@ namespace UPandaGF.GFEditor
         /// </summary>
         public static void ValidateAssetBundleOutput(UPGameRootConfig config)
         {
-            if (config == null || config.method != AssetLoaddingMethod.Assetbundles) return;
+            if (config == null || config.method != AssetLoaddingMethod.AssetBundle) return;
             if (config.AssetAESConfig != null && config.AssetAESConfig.mainBundleLoadPath == ABLoadPath.RemotePath)
             {
                 Debug.Log("[FrameworkBuild] 主包来源为 RemotePath，跳过随包 AB 目录检查。");

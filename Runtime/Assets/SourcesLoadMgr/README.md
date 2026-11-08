@@ -7,9 +7,10 @@
 | `UPGameRootConfig.method` | 初始化 | 资源路径 |
 | --- | --- | --- |
 | `Editor` | Unity 编辑器直接通过 `EditorSourcesMgr` 读 `AssetDatabase`，不需要 AB 清单 | 项目中的 `Assets/...` 路径 |
-| `Assetbundles` | 使用启动热更传入的清单，否则读取 `StreamingAssets/Data/assetData.assetref`，随后加载主包和 Unity 的 `AssetBundleManifest` | 清单登记的 `Assets/...` 路径 |
+| `NoAssetBundle` | 跳过 AB 模块初始化，直接交给 `ResourcesLoader`；不支持热更 | 任意 `Resources` 目录下的相对路径，不写扩展名 |
+| `AssetBundle` | 使用启动热更传入的清单，否则读取 `StreamingAssets/Data/assetData.assetref`，随后加载主包和 Unity 的 `AssetBundleManifest` | 清单登记的 `Assets/...` 路径 |
 
-`ABSourcesRelated.sourcesDic` 以项目资源路径为键，关联包名与包内资源名。`bundleInfo` 按包名登记各自的 `ABLoadPath`，`mainBundleInfo` 定位主包。生成端与运行端使用同一 [清单编解码](../Serialization/README.md)，开启 AES 时两侧的设置须一致。`AssetsLoader.IsInitialized` 反映底层 AB 上下文是否仍可用。Player 禁止 `Editor` 资源模式。 [AssetsLoader.cs](AssetsLoader.cs) [ABSourcesRelated.cs](ABSourcesRelated.cs) [EditorSourcesMgr.cs](EditorSourcesMgr.cs)
+`ABSourcesRelated.sourcesDic` 以项目资源路径为键，关联包名与包内资源名。`bundleInfo` 按包名登记各自的 `ABLoadPath`，`mainBundleInfo` 定位主包。生成端与运行端使用同一 [清单编解码](../Serialization/README.md)，开启 AES 时两侧的设置须一致。`AssetsLoader.IsInitialized` 在 `Editor`/`NoAssetBundle` 完成空初始化后即为 true；`AssetBundle` 还要求主包和清单可用。Player 禁止 `Editor` 资源模式。 [AssetsLoader.cs](AssetsLoader.cs) [ABSourcesRelated.cs](ABSourcesRelated.cs) [EditorSourcesMgr.cs](EditorSourcesMgr.cs)
 
 ## 场景
 

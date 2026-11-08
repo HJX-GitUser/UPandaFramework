@@ -20,7 +20,7 @@ if (crate == null)
 pool.PushObj("Props/Crate", crate);
 ```
 
-Resources 模式使用不带扩展名的路径。AssetBundle 模式用清单中的带扩展名路径，调用异步入口。加载失败、取消或超时返回空，异步回调同样需要判空。 [场景池扩展](../../Composition/GameServices.cs) · [用法示例](../../../Samples/Pooling/TestPoolMgr.cs)
+NoAssetBundle 模式使用 Resources 下不带扩展名的路径。AssetBundle 模式用清单中的带扩展名路径，调用异步入口。加载失败、取消或超时返回空，异步回调同样需要判空。 [场景池扩展](../../Composition/GameServices.cs) · [用法示例](../../../Samples/Pooling/TestPoolMgr.cs)
 
 ## API 与行为
 

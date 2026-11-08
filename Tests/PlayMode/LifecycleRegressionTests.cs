@@ -311,9 +311,9 @@ public class LifecycleRegressionTests
         yield return NativeSetup();var loader=Go("assets loader").AddComponent<AssetsLoader>();
         var refs=new ABSourcesRelated{mainBundleInfo=new AssetBundleLoadInfo{bundleName="AuditBundles",loadPath=ABLoadPath.PersistentDataPath}};
         refs.bundleInfo["audit_shared"]=new AssetBundleLoadInfo{bundleName="audit_shared",loadPath=ABLoadPath.PersistentDataPath};
-        var init=loader.Init(AssetLoaddingMethod.Assetbundles,"",relative,refs);yield return Wait(init);Assert.IsTrue(loader.IsInitialized);
+        var init=loader.Init(AssetLoaddingMethod.AssetBundle,"",relative,refs);yield return Wait(init);Assert.IsTrue(loader.IsInitialized);
         ABLoadMgr.Instance.ClearAB();Assert.IsFalse(loader.IsInitialized);
-        var retry=loader.Init(AssetLoaddingMethod.Assetbundles,"",relative,refs);loader.ClearAB();yield return Wait(retry);Assert.IsFalse(loader.IsInitialized);
+        var retry=loader.Init(AssetLoaddingMethod.AssetBundle,"",relative,refs);loader.ClearAB();yield return Wait(retry);Assert.IsFalse(loader.IsInitialized);
     }
 
     [Test] public void StopCancellationCallbackMayStartANewUniqueRequest()

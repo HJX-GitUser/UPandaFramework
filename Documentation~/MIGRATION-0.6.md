@@ -1,4 +1,4 @@
-﻿# 0.6.0 迁移指南（运行时日志面板替换）
+# 0.6.0 迁移指南（运行时日志面板替换）
 
 0.6.0 删除了旧的运行时日志面板源码及其构建信息钩子，替换为独立实现的 `UPandaLogConsole`。旧面板源码已从包内移除，`THIRD_PARTY_NOTICES.md` 中对应条目也已删除；项目自有图标迁移到新模块继续使用。
 
@@ -14,6 +14,19 @@
 | 无 | `logConsole.Toggle()`、`CopyVisible()`、`SaveVisible()`、`SnapshotVisible()` |
 
 `UPandaLogConsole` 的容量字段：`MaxStoredEntries`、`MaxStoredBytes`、`MaxQueuedEntries`、`MaxQueuedBytes`、`MaxDrainPerFrame`；默认每帧最多消费 256 条，超过上限时淘汰最旧记录或丢弃新日志并累计 `DroppedCount`。
+
+## 资源加载模式
+
+`UPGameRootConfig.method` 字段名和枚举整数值保持不变，枚举名称改为更明确的启动语义：
+
+| 0.6.0 之前 | 0.6.0 |
+| --- | --- |
+| `AssetLoaddingMethod.Assetbundles`（1） | `AssetLoaddingMethod.AssetBundle`（1） |
+| `AssetLoaddingMethod.Resources`（2） | `AssetLoaddingMethod.NoAssetBundle`（2） |
+
+- `AssetBundle`：初始化 AB 清单、主包和可选热更；Resources 仍可按请求混用。
+- `NoAssetBundle`：跳过 AB 模块初始化，只使用 Resources / 随包资源；不支持热更，场景走 Build Settings。
+- 旧 Json 中的 `"method": 1/2` 不需要改；引用旧枚举名的源码需要同步替换。
 
 ## 显示设置 / 诊断
 

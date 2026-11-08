@@ -68,10 +68,12 @@ namespace UPandaGF
         /// <summary>
         /// 资源服务是否可用：Init 跑完，并且“该模式所需的底层”已就绪。
         /// <para>按模式所需的<b>条件正向</b>写：Editor 只需要 initialized；AssetBundle 还要求主包已加载。</para>
-        /// <para>写成“等于 Editor”而不是“不等于 Assetbundles”，是为了将来新增加载模式时，
-        /// 不会因为“没命中 Assetbundles”而被误判成“不需要 AB”。</para>
+        /// <para>写成“等于 Editor”而不是“不等于 AssetBundle”，是为了将来新增加载模式时，
+        /// 不会因为“没命中 AssetBundle”而被误判成“不需要 AB”。</para>
         /// </summary>
-        public bool IsInitialized => initialized && (method == AssetLoaddingMethod.Editor || (abLoadMgr != null && abLoadMgr.IsInitialized));
+        public bool IsInitialized => initialized && (method == AssetLoaddingMethod.Editor
+            || method == AssetLoaddingMethod.NoAssetBundle
+            || (abLoadMgr != null && abLoadMgr.IsInitialized));
         /// <summary>当前加载模式（Editor / AssetBundle）。</summary>
         private AssetLoaddingMethod method;
         /// <summary>AB 加载管理器（仅 AB 模式有效）。单例，Init 时才拿。</summary>
@@ -128,6 +130,13 @@ namespace UPandaGF
                 return;
 #endif
             }
+            if (method == AssetLoaddingMethod.NoAssetBundle)
+            {
+                // NoAssetBundle 模式：跳过 AB 模块初始化，资源由 ResourcesLoader 直接读取。
+                initialized = true;
+                PLogger.Log("AssetsLoader Inited (Resources)");
+                return;
+            }
             if (sourceRefArgBytes != null)
             {
                 // 热更流程已经下载并解析好的清单：直接用，避免重复读随包文件
@@ -144,7 +153,7 @@ namespace UPandaGF
             }
 
 
-            if (method == AssetLoaddingMethod.Assetbundles)
+            if (method == AssetLoaddingMethod.AssetBundle)
             {
                 if (sourceRef == null)
                 {
@@ -182,6 +191,8 @@ namespace UPandaGF
                 // AssetDatabase 自己管理工程资源，不需要释放；仍返回租约是为了统一调用方的生命周期写法（owner 为 null）
                 return asset != null ? new AssetLease<T>(asset, null) : null;
             }
+            if (method == AssetLoaddingMethod.NoAssetBundle)
+                return await ResourcesLoader.Instance.AcquireAsync<T>(path);
             // 清单里查不到（未打包/路径拼错）时 TryGetAssetArg 已打过错误日志，这里返回 null
             AssetRelatedArg arg;
             if (!TryGetAssetArg(path, out arg)) return null;
@@ -235,6 +246,7 @@ namespace UPandaGF
             // Editor 模式无需准备 AB；返回 null 表示“不需要预加载”
             // （SceneService 装配时本来就不会传 provider，这里再兜一层，防止被直接调用/被测试替换后端时漏判）
             if (method == AssetLoaddingMethod.Editor) return null;
+            if (method == AssetLoaddingMethod.NoAssetBundle) return null;
             AssetRelatedArg arg;
             // 场景归属：清单里登记 → 先加载 AB；清单外但 Unity 能直接加载 → 随包场景，无需准备。
             // 顺序必须是“先清单、后随包”：AB 场景在包加载前 CanStreamedLevelBeLoaded 同样是 false，反着判断会漏准备。
@@ -265,11 +277,16 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Editor:
                     asset = editorSourcesMgr.Load<T>(path);
                     break;
-                case AssetLoaddingMethod.Assetbundles:
+                case AssetLoaddingMethod.AssetBundle:
                     AssetRelatedArg arg;
                     if (!TryGetAssetArg(path, out arg))
                         break;
                     asset = await abLoadMgr.LoadResAsync<T>(arg.bundleName, arg.sourceName, sourceRef.GetABLoadPath(arg));
+                    break;
+                case AssetLoaddingMethod.NoAssetBundle:
+                    AssetLease<T> resourcesLease = await ResourcesLoader.Instance.AcquireAsync<T>(path);
+                    asset = resourcesLease != null ? resourcesLease.Asset : null;
+                    resourcesLease?.Dispose();
                     break;
             }
             return asset;
@@ -284,11 +301,14 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Editor:
                     asset = editorSourcesMgr.Load(path, type);
                     break;
-                case AssetLoaddingMethod.Assetbundles:
+                case AssetLoaddingMethod.AssetBundle:
                     AssetRelatedArg arg;
                     if (!TryGetAssetArg(path, out arg))
                         break;
                     asset = await abLoadMgr.LoadResAsync(arg.bundleName, arg.sourceName, type, sourceRef.GetABLoadPath(arg));
+                    break;
+                case AssetLoaddingMethod.NoAssetBundle:
+                    asset = await LoadResourcesObjectAsync(path, type);
                     break;
             }
             return asset;
@@ -302,7 +322,7 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Editor:
                     callback?.Invoke(editorSourcesMgr.Load<T>(path));
                     break;
-                case AssetLoaddingMethod.Assetbundles:
+                case AssetLoaddingMethod.AssetBundle:
                     AssetRelatedArg arg;
                     if (!TryGetAssetArg(path, out arg))
                     {
@@ -310,6 +330,13 @@ namespace UPandaGF
                         return;
                     }
                     abLoadMgr.LoadResAsync(arg.bundleName, arg.sourceName, sourceRef.GetABLoadPath(arg), callback);
+                    break;
+                case AssetLoaddingMethod.NoAssetBundle:
+                    ResourcesLoader.Instance.LoadAsync<T>(path, asset =>
+                    {
+                        try { callback?.Invoke(asset); }
+                        finally { ResourcesLoader.Instance.UnLoadAsset<T>(path); }
+                    });
                     break;
             }
         }
@@ -322,7 +349,7 @@ namespace UPandaGF
                 case AssetLoaddingMethod.Editor:
                     callback?.Invoke(editorSourcesMgr.Load(path, type));
                     break;
-                case AssetLoaddingMethod.Assetbundles:
+                case AssetLoaddingMethod.AssetBundle:
                     AssetRelatedArg arg;
                     if (!TryGetAssetArg(path, out arg))
                     {
@@ -330,6 +357,13 @@ namespace UPandaGF
                         return;
                     }
                     abLoadMgr.LoadResAsync(arg.bundleName, arg.sourceName, type, sourceRef.GetABLoadPath(arg), callback);
+                    break;
+                case AssetLoaddingMethod.NoAssetBundle:
+                    ResourcesLoader.Instance.LoadAsync(path, type, asset =>
+                    {
+                        try { callback?.Invoke(asset); }
+                        finally { ResourcesLoader.Instance.UnLoadAsset(path, type); }
+                    });
                     break;
             }
         }
@@ -480,7 +514,7 @@ namespace UPandaGF
         public bool UnLoadAB(string abName)
         {
             bool isUnload = false;
-            if (method == AssetLoaddingMethod.Assetbundles)
+            if (method == AssetLoaddingMethod.AssetBundle)
             {
                 isUnload = abLoadMgr.UnLoadAB(abName);
             }
@@ -513,11 +547,22 @@ namespace UPandaGF
         public void ClearAB()
         {
             initializationGeneration++;
-            if (method == AssetLoaddingMethod.Assetbundles) initialized = false;
-            if (method == AssetLoaddingMethod.Assetbundles)
+            if (method == AssetLoaddingMethod.AssetBundle) initialized = false;
+            if (method == AssetLoaddingMethod.AssetBundle)
             {
                 if (abLoadMgr != null) abLoadMgr.ClearAB();
             }
+        }
+
+        private static Task<UnityEngine.Object> LoadResourcesObjectAsync(string path, System.Type type)
+        {
+            var completion = new TaskCompletionSource<UnityEngine.Object>();
+            ResourcesLoader.Instance.LoadAsync(path, type, asset =>
+            {
+                completion.TrySetResult(asset);
+                ResourcesLoader.Instance.UnLoadAsset(path, type);
+            });
+            return completion.Task;
         }
 
         /// <summary>

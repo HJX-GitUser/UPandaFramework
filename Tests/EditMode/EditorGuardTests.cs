@@ -64,7 +64,7 @@ namespace UPandaGF.Tests.EditMode
 
             var remote = new UPGameRootConfig
             {
-                method = AssetLoaddingMethod.Assetbundles,
+                method = AssetLoaddingMethod.AssetBundle,
                 LoadAssetPath = "P1Missing_" + Guid.NewGuid().ToString("N") + "/",
                 AssetAESConfig = new AssetBundleClassificationWindowConfig { mainBundleLoadPath = ABLoadPath.RemotePath }
             };
@@ -76,7 +76,7 @@ namespace UPandaGF.Tests.EditMode
         {
             var config = new UPGameRootConfig
             {
-                method = AssetLoaddingMethod.Assetbundles,
+                method = AssetLoaddingMethod.AssetBundle,
                 LoadAssetPath = "P1Missing_" + Guid.NewGuid().ToString("N") + "/"
             };
             var error = Assert.Throws<InvalidOperationException>(() => FrameworkBuildPipeline.ValidateAssetBundleOutput(config));
@@ -93,7 +93,7 @@ namespace UPandaGF.Tests.EditMode
             {
                 var config = new UPGameRootConfig
                 {
-                    method = AssetLoaddingMethod.Assetbundles,
+                    method = AssetLoaddingMethod.AssetBundle,
                     LoadAssetPath = relative + "/"
                 };
                 var error = Assert.Throws<InvalidOperationException>(() => FrameworkBuildPipeline.ValidateAssetBundleOutput(config));

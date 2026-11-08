@@ -1,6 +1,31 @@
-﻿# 资源加载与平台文件
+# 资源加载与平台文件
 
 新业务通过 `UPGameRoot.Services.Assets` 获取资源租约，通过 `Services.Scenes` 切换场景。所有会触碰 Unity 资源的调用放在主线程，并先等待框架就绪。
+
+## 应用级加载模式
+
+`UPGameRootConfig.method` 决定启动时如何装配资源服务：
+
+| 模式 | 适用场景 | 启动依赖 |
+| --- | --- | --- |
+| `Editor` | 仅编辑器 Play Mode，直接走 `AssetDatabase` | 无 AB 清单 |
+| `NoAssetBundle` | 跳过 AB 模块初始化，只使用 `Resources` / 随包资源；PC/Android/iOS/WebGL 均可 | 无 AB 清单、无主包、无热更；场景走 Build Settings |
+| `AssetBundle` | 需要 AB、清单和热更 | `StreamingAssets/Data/assetData.assetref` + 主包 |
+
+`NoAssetBundle` 模式会跳过 `ContentUpdate` 与 AB `Init`，`AssetsLoader.IsInitialized` 在完成空初始化后即为 true；`LoadAsync`/`AcquireAsync` 直接转给 `ResourcesLoader`。该模式不能开启 `enableAssetUpdate`，`LoadAssetPath`/`remoteURL` 不参与资源定位。场景服务不装配 AB provider，场景仍需加入 Build Settings。
+
+### 与 AssetBundle 模式共存
+
+`method` 只决定 `UPGameRoot` 启动时装配哪套资源后端，不会关掉 `ResourcesLoader`。`GameServices` 始终注入 `ResourcesLoader.Instance`，因此 `method = AssetBundle` 时仍可按下表混用：
+
+| 调用 | AB 模式下的行为 |
+| --- | --- |
+| `Services.Assets.AcquireAsync<T>(path, AssetLoadMethod.Resources)` | 走 `ResourcesLoader`，不读取 AB 清单 |
+| `Services.Assets.AcquireAsync<T>(path, AssetLoadMethod.AssetBundle)` | 走 `AssetsLoader` / AB 清单 |
+| `ResourcesLoader.Instance.Load<T>(path)` / `LoadAsync` | 直接加载 Resources |
+| `root.GetAssetsLoader().LoadAsync<T>(path)` | 旧接口按应用级 `method` 分支；AB 模式下只走 AB，不能用于 Resources |
+
+AB 模式启动仍要求清单和主包可用；Resources 只是并行可用，不是 AB 失败时的兜底。反过来，`method = NoAssetBundle` 时不会初始化 AB，因此 `AssetLoadMethod.AssetBundle` 请求也不可用。
 
 ## 入口与路径
 

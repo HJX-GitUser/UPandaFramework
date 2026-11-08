@@ -5,7 +5,7 @@
 ## 接入和发布
 
 1. 用 [AB 编辑器工具](../../../Editor/AssetBundleTools/README.md) 按目标平台生成主包、依赖包与 `assetData.assetref`。
-2. 在根节点选择 `Assetbundles`、填写 `LoadAssetPath` 和 `remoteURL`，并启用 `enableAssetUpdate`。清单 AES 设置须与生成端一致。
+2. 在根节点选择 `AssetBundle`、填写 `LoadAssetPath` 和 `remoteURL`，并启用 `enableAssetUpdate`。清单 AES 设置须与生成端一致。
 3. 将远端清单发布为 `<remoteURL>/AssetBundles/assetData.assetref`，包发布为 `<remoteURL>/<LoadAssetPath>/<包名>`。远端根地址应按平台或发布渠道区分，因为清单地址固定且清单没有平台字段。
 4. 在目标 Player 验证随包首启、更新后的首场景，以及更新失败后退回旧版本。随包基线使用 `StreamingAssets/Data/assetData.assetref`。
 

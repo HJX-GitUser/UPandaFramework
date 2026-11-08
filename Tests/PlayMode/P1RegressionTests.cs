@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -149,12 +149,12 @@ public class P1ScopeAndInputTests
     [TestCase("../escape/")][TestCase("C:/outside/")][TestCase("/absolute/")]
     public void ConfigRejectsInvalidBundleRoot(string path)
     {
-        var config = new UPGameRootConfig { method = AssetLoaddingMethod.Assetbundles, LoadAssetPath = path };
+        var config = new UPGameRootConfig { method = AssetLoaddingMethod.AssetBundle, LoadAssetPath = path };
         Assert.IsNotEmpty(UPGameRootConfigFile.Validate(config, false, "StandaloneWindows64"));
     }
     [Test] public void ConfigChecksTargetUrlAesAndDuplicateActions()
     {
-        var config = new UPGameRootConfig { method = AssetLoaddingMethod.Assetbundles, remoteURL = "file:///tmp", AssetAESConfig = new AssetBundleClassificationWindowConfig { enable = true, AESKEY = "bad" } };
+        var config = new UPGameRootConfig { method = AssetLoaddingMethod.AssetBundle, remoteURL = "file:///tmp", AssetAESConfig = new AssetBundleClassificationWindowConfig { enable = true, AESKEY = "bad" } };
         config.inputBindings = new[] { new InputBinding { action = "A", positive = KeyCode.Space }, new InputBinding { action = "A", positive = KeyCode.Space } };
         Assert.GreaterOrEqual(UPGameRootConfigFile.Validate(config, false, "Android").Count, 4);
     }
@@ -361,7 +361,7 @@ public class P1ResourceIntegrationTests
             refs.bundleInfo["audit_target"] = new AssetBundleLoadInfo { bundleName = "audit_target", loadPath = ABLoadPath.PersistentDataPath };
             refs.bundleInfo["audit_shared"] = new AssetBundleLoadInfo { bundleName = "audit_shared", loadPath = ABLoadPath.PersistentDataPath };
             refs.sourcesDic["Assets/Scenes/P1Legacy.unity"] = new AssetRelatedArg("audit_target", "Box");
-            var init = loader.Init(AssetLoaddingMethod.Assetbundles, "http://localhost/", relative, refs); yield return P1TestWait.For(init); Assert.IsTrue(loader.IsInitialized);
+            var init = loader.Init(AssetLoaddingMethod.AssetBundle, "http://localhost/", relative, refs); yield return P1TestWait.For(init); Assert.IsTrue(loader.IsInitialized);
             var prepared = loader.PrepareSceneAsync("P1Legacy", CancellationToken.None); yield return P1TestWait.For(prepared);
             Assert.IsFalse(prepared.IsFaulted, prepared.Exception?.ToString()); Assert.AreEqual(1, ABLoadMgr.Instance.GetLeaseCount("audit_target"));
             prepared.Result.Dispose(); Assert.AreEqual(0, ABLoadMgr.Instance.GetLeaseCount("audit_target"));

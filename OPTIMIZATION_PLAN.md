@@ -141,7 +141,7 @@
 | 2026-11-07 | P0-1..P0-8 | 完成 | 见 CHANGELOG、`OptimzeLog/P0-2026-11-07/` 与 Unity XML；2022.3/2021.3 双版本通过 |
 | 2026-11-08 | P1-3 服务层收口 | 完成：补齐三个契约、移除五个静态单例、三类改为构造/Configure 注入、Quest 存档走 ISaveService | `OptimzeLog/P1Services-2026-11-08/`；2021.3 编译 0 错、EditMode 24/24、PlayMode 300/300 |
 | 2026-11-08 | P1-4..P1-8 数据/性能/编辑器/测试/CI | 完成：Excel v2、AB 完成回调+租约、护栏+有序上传+密码不落盘、测试补齐、三平台 CI 脚本 | `OptimzeLog/P1-2026-11-08/`；2021.3 编译 0 错、EditMode 47/47、PlayMode 302/302；Windows/WebGL/Android 构建产物 |
-| 2026-11-08 | 0.6 日志面板自研替换 | 完成：新增 `UPandaLogConsole`（有界线程队列/主线程存储/三页签/显示设置/诊断/搜索折叠/复制导出），删除旧日志面板代码、编辑器钩子与回归测试；项目自有图标迁移到新模块；移除对应第三方声明 | `OptimzeLog/LogConsole-2026-11-08/`；2021.3/2022.3 编译 0 错、EditMode 48/48、PlayMode 303/303 |
+| 2026-11-08 | 0.6 日志面板自研替换 | 完成：新增 `UPandaLogConsole`（有界线程队列/主线程存储/三页签/显示设置/诊断/搜索折叠/复制导出）与 `AssetLoaddingMethod.NoAssetBundle`（跳过 AB 初始化），删除旧日志面板代码、编辑器钩子与回归测试；项目自有图标迁移到新模块；移除对应第三方声明 | `OptimzeLog/LogConsole-2026-11-08/`；2021.3/2022.3 编译 0 错、EditMode 48/48、PlayMode 306/306 |
 | 2026-11-08 | P1-1/P1-2 程序集与命名空间 | 完成：7 个运行时模块 + 组合根、4 个可选玩法程序集、Samples 隔离；全局命名空间 0 个；`RunTime`/`StateMechine`/`BineryMgr` 修正；迁移指南 | `OptimzeLog/P1Structure-2026-11-08/`；2021.3/2022.3 编译 0 错、EditMode 47/47、PlayMode 302/302 |
 
 > 维护规则：每完成一项，更新本表与 `CHANGELOG.md`；未完成项不得标记为“已解决”。

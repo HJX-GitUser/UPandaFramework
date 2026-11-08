@@ -256,7 +256,7 @@ public class FrameworkRegressionTests
     {
         var loader = Component<AssetsLoader>();
         LogAssert.Expect(LogType.Error, new Regex("资源关联数据缺少主包信息"));
-        yield return Wait(loader.Init(AssetLoaddingMethod.Assetbundles, "", "", new ABSourcesRelated()));
+        yield return Wait(loader.Init(AssetLoaddingMethod.AssetBundle, "", "", new ABSourcesRelated()));
         Assert.IsFalse(loader.IsInitialized);
         bool called = false;
         LogAssert.Expect(LogType.Error, new Regex("该资源不存在"));

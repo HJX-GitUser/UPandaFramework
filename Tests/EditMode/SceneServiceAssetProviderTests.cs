@@ -35,7 +35,7 @@ namespace UPandaGF.Tests.EditMode
         public void AssetBundleMode_KeepsAssetProvider()
         {
             var provider = new RecordingProvider();
-            Assert.AreSame(provider, SceneService.SelectAssetProvider(AssetLoaddingMethod.Assetbundles, provider));
+            Assert.AreSame(provider, SceneService.SelectAssetProvider(AssetLoaddingMethod.AssetBundle, provider));
         }
 
         [Test]

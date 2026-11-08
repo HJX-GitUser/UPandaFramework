@@ -58,7 +58,7 @@ namespace UPandaGF.GFEditor
 
             // 用 SerializedProperty.enumValueIndex 来选分支：SerializedProperty 改的是"待应用的值"，
             // 直接读 component.Config.method 会慢一帧（切换后要再点一下才会显示对应区域）
-            SerializedProperty methodProperty = ShowArg("config.method", "资源加载方式");
+            SerializedProperty methodProperty = ShowArg("config.method", "资源加载模式");
             AssetLoaddingMethod currentMethod = methodProperty != null
                 ? (AssetLoaddingMethod)methodProperty.enumValueIndex
                 : component.Config.method;
@@ -69,8 +69,16 @@ namespace UPandaGF.GFEditor
                     EditorGUILayout.Space();
                     break;
 
-                case AssetLoaddingMethod.Assetbundles:
-                    AssetbundlesEditorGUI();
+                case AssetLoaddingMethod.AssetBundle:
+                    AssetBundleEditorGUI();
+                    break;
+
+                case AssetLoaddingMethod.NoAssetBundle:
+                    EditorGUILayout.Space();
+                    EditorGUILayout.HelpBox(
+                        "NoAssetBundle 模式：跳过 AssetBundle 模块初始化，只使用 Resources / 随包资源；不需要清单、主包或热更。\n" +
+                        "请确认所有运行时资源都放在 Resources 目录下，并关闭“启动资源热更”。",
+                        MessageType.Info);
                     break;
             }
 
@@ -141,7 +149,7 @@ namespace UPandaGF.GFEditor
             }
         }
 
-        private void AssetbundlesEditorGUI()
+        private void AssetBundleEditorGUI()
         {
             AssetBundleClassificationWindowConfig aesConfig = component.Config.AssetAESConfig;
             if (aesConfig != null && aesConfig.enable)

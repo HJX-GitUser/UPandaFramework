@@ -32,7 +32,7 @@ namespace UPandaGF
         [Tooltip("AB 构建目标，与 Unity BuildTarget 名称一致；Player 启动和构建前校验")]
         public string bundleTarget = "StandaloneWindows64";
         public InputBinding[] inputBindings = InputBinding.Defaults();
-        [Tooltip("资源加载方式：Editor=编辑器直读资源；Assetbundles=走 AssetBundle")]
+        [Tooltip("资源加载模式：Editor=编辑器直读（仅编辑器）；AssetBundle=初始化 AB 清单/主包；NoAssetBundle=跳过 AB 初始化，使用 Resources / 随包资源")]
         public AssetLoaddingMethod method = AssetLoaddingMethod.Editor;
 
         [Tooltip("是否启动资源热更（从 remoteURL 下载清单并做增量更新）")]
@@ -97,8 +97,9 @@ namespace UPandaGF
             if (value.schemaVersion != 1) errors.Add("不支持的 schemaVersion：" + value.schemaVersion);
             if (!Enum.IsDefined(typeof(AssetLoaddingMethod), value.method)) errors.Add("资源加载模式无效");
             if (!isEditor && value.method == AssetLoaddingMethod.Editor) errors.Add("Player 禁止使用 Editor 资源加载模式");
+            if (value.method == AssetLoaddingMethod.NoAssetBundle && value.enableAssetUpdate) errors.Add("NoAssetBundle 模式不支持资源热更，请关闭 enableAssetUpdate");
             if (float.IsNaN(value.downloadBatchTimeout) || float.IsInfinity(value.downloadBatchTimeout) || value.downloadBatchTimeout < 0) errors.Add("下载超时必须为非负有限值");
-            if (value.method == AssetLoaddingMethod.Assetbundles)
+            if (value.method == AssetLoaddingMethod.AssetBundle)
             {
                 if (string.IsNullOrWhiteSpace(value.LoadAssetPath) || Path.IsPathRooted(value.LoadAssetPath)) errors.Add("LoadAssetPath 必须为非空相对路径");
                 else try { AssetLocation.Combine("root", value.LoadAssetPath); } catch (ArgumentException) { errors.Add("LoadAssetPath 包含非法路径段"); }

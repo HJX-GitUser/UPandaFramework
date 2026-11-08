@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this package are documented here. The format follows Keep a Changelog and the project uses Semantic Versioning.
 
@@ -10,6 +10,7 @@ All notable changes to this package are documented here. The format follows Keep
 - Added three pages (logs / display settings / framework diagnostics), safe-area-responsive layout, persisted column/toolbar/scale/opacity settings, and live `FrameworkDiagnostics` resource/module/startup data. Added a Chinese `UPandaLogConsoleEditor` Inspector with capacity/behavior/icon help and runtime status/actions. Log rows no longer use white alternating textures; the panel uses a dark surface with gray-white text, the header close button shows one X icon, and scrollbars are 14px draggable bars without arrow icons.
 - 旧日志面板字段 → `UPGameRoot.logConsole` (`UPandaLogConsole`); `DebugerInit` uses `Show()` / `IsVisible`; `UPGameRootEditor` creates/destroys a `LogConsole` child instead of assigning image assets.
 - Removed the old log-panel runtime files, editor menu/hook and regression test file; added `LogConsoleRegressionTests` and `LogConsoleIconTests`. Project-owned icon assets were migrated to `Runtime/Composition/LogConsole/Icons` with GUIDs preserved.
+- Added `AssetLoaddingMethod.NoAssetBundle`: startup skips AssetBundle module initialization, using Resources/packaged resources without a manifest, main bundle or hot update; scenes use Build Settings. Added `NoAssetBundleModeTests`.
 - `UPandaGF.Diagnostics` now uses `autoReferenced: true` so the log/diagnostics assembly is referenced by default; `FrameworkConventionValidator` checks the setting.
 
 ### Removed
