@@ -18,7 +18,7 @@
 | `Editor/PLogger/LogConsoleIconDesign/` | 图标源稿、生成器、manifest、预览（原目录迁移并改名） |
 | `Runtime/Composition/LogConsole/README.md` | 使用与 API 文档 |
 | `Tests/PlayMode/LogConsoleRegressionTests.cs` | 10 项回归：淘汰、折叠、搜索、可见区间、线程突发、队列字节预算、显隐/过滤、错误自动打开、GUI 冒烟、显示设置/诊断页冒烟 |
-| `Tests/PlayMode/NoAssetBundleModeTests.cs` | 3 项回归：NoAssetBundle 模式初始化/加载、配置校验、GameRoot 启动 |
+| `Tests/PlayMode/NoAssetBundleModeTests.cs` | 4 项回归：NoAssetBundle 模式初始化/加载、配置校验、GameRoot 启动 |
 | `Tests/EditMode/LogConsoleIconTests.cs` | 图标与 GUISkin 能按模块相对路径绑定 |
 | `Documentation~/MIGRATION-0.6.md` | 旧字段/方法 → 新 API、场景与编辑器迁移步骤 |
 | `Editor/PLogger/LogConsoleMigration.cs` | 菜单 `UPandaGF/Tools/迁移日志面板（清理旧对象）`：删除旧场景中 Missing Script 的旧对象并创建新控制台 |
@@ -50,7 +50,7 @@
 | 2021.3 编译 | 0 个 `error CS` |
 | 2022.3 编译 | 0 个 `error CS` |
 | EditMode 2021.3 | **48 / 48**（新增图标绑定测试） |
-| PlayMode 2021.3 | **306 / 306**（`LogConsoleRegressionTests` 10 项 + `NoAssetBundleModeTests` 3 项） |
+| PlayMode 2021.3 | **307 / 307**（`LogConsoleRegressionTests` 10 项 + `NoAssetBundleModeTests` 4 项） |
 | 旧标识搜索 | `.cs` 中无旧日志面板类型/作者标识；仅迁移工具保留旧对象名 `Reporter` 用于识别，`MIGRATION-0.6` 保留旧 API 映射 |
 | 文档链接 | 0 条断链 |
 

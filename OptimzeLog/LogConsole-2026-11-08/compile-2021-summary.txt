@@ -2,4 +2,4 @@
 Unity：2021.3.45f2c1
 编译：0 个 error CS；生成 17 个 UPandaGF*.dll
 EditMode：48 / 48（含 LogConsoleIconTests）
-PlayMode：306 / 306（含 NoAssetBundle 启动/加载 3 项）
+PlayMode：307 / 307（含 NoAssetBundle 启动/加载/URL 缺失控制台 4 项）

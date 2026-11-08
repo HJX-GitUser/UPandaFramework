@@ -57,6 +57,45 @@ namespace UPandaGF.Tests
         }
 
         [UnityTest]
+        public IEnumerator GameRootCreatesMissingLogConsoleAtRuntime()
+        {
+            string dataDirectory = Path.Combine(Application.streamingAssetsPath, "Data");
+            Directory.CreateDirectory(dataDirectory);
+            string logConfigPath = Path.Combine(dataDirectory, "LogConfig.json");
+            byte[] originalLogConfig = File.Exists(logConfigPath) ? File.ReadAllBytes(logConfigPath) : null;
+            File.WriteAllText(logConfigPath, JsonUtility.ToJson(new LogConfig()));
+
+            var go = new GameObject("MissingLogConsoleRoot");
+            go.SetActive(false);
+            var root = go.AddComponent<UPGameRoot>();
+            root.SetConfig(new UPGameRootConfig
+            {
+                method = AssetLoaddingMethod.NoAssetBundle,
+                enableAssetUpdate = false,
+                EnableDebugModel = true,
+            });
+            go.SetActive(true);
+
+            Task start = root.WaitUntilReadyAsync();
+            while (!start.IsCompleted) yield return null;
+            for (int i = 0; i < 3 && root.logConsole == null; i++) yield return null;
+            Exception failure = null;
+            try
+            {
+                Assert.IsFalse(start.IsFaulted, start.Exception?.ToString());
+                Assert.IsNotNull(root.logConsole, "URL/UPM 导入且场景中没有控制台时，运行时应自动创建。");
+            }
+            catch (Exception e) { failure = e; }
+
+            Task shutdown = root.ShutdownAsync();
+            while (!shutdown.IsCompleted) yield return null;
+            UnityEngine.Object.DestroyImmediate(go);
+            if (originalLogConfig == null) File.Delete(logConfigPath);
+            else File.WriteAllBytes(logConfigPath, originalLogConfig);
+            if (failure != null) throw failure;
+        }
+
+        [UnityTest]
         public IEnumerator GameRootStartsInNoAssetBundleMode()
         {
             string dataDirectory = Path.Combine(Application.streamingAssetsPath, "Data");

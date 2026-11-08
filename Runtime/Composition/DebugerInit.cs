@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using System;
 using System.Threading.Tasks;
@@ -58,6 +58,19 @@ namespace UPandaGF
             if (debugModelResolved || root == null || !root.IsInited) return;
             debugModelResolved = true;
             debugModelEnabled = root.ConfigRuntime.EnableDebugModel;
+            if (!debugModelEnabled) return;
+
+            // URL/UPM 导入时场景里可能没有已序列化的控制台；不能只依赖编辑器同步，否则 FPS 按钮没有可打开的实例。
+            if (root.logConsole == null)
+                root.logConsole = root.GetComponentInChildren<UPandaLogConsole>(true);
+            if (root.logConsole == null)
+            {
+                var consoleObject = new GameObject("LogConsole");
+                consoleObject.transform.SetParent(transform, false);
+                root.logConsole = consoleObject.AddComponent<UPandaLogConsole>();
+                root.logConsole.Initialize();
+                Debug.LogWarning("[UPandaLogConsole] 场景缺少日志控制台，已自动创建文本模式实例；如需图标，请在 UPGameRoot Inspector 重新同步。");
+            }
         }
 
         public IEnumerator Init()

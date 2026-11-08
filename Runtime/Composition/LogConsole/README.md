@@ -11,7 +11,9 @@ var console = gameObject.AddComponent<UPandaLogConsole>();
 console.Show();
 ```
 
-`UPGameRoot.logConsole` 未赋值时不会自动创建；正式包建议关闭 `EnableDebugModel`。日志/诊断模块 `UPandaGF.Diagnostics` 的 `Auto Referenced`（`autoReferenced: true`）默认开启；`UPandaLogConsole` 组件位于 `UPandaGF.Runtime`，两个程序集均无需手动添加引用，`FrameworkConventionValidator` 会校验 `UPandaGF.Diagnostics` 的开关。
+`UPGameRoot.logConsole` 为空且 `EnableDebugModel` 开启时，运行时会自动创建文本模式实例；正式包建议关闭 `EnableDebugModel`。日志/诊断模块 `UPandaGF.Diagnostics` 的 `Auto Referenced`（`autoReferenced: true`）默认开启；`UPandaLogConsole` 组件位于 `UPandaGF.Runtime`，两个程序集均无需手动添加引用，`FrameworkConventionValidator` 会校验 `UPandaGF.Diagnostics` 的开关。
+
+通过 UPM/Git URL 导入时，项目不一定已经定义 `OPEN_PLOG`，场景里也可能没有序列化控制台。编辑器同步不再依赖 `OPEN_PLOG`，并去掉了对只读包设置脚本执行顺序的操作；若场景仍缺少控制台，`DebugerInit` 会在 `EnableDebugModel` 开启且根节点就绪后自动创建文本模式实例。需要图标时，在 `UPGameRoot` Inspector 重新同步一次即可。
 
 Inspector 使用 `UPandaLogConsoleEditor`：容量、行为、外观、运行状态和图标绑定均有中文标签/说明，并在 Play Mode 提供显示/隐藏、清空、打开显示设置/诊断的快捷按钮。
 

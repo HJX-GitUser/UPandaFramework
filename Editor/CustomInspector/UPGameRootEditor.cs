@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -236,7 +236,6 @@ namespace UPandaGF.GFEditor
         /// <summary>按 EnableDebugModel 开关同步场景里的日志控制台（创建 / 销毁）。</summary>
         private void SyncLogConsole()
         {
-#if OPEN_PLOG
             if (EditorApplication.isPlaying) return;   // 运行时不改场景
 
             ShowArg("config.EnableDebugModel", "启动日志窗口");
@@ -261,9 +260,6 @@ namespace UPandaGF.GFEditor
             {
                 DestroyLogConsoleIfExists();
             }
-#else
-            if (component.Config.EnableDebugModel) DestroyLogConsoleIfExists();
-#endif
         }
 
         /// <summary>
@@ -296,12 +292,9 @@ namespace UPandaGF.GFEditor
             GameObject consoleObject = new GameObject("LogConsole");
             consoleObject.transform.SetParent(parent, false);
             var console = consoleObject.AddComponent<UPandaLogConsole>();
-            LogConsoleIconLoader.Assign(console);
+            try { LogConsoleIconLoader.Assign(console); }
+            catch (Exception e) { Debug.LogWarning("[UPandaLogConsole] 图标绑定失败，使用纯文字模式：" + e.Message); }
             Undo.RegisterCreatedObjectUndo(consoleObject, "Create Log Console");
-
-            MonoScript script = MonoScript.FromMonoBehaviour(console);
-            if (MonoImporter.GetExecutionOrder(script) != -12000)
-                MonoImporter.SetExecutionOrder(script, -12000);
         }
     }
 }
