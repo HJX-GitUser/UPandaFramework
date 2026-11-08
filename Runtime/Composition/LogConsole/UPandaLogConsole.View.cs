@@ -152,6 +152,12 @@ namespace UPandaGF
             InvalidateVisible();
         }
 
+        public void CopySelected()
+        {
+            if (selected < 0 || selected >= visibleEntries.Count) return;
+            GUIUtility.systemCopyBuffer = FormatEntry(visibleEntries[selected]);
+        }
+
         private void InvalidateVisible()
         {
             cachedVersion = -1;
@@ -506,8 +512,15 @@ namespace UPandaGF
                 FollowTail = !followTail;
             if (ActionButton(NextRect(), "换场清空", icons != null ? icons.clearOnNewSceneImage : null, clearOnSceneLoad, true))
                 ClearOnSceneLoad = !clearOnSceneLoad;
-            if (showCopy && ActionButton(NextRect(), "复制", icons != null ? icons.copyImage : null, false, true))
-                CopyVisible();
+            if (showCopy)
+            {
+                bool canCopy = selected >= 0 && selected < visibleEntries.Count;
+                bool previousEnabled = GUI.enabled;
+                GUI.enabled = canCopy;
+                if (ActionButton(NextRect(), "复制选中", icons != null ? icons.copyImage : null, false, true))
+                    CopySelected();
+                GUI.enabled = previousEnabled;
+            }
             if (showSave && ActionButton(NextRect(), "导出", icons != null ? icons.saveLogsImage : null, false, true))
                 SaveVisible();
             return y + rows * (height + gap) + 2f;
@@ -780,6 +793,27 @@ namespace UPandaGF
                 changed = true;
             }
             y += InfoRowHeight;
+
+            DrawSection(ref y, width, "导出");
+            float pathLabelWidth = 96f * panelScale;
+            float pathFieldX = 10f + pathLabelWidth + 8f;
+            float pathFieldWidth = Mathf.Max(80f, width - pathFieldX - 12f);
+            GUI.Label(new Rect(10f, y, pathLabelWidth, InfoRowHeight), "输出目录", mutedStyle);
+            GUI.TextField(new Rect(pathFieldX, y, pathFieldWidth, InfoRowHeight), ExportDirectory, fieldStyle);
+            y += InfoRowHeight;
+            if (!string.IsNullOrEmpty(LastExportPath))
+            {
+                GUI.Label(new Rect(10f, y, pathLabelWidth, InfoRowHeight), "最近导出", mutedStyle);
+                GUI.TextField(new Rect(pathFieldX, y, pathFieldWidth, InfoRowHeight), LastExportPath, fieldStyle);
+                y += InfoRowHeight;
+            }
+            float exportButtonWidth = Mathf.Min(110f * panelScale, (width - 24f) * 0.5f);
+            if (GUI.Button(new Rect(10f, y, exportButtonWidth, ControlHeight), "复制路径", buttonStyle))
+                GUIUtility.systemCopyBuffer = ExportDirectory;
+            if (GUI.Button(new Rect(10f + exportButtonWidth + 6f, y, exportButtonWidth, ControlHeight), "导出当前日志", buttonStyle))
+                SaveVisible();
+            y += ControlHeight + 4f;
+
             if (changed) SavePreferences();
             GUI.EndScrollView();
         }

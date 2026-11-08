@@ -26,7 +26,8 @@ Inspector 使用 `UPandaLogConsoleEditor`：容量、行为、外观、运行状
 | `SetFilter(string)` / `SetSeverity(info, warning, error)` / `SetCollapse(bool)` | 搜索与视图过滤 |
 | `Capture(message, stack, LogType/LogConsoleLevel)` | 线程安全追加一条日志（测试或自定义日志管线） |
 | `ProcessPending(budget)` | 主线程消费队列；`Update` 每帧自动调用 |
-| `SnapshotVisible()` / `CopyVisible()` / `SaveVisible()` | 取当前可见记录、复制到剪贴板、导出到 `persistentDataPath/Logs` |
+| `SnapshotVisible()` / `CopySelected()` / `CopyVisible()` / `SaveVisible()` | 取可见记录、复制选中日志、复制全部可见日志、导出到 `persistentDataPath/Logs` |
+| `ExportDirectory` / `LastExportPath` | 导出目录与最近一次导出的完整文件路径 |
 | `ShowTime` / `ShowScene` / `ShowMemory` / `ShowFps` | 日志行右侧列开关（会持久化） |
 | `PauseCapture` / `FollowTail` | 暂停消费 / 自动跟随（运行态，不持久化） |
 | `ClearOnSceneLoad` | 换场清空（持久化） |
@@ -38,7 +39,7 @@ Inspector 使用 `UPandaLogConsoleEditor`：容量、行为、外观、运行状
 ## 页面与显示设置
 
 - **日志**：搜索、级别过滤、清空/折叠/暂停/跟随/换场清空/复制/导出；宽屏左右分栏，窄屏上下分栏。
-- **显示**：应用/设备/系统/图形/内存/构建/会话/用户/场景/缓冲信息；时间、场景、内存、帧率列开关；搜索、复制、导出、换场清空工具栏开关；暂停捕获、自动跟随；界面缩放与不透明度滑块。
+- **显示**：应用/设备/系统/图形/内存/构建/会话/用户/场景/缓冲信息；时间、场景、内存、帧率列开关；搜索、复制、导出、换场清空工具栏开关；暂停捕获、自动跟随；界面缩放与不透明度滑块；导出目录/最近导出路径和复制路径按钮。
 - **诊断**：框架生命周期、模块状态、启动步骤耗时、Resources、AssetBundle、场景作用域、UI 面板计数，以及平台/Unity/场景/FPS/GC/日志统计。数据来自 `FrameworkDiagnostics.Capture(UPGameRoot.Instance)`，0.5 秒采样一次。
 - 布局使用 `Screen.safeArea`；窄屏页签自动换行，操作按钮按屏宽自动换行，日志行按固定行高虚拟化，详情独立滚动。移动端默认按 DPI 放大，并支持在列表/详情/设置页拖拽内容滚动。滚动条改为 14px 竖向滑轨 + 圆角 thumb，移除上下/左右箭头图标；拖拽区域避开滚动条，滚动条和日志内容都可拖动。
 - 显示设置持久化到 `PlayerPrefs` 的 `UPandaLogConsole.*` 键；暂停/跟随属于运行态，不写盘。

@@ -375,30 +375,43 @@ namespace UPandaGF
             GUIUtility.systemCopyBuffer = FormatEntries(entries);
         }
 
+        /// <summary>导出目录；显示设置页和导出按钮共用这个路径。</summary>
+        public string ExportDirectory
+        {
+            get { return Path.Combine(Application.persistentDataPath, "Logs"); }
+        }
+
+        /// <summary>最近一次导出的完整文件路径；尚未导出时为 null。</summary>
+        public string LastExportPath { get; private set; }
+
         /// <summary>导出当前可见日志；返回写入的文件路径。</summary>
         public string SaveVisible()
         {
             List<LogConsoleEntry> entries = SnapshotVisible();
-            string directory = Path.Combine(Application.persistentDataPath, "Logs");
+            string directory = ExportDirectory;
             Directory.CreateDirectory(directory);
             string path = Path.Combine(directory, "upanda-log-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".txt");
             File.WriteAllText(path, FormatEntries(entries), new UTF8Encoding(false));
+            LastExportPath = path;
             return path;
+        }
+
+        private static string FormatEntry(LogConsoleEntry entry)
+        {
+            var builder = new StringBuilder();
+            builder.Append('[').Append(entry.TimestampUtc.ToLocalTime().ToString("HH:mm:ss"))
+                .Append("] [").Append(entry.Level).Append("] ")
+                .Append(entry.Message);
+            if (entry.RepeatCount > 1) builder.Append("  x").Append(entry.RepeatCount);
+            builder.AppendLine();
+            if (!string.IsNullOrEmpty(entry.StackTrace)) builder.AppendLine(entry.StackTrace);
+            return builder.ToString();
         }
 
         private static string FormatEntries(List<LogConsoleEntry> entries)
         {
             var builder = new StringBuilder();
-            for (int i = 0; i < entries.Count; i++)
-            {
-                LogConsoleEntry entry = entries[i];
-                builder.Append('[').Append(entry.TimestampUtc.ToLocalTime().ToString("HH:mm:ss"))
-                    .Append("] [").Append(entry.Level).Append("] ")
-                    .Append(entry.Message);
-                if (entry.RepeatCount > 1) builder.Append("  x").Append(entry.RepeatCount);
-                builder.AppendLine();
-                if (!string.IsNullOrEmpty(entry.StackTrace)) builder.AppendLine(entry.StackTrace);
-            }
+            for (int i = 0; i < entries.Count; i++) builder.Append(FormatEntry(entries[i]));
             return builder.ToString();
         }
 
