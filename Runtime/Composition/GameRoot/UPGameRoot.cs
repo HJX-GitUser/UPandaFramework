@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -179,7 +179,7 @@ namespace UPandaGF
                 lifecycle.Add("Logging", async ct => {
                     await PublicMono.Instance.RunCoroutine(debugerInit.Init(), cancellationToken: ct);
                 });
-                lifecycle.Add("Data", ct => { binaryDataMgr.Init(); return Task.CompletedTask; });
+                lifecycle.Add("Data", async ct => { await binaryDataMgr.InitAsync(ct); });
                 lifecycle.Add("ContentUpdate", async ct => {
                     contentUpdate = new ContentUpdateService(runtimeConfig, downloader);
                     if (runtimeConfig.method == AssetLoaddingMethod.AssetBundle)

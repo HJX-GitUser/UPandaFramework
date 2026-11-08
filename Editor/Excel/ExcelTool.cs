@@ -1,4 +1,4 @@
-﻿using Excel;
+using Excel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -237,9 +237,36 @@ public class ExcelTool : EditorWindow
 
         // File.WriteAllBytes = 覆盖 + 截断，表变短时不会残留旧文件尾部
         File.WriteAllBytes(filePath, bytes);
+        WriteBinaryIndex(path, SUFFIX);
         Debug.Log($"[ExcelTool] 已生成 v{ExcelBinaryFormat.CurrentVersion} 二进制表：{filePath}" +
                   $"（{schema.ColumnCount} 列，{rowCount} 行，{bytes.Length} 字节）");
         AssetDatabase.Refresh();
+    }
+
+    /// <summary>重建随包二进制表索引；Android/WebGL 无目录枚举能力，运行时依赖该索引安装表。</summary>
+    [MenuItem("UPandaGF/工具/重建二进制表索引")]
+    public static void RebuildBinaryIndex()
+    {
+        string path = ExcelBinaryFormat.StreamingAssetsDirectory;
+        if (!Directory.Exists(path))
+        {
+            Debug.LogWarning($"[ExcelTool] 未找到二进制表目录：{path}");
+            return;
+        }
+        int count = WriteBinaryIndex(path, ExcelBinaryFormat.FileExtension);
+        AssetDatabase.Refresh();
+        Debug.Log($"[ExcelTool] 已重建二进制表索引：{Path.Combine(path, ExcelBinaryFormat.IndexFileName)}（{count} 个表）");
+    }
+
+    private static int WriteBinaryIndex(string path, string extension)
+    {
+        string[] files = Directory.GetFiles(path, "*" + extension, SearchOption.TopDirectoryOnly);
+        Array.Sort(files, StringComparer.OrdinalIgnoreCase);
+        var lines = new List<string>(files.Length);
+        foreach (string file in files)
+            lines.Add(Path.GetFileName(file) + "|" + new FileInfo(file).Length);
+        File.WriteAllLines(Path.Combine(path, ExcelBinaryFormat.IndexFileName), lines);
+        return files.Length;
     }
 
     /// <summary>

@@ -17,7 +17,7 @@
 
 | 工具 | 入口与边界 |
 | --- | --- |
-| Excel | `UPandaGF → Tools → Excel配置工具`。按约定的表头、类型和主键生成数据类、容器与二进制表。当前写入器的 `bool` 宽度与旧读取器不一致，含该字段的表需要验证生成物。 [ExcelTool.cs](Excel/ExcelTool.cs) · [数据读取](../Runtime/Save/StorageDataMgr/README.md) |
+| Excel | `UPandaGF → Tools → Excel配置工具`。按约定的表头、类型和主键生成数据类、容器与二进制表，并写入 `StreamingAssets/Data/BinaryData/BinaryDataIndex.txt`；Android/WebGL 运行时靠该索引安装表。当前写入器的 `bool` 宽度与旧读取器不一致，含该字段的表需要验证生成物。 [ExcelTool.cs](Excel/ExcelTool.cs) · [数据读取](../Runtime/Save/StorageDataMgr/README.md) |
 | UI | 从 `UPandaGF → Tools → UI` 或 GameObject 右键菜单生成 UI 脚本。当前自动绑定依赖编译和延迟回调，生成后核对组件挂载、字段绑定和监听器。 [UIAutoGenerator.cs](UIEditor/UIAutoGenerator.cs) |
 | HybridCLR | `UPandaGF → Tools → HybridCLR DLL Copy Tool` 按规则复制 DLL，可生成 `.dll.bytes`。启用清空时会先确认，并拒绝源/目标互相包含或工程根/Assets 根；源目录没有匹配文件时不清空目标。该工具用于准备拷贝产物，程序集生成和 AOT 元数据由宿主的 HybridCLR 流程处理。 [DLLCopyConfigWindow.cs](HyBridCLREditor/DLLCopyConfigWindow.cs) |
 | Cubemap | `UPandaGF → Tools → 立方体纹理生成工具` 按相机六面渲染输出 Cubemap。覆盖同路径时会删除旧资产再创建，已有 GUID 引用需要核对。 [CubemapTextureGenerator.cs](CubemapTextureGenerator.cs) |

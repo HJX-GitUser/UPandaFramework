@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using UnityEngine;
 
 namespace UPandaGF
@@ -18,6 +18,15 @@ namespace UPandaGF
 
         /// <summary>表文件扩展名。</summary>
         public const string FileExtension = ".binary";
+
+        /// <summary>随包二进制表索引文件名；Android/WebGL 无法列目录，必须依赖它安装。</summary>
+        public const string IndexFileName = "BinaryDataIndex.txt";
+
+        /// <summary>索引的 StreamingAssets 相对路径。</summary>
+        public static string IndexRelativePath
+        {
+            get { return "/" + RelativeFolder + "/" + IndexFileName; }
+        }
 
         /// <summary>v2 文件头的 magic 文本（4 字节 ASCII）。</summary>
         public const string MagicText = "UPXF";
