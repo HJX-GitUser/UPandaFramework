@@ -75,7 +75,7 @@ namespace UPandaGF.GFEditor
             }
 
             EditorGUILayout.Space(10);
-            SyncReporter();
+            SyncLogConsole();
             DrawConfigFileBar();
             serializedObject.ApplyModifiedProperties();
         }
@@ -225,8 +225,8 @@ namespace UPandaGF.GFEditor
             return arg;
         }
 
-        /// <summary>按 EnableDebugModel 开关同步场景里的 Reporter（创建 / 销毁）</summary>
-        private void SyncReporter()
+        /// <summary>按 EnableDebugModel 开关同步场景里的日志控制台（创建 / 销毁）。</summary>
+        private void SyncLogConsole()
         {
 #if OPEN_PLOG
             if (EditorApplication.isPlaying) return;   // 运行时不改场景
@@ -234,109 +234,66 @@ namespace UPandaGF.GFEditor
             ShowArg("config.EnableDebugModel", "启动日志窗口");
             if (component.Config.EnableDebugModel)
             {
-                if (component.reporter == null)
+                if (component.logConsole == null)
                 {
                     DebugerInit debugerInit = component.GetComponentInChildren<DebugerInit>(true);
                     if (debugerInit == null)
                     {
-                        EditorGUILayout.HelpBox("找不到 DebugerInit 子物体，无法创建 Reporter", MessageType.Warning);
+                        EditorGUILayout.HelpBox("找不到 DebugerInit 子物体，无法创建日志控制台", MessageType.Warning);
                         return;
                     }
 
-                    CreateReporter(debugerInit.transform);
-                    component.reporter = component.GetComponentInChildren<Reporter>(true);
+                    CreateLogConsole(debugerInit.transform);
+                    component.logConsole = component.GetComponentInChildren<UPandaLogConsole>(true);
                     EditorUtility.SetDirty(component);
                 }
-                EditorGUILayout.HelpBox("启动该选项，在运行时可以点击左上角按钮启动日志面板，用于打包项目时调试，正式包取消勾选", MessageType.Info);
+                EditorGUILayout.HelpBox("启动该选项后，运行时点击左上角 FPS 按钮可打开日志控制台；正式包建议关闭。", MessageType.Info);
             }
             else
             {
-                DestroyReporterIfExists();
+                DestroyLogConsoleIfExists();
             }
 #else
-            if (component.Config.EnableDebugModel) DestroyReporterIfExists();
+            if (component.Config.EnableDebugModel) DestroyLogConsoleIfExists();
 #endif
         }
 
         /// <summary>
-        /// 删除场景里的 Reporter。
-        /// <para>不用 DestroyImmediate：在 OnInspectorGUI 绘制期间直接销毁对象容易和正在绘制的界面打架，
-        /// 延后到本次 GUI 事件处理完再销毁，并走 Undo 以便反悔。</para>
+        /// 删除场景里的日志控制台。
+        /// <para>延后到本次 GUI 事件结束再销毁，并走 Undo，避免在 OnInspectorGUI 绘制期间直接销毁对象。</para>
         /// </summary>
-        private void DestroyReporterIfExists()
+        private void DestroyLogConsoleIfExists()
         {
-            Reporter reporter = component.reporter;
-            if (reporter == null) return;
+            UPandaLogConsole console = component.logConsole;
+            if (console == null) return;
 
-            component.reporter = null;
+            component.logConsole = null;
             EditorUtility.SetDirty(component);
 
             EditorApplication.delayCall += () =>
             {
-                if (reporter != null)
-                    Undo.DestroyObjectImmediate(reporter.gameObject);
+                if (console != null)
+                    Undo.DestroyObjectImmediate(console.gameObject);
             };
         }
 
-
-        public void CreateReporter(UnityEngine.Transform obj)
+        public void CreateLogConsole(Transform parent)
         {
-            if (obj.gameObject.GetComponentInChildren<Reporter>() != null)
+            if (parent.gameObject.GetComponentInChildren<UPandaLogConsole>() != null)
             {
-                Debug.LogWarning("Reporter已创建！");
+                Debug.LogWarning("日志控制台已创建！");
                 return;
-            };
-            const int ReporterExecOrder = -12000;
-            GameObject reporterObj = new GameObject();
-            reporterObj.transform.SetParent(obj);
-            reporterObj.name = "Reporter";
-            Reporter reporter = reporterObj.AddComponent<Reporter>();
-            reporterObj.AddComponent<ReporterMessageReceiver>();
-            //reporterObj.AddComponent<TestReporter>();
-
-            // Register root object for undo.
-            Undo.RegisterCreatedObjectUndo(reporterObj, "Create Reporter Object");
-
-            MonoScript reporterScript = MonoScript.FromMonoBehaviour(reporter);
-            string reporterPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(reporterScript));
-
-            if (MonoImporter.GetExecutionOrder(reporterScript) != ReporterExecOrder)
-            {
-                MonoImporter.SetExecutionOrder(reporterScript, ReporterExecOrder);
-                //Debug.Log("Fixing exec order for " + reporterScript.name);
             }
 
-            reporter.images = new Images();
-            reporter.images.clearImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/clear.png"), typeof(Texture2D));
-            reporter.images.collapseImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/collapse.png"), typeof(Texture2D));
-            reporter.images.clearOnNewSceneImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/clearOnSceneLoaded.png"), typeof(Texture2D));
-            reporter.images.showTimeImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/timer_1.png"), typeof(Texture2D));
-            reporter.images.showSceneImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/UnityIcon.png"), typeof(Texture2D));
-            reporter.images.userImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/user.png"), typeof(Texture2D));
-            reporter.images.showMemoryImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/memory.png"), typeof(Texture2D));
-            reporter.images.softwareImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/software.png"), typeof(Texture2D));
-            reporter.images.dateImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/date.png"), typeof(Texture2D));
-            reporter.images.showFpsImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/fps.png"), typeof(Texture2D));
-            //reporter.images.graphImage           = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/chart.png"), typeof(Texture2D));
-            reporter.images.infoImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/info.png"), typeof(Texture2D));
-            reporter.images.saveLogsImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/Save.png"), typeof(Texture2D));
-            reporter.images.searchImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/search.png"), typeof(Texture2D));
-            reporter.images.copyImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/copy.png"), typeof(Texture2D));
-            reporter.images.closeImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/close.png"), typeof(Texture2D));
-            reporter.images.buildFromImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/buildFrom.png"), typeof(Texture2D));
-            reporter.images.systemInfoImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/ComputerIcon.png"), typeof(Texture2D));
-            reporter.images.graphicsInfoImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/graphicCard.png"), typeof(Texture2D));
-            reporter.images.backImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/back.png"), typeof(Texture2D));
-            reporter.images.logImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/log_icon.png"), typeof(Texture2D));
-            reporter.images.warningImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/warning_icon.png"), typeof(Texture2D));
-            reporter.images.errorImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/error_icon.png"), typeof(Texture2D));
-            reporter.images.barImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/bar.png"), typeof(Texture2D));
-            reporter.images.button_activeImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/button_active.png"), typeof(Texture2D));
-            reporter.images.even_logImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/even_log.png"), typeof(Texture2D));
-            reporter.images.odd_logImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/odd_log.png"), typeof(Texture2D));
-            reporter.images.selectedImage = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/selected.png"), typeof(Texture2D));
+            GameObject consoleObject = new GameObject("LogConsole");
+            consoleObject.transform.SetParent(parent, false);
+            var console = consoleObject.AddComponent<UPandaLogConsole>();
+            LogConsoleIconLoader.Assign(console);
+            Undo.RegisterCreatedObjectUndo(consoleObject, "Create Log Console");
 
-            reporter.images.reporterScrollerSkin = (GUISkin)AssetDatabase.LoadAssetAtPath(Path.Combine(reporterPath, "Images/reporterScrollerSkin.guiskin"), typeof(GUISkin));
+            MonoScript script = MonoScript.FromMonoBehaviour(console);
+            if (MonoImporter.GetExecutionOrder(script) != -12000)
+                MonoImporter.SetExecutionOrder(script, -12000);
         }
     }
 }

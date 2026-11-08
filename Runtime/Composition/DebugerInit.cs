@@ -128,11 +128,11 @@ namespace UPandaGF
             string text = string.Format(" FPS:{0:N0} ", fps);
             if (debugModelEnabled)
             {
-                if (root.reporter != null && !root.reporter.show)
+                if (root.logConsole != null && !root.logConsole.IsVisible)
                 {
                     if (GUI.Button(buttonRect, text))
                     {
-                        root.reporter.ShowLogWindows();
+                        root.logConsole.Show();
                     }
                 }
             }

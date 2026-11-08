@@ -44,10 +44,6 @@ SHA-256 `40B3D590F95191F3E33E5D00E534FA40F823D9B1BB2A9AFE05F139C4E0A3AF8D`
 
 SHA-256 `91B44F95992F2D649CB6262C40850A7A4FE007271169AB1687002788010AA1B9`
 
-## Reporter / Unity Logs Viewer
-
-`ReporterMessageReceiver` 等既有实现可追溯到 Unity Logs Viewer，框架中含后续修改。上游仓库指向 Unity Asset Store 的 Log Viewer，商店列明标准 Unity Asset Store EULA。原始源码和随附素材作为独立框架文件再分发的权限仍待确认。 [本地兼容组件](Runtime/Composition/Reporter/ReporterMessageReceiver.cs) · [上游源码](https://github.com/aliessmael/Unity-Logs-Viewer) · [商店发布页](https://assetstore.unity.com/packages/tools/integration/log-viewer-12047) · [Unity Asset Store EULA](https://unity.com/legal/as-terms)
-
 ## Unity XR Tunneling Vignette
 
 随附的暗角材质、预制体、Shader、Shader Graph 和半球模型，与 Unity XR Interaction Toolkit Starter Assets 中的同名资产对应。官方包采用 Unity Companion License。本地文件对应的具体发布版本及随附声明待核对。 [本地暗角资产](Runtime/Shader/ShaderLibrary/Library/BuildIn/Tunneling%20Vignette/) · [官方样例清单](https://docs.unity.cn/Packages/com.unity.xr.interaction.toolkit@2.6/manual/samples-starter-assets.html#tunneling-vignette) · [官方包许可](https://docs.unity3d.com/Packages/com.unity.xr.interaction.toolkit@2.6/license/LICENSE.html)

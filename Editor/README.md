@@ -25,7 +25,7 @@
 
 ## 模块工具
 
-- 日志菜单提供编译宏、诊断、自检和 uGUI 面板生成。Reporter 的编辑器钩子也会在编译结束后生成 `StreamingAssets/build_info`，包含机器名和时间。 [日志模块](../Runtime/Diagnostics/README.md) · [BuildInfo](PLogger/ReporterEditor.cs)
+- 日志菜单提供编译宏、诊断、自检和 uGUI 面板生成。运行时日志控制台由 `UPandaLogConsole` 提供，`UPGameRootEditor` 根据 `EnableDebugModel` 自动创建/销毁场景节点。 [日志模块](../Runtime/Diagnostics/README.md) · [日志控制台](../Runtime/Composition/LogConsole/README.md)
 - 事件系统有订阅调试窗口与自检。交互评分有流程校验器、Inspector、自检、日志复盘和演示生成。任务系统提供任务资产、UI 与 3D 演示安装器。 [事件工具](CustomInspector/EventCenterModule/) · [评分工具](CustomInspector/InteractiveTaskScoringSystem/) · [任务工具](CustomInspector/TaskSystem/)
 - 对象池、回放、描边、载具可从 `UPandaGF → Runtime` 下对应菜单生成示例。可新建场景或向当前场景追加内容。描边模块另有材质修复工具。 [示例索引](../Samples/README.md)
 - `EditorStu` 的控件备忘录和开发案例展示 IMGUI、SerializedObject、Undo、拖放、菜单和资产工作流。 [EditorStu](EditorStu/)

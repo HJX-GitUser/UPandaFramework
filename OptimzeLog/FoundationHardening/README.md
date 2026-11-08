@@ -61,7 +61,7 @@ private static void Register()
 ## 2. 兼容性与接入注意
 
 - `IGameServices` 新增四个属性。自定义实现或测试桩必须同步补成员；测试桩不需要这些服务时，可像 `AssetsOnlyServices` 一样返回 `null`。
-- 未定义 `OPEN_PLOG` 时，`InitLog` 仍会被编译期剔除：Error 会进入 Unity Console / Reporter，但 PLogHelper 文件落盘不会初始化。需要发布包错误文件时，仍应启用宏并保留 `openError=true`。
+- 未定义 `OPEN_PLOG` 时，`InitLog` 仍会被编译期剔除：Error 会进入 Unity Console / 日志控制台，但 PLogHelper 文件落盘不会初始化。需要发布包错误文件时，仍应启用宏并保留 `openError=true`。
 - Timer 回调在主线程执行，不替代 Task 调度。周期任务遇到大 delta 只补触发一次，不追发全部遗漏周期。
 - `Delay(0)` 也推迟到下一次 Tick，避免栈内重入。`Dispose` 会取消全部计时器并结束等待中的 Task。
 - Config 的 `ApplyOverrides` 是**覆盖语义**，使用 `JsonUtility.FromJsonOverwrite`；字段名错误可能被 JsonUtility 静默忽略，必须接入校验器。

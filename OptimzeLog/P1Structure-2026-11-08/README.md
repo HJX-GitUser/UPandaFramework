@@ -20,7 +20,7 @@ Tests  → 全部运行时模块 + Editor
 | `UPandaGF.UI` | UIManager、面板、UI 辅助 | Contracts、Core、Assets、Diagnostics、TMP |
 | `UPandaGF.Audio` | AudioMgr | Contracts、Core、Assets、Diagnostics |
 | `UPandaGF.Save` | 槽位存档、PlayerPrefs、Excel 表读取 | Contracts、Core、Assets、Diagnostics |
-| `UPandaGF.Runtime` | 组合根：UPGameRoot / GameServices / Reporter / FrameworkDiagnostics | 以上全部 |
+| `UPandaGF.Runtime` | 组合根：UPGameRoot / GameServices / 日志控制台 / FrameworkDiagnostics | 以上全部 |
 | `UPandaGF.Gameplay` | 状态机、描边、CCDIK、载具、相机、暗角（可选） | Contracts、Core、Assets、UI、Save、Diagnostics |
 | `UPandaGF.Gameplay.Tasks` / `.InteractiveScoring` / `.Replay` | 任务 / 交互评分 / 回放（可选） | 同上 |
 | `UPandaGF.Samples` | 示例（`autoReferenced = false`） | 全部模块 |

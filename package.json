@@ -1,6 +1,6 @@
 {
   "name": "com.upanda.framework",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "displayName": "UPandaFramework",
   "description": "Unity client framework: ordered startup, service composition, asset leasing, transactional content update, UI/audio/save/logging and optional gameplay modules.",
   "unity": "2021.3",

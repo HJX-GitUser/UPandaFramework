@@ -48,6 +48,17 @@ namespace UPandaGF.GFEditor
                 return 0;
             }
             int violations = 0;
+            string diagnosticsAssembly = FindAssemblyPath("UPandaGF.Diagnostics.asmdef", "UPandaGF.Diagnostics");
+            if (diagnosticsAssembly == null)
+            {
+                violations++;
+                if (log) Debug.LogError("[AUTO_REFERENCE] 未找到 UPandaGF.Diagnostics.asmdef，无法确认日志/诊断程序集自动引用。");
+            }
+            else if (!Regex.IsMatch(File.ReadAllText(diagnosticsAssembly), "\"autoReferenced\"\\s*:\\s*true"))
+            {
+                violations++;
+                if (log) Debug.LogError($"[AUTO_REFERENCE] {diagnosticsAssembly}: 日志/诊断程序集必须勾选 Auto Referenced（autoReferenced=true）。");
+            }
             foreach (string file in Directory.GetFiles(runtimeRoot, "*.cs", SearchOption.AllDirectories))
             {
                 string text = File.ReadAllText(file);
@@ -75,15 +86,21 @@ namespace UPandaGF.GFEditor
 
         private static string FindRuntimeRoot()
         {
-            foreach (string guid in AssetDatabase.FindAssets("UPandaGF.Runtime t:AssemblyDefinitionAsset"))
+            string asmdef = FindAssemblyPath("UPandaGF.Runtime.asmdef", "UPandaGF.Runtime");
+            if (asmdef == null) return null;
+            string dir = Path.GetDirectoryName(asmdef);
+            // 0.5.0 起组合根 asmdef 位于 Runtime/Composition；扫描范围应回到 Runtime 根，
+            // 否则只检查 Composition，Core/Assets/UI 等模块的 Editor 泄漏会被漏掉。
+            string parent = dir != null ? Path.GetDirectoryName(dir) : null;
+            return parent != null && Directory.Exists(Path.Combine(parent, "Contracts")) ? parent : dir;
+        }
+
+        private static string FindAssemblyPath(string fileName, string assetName)
+        {
+            foreach (string guid in AssetDatabase.FindAssets(assetName + " t:AssemblyDefinitionAsset"))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (!path.EndsWith("UPandaGF.Runtime.asmdef", StringComparison.OrdinalIgnoreCase)) continue;
-                string dir = Path.GetDirectoryName(path);
-                // 0.5.0 起组合根 asmdef 位于 Runtime/Composition；扫描范围应回到 Runtime 根，
-                // 否则只检查 Composition，Core/Assets/UI 等模块的 Editor 泄漏会被漏掉。
-                string parent = Path.GetDirectoryName(dir);
-                return parent != null && Directory.Exists(Path.Combine(parent, "Contracts")) ? parent : dir;
+                if (path.EndsWith(fileName, StringComparison.OrdinalIgnoreCase)) return path;
             }
             return null;
         }

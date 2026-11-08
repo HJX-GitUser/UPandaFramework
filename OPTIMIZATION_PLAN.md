@@ -33,7 +33,7 @@
 | D 编辑器安全 | 删除/覆盖/上传/构建 | 统一 DestructiveGuard + 白名单 |
 | E 数据管线 | Excel → 二进制 → 运行时读取 → 发布 | 端到端可复现流程 |
 | F 测试与 CI | EditMode/PlayMode、批处理、平台矩阵 | CI 脚本与测试报告 |
-| G 合规 | SharpZipLib、Reporter、AB Browser、素材 | 替换/授权/NOTICE 结论 |
+| G 合规 | SharpZipLib、AB Browser、素材（日志面板已替换为自研） | 替换/授权/NOTICE 结论 |
 | H 文档与诊断 | 模块文档、已知限制、诊断面板 | 单一事实来源 + 诊断覆盖 |
 
 ---
@@ -117,7 +117,7 @@
 | 无 Unity 自动化环境/授权 | 无法证明“可商用” | 本机 Unity 2022.3 批处理；CI 使用 Unity License 或 GameCI |
 | 大改破坏现有项目 | 升级成本 | P0 只做局部修复；P1 程序集/命名空间用 `[Obsolete]` 过渡；提供迁移指南 |
 | Excel 格式变更 | 旧数据不兼容 | 保留 legacy 读取；新格式带版本；生成端/运行端同版本发布 |
-| 第三方许可 | 无法公开/商用分发 | P0 记录；P1 替换 SharpZipLib/Reporter 或取得授权 |
+| 第三方许可 | 无法公开/商用分发 | P0 记录；P1 替换 SharpZipLib 或取得授权（日志面板已替换为自研） |
 | 单维护者 | 交付节奏 | 自动化与文档优先；每个模块有 owner/验收清单 |
 | 性能优化误伤 | 行为变化 | 先加基线采样，再改；每项优化附对比数据 |
 
@@ -141,6 +141,7 @@
 | 2026-11-07 | P0-1..P0-8 | 完成 | 见 CHANGELOG、`OptimzeLog/P0-2026-11-07/` 与 Unity XML；2022.3/2021.3 双版本通过 |
 | 2026-11-08 | P1-3 服务层收口 | 完成：补齐三个契约、移除五个静态单例、三类改为构造/Configure 注入、Quest 存档走 ISaveService | `OptimzeLog/P1Services-2026-11-08/`；2021.3 编译 0 错、EditMode 24/24、PlayMode 300/300 |
 | 2026-11-08 | P1-4..P1-8 数据/性能/编辑器/测试/CI | 完成：Excel v2、AB 完成回调+租约、护栏+有序上传+密码不落盘、测试补齐、三平台 CI 脚本 | `OptimzeLog/P1-2026-11-08/`；2021.3 编译 0 错、EditMode 47/47、PlayMode 302/302；Windows/WebGL/Android 构建产物 |
+| 2026-11-08 | 0.6 日志面板自研替换 | 完成：新增 `UPandaLogConsole`（有界线程队列/主线程存储/三页签/显示设置/诊断/搜索折叠/复制导出），删除旧日志面板代码、编辑器钩子与回归测试；项目自有图标迁移到新模块；移除对应第三方声明 | `OptimzeLog/LogConsole-2026-11-08/`；2021.3/2022.3 编译 0 错、EditMode 48/48、PlayMode 303/303 |
 | 2026-11-08 | P1-1/P1-2 程序集与命名空间 | 完成：7 个运行时模块 + 组合根、4 个可选玩法程序集、Samples 隔离；全局命名空间 0 个；`RunTime`/`StateMechine`/`BineryMgr` 修正；迁移指南 | `OptimzeLog/P1Structure-2026-11-08/`；2021.3/2022.3 编译 0 错、EditMode 47/47、PlayMode 302/302 |
 
 > 维护规则：每完成一项，更新本表与 `CHANGELOG.md`；未完成项不得标记为“已解决”。

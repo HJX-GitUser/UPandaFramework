@@ -1,0 +1,1463 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="303" result="Passed" total="303" passed="303" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:41Z" duration="7.2586777">
+  <test-suite type="TestSuite" id="1000" name="Framework Validation" fullname="Framework Validation" runstate="Runnable" testcasecount="303" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:41Z" duration="7.258678" total="303" passed="303" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <test-suite type="Assembly" id="1340" name="UPandaGF.Tests.dll" fullname="D:/MySouce/Unity框架/_verify/P1Verify/Library/ScriptAssemblies/UPandaGF.Tests.dll" runstate="Runnable" testcasecount="303" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:41Z" duration="7.253003" total="303" passed="303" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="50852" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+      </properties>
+      <test-suite type="TestSuite" id="1341" name="UPandaGF" fullname="UPandaGF" runstate="Runnable" testcasecount="303" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:41Z" duration="7.249644" total="303" passed="303" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1342" name="Tests" fullname="UPandaGF.Tests" runstate="Runnable" testcasecount="303" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:41Z" duration="7.246929" total="303" passed="303" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1002" name="CoordinationRegressionTests" fullname="UPandaGF.Tests.CoordinationRegressionTests" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" testcasecount="41" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:35Z" duration="1.088774" total="41" passed="41" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1020" name="CancelContinuationMayDisableSchedulerWithoutCorruptingJobIteration" fullname="UPandaGF.Tests.CoordinationRegressionTests.CancelContinuationMayDisableSchedulerWithoutCorruptingJobIteration" methodname="CancelContinuationMayDisableSchedulerWithoutCorruptingJobIteration" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1980677268" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.025858" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1038" name="CancelDisposesNestedIteratorsAndRunsFinally" fullname="UPandaGF.Tests.CoordinationRegressionTests.CancelDisposesNestedIteratorsAndRunsFinally" methodname="CancelDisposesNestedIteratorsAndRunsFinally" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="719556251" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.002000" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1028" name="CanceledBeforeSubmissionReleasesItsNativeRequest" fullname="UPandaGF.Tests.CoordinationRegressionTests.CanceledBeforeSubmissionReleasesItsNativeRequest" methodname="CanceledBeforeSubmissionReleasesItsNativeRequest" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="832577448" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.007984" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1013" name="CancellationInsideProgressStopsDeliveryAndAllowsFreshRequests" fullname="UPandaGF.Tests.CoordinationRegressionTests.CancellationInsideProgressStopsDeliveryAndAllowsFreshRequests" methodname="CancellationInsideProgressStopsDeliveryAndAllowsFreshRequests" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="2019895020" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.017651" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1017" name="ClearAndRegisterNewEventListenerDoesNotReviveOldBatch" fullname="UPandaGF.Tests.CoordinationRegressionTests.ClearAndRegisterNewEventListenerDoesNotReviveOldBatch" methodname="ClearAndRegisterNewEventListenerDoesNotReviveOldBatch" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="220137965" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.004038" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1036" name="ClearStopsRemainingEventBusBatch" fullname="UPandaGF.Tests.CoordinationRegressionTests.ClearStopsRemainingEventBusBatch" methodname="ClearStopsRemainingEventBusBatch" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="786400873" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.002355" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1034" name="ClearStopsRemainingEventCenterBatch" fullname="UPandaGF.Tests.CoordinationRegressionTests.ClearStopsRemainingEventCenterBatch" methodname="ClearStopsRemainingEventCenterBatch" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1288436777" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.000763" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1015" name="CompletedPackCannotBeSentAgain" fullname="UPandaGF.Tests.CoordinationRegressionTests.CompletedPackCannotBeSentAgain" methodname="CompletedPackCannotBeSentAgain" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1686888514" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.008007" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="DestroyCancelsQueuedAndRunningHttpRequests" fullname="UPandaGF.Tests.CoordinationRegressionTests.DestroyCancelsQueuedAndRunningHttpRequests" methodname="DestroyCancelsQueuedAndRunningHttpRequests" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="930067518" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.202106" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1033" name="DestroyedOwnerCannotBecomeAnOwnerlessSubscription" fullname="UPandaGF.Tests.CoordinationRegressionTests.DestroyedOwnerCannotBecomeAnOwnerlessSubscription" methodname="DestroyedOwnerCannotBecomeAnOwnerlessSubscription" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="388202084" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.001274" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1035" name="DestroyedUnityEventBusSubscriberIsRemoved" fullname="UPandaGF.Tests.CoordinationRegressionTests.DestroyedUnityEventBusSubscriberIsRemoved" methodname="DestroyedUnityEventBusSubscriberIsRemoved" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="2008366315" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.001249" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1014" name="DisabledClientCancelsOldBatchAndCanServeAfterReenable" fullname="UPandaGF.Tests.CoordinationRegressionTests.DisabledClientCancelsOldBatchAndCanServeAfterReenable" methodname="DisabledClientCancelsOldBatchAndCanServeAfterReenable" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="209179217" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.002976" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1042" name="DisableDuringFirstMoveCannotLeaveARegisteredJob" fullname="UPandaGF.Tests.CoordinationRegressionTests.DisableDuringFirstMoveCannotLeaveARegisteredJob" methodname="DisableDuringFirstMoveCannotLeaveARegisteredJob" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="383806679" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.001582" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1018" name="FrameRemovalAfterReRegistrationDoesNotRemoveTheOldTombstoneTwice" fullname="UPandaGF.Tests.CoordinationRegressionTests.FrameRemovalAfterReRegistrationDoesNotRemoveTheOldTombstoneTwice" methodname="FrameRemovalAfterReRegistrationDoesNotRemoveTheOldTombstoneTwice" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1528048508" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.001728" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1030" name="HostDestroyedInsideRequestCreationCannotRepopulateItsQueue" fullname="UPandaGF.Tests.CoordinationRegressionTests.HostDestroyedInsideRequestCreationCannotRepopulateItsQueue" methodname="HostDestroyedInsideRequestCreationCannotRepopulateItsQueue" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="60391127" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.000922" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1040" name="InactiveHostRejectsCoroutineWithoutDanglingTask" fullname="UPandaGF.Tests.CoordinationRegressionTests.InactiveHostRejectsCoroutineWithoutDanglingTask" methodname="InactiveHostRejectsCoroutineWithoutDanglingTask" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="898104525" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.001134" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1043" name="InvalidSceneFaultsTaskInsteadOfHanging" fullname="UPandaGF.Tests.CoordinationRegressionTests.InvalidSceneFaultsTaskInsteadOfHanging" methodname="InvalidSceneFaultsTaskInsteadOfHanging" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="967614873" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.010964" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1011" name="JsonSuccessListenersAreIsolatedAndStateIsCommittedBeforeCallbacks" fullname="UPandaGF.Tests.CoordinationRegressionTests.JsonSuccessListenersAreIsolatedAndStateIsCommittedBeforeCallbacks" methodname="JsonSuccessListenersAreIsolatedAndStateIsCommittedBeforeCallbacks" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1764311695" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.006583" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[InvalidOperationException: typed success failure
+]]></output>
+            </test-case>
+            <test-case id="1037" name="NestedCoroutineFailureFaultsItsTask" fullname="UPandaGF.Tests.CoordinationRegressionTests.NestedCoroutineFailureFaultsItsTask" methodname="NestedCoroutineFailureFaultsItsTask" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1521428904" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.002332" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 协程内部抛异常：System.InvalidOperationException: coordination nested failure
+  at UPandaGF.Tests.CoordinationRegressionTests+<ChildFailure>d__11.MoveNext () [0x0002e] in D:\MySouce\Unity框架\_verify\P1Verify\Assets\upanda-framework\Tests\PlayMode\CoordinationRegressionTests.cs:60 
+  at UPandaGF.PublicMono+<RunCoroutineTracked>d__42.MoveNext () [0x0006a] in D:\MySouce\Unity框架\_verify\P1Verify\Assets\upanda-framework\Runtime\Core\PublicMono\PublicMono.cs:317 
+]]></output>
+            </test-case>
+            <test-case id="1024" name="NestedCoroutineNormalCompletionRunsInnerAndOuterFinally" fullname="UPandaGF.Tests.CoordinationRegressionTests.NestedCoroutineNormalCompletionRunsInnerAndOuterFinally" methodname="NestedCoroutineNormalCompletionRunsInnerAndOuterFinally" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1612975001" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.012817" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1019" name="NestedFrameDispatchCanClearListenersWithoutInvalidatingOuterIteration" fullname="UPandaGF.Tests.CoordinationRegressionTests.NestedFrameDispatchCanClearListenersWithoutInvalidatingOuterIteration" methodname="NestedFrameDispatchCanClearListenersWithoutInvalidatingOuterIteration" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="529291613" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.001322" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1031" name="OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation" fullname="UPandaGF.Tests.CoordinationRegressionTests.OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation" methodname="OnceListenerSurvivesNestedDispatchWithoutDoubleInvocation" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1945892731" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.001580" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1016" name="OrdinaryEventRemovalStillUsesCurrentSnapshot" fullname="UPandaGF.Tests.CoordinationRegressionTests.OrdinaryEventRemovalStillUsesCurrentSnapshot" methodname="OrdinaryEventRemovalStillUsesCurrentSnapshot" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1369385974" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.001501" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1032" name="OwnerDestroyedEarlierInDispatchIsSkipped" fullname="UPandaGF.Tests.CoordinationRegressionTests.OwnerDestroyedEarlierInDispatchIsSkipped" methodname="OwnerDestroyedEarlierInDispatchIsSkipped" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="662578811" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.000917" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1039" name="PreCanceledCoroutineDoesNotExecuteUserCode" fullname="UPandaGF.Tests.CoordinationRegressionTests.PreCanceledCoroutineDoesNotExecuteUserCode" methodname="PreCanceledCoroutineDoesNotExecuteUserCode" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1856487338" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.001527" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1029" name="PurgedOwnerDoesNotRemainStronglyHeldByCachedSnapshot" fullname="UPandaGF.Tests.CoordinationRegressionTests.PurgedOwnerDoesNotRemainStronglyHeldByCachedSnapshot" methodname="PurgedOwnerDoesNotRemainStronglyHeldByCachedSnapshot" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="155645416" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.005780" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1003" name="RequestHeadersOverrideGlobalDefaults" fullname="UPandaGF.Tests.CoordinationRegressionTests.RequestHeadersOverrideGlobalDefaults" methodname="RequestHeadersOverrideGlobalDefaults" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="372496420" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.001223" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1009" name="RetryCancellationDoesNotRecreateCanceledRequest" fullname="UPandaGF.Tests.CoordinationRegressionTests.RetryCancellationDoesNotRecreateCanceledRequest" methodname="RetryCancellationDoesNotRecreateCanceledRequest" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="654690382" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:34Z" duration="0.004257" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1008" name="RetryCreationFailureDoesNotBlockFollowingRequest" fullname="UPandaGF.Tests.CoordinationRegressionTests.RetryCreationFailureDoesNotBlockFollowingRequest" methodname="RetryCreationFailureDoesNotBlockFollowingRequest" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="296455177" result="Passed" start-time="2026-11-08 06:51:34Z" end-time="2026-11-08 06:51:35Z" duration="0.508346" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[<###>  14:51:35.005  ThreadID:1
+[HttpClient] 请求失败（重试已用尽）。URL: http://127.0.0.1:9933/fail, 原因: HTTP 请求启动失败：coordination retry create failure
+]]></output>
+            </test-case>
+            <test-case id="1010" name="RetryDelayUsesRealtimeWhenGameIsPaused" fullname="UPandaGF.Tests.CoordinationRegressionTests.RetryDelayUsesRealtimeWhenGameIsPaused" methodname="RetryDelayUsesRealtimeWhenGameIsPaused" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1684197702" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.055704" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[<###>  14:51:35.064  ThreadID:1
+[HttpClient] 请求失败（重试已用尽）。URL: http://127.0.0.1:9937/fail, 原因: HTTP Request Failed. URL: http://127.0.0.1:9937/fail, Code: 503, Error: HTTP/1.1 503 Service Unavailable, Body: {"value":1}
+]]></output>
+            </test-case>
+            <test-case id="1004" name="SamePackCannotBeQueuedTwice" fullname="UPandaGF.Tests.CoordinationRegressionTests.SamePackCannotBeQueuedTwice" methodname="SamePackCannotBeQueuedTwice" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1412386373" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.000995" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1026" name="SceneCallbackIsDeliveredOnceAndIsolatesMulticastExceptions" fullname="UPandaGF.Tests.CoordinationRegressionTests.SceneCallbackIsDeliveredOnceAndIsolatesMulticastExceptions" methodname="SceneCallbackIsDeliveredOnceAndIsolatesMulticastExceptions" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="922533762" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.009303" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[LazySingleton] 创建 EditorSourcesMgr 实例
+InvalidOperationException: scene success callback failure
+]]></output>
+            </test-case>
+            <test-case id="1027" name="SceneCancellationStopsProgressAndDoesNotClaimNativeRollback" fullname="UPandaGF.Tests.CoordinationRegressionTests.SceneCancellationStopsProgressAndDoesNotClaimNativeRollback" methodname="SceneCancellationStopsProgressAndDoesNotClaimNativeRollback" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="565644973" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.102955" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1041" name="StopAllCoroutinesAlsoCompletesManagedTasks" fullname="UPandaGF.Tests.CoordinationRegressionTests.StopAllCoroutinesAlsoCompletesManagedTasks" methodname="StopAllCoroutinesAlsoCompletesManagedTasks" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="266811801" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.001814" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1021" name="StopBatchRejectsReentrantJobsButAllowsLaterUse" fullname="UPandaGF.Tests.CoordinationRegressionTests.StopBatchRejectsReentrantJobsButAllowsLaterUse" methodname="StopBatchRejectsReentrantJobsButAllowsLaterUse" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="60252465" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.001792" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1006" name="SuccessCallbackExceptionDoesNotTriggerFailure" fullname="UPandaGF.Tests.CoordinationRegressionTests.SuccessCallbackExceptionDoesNotTriggerFailure" methodname="SuccessCallbackExceptionDoesNotTriggerFailure" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1410566245" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.013743" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[InvalidOperationException: coordination success failure
+]]></output>
+            </test-case>
+            <test-case id="1007" name="ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues" fullname="UPandaGF.Tests.CoordinationRegressionTests.ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues" methodname="ThrowingFailureCallbackIsInvokedOnlyOnceAndQueueContinues" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1411487212" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.004971" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[<###>  14:51:35.199  ThreadID:1
+[HttpClient] 请求失败（重试已用尽）。URL: http://127.0.0.1:9947/fail, 原因: HTTP Request Failed. URL: http://127.0.0.1:9947/fail, Code: 503, Error: HTTP/1.1 503 Service Unavailable, Body: {"value":1}
+InvalidOperationException: coordination failure callback
+]]></output>
+            </test-case>
+            <test-case id="1012" name="ThrowingRetryListenerDoesNotBlockOtherListenersOrRetry" fullname="UPandaGF.Tests.CoordinationRegressionTests.ThrowingRetryListenerDoesNotBlockOtherListenersOrRetry" methodname="ThrowingRetryListenerDoesNotBlockOtherListenersOrRetry" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1056291624" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.006143" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[InvalidOperationException: retry listener failure
+]]></output>
+            </test-case>
+            <test-case id="1023" name="TimeoutRunsFinallyDuringGamePause" fullname="UPandaGF.Tests.CoordinationRegressionTests.TimeoutRunsFinallyDuringGamePause" methodname="TimeoutRunsFinallyDuringGamePause" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1456984401" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.033216" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[PublicMono] 协程超时（0.03 秒）
+]]></output>
+            </test-case>
+            <test-case id="1025" name="ValidSceneTaskCompletesAndThrowingProgressListenerDoesNotBlockIt" fullname="UPandaGF.Tests.CoordinationRegressionTests.ValidSceneTaskCompletesAndThrowingProgressListenerDoesNotBlockIt" methodname="ValidSceneTaskCompletesAndThrowingProgressListenerDoesNotBlockIt" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="827185787" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.003012" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[InvalidOperationException: scene progress listener failure
+]]></output>
+            </test-case>
+            <test-case id="1022" name="WorkerCancellationCleansUpOnUnityThread" fullname="UPandaGF.Tests.CoordinationRegressionTests.WorkerCancellationCleansUpOnUnityThread" methodname="WorkerCancellationCleansUpOnUnityThread" classname="UPandaGF.Tests.CoordinationRegressionTests" runstate="Runnable" seed="1479475048" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.001782" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1044" name="FrameworkRegressionTests" fullname="UPandaGF.Tests.FrameworkRegressionTests" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" testcasecount="15" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.229210" total="15" passed="15" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1059" name="AssetInitializationFailureDoesNotReportReady" fullname="UPandaGF.Tests.FrameworkRegressionTests.AssetInitializationFailureDoesNotReportReady" methodname="AssetInitializationFailureDoesNotReportReady" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="762454372" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.004590" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[<###>  14:51:35.249  ThreadID:1
+资源关联数据缺少主包信息 mainBundleInfo
+<###>  14:51:35.250  ThreadID:1
+该资源不存在：missing
+]]></output>
+            </test-case>
+            <test-case id="1057" name="CanceledDownloadCompletesWithTimeoutDisabled" fullname="UPandaGF.Tests.FrameworkRegressionTests.CanceledDownloadCompletesWithTimeoutDisabled" methodname="CanceledDownloadCompletesWithTimeoutDisabled" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="629416271" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.031294" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1047" name="ClearCancelsWaiterAndDoesNotCorruptNewLoad" fullname="UPandaGF.Tests.FrameworkRegressionTests.ClearCancelsWaiterAndDoesNotCorruptNewLoad" methodname="ClearCancelsWaiterAndDoesNotCorruptNewLoad" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="1447891894" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.009067" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1050" name="CloseWhileLoadingPreventsLatePanelCreation" fullname="UPandaGF.Tests.FrameworkRegressionTests.CloseWhileLoadingPreventsLatePanelCreation" methodname="CloseWhileLoadingPreventsLatePanelCreation" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="1114912334" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.017033" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1049" name="ConcurrentPanelRequestsShareInstanceAndReleaseReference" fullname="UPandaGF.Tests.FrameworkRegressionTests.ConcurrentPanelRequestsShareInstanceAndReleaseReference" methodname="ConcurrentPanelRequestsShareInstanceAndReleaseReference" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="395543136" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.006116" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1053" name="CorruptReplayReturnsNull" fullname="UPandaGF.Tests.FrameworkRegressionTests.CorruptReplayReturnsNull" methodname="CorruptReplayReturnsNull" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="1833466201" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.014480" asserts="0">
+              <properties />
+              <output><![CDATA[[ReplaySystem] 读取失败：不是支持的旧 NRBF 数据
+[ReplaySystem] 读取失败：回放时间戳无效或未排序
+]]></output>
+            </test-case>
+            <test-case id="1058" name="DestroyedDownloaderCompletesPendingTask" fullname="UPandaGF.Tests.FrameworkRegressionTests.DestroyedDownloaderCompletesPendingTask" methodname="DestroyedDownloaderCompletesPendingTask" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="300221269" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.027220" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1052" name="LegacyReplayDtoRemainsReadable" fullname="UPandaGF.Tests.FrameworkRegressionTests.LegacyReplayDtoRemainsReadable" methodname="LegacyReplayDtoRemainsReadable" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="1742553794" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.020428" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1045" name="MissingResourceCanBeRequestedAgain" fullname="UPandaGF.Tests.FrameworkRegressionTests.MissingResourceCanBeRequestedAgain" methodname="MissingResourceCanBeRequestedAgain" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="55880747" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.005103" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[资源加载失败：__missing_framework_test___T_UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+资源加载失败：__missing_framework_test___T_UnityEngine.GameObject, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+]]></output>
+            </test-case>
+            <test-case id="1051" name="ReplayRoundTripPreservesComponentState" fullname="UPandaGF.Tests.FrameworkRegressionTests.ReplayRoundTripPreservesComponentState" methodname="ReplayRoundTripPreservesComponentState" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="698683376" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.011450" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1056" name="SeekRestoresObjectsAbsentFromAdjacentSparseFrames" fullname="UPandaGF.Tests.FrameworkRegressionTests.SeekRestoresObjectsAbsentFromAdjacentSparseFrames" methodname="SeekRestoresObjectsAbsentFromAdjacentSparseFrames" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="802318421" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.006659" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1046" name="ThrowingResourceCallbackDoesNotBlockOtherWaiters" fullname="UPandaGF.Tests.FrameworkRegressionTests.ThrowingResourceCallbackDoesNotBlockOtherWaiters" methodname="ThrowingResourceCallbackDoesNotBlockOtherWaiters" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="1894082034" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.002985" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[InvalidOperationException: expected callback failure
+]]></output>
+            </test-case>
+            <test-case id="1048" name="TypeAndGenericReleaseKeepCacheUntilRequested" fullname="UPandaGF.Tests.FrameworkRegressionTests.TypeAndGenericReleaseKeepCacheUntilRequested" methodname="TypeAndGenericReleaseKeepCacheUntilRequested" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="1317216166" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.001633" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1055" name="UpdateBatchCommitsFilesAndManifest" fullname="UPandaGF.Tests.FrameworkRegressionTests.UpdateBatchCommitsFilesAndManifest" methodname="UpdateBatchCommitsFilesAndManifest" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="44602334" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.017803" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1054" name="UpdateBatchRollsBackIfLaterFileIsLocked" fullname="UPandaGF.Tests.FrameworkRegressionTests.UpdateBatchRollsBackIfLaterFileIsLocked" methodname="UpdateBatchRollsBackIfLaterFileIsLocked" classname="UPandaGF.Tests.FrameworkRegressionTests" runstate="Runnable" seed="1949651783" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.051325" asserts="0">
+              <properties />
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1060" name="HotUpdateRegressionTests" fullname="UPandaGF.Tests.HotUpdateRegressionTests" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" testcasecount="40" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:37Z" duration="2.339836" total="40" passed="40" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1066" name="BundledPersistentReferenceProtectsOldOwnedBundle" fullname="UPandaGF.Tests.HotUpdateRegressionTests.BundledPersistentReferenceProtectsOldOwnedBundle" methodname="BundledPersistentReferenceProtectsOldOwnedBundle" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="603490910" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.167497" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1075" name="CacheBudgetDoesNotEvictProtectedCurrentFiles" fullname="UPandaGF.Tests.HotUpdateRegressionTests.CacheBudgetDoesNotEvictProtectedCurrentFiles" methodname="CacheBudgetDoesNotEvictProtectedCurrentFiles" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1915387373" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.114411" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1082" name="CancellationClosesStageWithoutUnityContinuation" fullname="UPandaGF.Tests.HotUpdateRegressionTests.CancellationClosesStageWithoutUnityContinuation" methodname="CancellationClosesStageWithoutUnityContinuation" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="535598350" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.023909" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1094" name="CancellationDuringCommitRestoresCompleteOldVersion" fullname="UPandaGF.Tests.HotUpdateRegressionTests.CancellationDuringCommitRestoresCompleteOldVersion" methodname="CancellationDuringCommitRestoresCompleteOldVersion" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1866896240" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.050802" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1096" name="CappedHandlerRejectsChunkAndResumeBeforeExceedingBudget" fullname="UPandaGF.Tests.HotUpdateRegressionTests.CappedHandlerRejectsChunkAndResumeBeforeExceedingBudget" methodname="CappedHandlerRejectsChunkAndResumeBeforeExceedingBudget" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="2048847969" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.003597" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1073" name="ChangedStagedManifestIsRejectedBeforeAnyTargetWrites" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ChangedStagedManifestIsRejectedBeforeAnyTargetWrites" methodname="ChangedStagedManifestIsRejectedBeforeAnyTargetWrites" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="395731105" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.105216" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1080" name="ConcurrentSessionIsRefusedAndCanOpenAfterClose" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ConcurrentSessionIsRefusedAndCanOpenAfterClose" methodname="ConcurrentSessionIsRefusedAndCanOpenAfterClose" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="164927539" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.011494" asserts="0">
+              <properties />
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1092" name="ControlFilesCannotBeBundleTargets" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:36Z" duration="0.129569" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1087" name="ControlFilesCannotBeBundleTargets(&quot;.update-recovery/journal&quot;)" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets(&quot;.update-recovery/journal&quot;)" methodname="ControlFilesCannotBeBundleTargets" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1767355351" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.020452" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1088" name="ControlFilesCannotBeBundleTargets(&quot;.update-stage&quot;)" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets(&quot;.update-stage&quot;)" methodname="ControlFilesCannotBeBundleTargets" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="647962215" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:35Z" duration="0.021254" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1089" name="ControlFilesCannotBeBundleTargets(&quot;.update-state/ledger&quot;)" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets(&quot;.update-state/ledger&quot;)" methodname="ControlFilesCannotBeBundleTargets" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="615620305" result="Passed" start-time="2026-11-08 06:51:35Z" end-time="2026-11-08 06:51:36Z" duration="0.021659" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1090" name="ControlFilesCannotBeBundleTargets(&quot;.update.lock&quot;)" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets(&quot;.update.lock&quot;)" methodname="ControlFilesCannotBeBundleTargets" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="74331336" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.031675" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1091" name="ControlFilesCannotBeBundleTargets(&quot;assetData.assetref&quot;)" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ControlFilesCannotBeBundleTargets(&quot;assetData.assetref&quot;)" methodname="ControlFilesCannotBeBundleTargets" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1141550460" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.033386" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1071" name="CorruptLedgerDisablesCollectionWithoutDeletingFiles" fullname="UPandaGF.Tests.HotUpdateRegressionTests.CorruptLedgerDisablesCollectionWithoutDeletingFiles" methodname="CorruptLedgerDisablesCollectionWithoutDeletingFiles" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1014314798" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.128034" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1072" name="CurrentVersionSurvivesFailedNextCommitAndPreCommitGc" fullname="UPandaGF.Tests.HotUpdateRegressionTests.CurrentVersionSurvivesFailedNextCommitAndPreCommitGc" methodname="CurrentVersionSurvivesFailedNextCommitAndPreCommitGc" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="162023180" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.092070" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1076" name="DeviceSpaceBudgetIncludesBackupAndTargetGrowth" fullname="UPandaGF.Tests.HotUpdateRegressionTests.DeviceSpaceBudgetIncludesBackupAndTargetGrowth" methodname="DeviceSpaceBudgetIncludesBackupAndTargetGrowth" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1725958229" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.025385" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1070" name="DisabledCollectionRetainsOwnedFiles" fullname="UPandaGF.Tests.HotUpdateRegressionTests.DisabledCollectionRetainsOwnedFiles" methodname="DisabledCollectionRetainsOwnedFiles" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="20206807" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.113061" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1099" name="DisableFromStartCallbackDoesNotUseDisposedNativeRequest" fullname="UPandaGF.Tests.HotUpdateRegressionTests.DisableFromStartCallbackDoesNotUseDisposedNativeRequest" methodname="DisableFromStartCallbackDoesNotUseDisposedNativeRequest" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1067824430" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.004126" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1098" name="DisablingDownloaderSettlesAwaitersAndClosesFile" fullname="UPandaGF.Tests.HotUpdateRegressionTests.DisablingDownloaderSettlesAwaitersAndClosesFile" methodname="DisablingDownloaderSettlesAwaitersAndClosesFile" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1218212647" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.054056" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1068" name="ExternallyChangedOwnedFileIsNotDeleted" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ExternallyChangedOwnedFileIsNotDeleted" methodname="ExternallyChangedOwnedFileIsNotDeleted" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="42608834" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.192613" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1101" name="FileMaintenanceGateDefersNewBundleLoadWithoutBlockingMainThread" fullname="UPandaGF.Tests.HotUpdateRegressionTests.FileMaintenanceGateDefersNewBundleLoadWithoutBlockingMainThread" methodname="FileMaintenanceGateDefersNewBundleLoadWithoutBlockingMainThread" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1636654506" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.002911" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1086" name="InvalidResourceRootIsRefused" fullname="UPandaGF.Tests.HotUpdateRegressionTests.InvalidResourceRootIsRefused" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.003549" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1083" name="InvalidResourceRootIsRefused(&quot;../outside&quot;)" fullname="UPandaGF.Tests.HotUpdateRegressionTests.InvalidResourceRootIsRefused(&quot;../outside&quot;)" methodname="InvalidResourceRootIsRefused" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="602670702" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.001187" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1084" name="InvalidResourceRootIsRefused(&quot;/absolute&quot;)" fullname="UPandaGF.Tests.HotUpdateRegressionTests.InvalidResourceRootIsRefused(&quot;/absolute&quot;)" methodname="InvalidResourceRootIsRefused" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1602675420" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.001017" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1085" name="InvalidResourceRootIsRefused(&quot;AssetBundles/../../outside&quot;)" fullname="UPandaGF.Tests.HotUpdateRegressionTests.InvalidResourceRootIsRefused(&quot;AssetBundles/../../outside&quot;)" methodname="InvalidResourceRootIsRefused" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="554920391" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.000971" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1102" name="LargeFileHashAllowsUnityFramesToAdvance" fullname="UPandaGF.Tests.HotUpdateRegressionTests.LargeFileHashAllowsUnityFramesToAdvance" methodname="LargeFileHashAllowsUnityFramesToAdvance" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="594124549" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:36Z" duration="0.125831" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[HOTUPDATE_BACKGROUND_HASH bytes=16777216 frames=1421 ms=41
+]]></output>
+            </test-case>
+            <test-case id="1067" name="LastTwoManifestReferencesExpireOnThirdVersion" fullname="UPandaGF.Tests.HotUpdateRegressionTests.LastTwoManifestReferencesExpireOnThirdVersion" methodname="LastTwoManifestReferencesExpireOnThirdVersion" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="588180492" result="Passed" start-time="2026-11-08 06:51:36Z" end-time="2026-11-08 06:51:37Z" duration="0.199536" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1095" name="LegacyConfigReceivesDiskManagementDefaults" fullname="UPandaGF.Tests.HotUpdateRegressionTests.LegacyConfigReceivesDiskManagementDefaults" methodname="LegacyConfigReceivesDiskManagementDefaults" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="941300422" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.001698" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1064" name="MatchingFileIsHashedOnWorker" fullname="UPandaGF.Tests.HotUpdateRegressionTests.MatchingFileIsHashedOnWorker" methodname="MatchingFileIsHashedOnWorker" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="538096224" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.037266" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1063" name="MissingAndSameLengthCorruptFilesDownloadAgain" fullname="UPandaGF.Tests.HotUpdateRegressionTests.MissingAndSameLengthCorruptFilesDownloadAgain" methodname="MissingAndSameLengthCorruptFilesDownloadAgain" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1329130507" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.103838" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1069" name="MissingBundledManifestDisablesGarbageCollection" fullname="UPandaGF.Tests.HotUpdateRegressionTests.MissingBundledManifestDisablesGarbageCollection" methodname="MissingBundledManifestDisablesGarbageCollection" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="2033258923" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.108386" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1079" name="MissingSizeCannotCreateUnboundedHotUpdate" fullname="UPandaGF.Tests.HotUpdateRegressionTests.MissingSizeCannotCreateUnboundedHotUpdate" methodname="MissingSizeCannotCreateUnboundedHotUpdate" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="550666379" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.029438" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1097" name="NativeDownloadCannotWriteBeyondCap" fullname="UPandaGF.Tests.HotUpdateRegressionTests.NativeDownloadCannotWriteBeyondCap" methodname="NativeDownloadCannotWriteBeyondCap" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="2086032139" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.004807" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1061" name="NewVersionCommitsBundlesLedgerAndManifestTogether" fullname="UPandaGF.Tests.HotUpdateRegressionTests.NewVersionCommitsBundlesLedgerAndManifestTogether" methodname="NewVersionCommitsBundlesLedgerAndManifestTogether" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="159245331" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.076238" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1065" name="ObsoleteOwnedBundleIsCollectedAndUnknownFileSurvives" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ObsoleteOwnedBundleIsCollectedAndUnknownFileSurvives" methodname="ObsoleteOwnedBundleIsCollectedAndUnknownFileSurvives" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="205103054" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.150242" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1100" name="RetryCancellationDoesNotDependOnTimeScale" fullname="UPandaGF.Tests.HotUpdateRegressionTests.RetryCancellationDoesNotDependOnTimeScale" methodname="RetryCancellationDoesNotDependOnTimeScale" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="2120836577" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.005852" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1077" name="SpaceIsCheckedAgainBeforeCommit" fullname="UPandaGF.Tests.HotUpdateRegressionTests.SpaceIsCheckedAgainBeforeCommit" methodname="SpaceIsCheckedAgainBeforeCommit" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="638501931" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.035081" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1081" name="StageCleanupRequiresValidOwnerMarker" fullname="UPandaGF.Tests.HotUpdateRegressionTests.StageCleanupRequiresValidOwnerMarker" methodname="StageCleanupRequiresValidOwnerMarker" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="2117725296" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.044540" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1074" name="StagingBudgetRejectsBeforeBundleDownloads" fullname="UPandaGF.Tests.HotUpdateRegressionTests.StagingBudgetRejectsBeforeBundleDownloads" methodname="StagingBudgetRejectsBeforeBundleDownloads" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="2073444702" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.027272" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1078" name="UnknownDeviceSpaceFailsWithReserveAndWorksWhenProbeDisabled" fullname="UPandaGF.Tests.HotUpdateRegressionTests.UnknownDeviceSpaceFailsWithReserveAndWorksWhenProbeDisabled" methodname="UnknownDeviceSpaceFailsWithReserveAndWorksWhenProbeDisabled" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="525062375" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.043010" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1093" name="UnsafeJournalRejectsAllTargetsBeforeRecovery" fullname="UPandaGF.Tests.HotUpdateRegressionTests.UnsafeJournalRejectsAllTargetsBeforeRecovery" methodname="UnsafeJournalRejectsAllTargetsBeforeRecovery" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="1834300654" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.016167" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1062" name="ValidExistingFileDoesNotDownloadOrBecomeOwned" fullname="UPandaGF.Tests.HotUpdateRegressionTests.ValidExistingFileDoesNotDownloadOrBecomeOwned" methodname="ValidExistingFileDoesNotDownloadOrBecomeOwned" classname="UPandaGF.Tests.HotUpdateRegressionTests" runstate="Runnable" seed="270134930" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.103234" asserts="0">
+              <properties />
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1103" name="LifecycleRegressionTests" fullname="UPandaGF.Tests.LifecycleRegressionTests" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" testcasecount="26" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:39Z" duration="2.084020" total="26" passed="26" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1127" name="AssetsLoaderReadinessTracksClearAndCanceledInitialization" fullname="UPandaGF.Tests.LifecycleRegressionTests.AssetsLoaderReadinessTracksClearAndCanceledInitialization" methodname="AssetsLoaderReadinessTracksClearAndCanceledInitialization" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="801546858" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.029123" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+[LazySingleton] 创建 EventCenter 实例
+]]></output>
+            </test-case>
+            <test-case id="1116" name="AudioRebindsToRecreatedPublicMono" fullname="UPandaGF.Tests.LifecycleRegressionTests.AudioRebindsToRecreatedPublicMono" methodname="AudioRebindsToRecreatedPublicMono" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1847251067" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.007742" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+            </test-case>
+            <test-case id="1117" name="BorrowedInstancesKeepOnePrefabReferenceUntilDestroyed" fullname="UPandaGF.Tests.LifecycleRegressionTests.BorrowedInstancesKeepOnePrefabReferenceUntilDestroyed" methodname="BorrowedInstancesKeepOnePrefabReferenceUntilDestroyed" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="977815396" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.007062" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1121" name="CallbackReentryDoesNotDuplicatePoolMembership" fullname="UPandaGF.Tests.LifecycleRegressionTests.CallbackReentryDoesNotDuplicatePoolMembership" methodname="CallbackReentryDoesNotDuplicatePoolMembership" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1973982622" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.003152" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1126" name="ClearDuringAssetLoadCompletesWaiterAndSupportsReinitialization" fullname="UPandaGF.Tests.LifecycleRegressionTests.ClearDuringAssetLoadCompletesWaiterAndSupportsReinitialization" methodname="ClearDuringAssetLoadCompletesWaiterAndSupportsReinitialization" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1998321062" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:37Z" duration="0.045247" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1106" name="ClearInvalidatesRemoteTaskAndPreventsCacheWrite" fullname="UPandaGF.Tests.LifecycleRegressionTests.ClearInvalidatesRemoteTaskAndPreventsCacheWrite" methodname="ClearInvalidatesRemoteTaskAndPreventsCacheWrite" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1066179172" result="Passed" start-time="2026-11-08 06:51:37Z" end-time="2026-11-08 06:51:38Z" duration="0.607172" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1108" name="ClearPreservesIndependentlyOwnedBundles" fullname="UPandaGF.Tests.LifecycleRegressionTests.ClearPreservesIndependentlyOwnedBundles" methodname="ClearPreservesIndependentlyOwnedBundles" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1395306796" result="Passed" start-time="2026-11-08 06:51:38Z" end-time="2026-11-08 06:51:38Z" duration="0.007225" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1107" name="DestroyedCallbackHostCompletesCallerExactlyOnce" fullname="UPandaGF.Tests.LifecycleRegressionTests.DestroyedCallbackHostCompletesCallerExactlyOnce" methodname="DestroyedCallbackHostCompletesCallerExactlyOnce" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1171421491" result="Passed" start-time="2026-11-08 06:51:38Z" end-time="2026-11-08 06:51:39Z" duration="1.257860" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1124" name="DisposeCompletesStackedWaiterAndLateResultCannotReachNewAudioInstance" fullname="UPandaGF.Tests.LifecycleRegressionTests.DisposeCompletesStackedWaiterAndLateResultCannotReachNewAudioInstance" methodname="DisposeCompletesStackedWaiterAndLateResultCannotReachNewAudioInstance" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="319812691" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.006431" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1110" name="DisposePreventsPendingPrewarmFromRecreatingOldPool" fullname="UPandaGF.Tests.LifecycleRegressionTests.DisposePreventsPendingPrewarmFromRecreatingOldPool" methodname="DisposePreventsPendingPrewarmFromRecreatingOldPool" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="297420747" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.004308" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1113" name="LaterDirectBgmInvalidatesDelayedRequest" fullname="UPandaGF.Tests.LifecycleRegressionTests.LaterDirectBgmInvalidatesDelayedRequest" methodname="LaterDirectBgmInvalidatesDelayedRequest" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="291421401" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002353" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+]]></output>
+            </test-case>
+            <test-case id="1114" name="LaterDirectUniqueSoundInvalidatesDelayedRequest" fullname="UPandaGF.Tests.LifecycleRegressionTests.LaterDirectUniqueSoundInvalidatesDelayedRequest" methodname="LaterDirectUniqueSoundInvalidatesDelayedRequest" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1491462241" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002228" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+]]></output>
+            </test-case>
+            <test-case id="1104" name="MixedDependencyLocationsLoadSuccessfully" fullname="UPandaGF.Tests.LifecycleRegressionTests.MixedDependencyLocationsLoadSuccessfully" methodname="MixedDependencyLocationsLoadSuccessfully" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1536551785" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.024472" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1129" name="NewPoolCanRetireBorrowerFromDisposedOwner" fullname="UPandaGF.Tests.LifecycleRegressionTests.NewPoolCanRetireBorrowerFromDisposedOwner" methodname="NewPoolCanRetireBorrowerFromDisposedOwner" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1524550055" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002511" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1118" name="OldInstanceReleaseCannotDecrementNewResourcesGeneration" fullname="UPandaGF.Tests.LifecycleRegressionTests.OldInstanceReleaseCannotDecrementNewResourcesGeneration" methodname="OldInstanceReleaseCannotDecrementNewResourcesGeneration" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="665996740" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.005989" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1125" name="OwnerlessFrameListenerSurvivesWhileDestroyedOwnerIsRemoved" fullname="UPandaGF.Tests.LifecycleRegressionTests.OwnerlessFrameListenerSurvivesWhileDestroyedOwnerIsRemoved" methodname="OwnerlessFrameListenerSurvivesWhileDestroyedOwnerIsRemoved" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1753972341" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002223" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+]]></output>
+            </test-case>
+            <test-case id="1109" name="PoolReturnsResourcesCountAfterAllIdleInstancesAreCleared" fullname="UPandaGF.Tests.LifecycleRegressionTests.PoolReturnsResourcesCountAfterAllIdleInstancesAreCleared" methodname="PoolReturnsResourcesCountAfterAllIdleInstancesAreCleared" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="542714927" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002290" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1122" name="PoolTimeoutDiscardsLateResultAndAllowsRetry" fullname="UPandaGF.Tests.LifecycleRegressionTests.PoolTimeoutDiscardsLateResultAndAllowsRetry" methodname="PoolTimeoutDiscardsLateResultAndAllowsRetry" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1703678410" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.023477" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[<###>  14:51:39.861  ThreadID:1
+对象池资源加载超时：fixture
+]]></output>
+            </test-case>
+            <test-case id="1123" name="SameBgmEarlyReturnStillCancelsOlderPendingIntent" fullname="UPandaGF.Tests.LifecycleRegressionTests.SameBgmEarlyReturnStillCancelsOlderPendingIntent" methodname="SameBgmEarlyReturnStillCancelsOlderPendingIntent" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1170010883" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002329" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+]]></output>
+            </test-case>
+            <test-case id="1112" name="SharedClipReleaseCrossCheck" fullname="UPandaGF.Tests.LifecycleRegressionTests.SharedClipReleaseCrossCheck" methodname="SharedClipReleaseCrossCheck" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="985877106" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.004818" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+            </test-case>
+            <test-case id="1119" name="StaleBorrowerReturnIsDestroyedInsteadOfRepopulatingPool" fullname="UPandaGF.Tests.LifecycleRegressionTests.StaleBorrowerReturnIsDestroyedInsteadOfRepopulatingPool" methodname="StaleBorrowerReturnIsDestroyedInsteadOfRepopulatingPool" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1962202058" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002123" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1115" name="StopAllSoundCancelsPendingStackedSoundExactlyOnce" fullname="UPandaGF.Tests.LifecycleRegressionTests.StopAllSoundCancelsPendingStackedSoundExactlyOnce" methodname="StopAllSoundCancelsPendingStackedSoundExactlyOnce" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="551123988" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002190" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+]]></output>
+            </test-case>
+            <test-case id="1128" name="StopCancellationCallbackMayStartANewUniqueRequest" fullname="UPandaGF.Tests.LifecycleRegressionTests.StopCancellationCallbackMayStartANewUniqueRequest" methodname="StopCancellationCallbackMayStartANewUniqueRequest" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="684430774" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002137" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+]]></output>
+            </test-case>
+            <test-case id="1105" name="TaskAndCallbackShareNativeInflightRequest" fullname="UPandaGF.Tests.LifecycleRegressionTests.TaskAndCallbackShareNativeInflightRequest" methodname="TaskAndCallbackShareNativeInflightRequest" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="454511631" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.018437" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1111" name="ThrowingDespawnAllowsLaterReturn" fullname="UPandaGF.Tests.LifecycleRegressionTests.ThrowingDespawnAllowsLaterReturn" methodname="ThrowingDespawnAllowsLaterReturn" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="1113020488" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002589" asserts="0">
+              <properties />
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+InvalidOperationException: Audit expected OnDespawn error
+]]></output>
+            </test-case>
+            <test-case id="1120" name="ThrowingSpawnDestroysFailedInstanceWithoutPoisoningPool" fullname="UPandaGF.Tests.LifecycleRegressionTests.ThrowingSpawnDestroysFailedInstanceWithoutPoisoningPool" methodname="ThrowingSpawnDestroysFailedInstanceWithoutPoisoningPool" classname="UPandaGF.Tests.LifecycleRegressionTests" runstate="Runnable" seed="153854921" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002594" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+InvalidOperationException: Audit expected OnSpawn error
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1130" name="LogConsoleRegressionTests" fullname="UPandaGF.Tests.LogConsoleRegressionTests" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.030259" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1132" name="CollapseGroupsBySeverityAndMessage" fullname="UPandaGF.Tests.LogConsoleRegressionTests.CollapseGroupsBySeverityAndMessage" methodname="CollapseGroupsBySeverityAndMessage" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" seed="1536970576" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.003206" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1140" name="ErrorOpensConsoleOnlyWhenEnabled" fullname="UPandaGF.Tests.LogConsoleRegressionTests.ErrorOpensConsoleOnlyWhenEnabled" methodname="ErrorOpensConsoleOnlyWhenEnabled" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" seed="176844529" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.005944" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1136" name="PendingQueueAlsoHasAByteBudget" fullname="UPandaGF.Tests.LogConsoleRegressionTests.PendingQueueAlsoHasAByteBudget" methodname="PendingQueueAlsoHasAByteBudget" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" seed="1620528439" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.001281" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1139" name="SettingsAndDiagnosticsPagesRenderWithoutErrors" fullname="UPandaGF.Tests.LogConsoleRegressionTests.SettingsAndDiagnosticsPagesRenderWithoutErrors" methodname="SettingsAndDiagnosticsPagesRenderWithoutErrors" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" seed="1120067402" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.009367" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1133" name="SeverityAndSearchFilterVisibleEntries" fullname="UPandaGF.Tests.LogConsoleRegressionTests.SeverityAndSearchFilterVisibleEntries" methodname="SeverityAndSearchFilterVisibleEntries" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" seed="44684808" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.000301" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1137" name="ShowHideClearAndFilterWork" fullname="UPandaGF.Tests.LogConsoleRegressionTests.ShowHideClearAndFilterWork" methodname="ShowHideClearAndFilterWork" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" seed="1345593810" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002006" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1131" name="StoreEvictsOldestByCountAndByteBudget" fullname="UPandaGF.Tests.LogConsoleRegressionTests.StoreEvictsOldestByCountAndByteBudget" methodname="StoreEvictsOldestByCountAndByteBudget" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" seed="1960963526" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.000704" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1138" name="VisibleConsoleDrawsGuiWithoutExternalAssets" fullname="UPandaGF.Tests.LogConsoleRegressionTests.VisibleConsoleDrawsGuiWithoutExternalAssets" methodname="VisibleConsoleDrawsGuiWithoutExternalAssets" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" seed="1194977463" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.003105" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1134" name="VisibleRangeIsBoundedByViewportAndOverscan" fullname="UPandaGF.Tests.LogConsoleRegressionTests.VisibleRangeIsBoundedByViewportAndOverscan" methodname="VisibleRangeIsBoundedByViewportAndOverscan" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" seed="236792624" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.000272" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1135" name="WorkerBurstIsBoundedAndDrainedInBatches" fullname="UPandaGF.Tests.LogConsoleRegressionTests.WorkerBurstIsBoundedAndDrainedInBatches" methodname="WorkerBurstIsBoundedAndDrainedInBatches" classname="UPandaGF.Tests.LogConsoleRegressionTests" runstate="Runnable" seed="82188674" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.001739" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1141" name="P0StartupRegressionTests" fullname="UPandaGF.Tests.P0StartupRegressionTests" classname="UPandaGF.Tests.P0StartupRegressionTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.039807" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1146" name="CleanupFailureDoesNotSkipEarlierServices" fullname="UPandaGF.Tests.P0StartupRegressionTests.CleanupFailureDoesNotSkipEarlierServices" methodname="CleanupFailureDoesNotSkipEarlierServices" classname="UPandaGF.Tests.P0StartupRegressionTests" runstate="Runnable" seed="1403908322" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.005817" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1148" name="DestroyingRootDuringStartupSettlesWaiters" fullname="UPandaGF.Tests.P0StartupRegressionTests.DestroyingRootDuringStartupSettlesWaiters" methodname="DestroyingRootDuringStartupSettlesWaiters" classname="UPandaGF.Tests.P0StartupRegressionTests" runstate="Runnable" seed="125309973" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.006514" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.UPGameRoot] EagerMonoSingleton Awake初始化
+]]></output>
+            </test-case>
+            <test-case id="1143" name="FailedStepAlsoRollsBackAndLaterStepsNeverRun" fullname="UPandaGF.Tests.P0StartupRegressionTests.FailedStepAlsoRollsBackAndLaterStepsNeverRun" methodname="FailedStepAlsoRollsBackAndLaterStepsNeverRun" classname="UPandaGF.Tests.P0StartupRegressionTests" runstate="Runnable" seed="27800556" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002707" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1147" name="RootReadyCanBeAwaitedLateAndShutdownRejectsAccess" fullname="UPandaGF.Tests.P0StartupRegressionTests.RootReadyCanBeAwaitedLateAndShutdownRejectsAccess" methodname="RootReadyCanBeAwaitedLateAndShutdownRejectsAccess" classname="UPandaGF.Tests.P0StartupRegressionTests" runstate="Runnable" seed="828055011" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.014331" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.UPGameRoot] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+[LazySingleton] 创建 BinaryDataMgr 实例
+[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1144" name="ShutdownDuringInitializationCancelsAndRollsBack" fullname="UPandaGF.Tests.P0StartupRegressionTests.ShutdownDuringInitializationCancelsAndRollsBack" methodname="ShutdownDuringInitializationCancelsAndRollsBack" classname="UPandaGF.Tests.P0StartupRegressionTests" runstate="Runnable" seed="1139012205" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.005150" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1142" name="StartupRunsOnceAndClosesInReverseOrder" fullname="UPandaGF.Tests.P0StartupRegressionTests.StartupRunsOnceAndClosesInReverseOrder" methodname="StartupRunsOnceAndClosesInReverseOrder" classname="UPandaGF.Tests.P0StartupRegressionTests" runstate="Runnable" seed="873270875" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002204" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1145" name="WaiterCancellationDoesNotCancelSharedStartup" fullname="UPandaGF.Tests.P0StartupRegressionTests.WaiterCancellationDoesNotCancelSharedStartup" methodname="WaiterCancellationDoesNotCancelSharedStartup" classname="UPandaGF.Tests.P0StartupRegressionTests" runstate="Runnable" seed="1190508750" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002107" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1149" name="P0StateMachineRegressionTests" fullname="UPandaGF.Tests.P0StateMachineRegressionTests" classname="UPandaGF.Tests.P0StateMachineRegressionTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.005156" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1152" name="AncestorGuardIsAlsoChecked" fullname="UPandaGF.Tests.P0StateMachineRegressionTests.AncestorGuardIsAlsoChecked" methodname="AncestorGuardIsAlsoChecked" classname="UPandaGF.Tests.P0StateMachineRegressionTests" runstate="Runnable" seed="2109574779" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.002623" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1150" name="CrossBranchActivatesAncestorsAndHistoryRestoresLeaf" fullname="UPandaGF.Tests.P0StateMachineRegressionTests.CrossBranchActivatesAncestorsAndHistoryRestoresLeaf" methodname="CrossBranchActivatesAncestorsAndHistoryRestoresLeaf" classname="UPandaGF.Tests.P0StateMachineRegressionTests" runstate="Runnable" seed="558911401" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.000353" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1156" name="DefaultChildIsEnteredWhenActivatingNewBranch" fullname="UPandaGF.Tests.P0StateMachineRegressionTests.DefaultChildIsEnteredWhenActivatingNewBranch" methodname="DefaultChildIsEnteredWhenActivatingNewBranch" classname="UPandaGF.Tests.P0StateMachineRegressionTests" runstate="Runnable" seed="832233725" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.000235" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1157" name="DestroyExitsActiveHierarchy" fullname="UPandaGF.Tests.P0StateMachineRegressionTests.DestroyExitsActiveHierarchy" methodname="DestroyExitsActiveHierarchy" classname="UPandaGF.Tests.P0StateMachineRegressionTests" runstate="Runnable" seed="36483410" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.000180" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1154" name="FailedBackKeepsHistoryAndSameStateDoesNotReenter" fullname="UPandaGF.Tests.P0StateMachineRegressionTests.FailedBackKeepsHistoryAndSameStateDoesNotReenter" methodname="FailedBackKeepsHistoryAndSameStateDoesNotReenter" classname="UPandaGF.Tests.P0StateMachineRegressionTests" runstate="Runnable" seed="1603966528" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.000215" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1151" name="IdAndPathBothRespectActualLeafGuard" fullname="UPandaGF.Tests.P0StateMachineRegressionTests.IdAndPathBothRespectActualLeafGuard" methodname="IdAndPathBothRespectActualLeafGuard" classname="UPandaGF.Tests.P0StateMachineRegressionTests" runstate="Runnable" seed="1056194893" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.000180" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1153" name="InvalidDeepPathHasNoLifecycleSideEffects" fullname="UPandaGF.Tests.P0StateMachineRegressionTests.InvalidDeepPathHasNoLifecycleSideEffects" methodname="InvalidDeepPathHasNoLifecycleSideEffects" classname="UPandaGF.Tests.P0StateMachineRegressionTests" runstate="Runnable" seed="1398534762" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.000187" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1155" name="NotificationCannotReenterAndCorruptBackHistory" fullname="UPandaGF.Tests.P0StateMachineRegressionTests.NotificationCannotReenterAndCorruptBackHistory" methodname="NotificationCannotReenterAndCorruptBackHistory" classname="UPandaGF.Tests.P0StateMachineRegressionTests" runstate="Runnable" seed="1125703231" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.000312" asserts="0">
+              <properties />
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1194" name="P1NativeSceneTests" fullname="UPandaGF.Tests.P1NativeSceneTests" classname="UPandaGF.Tests.P1NativeSceneTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.010279" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1195" name="LegacyLoaderUsesManagedFullPathAndPreservesCallbackOrder" fullname="UPandaGF.Tests.P1NativeSceneTests.LegacyLoaderUsesManagedFullPathAndPreservesCallbackOrder" methodname="LegacyLoaderUsesManagedFullPathAndPreservesCallbackOrder" classname="UPandaGF.Tests.P1NativeSceneTests" runstate="Runnable" seed="490995918" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.004767" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1196" name="NativeAdditiveLoadsHaveDistinctScopesAndUnloadCleansOwnership" fullname="UPandaGF.Tests.P1NativeSceneTests.NativeAdditiveLoadsHaveDistinctScopesAndUnloadCleansOwnership" methodname="NativeAdditiveLoadsHaveDistinctScopesAndUnloadCleansOwnership" classname="UPandaGF.Tests.P1NativeSceneTests" runstate="Runnable" seed="2098959154" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:39Z" duration="0.004932" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1182" name="P1ResourceIntegrationTests" fullname="UPandaGF.Tests.P1ResourceIntegrationTests" classname="UPandaGF.Tests.P1ResourceIntegrationTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:40Z" duration="0.156549" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1186" name="LegacyLoadPinsBundleUntilReleaseLegacyBundles" fullname="UPandaGF.Tests.P1ResourceIntegrationTests.LegacyLoadPinsBundleUntilReleaseLegacyBundles" methodname="LegacyLoadPinsBundleUntilReleaseLegacyBundles" classname="UPandaGF.Tests.P1ResourceIntegrationTests" runstate="Runnable" seed="1076046845" result="Passed" start-time="2026-11-08 06:51:39Z" end-time="2026-11-08 06:51:40Z" duration="0.029389" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1185" name="LegacyRawResourceRemainsExplicitlyOwnedWhenManagedLeaseEnds" fullname="UPandaGF.Tests.P1ResourceIntegrationTests.LegacyRawResourceRemainsExplicitlyOwnedWhenManagedLeaseEnds" methodname="LegacyRawResourceRemainsExplicitlyOwnedWhenManagedLeaseEnds" classname="UPandaGF.Tests.P1ResourceIntegrationTests" runstate="Runnable" seed="1148621934" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.032000" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1187" name="LegacySceneNamePreparationFindsUniqueFullManifestPath" fullname="UPandaGF.Tests.P1ResourceIntegrationTests.LegacySceneNamePreparationFindsUniqueFullManifestPath" methodname="LegacySceneNamePreparationFindsUniqueFullManifestPath" classname="UPandaGF.Tests.P1ResourceIntegrationTests" runstate="Runnable" seed="1606083845" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.026707" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1188" name="MissingAssetDoesNotKeepDependencyPinned" fullname="UPandaGF.Tests.P1ResourceIntegrationTests.MissingAssetDoesNotKeepDependencyPinned" methodname="MissingAssetDoesNotKeepDependencyPinned" classname="UPandaGF.Tests.P1ResourceIntegrationTests" runstate="Runnable" seed="362792358" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.018068" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1184" name="OldGenerationLeaseCannotDecrementNewBundlePins" fullname="UPandaGF.Tests.P1ResourceIntegrationTests.OldGenerationLeaseCannotDecrementNewBundlePins" methodname="OldGenerationLeaseCannotDecrementNewBundlePins" classname="UPandaGF.Tests.P1ResourceIntegrationTests" runstate="Runnable" seed="475632648" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.025105" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+            <test-case id="1189" name="SceneScopePoolAndAudioUseInjectedResourceOwnership" fullname="UPandaGF.Tests.P1ResourceIntegrationTests.SceneScopePoolAndAudioUseInjectedResourceOwnership" methodname="SceneScopePoolAndAudioUseInjectedResourceOwnership" classname="UPandaGF.Tests.P1ResourceIntegrationTests" runstate="Runnable" seed="37573095" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.004334" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+There are no audio listeners in the scene. Please ensure there is always one audio listener in the scene
+]]></output>
+            </test-case>
+            <test-case id="1183" name="TwoManagedHoldersProtectTargetAndSharedDependencyUntilLastRelease" fullname="UPandaGF.Tests.P1ResourceIntegrationTests.TwoManagedHoldersProtectTargetAndSharedDependencyUntilLastRelease" methodname="TwoManagedHoldersProtectTargetAndSharedDependencyUntilLastRelease" classname="UPandaGF.Tests.P1ResourceIntegrationTests" runstate="Runnable" seed="1281768733" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.019788" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ABLoadMgr] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1197" name="P1RootCompositionTests" fullname="UPandaGF.Tests.P1RootCompositionTests" classname="UPandaGF.Tests.P1RootCompositionTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.007862" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1198" name="RootInjectsConsumerFreezesConfigAndShutdownRestoresPause" fullname="UPandaGF.Tests.P1RootCompositionTests.RootInjectsConsumerFreezesConfigAndShutdownRestoresPause" methodname="RootInjectsConsumerFreezesConfigAndShutdownRestoresPause" classname="UPandaGF.Tests.P1RootCompositionTests" runstate="Runnable" seed="1797202338" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.007428" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.UPGameRoot] EagerMonoSingleton Awake初始化
+[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1175" name="P1SceneCoordinationTests" fullname="UPandaGF.Tests.P1SceneCoordinationTests" classname="UPandaGF.Tests.P1SceneCoordinationTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.032334" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1179" name="BackendFailureDoesNotPoisonQueueAndProgressHasUniqueIds" fullname="UPandaGF.Tests.P1SceneCoordinationTests.BackendFailureDoesNotPoisonQueueAndProgressHasUniqueIds" methodname="BackendFailureDoesNotPoisonQueueAndProgressHasUniqueIds" classname="UPandaGF.Tests.P1SceneCoordinationTests" runstate="Runnable" seed="675755" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002995" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1177" name="CanceledQueuedRequestNeverReachesBackend" fullname="UPandaGF.Tests.P1SceneCoordinationTests.CanceledQueuedRequestNeverReachesBackend" methodname="CanceledQueuedRequestNeverReachesBackend" classname="UPandaGF.Tests.P1SceneCoordinationTests" runstate="Runnable" seed="479466657" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001351" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1176" name="CancelingNativeWaitDoesNotStartNextRequestEarly" fullname="UPandaGF.Tests.P1SceneCoordinationTests.CancelingNativeWaitDoesNotStartNextRequestEarly" methodname="CancelingNativeWaitDoesNotStartNextRequestEarly" classname="UPandaGF.Tests.P1SceneCoordinationTests" runstate="Runnable" seed="2137647371" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002752" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1180" name="ExternalSceneUnloadCancelsAndDisposesScope" fullname="UPandaGF.Tests.P1SceneCoordinationTests.ExternalSceneUnloadCancelsAndDisposesScope" methodname="ExternalSceneUnloadCancelsAndDisposesScope" classname="UPandaGF.Tests.P1SceneCoordinationTests" runstate="Runnable" seed="1254990688" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000727" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1178" name="ShutdownWaitsForNativeThenReleasesAllScopes" fullname="UPandaGF.Tests.P1SceneCoordinationTests.ShutdownWaitsForNativeThenReleasesAllScopes" methodname="ShutdownWaitsForNativeThenReleasesAllScopes" classname="UPandaGF.Tests.P1SceneCoordinationTests" runstate="Runnable" seed="1063485786" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001414" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1181" name="TimeoutCancelsWaitButKeepsNativeSerialized" fullname="UPandaGF.Tests.P1SceneCoordinationTests.TimeoutCancelsWaitButKeepsNativeSerialized" methodname="TimeoutCancelsWaitButKeepsNativeSerialized" classname="UPandaGF.Tests.P1SceneCoordinationTests" runstate="Runnable" seed="1573969386" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.022074" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1158" name="P1ScopeAndInputTests" fullname="UPandaGF.Tests.P1ScopeAndInputTests" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" testcasecount="15" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.027211" total="15" passed="15" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1166" name="CanceledAcquireDisposesLateAssetExactlyOnce" fullname="UPandaGF.Tests.P1ScopeAndInputTests.CanceledAcquireDisposesLateAssetExactlyOnce" methodname="CanceledAcquireDisposesLateAssetExactlyOnce" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="601193430" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001767" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1162" name="CancelingScopeRejectsAndReleasesNewOwnershipBeforeFinalDispose" fullname="UPandaGF.Tests.P1ScopeAndInputTests.CancelingScopeRejectsAndReleasesNewOwnershipBeforeFinalDispose" methodname="CancelingScopeRejectsAndReleasesNewOwnershipBeforeFinalDispose" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="121254129" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000281" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1173" name="ConfigChecksTargetUrlAesAndDuplicateActions" fullname="UPandaGF.Tests.P1ScopeAndInputTests.ConfigChecksTargetUrlAesAndDuplicateActions" methodname="ConfigChecksTargetUrlAesAndDuplicateActions" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="494306037" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000222" asserts="0">
+              <properties />
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1172" name="ConfigRejectsInvalidBundleRoot" fullname="UPandaGF.Tests.P1ScopeAndInputTests.ConfigRejectsInvalidBundleRoot" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000811" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1169" name="ConfigRejectsInvalidBundleRoot(&quot;../escape/&quot;)" fullname="UPandaGF.Tests.P1ScopeAndInputTests.ConfigRejectsInvalidBundleRoot(&quot;../escape/&quot;)" methodname="ConfigRejectsInvalidBundleRoot" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="922202163" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000375" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1170" name="ConfigRejectsInvalidBundleRoot(&quot;C:/outside/&quot;)" fullname="UPandaGF.Tests.P1ScopeAndInputTests.ConfigRejectsInvalidBundleRoot(&quot;C:/outside/&quot;)" methodname="ConfigRejectsInvalidBundleRoot" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="1139958380" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000079" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1171" name="ConfigRejectsInvalidBundleRoot(&quot;/absolute/&quot;)" fullname="UPandaGF.Tests.P1ScopeAndInputTests.ConfigRejectsInvalidBundleRoot(&quot;/absolute/&quot;)" methodname="ConfigRejectsInvalidBundleRoot" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="2068051087" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000053" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1168" name="ConfigSnapshotDoesNotShareNestedObjectsAndRejectsInvalidSettings" fullname="UPandaGF.Tests.P1ScopeAndInputTests.ConfigSnapshotDoesNotShareNestedObjectsAndRejectsInvalidSettings" methodname="ConfigSnapshotDoesNotShareNestedObjectsAndRejectsInvalidSettings" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="302476676" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000353" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1167" name="FrameworkModulesDoNotReferenceGameplayOrSamples" fullname="UPandaGF.Tests.P1ScopeAndInputTests.FrameworkModulesDoNotReferenceGameplayOrSamples" methodname="FrameworkModulesDoNotReferenceGameplayOrSamples" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="2004970414" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000493" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1164" name="InputContextsCanBeReleasedOutOfOrderAndBindingsAreSnapshots" fullname="UPandaGF.Tests.P1ScopeAndInputTests.InputContextsCanBeReleasedOutOfOrderAndBindingsAreSnapshots" methodname="InputContextsCanBeReleasedOutOfOrderAndBindingsAreSnapshots" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="1171183381" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000604" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1163" name="NestedPauseRestoresPriorScaleAndPreservesMenuInput" fullname="UPandaGF.Tests.P1ScopeAndInputTests.NestedPauseRestoresPriorScaleAndPreservesMenuInput" methodname="NestedPauseRestoresPriorScaleAndPreservesMenuInput" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="523546873" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000434" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1165" name="PauseDisposalRestoresGlobalStateAndInvalidScaleIsRejected" fullname="UPandaGF.Tests.P1ScopeAndInputTests.PauseDisposalRestoresGlobalStateAndInvalidScaleIsRejected" methodname="PauseDisposalRestoresGlobalStateAndInvalidScaleIsRejected" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="577576168" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000373" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1174" name="SaveServiceRoundTripsAndRejectsTraversal" fullname="UPandaGF.Tests.P1ScopeAndInputTests.SaveServiceRoundTripsAndRejectsTraversal" methodname="SaveServiceRoundTripsAndRejectsTraversal" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="790016430" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.017626" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1159" name="ScopeCancelsBeforeReleasingInReverseEvenIfCleanupThrows" fullname="UPandaGF.Tests.P1ScopeAndInputTests.ScopeCancelsBeforeReleasingInReverseEvenIfCleanupThrows" methodname="ScopeCancelsBeforeReleasingInReverseEvenIfCleanupThrows" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="1475832059" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000577" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1161" name="ScopedSubscriptionDoesNotRemoveIdenticalExternalListener" fullname="UPandaGF.Tests.P1ScopeAndInputTests.ScopedSubscriptionDoesNotRemoveIdenticalExternalListener" methodname="ScopedSubscriptionDoesNotRemoveIdenticalExternalListener" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="20630231" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001905" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1160" name="ScopeUnsubscribesOnlyItsOwnListener" fullname="UPandaGF.Tests.P1ScopeAndInputTests.ScopeUnsubscribesOnlyItsOwnListener" methodname="ScopeUnsubscribesOnlyItsOwnListener" classname="UPandaGF.Tests.P1ScopeAndInputTests" runstate="Runnable" seed="1027380641" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000364" asserts="0">
+              <properties />
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1190" name="P1UIOwnershipTests" fullname="UPandaGF.Tests.P1UIOwnershipTests" classname="UPandaGF.Tests.P1UIOwnershipTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.007518" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1192" name="CanceledPendingScopeCannotCloseReopenedPanelAndLateLeaseIsReturned" fullname="UPandaGF.Tests.P1UIOwnershipTests.CanceledPendingScopeCannotCloseReopenedPanelAndLateLeaseIsReturned" methodname="CanceledPendingScopeCannotCloseReopenedPanelAndLateLeaseIsReturned" classname="UPandaGF.Tests.P1UIOwnershipTests" runstate="Runnable" seed="982093097" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.004177" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1191" name="DisposingSceneScopeClosesPanelAndReturnsPrefabLease" fullname="UPandaGF.Tests.P1UIOwnershipTests.DisposingSceneScopeClosesPanelAndReturnsPrefabLease" methodname="DisposingSceneScopeClosesPanelAndReturnsPrefabLease" classname="UPandaGF.Tests.P1UIOwnershipTests" runstate="Runnable" seed="508677055" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001232" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1193" name="ShutdownClosesOpenPanelsAndReleasesTheirLeases" fullname="UPandaGF.Tests.P1UIOwnershipTests.ShutdownClosesOpenPanelsAndReleasesTheirLeases" methodname="ShutdownClosesOpenPanelsAndReleasesTheirLeases" classname="UPandaGF.Tests.P1UIOwnershipTests" runstate="Runnable" seed="866538246" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001367" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1199" name="PlatformCompatibilityTests" fullname="UPandaGF.Tests.PlatformCompatibilityTests" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" testcasecount="18" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.148889" total="18" passed="18" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1210" name="AssetBundlePathHelpersShareUrlSafeComposition" fullname="UPandaGF.Tests.PlatformCompatibilityTests.AssetBundlePathHelpersShareUrlSafeComposition" methodname="AssetBundlePathHelpersShareUrlSafeComposition" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="1125669857" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001484" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1213" name="CooperativeLoggerBoundsQueueAndTracksDroppedMessages" fullname="UPandaGF.Tests.PlatformCompatibilityTests.CooperativeLoggerBoundsQueueAndTracksDroppedMessages" methodname="CooperativeLoggerBoundsQueueAndTracksDroppedMessages" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="974809330" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.029600" asserts="0">
+              <properties />
+              <output><![CDATA[PLATFORM_QUEUE_0
+PLATFORM_QUEUE_1
+PLATFORM_QUEUE_2
+PLATFORM_QUEUE_3
+PLATFORM_QUEUE_4
+PLATFORM_QUEUE_5
+PLATFORM_QUEUE_6
+PLATFORM_QUEUE_7
+]]></output>
+            </test-case>
+            <test-case id="1215" name="CooperativeLoggerDrainsAtMostConfiguredBatchEachFrame" fullname="UPandaGF.Tests.PlatformCompatibilityTests.CooperativeLoggerDrainsAtMostConfiguredBatchEachFrame" methodname="CooperativeLoggerDrainsAtMostConfiguredBatchEachFrame" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="1239770867" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.005490" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[PLATFORM_BATCH_0
+PLATFORM_BATCH_1
+PLATFORM_BATCH_2
+PLATFORM_BATCH_3
+PLATFORM_BATCH_4
+PLATFORM_BATCH_5
+PLATFORM_BATCH_6
+PLATFORM_BATCH_7
+]]></output>
+            </test-case>
+            <test-case id="1216" name="CooperativeLogStripsFormattingAndDisableStopsWriter" fullname="UPandaGF.Tests.PlatformCompatibilityTests.CooperativeLogStripsFormattingAndDisableStopsWriter" methodname="CooperativeLogStripsFormattingAndDisableStopsWriter" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="1270551670" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.023135" asserts="0">
+              <properties />
+              <output><![CDATA[<color=red>PLATFORM_RICH</color>
+]]></output>
+            </test-case>
+            <test-case id="1219" name="DesktopSpaceProbeAndFlushComplete" fullname="UPandaGF.Tests.PlatformCompatibilityTests.DesktopSpaceProbeAndFlushComplete" methodname="DesktopSpaceProbeAndFlushComplete" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="435337459" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002285" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1212" name="DeviceProbeWorksForExistingAndNotYetCreatedDirectories" fullname="UPandaGF.Tests.PlatformCompatibilityTests.DeviceProbeWorksForExistingAndNotYetCreatedDirectories" methodname="DeviceProbeWorksForExistingAndNotYetCreatedDirectories" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="2002911921" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001386" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1211" name="FileUriEscapesSpecialCharactersExactlyOnce" fullname="UPandaGF.Tests.PlatformCompatibilityTests.FileUriEscapesSpecialCharactersExactlyOnce" methodname="FileUriEscapesSpecialCharactersExactlyOnce" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="1634903961" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001103" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1204" name="LocalPathsKeepRawFileNames" fullname="UPandaGF.Tests.PlatformCompatibilityTests.LocalPathsKeepRawFileNames" methodname="LocalPathsKeepRawFileNames" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="1882983460" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001006" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1214" name="LoggerRepeatedInitKeepsExistingSessionAndClosesHandle" fullname="UPandaGF.Tests.PlatformCompatibilityTests.LoggerRepeatedInitKeepsExistingSessionAndClosesHandle" methodname="LoggerRepeatedInitKeepsExistingSessionAndClosesHandle" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="1030405898" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.024560" asserts="0">
+              <properties />
+              <output><![CDATA[PLATFORM_SESSION_MARKER
+]]></output>
+            </test-case>
+            <test-case id="1218" name="PortableDelayUsesRealTimeAndCanCancel" fullname="UPandaGF.Tests.PlatformCompatibilityTests.PortableDelayUsesRealTimeAndCanCancel" methodname="PortableDelayUsesRealTimeAndCanCancel" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="939388803" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.027251" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1209" name="RelativePathsRejectTraversalAndDriveReplacement" fullname="UPandaGF.Tests.PlatformCompatibilityTests.RelativePathsRejectTraversalAndDriveReplacement" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.004703" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1205" name="RelativePathsRejectTraversalAndDriveReplacement(&quot;../escape&quot;)" fullname="UPandaGF.Tests.PlatformCompatibilityTests.RelativePathsRejectTraversalAndDriveReplacement(&quot;../escape&quot;)" methodname="RelativePathsRejectTraversalAndDriveReplacement" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="1167198821" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001294" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1206" name="RelativePathsRejectTraversalAndDriveReplacement(&quot;a/../../escape&quot;)" fullname="UPandaGF.Tests.PlatformCompatibilityTests.RelativePathsRejectTraversalAndDriveReplacement(&quot;a/../../escape&quot;)" methodname="RelativePathsRejectTraversalAndDriveReplacement" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="1193929158" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001002" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1207" name="RelativePathsRejectTraversalAndDriveReplacement(&quot;a:b&quot;)" fullname="UPandaGF.Tests.PlatformCompatibilityTests.RelativePathsRejectTraversalAndDriveReplacement(&quot;a:b&quot;)" methodname="RelativePathsRejectTraversalAndDriveReplacement" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="1356002773" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000991" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1208" name="RelativePathsRejectTraversalAndDriveReplacement(&quot;a/./b&quot;)" fullname="UPandaGF.Tests.PlatformCompatibilityTests.RelativePathsRejectTraversalAndDriveReplacement(&quot;a/./b&quot;)" methodname="RelativePathsRejectTraversalAndDriveReplacement" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="931203581" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000930" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1217" name="ThreadedLogStopsBeforeDestroyDisposesWakeHandle" fullname="UPandaGF.Tests.PlatformCompatibilityTests.ThreadedLogStopsBeforeDestroyDisposesWakeHandle" methodname="ThreadedLogStopsBeforeDestroyDisposesWakeHandle" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="1212144588" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.021203" asserts="0">
+              <properties />
+              <output><![CDATA[PLATFORM_THREAD
+]]></output>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1202" name="UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators" fullname="UPandaGF.Tests.PlatformCompatibilityTests.UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002660" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1200" name="UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators(&quot;https://example.com/StreamingAssets&quot;,&quot;https://example.com/StreamingAssets/Probe/%E7%A9%BA%20%E6%A0%BC/%E5%86%85%E5%AE%B9%231.txt&quot;)" fullname="UPandaGF.Tests.PlatformCompatibilityTests.UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators(&quot;https://example.com/StreamingAssets&quot;,&quot;https://example.com/StreamingAssets/Probe/%E7%A9%BA%20%E6%A0%BC/%E5%86%85%E5%AE%B9%231.txt&quot;)" methodname="UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="594603666" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001226" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1201" name="UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators(&quot;jar:file:///data/base.apk!/assets&quot;,&quot;jar:file:///data/base.apk!/assets/Probe/%E7%A9%BA%20%E6%A0%BC/%E5%86%85%E5%AE%B9%231.txt&quot;)" fullname="UPandaGF.Tests.PlatformCompatibilityTests.UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators(&quot;jar:file:///data/base.apk!/assets&quot;,&quot;jar:file:///data/base.apk!/assets/Probe/%E7%A9%BA%20%E6%A0%BC/%E5%86%85%E5%AE%B9%231.txt&quot;)" methodname="UrlPathsEscapeRawNamesAndNeverInsertWindowsSeparators" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="760542660" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.000962" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1203" name="UrlPathsTreatLiteralPercentAsFileName" fullname="UPandaGF.Tests.PlatformCompatibilityTests.UrlPathsTreatLiteralPercentAsFileName" methodname="UrlPathsTreatLiteralPercentAsFileName" classname="UPandaGF.Tests.PlatformCompatibilityTests" runstate="Runnable" seed="858453080" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001155" asserts="0">
+              <properties />
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1220" name="ReplayPerformanceTests" fullname="UPandaGF.Tests.ReplayPerformanceTests" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" testcasecount="39" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.512646" total="39" passed="39" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1256" name="AnimatorValuesAreSharedWhenOnlyTransformChanges" fullname="UPandaGF.Tests.ReplayPerformanceTests.AnimatorValuesAreSharedWhenOnlyTransformChanges" methodname="AnimatorValuesAreSharedWhenOnlyTransformChanges" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="827910328" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.010700" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1252" name="AsyncCancellationDeletesOnlyItsTemporaryFile" fullname="UPandaGF.Tests.ReplayPerformanceTests.AsyncCancellationDeletesOnlyItsTemporaryFile" methodname="AsyncCancellationDeletesOnlyItsTemporaryFile" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1601836392" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.014517" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1253" name="AsyncManagerSaveCoalescesAndClearCancels" fullname="UPandaGF.Tests.ReplayPerformanceTests.AsyncManagerSaveCoalescesAndClearCancels" methodname="AsyncManagerSaveCoalescesAndClearCancels" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1922579693" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.009038" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1251" name="AsyncSaveFreezesPrefixAndAllowsFramesToAdvance" fullname="UPandaGF.Tests.ReplayPerformanceTests.AsyncSaveFreezesPrefixAndAllowsFramesToAdvance" methodname="AsyncSaveFreezesPrefixAndAllowsFramesToAdvance" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1111046112" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.055946" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1233" name="ClearReleasesFramesIndexesAndCapacity" fullname="UPandaGF.Tests.ReplayPerformanceTests.ClearReleasesFramesIndexesAndCapacity" methodname="ClearReleasesFramesIndexesAndCapacity" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="949757507" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001660" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1258" name="ControllerReplacementCapturesNewParameterNamesAndPersistsCompleteness" fullname="UPandaGF.Tests.ReplayPerformanceTests.ControllerReplacementCapturesNewParameterNamesAndPersistsCompleteness" methodname="ControllerReplacementCapturesNewParameterNamesAndPersistsCompleteness" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1727443424" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.012171" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1230" name="CustomPayloadEstimatorParticipatesInMemoryBudget" fullname="UPandaGF.Tests.ReplayPerformanceTests.CustomPayloadEstimatorParticipatesInMemoryBudget" methodname="CustomPayloadEstimatorParticipatesInMemoryBudget" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="2084887046" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001644" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1255" name="DestroyedManagerCannotAdoptPendingRead" fullname="UPandaGF.Tests.ReplayPerformanceTests.DestroyedManagerCannotAdoptPendingRead" methodname="DestroyedManagerCannotAdoptPendingRead" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1411227532" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.031700" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1225" name="DestroyedRegisteredTargetIsPrunedWithoutHoldingCaptureState" fullname="UPandaGF.Tests.ReplayPerformanceTests.DestroyedRegisteredTargetIsPrunedWithoutHoldingCaptureState" methodname="DestroyedRegisteredTargetIsPrunedWithoutHoldingCaptureState" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1358408673" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001955" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1231" name="DurationBudgetStopsRecordingWithoutGrowingDataPastLimit" fullname="UPandaGF.Tests.ReplayPerformanceTests.DurationBudgetStopsRecordingWithoutGrowingDataPastLimit" methodname="DurationBudgetStopsRecordingWithoutGrowingDataPastLimit" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="61980354" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001321" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1228" name="FrameBudgetStopsBeforeIncompleteFrameIsAdded" fullname="UPandaGF.Tests.ReplayPerformanceTests.FrameBudgetStopsBeforeIncompleteFrameIsAdded" methodname="FrameBudgetStopsBeforeIncompleteFrameIsAdded" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1912429761" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001358" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1249" name="InvalidSnapshotDoesNotPublishPartialFile" fullname="UPandaGF.Tests.ReplayPerformanceTests.InvalidSnapshotDoesNotPublishPartialFile" methodname="InvalidSnapshotDoesNotPublishPartialFile" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1719321524" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002934" asserts="0">
+              <properties />
+              <output><![CDATA[[ReplaySystem] 保存失败：回放坐标无效
+]]></output>
+            </test-case>
+            <test-case id="1254" name="LatestAsyncLoadWinsAndOldReadCannotReplaceIt" fullname="UPandaGF.Tests.ReplayPerformanceTests.LatestAsyncLoadWinsAndOldReadCannotReplaceIt" methodname="LatestAsyncLoadWinsAndOldReadCannotReplaceIt" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1349916808" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.020147" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1257" name="LegacySparseAnimatorValuesSurviveForwardAndReverseSeek" fullname="UPandaGF.Tests.ReplayPerformanceTests.LegacySparseAnimatorValuesSurviveForwardAndReverseSeek" methodname="LegacySparseAnimatorValuesSurviveForwardAndReverseSeek" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="659133667" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002824" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1250" name="LoadOverCurrentBudgetPreservesExistingRecording" fullname="UPandaGF.Tests.ReplayPerformanceTests.LoadOverCurrentBudgetPreservesExistingRecording" methodname="LoadOverCurrentBudgetPreservesExistingRecording" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="123282609" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.005762" asserts="0">
+              <properties />
+              <output><![CDATA[[ReplaySystem] 录制数据超过当前预算，保留现有数据
+]]></output>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1248" name="MalformedOrUnsupportedStreamIsRejected" fullname="UPandaGF.Tests.ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.017905" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1242" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:3,\&quot;frames\&quot;:[]}&quot;)" fullname="UPandaGF.Tests.ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:3,\&quot;frames\&quot;:[]}&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="93798629" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002723" asserts="0">
+                <properties />
+                <output><![CDATA[[ReplaySystem] 读取失败：回放 JSON 版本/结尾无效
+]]></output>
+              </test-case>
+              <test-case id="1243" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:0,\&quot;snapshots\&quot;:[]}]}garbage&quot;)" fullname="UPandaGF.Tests.ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:0,\&quot;snapshots\&quot;:[]}]}garbage&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="174433801" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002611" asserts="0">
+                <properties />
+                <output><![CDATA[[ReplaySystem] 读取失败：回放 JSON 版本/结尾无效
+]]></output>
+              </test-case>
+              <test-case id="1244" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:2,\&quot;snapshots\&quot;:[]},{\&quot;time\&quot;:1,\&quot;snapshots\&quot;:[]}]}&quot;)" fullname="UPandaGF.Tests.ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:2,\&quot;snapshots\&quot;:[]},{\&quot;time\&quot;:1,\&quot;snapshots\&quot;:[]}]}&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1621039815" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.003617" asserts="0">
+                <properties />
+                <output><![CDATA[[ReplaySystem] 读取失败：时间戳未排序或数据量过大
+]]></output>
+              </test-case>
+              <test-case id="1245" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:0,\&quot;snapshots\&quot;:[]}&quot;)" fullname="UPandaGF.Tests.ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:[{\&quot;time\&quot;:0,\&quot;snapshots\&quot;:[]}&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="610419957" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002890" asserts="0">
+                <properties />
+                <output><![CDATA[[ReplaySystem] 读取失败：无效回放 JSON 结构
+]]></output>
+              </test-case>
+              <test-case id="1246" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:null}&quot;)" fullname="UPandaGF.Tests.ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;frames\&quot;:null}&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="893259396" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002654" asserts="0">
+                <properties />
+                <output><![CDATA[[ReplaySystem] 读取失败：无效回放 JSON 结构
+]]></output>
+              </test-case>
+              <test-case id="1247" name="MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;version\&quot;:2,\&quot;frames\&quot;:[]}&quot;)" fullname="UPandaGF.Tests.ReplayPerformanceTests.MalformedOrUnsupportedStreamIsRejected(&quot;{\&quot;version\&quot;:2,\&quot;version\&quot;:2,\&quot;frames\&quot;:[]}&quot;)" methodname="MalformedOrUnsupportedStreamIsRejected" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="686917000" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002573" asserts="0">
+                <properties />
+                <output><![CDATA[[ReplaySystem] 读取失败：无效回放版本
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-case id="1241" name="ReaderAcceptsVersionAfterFramesAndUnknownRootProperties" fullname="UPandaGF.Tests.ReplayPerformanceTests.ReaderAcceptsVersionAfterFramesAndUnknownRootProperties" methodname="ReaderAcceptsVersionAfterFramesAndUnknownRootProperties" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="43132275" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002298" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1234" name="ReentrantCaptureClearDoesNotAppendStaleFrame" fullname="UPandaGF.Tests.ReplayPerformanceTests.ReentrantCaptureClearDoesNotAppendStaleFrame" methodname="ReentrantCaptureClearDoesNotAppendStaleFrame" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="931347911" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001256" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1235" name="RegisteredMetadataRefreshCapturesRenamingAndReparenting" fullname="UPandaGF.Tests.ReplayPerformanceTests.RegisteredMetadataRefreshCapturesRenamingAndReparenting" methodname="RegisteredMetadataRefreshCapturesRenamingAndReparenting" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1201259051" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001273" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1222" name="RegisteredTargetCanBeRemovedAndNewTargetAddedDuringRecording" fullname="UPandaGF.Tests.ReplayPerformanceTests.RegisteredTargetCanBeRemovedAndNewTargetAddedDuringRecording" methodname="RegisteredTargetCanBeRemovedAndNewTargetAddedDuringRecording" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="542754937" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001687" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1221" name="RegisteredTargetsAvoidFullSceneSearchAndDeduplicateChildren" fullname="UPandaGF.Tests.ReplayPerformanceTests.RegisteredTargetsAvoidFullSceneSearchAndDeduplicateChildren" methodname="RegisteredTargetsAvoidFullSceneSearchAndDeduplicateChildren" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="496682421" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001561" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1232" name="RestartClearsPreviousTimelineAndDisableReleasesCapture" fullname="UPandaGF.Tests.ReplayPerformanceTests.RestartClearsPreviousTimelineAndDisableReleasesCapture" methodname="RestartClearsPreviousTimelineAndDisableReleasesCapture" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="596086771" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001282" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1238" name="RigidbodyAndGlobalPhysicsRestoreAfterPlaybackDisable" fullname="UPandaGF.Tests.ReplayPerformanceTests.RigidbodyAndGlobalPhysicsRestoreAfterPlaybackDisable" methodname="RigidbodyAndGlobalPhysicsRestoreAfterPlaybackDisable" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1719449112" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002921" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1239" name="SamplingRateLimitsCaptureWhileMovementContinues" fullname="UPandaGF.Tests.ReplayPerformanceTests.SamplingRateLimitsCaptureWhileMovementContinues" methodname="SamplingRateLimitsCaptureWhileMovementContinues" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="143848206" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.261642" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1223" name="SceneDiscoveryIsPeriodicAndManualRefreshFindsSpawnedObject" fullname="UPandaGF.Tests.ReplayPerformanceTests.SceneDiscoveryIsPeriodicAndManualRefreshFindsSpawnedObject" methodname="SceneDiscoveryIsPeriodicAndManualRefreshFindsSpawnedObject" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="34438485" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002494" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1229" name="SnapshotBudgetDoesNotPublishPartialTargetSet" fullname="UPandaGF.Tests.ReplayPerformanceTests.SnapshotBudgetDoesNotPublishPartialTargetSet" methodname="SnapshotBudgetDoesNotPublishPartialTargetSet" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="177942351" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001317" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1236" name="StaticCaptureAvoidsPerTargetAllocationBlocks" fullname="UPandaGF.Tests.ReplayPerformanceTests.StaticCaptureAvoidsPerTargetAllocationBlocks" methodname="StaticCaptureAvoidsPerTargetAllocationBlocks" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1084124863" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.013311" asserts="0">
+              <properties />
+              <output><![CDATA[REPLAY_OPTIMIZED objects=200 samples=100 allocationBlocks=100
+]]></output>
+            </test-case>
+            <test-case id="1226" name="StaticSamplingCoalescesFramesAndPreservesDuration" fullname="UPandaGF.Tests.ReplayPerformanceTests.StaticSamplingCoalescesFramesAndPreservesDuration" methodname="StaticSamplingCoalescesFramesAndPreservesDuration" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="283421357" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.004118" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1259" name="StationaryRigidbodyUsesChangeRecorderWithoutRepeatedBoxing" fullname="UPandaGF.Tests.ReplayPerformanceTests.StationaryRigidbodyUsesChangeRecorderWithoutRepeatedBoxing" methodname="StationaryRigidbodyUsesChangeRecorderWithoutRepeatedBoxing" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1876668659" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001463" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1227" name="StationaryToMovingSeekKeepsHoldBeforeInterpolation" fullname="UPandaGF.Tests.ReplayPerformanceTests.StationaryToMovingSeekKeepsHoldBeforeInterpolation" methodname="StationaryToMovingSeekKeepsHoldBeforeInterpolation" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1091073889" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001327" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1240" name="SynchronousSaveRemainsVersionTwoAndSupportsEscapedText" fullname="UPandaGF.Tests.ReplayPerformanceTests.SynchronousSaveRemainsVersionTwoAndSupportsEscapedText" methodname="SynchronousSaveRemainsVersionTwoAndSupportsEscapedText" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="339604400" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.008112" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1237" name="TimelineReferencesOriginalSnapshotsAndReverseSeekWorks" fullname="UPandaGF.Tests.ReplayPerformanceTests.TimelineReferencesOriginalSnapshotsAndReverseSeekWorks" methodname="TimelineReferencesOriginalSnapshotsAndReverseSeekWorks" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1283819449" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001728" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1260" name="UiDestroyUnsubscribesExternalButtons" fullname="UPandaGF.Tests.ReplayPerformanceTests.UiDestroyUnsubscribesExternalButtons" methodname="UiDestroyUnsubscribesExternalButtons" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="1457016055" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.004966" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+            </test-case>
+            <test-case id="1224" name="UiObjectsAreExcludedAndCanBeIncludedExplicitly" fullname="UPandaGF.Tests.ReplayPerformanceTests.UiObjectsAreExcludedAndCanBeIncludedExplicitly" methodname="UiObjectsAreExcludedAndCanBeIncludedExplicitly" classname="UPandaGF.Tests.ReplayPerformanceTests" runstate="Runnable" seed="2007359439" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.001298" asserts="0">
+              <properties />
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1261" name="SerializationMigrationTests" fullname="UPandaGF.Tests.SerializationMigrationTests" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="59" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:41Z" duration="0.501812" total="59" passed="59" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="ParameterizedMethod" id="1332" name="ActualEditorCacheTypesMigrateIncludingPrivateCollections" fullname="UPandaGF.Tests.SerializationMigrationTests.ActualEditorCacheTypesMigrateIncludingPrivateCollections" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.045638" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1330" name="ActualEditorCacheTypesMigrateIncludingPrivateCollections(&quot;Build&quot;)" fullname="UPandaGF.Tests.SerializationMigrationTests.ActualEditorCacheTypesMigrateIncludingPrivateCollections(&quot;Build&quot;)" methodname="ActualEditorCacheTypesMigrateIncludingPrivateCollections" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="322519774" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.022828" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1331" name="ActualEditorCacheTypesMigrateIncludingPrivateCollections(&quot;Inspect&quot;)" fullname="UPandaGF.Tests.SerializationMigrationTests.ActualEditorCacheTypesMigrateIncludingPrivateCollections(&quot;Inspect&quot;)" methodname="ActualEditorCacheTypesMigrateIncludingPrivateCollections" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="131778201" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.022466" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1292" name="BinaryDataMgrKeepsPublicApiAndMigratesLegacySave" fullname="UPandaGF.Tests.SerializationMigrationTests.BinaryDataMgrKeepsPublicApiAndMigratesLegacySave" methodname="BinaryDataMgrKeepsPublicApiAndMigratesLegacySave" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="2108190148" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.057615" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1284" name="CategoryAndRootTypeMustMatch" fullname="UPandaGF.Tests.SerializationMigrationTests.CategoryAndRootTypeMustMatch" methodname="CategoryAndRootTypeMustMatch" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1949234976" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:40Z" duration="0.002166" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1311" name="ChangingEncryptionConfigurationDoesNotBlockRegenerationOrLoseOriginal" fullname="UPandaGF.Tests.SerializationMigrationTests.ChangingEncryptionConfigurationDoesNotBlockRegenerationOrLoseOriginal" methodname="ChangingEncryptionConfigurationDoesNotBlockRegenerationOrLoseOriginal" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1339705081" result="Passed" start-time="2026-11-08 06:51:40Z" end-time="2026-11-08 06:51:41Z" duration="0.073177" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1290" name="CorruptFileIsPreservedWithoutMigrationBackup" fullname="UPandaGF.Tests.SerializationMigrationTests.CorruptFileIsPreservedWithoutMigrationBackup" methodname="CorruptFileIsPreservedWithoutMigrationBackup" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="387197667" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.002841" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1274" name="CustomSerializationIsRejectedWithoutExecutingItsReader" fullname="UPandaGF.Tests.SerializationMigrationTests.CustomSerializationIsRejectedWithoutExecutingItsReader" methodname="CustomSerializationIsRejectedWithoutExecutingItsReader" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1480227241" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001430" asserts="0">
+              <properties />
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1319" name="DateTimeKindsAndWallClockTicksArePreserved" fullname="UPandaGF.Tests.SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.014239" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1313" name="DateTimeKindsAndWallClockTicksArePreserved(False,Utc)" fullname="UPandaGF.Tests.SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(False,Utc)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1911054281" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001459" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1314" name="DateTimeKindsAndWallClockTicksArePreserved(False,Local)" fullname="UPandaGF.Tests.SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(False,Local)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="316239607" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.005883" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1315" name="DateTimeKindsAndWallClockTicksArePreserved(False,Unspecified)" fullname="UPandaGF.Tests.SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(False,Unspecified)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="377908854" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.002018" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1316" name="DateTimeKindsAndWallClockTicksArePreserved(True,Utc)" fullname="UPandaGF.Tests.SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(True,Utc)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="400635605" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001389" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1317" name="DateTimeKindsAndWallClockTicksArePreserved(True,Local)" fullname="UPandaGF.Tests.SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(True,Local)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="16859995" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001356" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1318" name="DateTimeKindsAndWallClockTicksArePreserved(True,Unspecified)" fullname="UPandaGF.Tests.SerializationMigrationTests.DateTimeKindsAndWallClockTicksArePreserved(True,Unspecified)" methodname="DateTimeKindsAndWallClockTicksArePreserved" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1189481731" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001241" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-suite type="ParameterizedMethod" id="1303" name="EncryptedManifestRetainsBothFormatCompatibility" fullname="UPandaGF.Tests.SerializationMigrationTests.EncryptedManifestRetainsBothFormatCompatibility" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.004493" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1301" name="EncryptedManifestRetainsBothFormatCompatibility(False)" fullname="UPandaGF.Tests.SerializationMigrationTests.EncryptedManifestRetainsBothFormatCompatibility(False)" methodname="EncryptedManifestRetainsBothFormatCompatibility" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="2127066161" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001812" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1302" name="EncryptedManifestRetainsBothFormatCompatibility(True)" fullname="UPandaGF.Tests.SerializationMigrationTests.EncryptedManifestRetainsBothFormatCompatibility(True)" methodname="EncryptedManifestRetainsBothFormatCompatibility" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="862323613" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.002253" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1291" name="ExistingBackupIsNotOverwritten" fullname="UPandaGF.Tests.SerializationMigrationTests.ExistingBackupIsNotOverwritten" methodname="ExistingBackupIsNotOverwritten" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="309152571" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.021787" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1286" name="FileTypeNamesCannotSelectArbitraryRuntimeTypes" fullname="UPandaGF.Tests.SerializationMigrationTests.FileTypeNamesCannotSelectArbitraryRuntimeTypes" methodname="FileTypeNamesCannotSelectArbitraryRuntimeTypes" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="788001563" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.002025" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1320" name="GenericFieldIdentityDoesNotDependOnAssemblyVersion" fullname="UPandaGF.Tests.SerializationMigrationTests.GenericFieldIdentityDoesNotDependOnAssemblyVersion" methodname="GenericFieldIdentityDoesNotDependOnAssemblyVersion" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="84630297" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.002029" asserts="0">
+              <properties />
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1283" name="InvalidEnvelopeIsRejectedBeforeObjectCreation" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.008919" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1277" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(0)" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(0)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1227888124" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001878" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1278" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(1)" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(1)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1102301550" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001121" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1279" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(2)" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(2)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="2006070004" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001115" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1280" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(3)" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(3)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1332795666" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001082" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1281" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(4)" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(4)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1337277575" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001914" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1282" name="InvalidEnvelopeIsRejectedBeforeObjectCreation(5)" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidEnvelopeIsRejectedBeforeObjectCreation(5)" methodname="InvalidEnvelopeIsRejectedBeforeObjectCreation" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1855719534" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001108" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1299" name="InvalidKnownTypeRegistrationCannotPoisonOtherOperations" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidKnownTypeRegistrationCannotPoisonOtherOperations" methodname="InvalidKnownTypeRegistrationCannotPoisonOtherOperations" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="851275572" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001526" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1312" name="InvalidManifestCannotReplacePreviousValidFile" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidManifestCannotReplacePreviousValidFile" methodname="InvalidManifestCannotReplacePreviousValidFile" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="366399519" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.015478" asserts="0">
+              <properties />
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1329" name="InvalidManifestRelationsAreRejected" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidManifestRelationsAreRejected" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.005382" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1325" name="InvalidManifestRelationsAreRejected(0)" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidManifestRelationsAreRejected(0)" methodname="InvalidManifestRelationsAreRejected" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="429036679" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001367" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1326" name="InvalidManifestRelationsAreRejected(1)" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidManifestRelationsAreRejected(1)" methodname="InvalidManifestRelationsAreRejected" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1474443923" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001324" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1327" name="InvalidManifestRelationsAreRejected(2)" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidManifestRelationsAreRejected(2)" methodname="InvalidManifestRelationsAreRejected" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="897575592" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001055" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1328" name="InvalidManifestRelationsAreRejected(3)" fullname="UPandaGF.Tests.SerializationMigrationTests.InvalidManifestRelationsAreRejected(3)" methodname="InvalidManifestRelationsAreRejected" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1678350846" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001002" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1275" name="KnownPolymorphicTypeIsExplicitlyRegistered" fullname="UPandaGF.Tests.SerializationMigrationTests.KnownPolymorphicTypeIsExplicitlyRegistered" methodname="KnownPolymorphicTypeIsExplicitlyRegistered" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="729113436" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001385" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1264" name="LegacyFieldsAndContainerValuesRemainReadableWithoutFormatter" fullname="UPandaGF.Tests.SerializationMigrationTests.LegacyFieldsAndContainerValuesRemainReadableWithoutFormatter" methodname="LegacyFieldsAndContainerValuesRemainReadableWithoutFormatter" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1430727650" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.003005" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1288" name="LegacyFileIsBackedUpAndRewrittenOnlyAfterSuccessfulConversion" fullname="UPandaGF.Tests.SerializationMigrationTests.LegacyFileIsBackedUpAndRewrittenOnlyAfterSuccessfulConversion" methodname="LegacyFileIsBackedUpAndRewrittenOnlyAfterSuccessfulConversion" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1456023668" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.040950" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1287" name="LegacyZeroCapacityPaddingIsAcceptedButOtherTrailingDataIsNot" fullname="UPandaGF.Tests.SerializationMigrationTests.LegacyZeroCapacityPaddingIsAcceptedButOtherTrailingDataIsNot" methodname="LegacyZeroCapacityPaddingIsAcceptedButOtherTrailingDataIsNot" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="61499632" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001872" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1300" name="MetadataLimitsAreMeasuredInUtf8Bytes" fullname="UPandaGF.Tests.SerializationMigrationTests.MetadataLimitsAreMeasuredInUtf8Bytes" methodname="MetadataLimitsAreMeasuredInUtf8Bytes" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1719768685" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001348" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1304" name="MigrationDetectsSourceChangeInsteadOfOverwritingNewerFile" fullname="UPandaGF.Tests.SerializationMigrationTests.MigrationDetectsSourceChangeInsteadOfOverwritingNewerFile" methodname="MigrationDetectsSourceChangeInsteadOfOverwritingNewerFile" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1616573560" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.004104" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1262" name="NewFormatPreservesPrivateFieldsContainersUnicodeAndValueTypes" fullname="UPandaGF.Tests.SerializationMigrationTests.NewFormatPreservesPrivateFieldsContainersUnicodeAndValueTypes" methodname="NewFormatPreservesPrivateFieldsContainersUnicodeAndValueTypes" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1626154108" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001429" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1263" name="NewFormatSupportsExplicitUnityValueTypesWithoutSerializingComputedProperties" fullname="UPandaGF.Tests.SerializationMigrationTests.NewFormatSupportsExplicitUnityValueTypesWithoutSerializingComputedProperties" methodname="NewFormatSupportsExplicitUnityValueTypesWithoutSerializingComputedProperties" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="562053277" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001867" asserts="0">
+              <properties />
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1270" name="OrdinalIgnoreCaseDictionaryPreservesComparer" fullname="UPandaGF.Tests.SerializationMigrationTests.OrdinalIgnoreCaseDictionaryPreservesComparer" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.003798" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1268" name="OrdinalIgnoreCaseDictionaryPreservesComparer(False)" fullname="UPandaGF.Tests.SerializationMigrationTests.OrdinalIgnoreCaseDictionaryPreservesComparer(False)" methodname="OrdinalIgnoreCaseDictionaryPreservesComparer" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1980240537" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001717" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1269" name="OrdinalIgnoreCaseDictionaryPreservesComparer(True)" fullname="UPandaGF.Tests.SerializationMigrationTests.OrdinalIgnoreCaseDictionaryPreservesComparer(True)" methodname="OrdinalIgnoreCaseDictionaryPreservesComparer" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1593412443" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001646" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1285" name="OversizedArrayDeclarationIsRejectedWithoutAllocatingIt" fullname="UPandaGF.Tests.SerializationMigrationTests.OversizedArrayDeclarationIsRejectedWithoutAllocatingIt" methodname="OversizedArrayDeclarationIsRejectedWithoutAllocatingIt" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1825452597" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001358" asserts="0">
+              <properties />
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1273" name="ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks" fullname="UPandaGF.Tests.SerializationMigrationTests.ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.002867" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1271" name="ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks(False)" fullname="UPandaGF.Tests.SerializationMigrationTests.ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks(False)" methodname="ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="27040592" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001305" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1272" name="ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks(True)" fullname="UPandaGF.Tests.SerializationMigrationTests.ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks(True)" methodname="ReaderDoesNotExecuteConstructorsOrDeserializationCallbacks" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1008698510" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001210" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1289" name="ReadOnlyLegacyModeDoesNotRewriteSource" fullname="UPandaGF.Tests.SerializationMigrationTests.ReadOnlyLegacyModeDoesNotRewriteSource" methodname="ReadOnlyLegacyModeDoesNotRewriteSource" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="244803436" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.018344" asserts="0">
+              <properties />
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1298" name="RectangularAndPolymorphicArrayShapesSurvive" fullname="UPandaGF.Tests.SerializationMigrationTests.RectangularAndPolymorphicArrayShapesSurvive" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.004153" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1296" name="RectangularAndPolymorphicArrayShapesSurvive(False)" fullname="UPandaGF.Tests.SerializationMigrationTests.RectangularAndPolymorphicArrayShapesSurvive(False)" methodname="RectangularAndPolymorphicArrayShapesSurvive" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1304855571" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001891" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1297" name="RectangularAndPolymorphicArrayShapesSurvive(True)" fullname="UPandaGF.Tests.SerializationMigrationTests.RectangularAndPolymorphicArrayShapesSurvive(True)" methodname="RectangularAndPolymorphicArrayShapesSurvive" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1909581622" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001670" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-suite type="ParameterizedMethod" id="1295" name="RegisteredDerivedRootCanBeLoadedThroughBaseType" fullname="UPandaGF.Tests.SerializationMigrationTests.RegisteredDerivedRootCanBeLoadedThroughBaseType" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.002646" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1293" name="RegisteredDerivedRootCanBeLoadedThroughBaseType(False)" fullname="UPandaGF.Tests.SerializationMigrationTests.RegisteredDerivedRootCanBeLoadedThroughBaseType(False)" methodname="RegisteredDerivedRootCanBeLoadedThroughBaseType" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1762435072" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001268" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1294" name="RegisteredDerivedRootCanBeLoadedThroughBaseType(True)" fullname="UPandaGF.Tests.SerializationMigrationTests.RegisteredDerivedRootCanBeLoadedThroughBaseType(True)" methodname="RegisteredDerivedRootCanBeLoadedThroughBaseType" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="120380796" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001059" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1321" name="RegisteringUnityValueDtoDoesNotBlockUnrelatedLegacyReads" fullname="UPandaGF.Tests.SerializationMigrationTests.RegisteringUnityValueDtoDoesNotBlockUnrelatedLegacyReads" methodname="RegisteringUnityValueDtoDoesNotBlockUnrelatedLegacyReads" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1967210699" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001399" asserts="0">
+              <properties />
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1324" name="RuntimeManifestLoaderReadsBothFormats" fullname="UPandaGF.Tests.SerializationMigrationTests.RuntimeManifestLoaderReadsBothFormats" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.005762" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1322" name="RuntimeManifestLoaderReadsBothFormats(False)" fullname="UPandaGF.Tests.SerializationMigrationTests.RuntimeManifestLoaderReadsBothFormats(False)" methodname="RuntimeManifestLoaderReadsBothFormats" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="252174557" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001439" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1323" name="RuntimeManifestLoaderReadsBothFormats(True)" fullname="UPandaGF.Tests.SerializationMigrationTests.RuntimeManifestLoaderReadsBothFormats(True)" methodname="RuntimeManifestLoaderReadsBothFormats" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="929174480" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.003996" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1307" name="SavingBeforeLoadingStillBacksUpLegacyBytes" fullname="UPandaGF.Tests.SerializationMigrationTests.SavingBeforeLoadingStillBacksUpLegacyBytes" methodname="SavingBeforeLoadingStillBacksUpLegacyBytes" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="585189269" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.019604" asserts="0">
+              <properties />
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1267" name="SharedAndCyclicReferencesRemainIntact" fullname="UPandaGF.Tests.SerializationMigrationTests.SharedAndCyclicReferencesRemainIntact" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.004419" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1265" name="SharedAndCyclicReferencesRemainIntact(False)" fullname="UPandaGF.Tests.SerializationMigrationTests.SharedAndCyclicReferencesRemainIntact(False)" methodname="SharedAndCyclicReferencesRemainIntact" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1078055691" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.002210" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1266" name="SharedAndCyclicReferencesRemainIntact(True)" fullname="UPandaGF.Tests.SerializationMigrationTests.SharedAndCyclicReferencesRemainIntact(True)" methodname="SharedAndCyclicReferencesRemainIntact" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1687263651" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001734" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-suite type="ParameterizedMethod" id="1310" name="SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput" fullname="UPandaGF.Tests.SerializationMigrationTests.SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.075189" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1308" name="SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput(False)" fullname="UPandaGF.Tests.SerializationMigrationTests.SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput(False)" methodname="SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="868728606" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.038095" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1309" name="SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput(True)" fullname="UPandaGF.Tests.SerializationMigrationTests.SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput(True)" methodname="SharedManifestWriterBacksUpOldBytesIncludingEncryptedInput" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1052194304" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.036677" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-case id="1305" name="TruncatedAndMutatedLegacyRecordsFailWithoutExecutingCallbacks" fullname="UPandaGF.Tests.SerializationMigrationTests.TruncatedAndMutatedLegacyRecordsFailWithoutExecutingCallbacks" methodname="TruncatedAndMutatedLegacyRecordsFailWithoutExecutingCallbacks" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1091265368" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.002453" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1306" name="UnknownFutureFileDoesNotFallbackToLegacyReaderOrRewriteAnything" fullname="UPandaGF.Tests.SerializationMigrationTests.UnknownFutureFileDoesNotFallbackToLegacyReaderOrRewriteAnything" methodname="UnknownFutureFileDoesNotFallbackToLegacyReaderOrRewriteAnything" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="1643679772" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.018125" asserts="0">
+              <properties />
+            </test-case>
+            <test-case id="1276" name="UnsupportedValueCannotOverwriteExistingSave" fullname="UPandaGF.Tests.SerializationMigrationTests.UnsupportedValueCannotOverwriteExistingSave" methodname="UnsupportedValueCannotOverwriteExistingSave" classname="UPandaGF.Tests.SerializationMigrationTests" runstate="Runnable" seed="13458675" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.022095" asserts="0">
+              <properties />
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1333" name="ServicesContractRegressionTests" fullname="UPandaGF.Tests.ServicesContractRegressionTests" classname="UPandaGF.Tests.ServicesContractRegressionTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.020540" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1337" name="HttpServiceReturnsSuccessFailureAndSupportsCancellation" fullname="UPandaGF.Tests.ServicesContractRegressionTests.HttpServiceReturnsSuccessFailureAndSupportsCancellation" methodname="HttpServiceReturnsSuccessFailureAndSupportsCancellation" classname="UPandaGF.Tests.ServicesContractRegressionTests" runstate="Runnable" seed="67915655" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.009313" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[<###>  14:51:41.392  ThreadID:1
+[HttpClient] 请求失败（重试已用尽）。URL: http://127.0.0.1:6818/fail, 原因: HTTP Request Failed. URL: http://127.0.0.1:6818/fail, Code: 503, Error: HTTP/1.1 503 Service Unavailable, Body: {"value":1}
+]]></output>
+            </test-case>
+            <test-case id="1334" name="LogServiceHonoursRuntimeSwitches" fullname="UPandaGF.Tests.ServicesContractRegressionTests.LogServiceHonoursRuntimeSwitches" methodname="LogServiceHonoursRuntimeSwitches" classname="UPandaGF.Tests.ServicesContractRegressionTests" runstate="Runnable" seed="221515073" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001371" asserts="0">
+              <properties />
+              <output><![CDATA[contract-info
+contract-warning
+contract-error
+]]></output>
+            </test-case>
+            <test-case id="1335" name="PoolWithoutInjectedAssetsFailsClosed" fullname="UPandaGF.Tests.ServicesContractRegressionTests.PoolWithoutInjectedAssetsFailsClosed" methodname="PoolWithoutInjectedAssetsFailsClosed" classname="UPandaGF.Tests.ServicesContractRegressionTests" runstate="Runnable" seed="1939659150" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001527" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[InvalidOperationException: 对象池未注入资源服务：请通过 IPoolService 创建池，或先调用 Configure(IAssetService)。
+]]></output>
+            </test-case>
+            <test-case id="1338" name="QuestManagerUsesInjectedSaveServiceAndRewardReceiver" fullname="UPandaGF.Tests.ServicesContractRegressionTests.QuestManagerUsesInjectedSaveServiceAndRewardReceiver" methodname="QuestManagerUsesInjectedSaveServiceAndRewardReceiver" classname="UPandaGF.Tests.ServicesContractRegressionTests" runstate="Runnable" seed="1257183420" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.004695" asserts="0">
+              <properties />
+              <output><![CDATA[<###>  14:51:41.398  ThreadID:1
+[QuestManager] 已加载任务模板 0 个（自定义加载器）
+<###>  14:51:41.400  ThreadID:1
+[QuestManager] 已存档到槽位：quests
+<###>  14:51:41.401  ThreadID:1
+[QuestManager] 读档完成，共 0 条任务记录。
+]]></output>
+            </test-case>
+            <test-case id="1339" name="QuestManagerWithoutRewardReceiverDoesNotGrantOrThrow" fullname="UPandaGF.Tests.ServicesContractRegressionTests.QuestManagerWithoutRewardReceiverDoesNotGrantOrThrow" methodname="QuestManagerWithoutRewardReceiverDoesNotGrantOrThrow" classname="UPandaGF.Tests.ServicesContractRegressionTests" runstate="Runnable" seed="2131353203" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.000975" asserts="0">
+              <properties />
+              <output><![CDATA[<###>  14:51:41.402  ThreadID:1
+[QuestManager] 没有奖励接收端，奖励未发放：新任务
+]]></output>
+            </test-case>
+            <test-case id="1336" name="ScopedPoolReturnsLeaseAndReleasesOnScopeDispose" fullname="UPandaGF.Tests.ServicesContractRegressionTests.ScopedPoolReturnsLeaseAndReleasesOnScopeDispose" methodname="ScopedPoolReturnsLeaseAndReleasesOnScopeDispose" classname="UPandaGF.Tests.ServicesContractRegressionTests" runstate="Runnable" seed="1265114825" result="Passed" start-time="2026-11-08 06:51:41Z" end-time="2026-11-08 06:51:41Z" duration="0.001474" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+              </properties>
+              <output><![CDATA[[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

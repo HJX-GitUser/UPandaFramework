@@ -1,0 +1,4 @@
+﻿项目：_verify/P1Verify2022
+Unity：2022.3.53f1c1
+编译：0 个 error CS；生成 17 个 UPandaGF*.dll
+备注：2022.3 本轮只做编译验证。

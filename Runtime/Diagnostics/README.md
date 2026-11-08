@@ -13,7 +13,7 @@
 | `maxLogLength` | 大于零时截断 PLogger 格式化的消息，零表示不限。 |
 | `logSave`、`saveOverwrite`、`logFileSavePath` | 启用文件写入、选择固定或带时间戳的文件名、指定文件输出目录。 |
 
-Unity 原生日志和异常可独立进入 Console。Reporter 和文件监听订阅的是 Unity 日志回调，因此它们还能收到其他组件的 Unity 日志。 [LogConfig.cs](Data/LogConfig.cs)
+Unity 原生日志和异常可独立进入 Console。日志控制台和文件监听订阅的是 Unity 日志回调，因此它们还能收到其他组件的 Unity 日志。 [LogConfig.cs](Data/LogConfig.cs)
 
 在业务脚本的方法内可直接调用以下入口，脚本需导入 `UPandaGF` 命名空间。
 
@@ -46,11 +46,11 @@ services.Log.LogException(exception);
 
 | 面板 | 使用方式 | 数据路径 |
 | --- | --- | --- |
-| Reporter | 在 `UPGameRoot` Inspector 打开调试模式并检查 `reporter` 引用，运行后通过 FPS 按钮或 `ShowLogWindows()` 打开。 | 直接捕获 Unity 日志，有独立队列、日志保留预算与框架诊断页。 |
+| 日志控制台 | 在 `UPGameRoot` Inspector 打开“启动日志窗口”，保存场景后自动创建 `logConsole`；运行时点 FPS 按钮或调用 `UPGameRoot.logConsole.Show()`。 | 直接捕获 Unity 日志，有独立队列、日志保留预算与框架诊断页。 |
 | uGUI 日志面板 | 使用 `UPandaGF → 日志系统 → UGUI日志面板创建器` 生成预制体，按面板需要设置日志文件路径。 | 可跟读日志文件并展示、过滤、导出。大量积压会在一次更新中取走队列并重建文本，适合调试。 |
 
-`EnableDebugModel` 和 `showFPS` 控制显示。`UPGameRoot.Config` 仍返回防御性副本（每次访问都会复制，适合诊断/低频读取）；`DebugerInit` 只在初始化时取一次 `EnableDebugModel`，更新/绘制路径不再触发配置 JSON 往返。运行中切换该开关需要重新进入播放。uGUI 面板的 `F12`/错误自动弹出依赖管理器保持激活，面板内容单独显示/隐藏。 [Reporter](../Composition/Reporter/README.md) · [uGUI 面板](UGUIDebug/LogListenerManager.cs)
+`EnableDebugModel` 和 `showFPS` 控制显示。`UPGameRoot.Config` 仍返回防御性副本（每次访问都会复制，适合诊断/低频读取）；`DebugerInit` 只在初始化时取一次 `EnableDebugModel`，更新/绘制路径不再触发配置 JSON 往返。运行中切换该开关需要重新进入播放。uGUI 面板的 `F12`/错误自动弹出依赖管理器保持激活，面板内容单独显示/隐藏。 [日志控制台](../Composition/LogConsole/README.md) · [uGUI 面板](UGUIDebug/LogListenerManager.cs)
 
 ## 诊断和验证
 
-`FrameworkDiagnostics.Capture(root)` 读取根状态、启动步骤耗时、资源引用、AB 在途请求、场景作用域和 UI 面板计数。诊断计数是采样结果，判断服务可用性仍以根状态和实际调用结果为准。编辑器工具提供宏开关、配置面板、诊断窗口与日志自检。 [FrameworkDiagnostics.cs](../Composition/FrameworkDiagnostics.cs) · [日志自检](../../Editor/PLogger/PLoggerSelfCheck.cs) · [Reporter 回归](../../Tests/PlayMode/ReporterRegressionTests.cs)
+`FrameworkDiagnostics.Capture(root)` 读取根状态、启动步骤耗时、资源引用、AB 在途请求、场景作用域和 UI 面板计数。诊断计数是采样结果，判断服务可用性仍以根状态和实际调用结果为准。编辑器工具提供宏开关、配置面板、诊断窗口与日志自检。 [FrameworkDiagnostics.cs](../Composition/FrameworkDiagnostics.cs) · [日志自检](../../Editor/PLogger/PLoggerSelfCheck.cs) · [日志控制台回归](../../Tests/PlayMode/LogConsoleRegressionTests.cs)

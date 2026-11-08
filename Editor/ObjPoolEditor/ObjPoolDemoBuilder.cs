@@ -40,7 +40,7 @@
 //       但运行时 UPGameRoot.Init 会用 Root 的值覆盖 AssetsLoader 的，所以这里把两处写成同一份
 //       （enable=false），避免配置误导。
 //    3. 不设置 RenderSettings.sun（原型 m_Sun 为空）。
-//    4. Reporter 字段原型为 null，这里也不挂。
+//    4. 日志控制台字段原型为 null，这里也不挂。
 //    5. EventSystem 沿用原型同款旧版 StandaloneInputModule。
 //
 //  ---- ⚠️ 实现注意（改这个脚本前务必先读）----

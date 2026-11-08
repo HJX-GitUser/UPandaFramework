@@ -96,7 +96,7 @@ namespace UPandaGF
         public const string tempAssetData = "TempAssetData.assetref";
         #endregion
 
-        public Reporter reporter;
+        public UPandaLogConsole logConsole;
 
         private ABSourcesRelated sourceRef = null;
         public ABSourcesRelated SourceRef { get => sourceRef; }

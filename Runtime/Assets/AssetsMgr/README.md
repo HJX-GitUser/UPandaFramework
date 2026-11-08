@@ -1,4 +1,4 @@
-# 资源加载与平台文件
+﻿# 资源加载与平台文件
 
 新业务通过 `UPGameRoot.Services.Assets` 获取资源租约，通过 `Services.Scenes` 切换场景。所有会触碰 Unity 资源的调用放在主线程，并先等待框架就绪。
 
@@ -36,7 +36,7 @@ public static class IconLoading
 
 `ResourcesLoader.Instance.Load<T>`、`LoadAsync<T>` 及接收 `Type` 的重载仍可用。缓存键由路径、完整类型身份和 API 形态组成，泛型与 `Type` 版本各自计数。每次成功的旧式加载都应配对调用同一形态的 `UnLoadAsset`。重复的异步请求共享加载，失败回调返回 `null`，下次可以重试。命中缓存时回调可同步执行。
 
-`UnLoadAsset(..., isDel: false)` 在计数为零时保留缓存，`isDel: true` 尝试移除缓存。加载器不会主动销毁 Prefab 实例。`UnLoadUnUseAssets` 清理无引用的缓存并触发 Unity 的未使用资源回收。`ClearDic` 会取消等待并重置全部缓存计数，应在整体关闭时调用。`GetDiagnostics()` 提供缓存条目、在途条目和引用数，Reporter 可展示这些计数。 [ResourcesLoader.cs](ResourcesLoader.cs)
+`UnLoadAsset(..., isDel: false)` 在计数为零时保留缓存，`isDel: true` 尝试移除缓存。加载器不会主动销毁 Prefab 实例。`UnLoadUnUseAssets` 清理无引用的缓存并触发 Unity 的未使用资源回收。`ClearDic` 会取消等待并重置全部缓存计数，应在整体关闭时调用。`GetDiagnostics()` 提供缓存条目、在途条目和引用数，日志控制台可展示这些计数。 [ResourcesLoader.cs](ResourcesLoader.cs)
 
 ## StreamingAssets 与平台存储
 

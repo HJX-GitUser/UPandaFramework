@@ -49,7 +49,7 @@ namespace UPandaGF
 
         public HotUpdateSettings hotUpdate = new HotUpdateSettings();
 
-        [Tooltip("启用运行时日志窗口（Reporter），正式包建议关闭")]
+        [Tooltip("启用运行时日志控制台，正式包建议关闭")]
         public bool EnableDebugModel = false;
 
         [Tooltip("资源清单 AES 配置：必须与打包端一致，随包清单是明文时保持关闭")]

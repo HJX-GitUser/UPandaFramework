@@ -41,20 +41,20 @@ public static class AppEntry
 | 程序集 | 内容 |
 | --- | --- |
 | `UPandaGF.Contracts` | 服务接口、公共枚举、资源租约。 |
-| `UPandaGF.Diagnostics` | 日志原语（PLogger / LogService / LogConfig）与 uGUI 日志面板。 |
+| `UPandaGF.Diagnostics` | 日志原语（PLogger / LogService / LogConfig）与 uGUI 日志面板；`autoReferenced = true`，默认自动引用。 |
 | `UPandaGF.Core` | 启动生命周期、时间/输入/计时器/配置/流程/场景/作用域、事件、单例、PublicMono、HTTP。 |
 | `UPandaGF.Assets` | Resources / AssetBundle / StreamingAssets、下载、热更、对象池、清单序列化。 |
 | `UPandaGF.UI` | UIManager、面板基类、UI 辅助组件。 |
 | `UPandaGF.Audio` | AudioMgr。 |
 | `UPandaGF.Save` | 槽位存档、PlayerPrefs、Excel 表读取。 |
 | `UPandaGF.Gameplay` / `.Tasks` / `.InteractiveScoring` / `.Replay` | 可选玩法模块；`autoReferenced = false`。 |
-| `UPandaGF.Runtime` | 组合根（UPGameRoot / GameServices / Reporter），引用全部运行时模块。 |
+| `UPandaGF.Runtime` | 组合根（UPGameRoot / GameServices / 日志控制台），引用全部运行时模块。 |
 | `UPandaGF.Visuals` | Shader 目录边界，具体效果仍受渲染管线和材质配置约束。 |
 | `UPandaGF.Samples` | 启动、协程、池、状态机和任务示例；`autoReferenced = false`，不会进入 Player。 |
 | `UPandaGF.Editor` | Editor 工具，引用运行时、玩法、示例，以及 Excel 和 SharpZipLib DLL。 |
 | `UPandaGF.Tests.EditMode` / `UPandaGF.Tests` | EditMode 单元测试与 PlayMode 集成回归。 |
 
-0.4.0 → 0.5.0 的程序集、命名空间与目录迁移见 [迁移指南](Documentation~/MIGRATION-0.5.md)；业务代码需要把 `using UPandaGF.RunTime.*` / `ReplaySystem` / `AssetBundleBrowser` 替换为新命名空间，并补充直接引用的模块程序集。
+0.4.0 → 0.5.0 的程序集、命名空间与目录迁移见 [迁移指南](Documentation~/MIGRATION-0.5.md)；业务代码需要把 `using UPandaGF.RunTime.*` / `ReplaySystem` / `AssetBundleBrowser` 替换为新命名空间，并补充直接引用的模块程序集。日志面板替换见 [0.6 迁移指南](Documentation~/MIGRATION-0.6.md)。
 
 ## 核心模块
 
@@ -65,7 +65,7 @@ public static class AppEntry
 | HTTP 与文件下载 | [HTTPTool](Runtime/Core/HTTPTool/README.md) · [Downloader](Runtime/Assets/DownloadMgr/README.md) |
 | UI、音频与复用 | [uGUI](Runtime/UI/UIMgr/README.md) · [音频](Runtime/Audio/AudioMgr/README.md) · [对象池](Runtime/Assets/ObjPool/README.md) |
 | 运行基础 | [单例](Runtime/Core/Singleton/README.md) · [事件](Runtime/Core/EventCenterModule/README.md) · [PublicMono](Runtime/Core/PublicMono/README.md) · [扩展方法](Runtime/Core/Extend/README.md) |
-| 存档与诊断 | [存档、Excel 与 PlayerPrefs](Runtime/Save/StorageDataMgr/README.md) · [序列化](Runtime/Assets/Serialization/README.md) · [日志](Runtime/Diagnostics/README.md) · [Reporter](Runtime/Composition/Reporter/README.md) |
+| 存档与诊断 | [存档、Excel 与 PlayerPrefs](Runtime/Save/StorageDataMgr/README.md) · [序列化](Runtime/Assets/Serialization/README.md) · [日志](Runtime/Diagnostics/README.md) · [日志控制台](Runtime/Composition/LogConsole/README.md) |
 
 ## 玩法与制作工具
 

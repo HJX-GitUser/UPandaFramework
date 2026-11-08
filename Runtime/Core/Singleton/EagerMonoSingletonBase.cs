@@ -98,7 +98,7 @@ public abstract class EagerMonoSingletonBase<T> : MonoBehaviour where T : MonoBe
     // 已删除，且**不要恢复**——它会造成事故：
     //   BeforeSceneLoad 阶段会先创建一个没有 Inspector 配置的空实例并 DontDestroyOnLoad，
     //   场景加载后场景里那个「带配置的正主」在 Awake 时发现 _instance 已被占用 → 被 Destroy，
-    //   最终留下空壳、销毁正主（UPGameRoot 的 config / reporter 等序列化引用全部丢失）。
+    //   最终留下空壳、销毁正主（UPGameRoot 的 config / logConsole 等序列化引用全部丢失）。
 
     private void Awake()
     {

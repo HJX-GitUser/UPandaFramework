@@ -17,7 +17,7 @@
 | `UPandaGF.UI` | UIManager、面板基类、UI 辅助 | Contracts、Core、Assets、Diagnostics、TMP |
 | `UPandaGF.Audio` | AudioMgr | Contracts、Core、Assets、Diagnostics |
 | `UPandaGF.Save` | 槽位存档、PlayerPrefs、Excel 表读取 | Contracts、Core、Assets、Diagnostics |
-| `UPandaGF.Runtime` | 组合根（UPGameRoot / GameServices / Reporter） | 以上全部 |
+| `UPandaGF.Runtime` | 组合根（UPGameRoot / GameServices / 日志控制台） | 以上全部 |
 | `UPandaGF.Gameplay*` | 可选玩法模块（`autoReferenced = false`） | Contracts、Core、Assets、UI、Save、Diagnostics |
 | `UPandaGF.Samples` | 示例（`autoReferenced = false`，不进入 Player） | 全部模块、TMP |
 
@@ -27,7 +27,7 @@
 
 | 0.4.0 | 0.5.0 |
 | --- | --- |
-| 无命名空间（`PublicMono`、`ResourcesLoader`、`Reporter`、`HttpManager`、`PlayerPrefsDataMgr` 等） | `UPandaGF` |
+| 无命名空间（`PublicMono`、`ResourcesLoader`、`HttpManager`、`PlayerPrefsDataMgr` 等） | `UPandaGF` |
 | `UPandaGF.RunTime.TaskSystem` | `UPandaGF.Gameplay.Tasks` |
 | `UPandaGF.RunTime.InteractiveTaskScoringSystem` | `UPandaGF.Gameplay.InteractiveScoring` |
 | `UPandaGF.RunTime.RobotCCDIK` | `UPandaGF.Gameplay.RobotCCDIK` |
@@ -65,7 +65,7 @@
 | `Runtime/Manager/GameRoot/UPGameRoot.cs` | `Runtime/Composition/GameRoot/UPGameRoot.cs` |
 | `Runtime/Manager/GameRoot/StartupLifecycle.cs` | `Runtime/Core/StartupLifecycle.cs` |
 | `Runtime/Manager/DebugSystem`（日志原语/日志面板） | `Runtime/Diagnostics` |
-| `Runtime/Manager/DebugSystem/Reporter`、`DebugerInit`、`FrameworkDiagnostics` | `Runtime/Composition/...` |
+| `Runtime/Manager/DebugSystem` 的日志面板、`DebugerInit`、`FrameworkDiagnostics` | `Runtime/Composition/...` |
 | `Runtime/UPandaGF.Runtime.asmdef` | `Runtime/Composition/UPandaGF.Runtime.asmdef` |
 | `Runtime/Game/UPandaGF.Extensions.asmdef` | `Runtime/Game/UPandaGF.Gameplay.asmdef` + 三个子 asmdef |
 

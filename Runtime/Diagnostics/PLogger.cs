@@ -19,7 +19,7 @@ namespace UPandaGF
     /// 运行时开关：<see cref="cfg"/> 里的 openLog / openWarning / openError / maxLogLength 等字段，
     /// 配置来自 StreamingAssets/Data/LogConfig.json（由 DebugerInit 读取后调用 InitLog 覆盖）。
     ///
-    /// 注意：事件参数是 object，值类型会装箱；高频路径请先判断再拼字符串，或改用 Reporter 面板观察。
+    /// 注意：事件参数是 object，值类型会装箱；高频路径请先判断再拼字符串，或改用日志控制台观察。
     /// </summary>
     public static class PLogger
     {
@@ -158,7 +158,7 @@ namespace UPandaGF
             UnityEngine.Debug.LogError(GenerateLog(Format(Safe(obj), args)));
         }
 
-        /// <summary>异常日志（字符串形式），与 Reporter 的 LogType.Exception 对应</summary>
+        /// <summary>异常日志（字符串形式），对应日志控制台的错误级别</summary>
         public static void LogException(object obj)
         {
             if (!CanError) return;

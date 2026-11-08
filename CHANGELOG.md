@@ -2,11 +2,29 @@
 
 All notable changes to this package are documented here. The format follows Keep a Changelog and the project uses Semantic Versioning.
 
+## [0.6.0] - 2026-11-08
+
+### Changed (breaking)
+
+- Replaced the legacy runtime log panel with an original implementation: `UPandaLogConsole` (`Runtime/Composition/LogConsole/`). New code covers thread-safe bounded capture, main-thread store, severity/search/collapse filters, copy/export and stack inspection, with optional project-owned icons/skin and a text-only fallback.
+- Added three pages (logs / display settings / framework diagnostics), safe-area-responsive layout, persisted column/toolbar/scale/opacity settings, and live `FrameworkDiagnostics` resource/module/startup data. Added a Chinese `UPandaLogConsoleEditor` Inspector with capacity/behavior/icon help and runtime status/actions. Log rows no longer use white alternating textures; the panel uses a dark surface with gray-white text, the header close button shows one X icon, and scrollbars are 14px draggable bars without arrow icons.
+- 旧日志面板字段 → `UPGameRoot.logConsole` (`UPandaLogConsole`); `DebugerInit` uses `Show()` / `IsVisible`; `UPGameRootEditor` creates/destroys a `LogConsole` child instead of assigning image assets.
+- Removed the old log-panel runtime files, editor menu/hook and regression test file; added `LogConsoleRegressionTests` and `LogConsoleIconTests`. Project-owned icon assets were migrated to `Runtime/Composition/LogConsole/Icons` with GUIDs preserved.
+- `UPandaGF.Diagnostics` now uses `autoReferenced: true` so the log/diagnostics assembly is referenced by default; `FrameworkConventionValidator` checks the setting.
+
+### Removed
+
+- The third-party log-viewer attribution section from `THIRD_PARTY_NOTICES.md`; the derived implementation it referenced has been deleted. The log-console icons are project-owned assets and were moved to `Runtime/Composition/LogConsole/Icons`, not third-party material.
+
+### Documentation
+
+- Added `Documentation~/MIGRATION-0.6.md`, `Runtime/Composition/LogConsole/README.md`; updated Diagnostics/Editor/Tests/root docs.
+
 ## [0.5.0] - 2026-11-08
 
 ### Added
 
-- Assembly split: `UPandaGF.Diagnostics`, `UPandaGF.Core`, `UPandaGF.Assets`, `UPandaGF.UI`, `UPandaGF.Audio`, `UPandaGF.Save`; `UPandaGF.Runtime` is now the composition root (`UPGameRoot` / `GameServices` / `Reporter`).
+- Assembly split: `UPandaGF.Diagnostics`, `UPandaGF.Core`, `UPandaGF.Assets`, `UPandaGF.UI`, `UPandaGF.Audio`, `UPandaGF.Save`; `UPandaGF.Runtime` is now the composition root (`UPGameRoot` / `GameServices` / 日志控制台).
 - Optional gameplay assemblies: `UPandaGF.Gameplay`, `UPandaGF.Gameplay.Tasks`, `UPandaGF.Gameplay.InteractiveScoring`, `UPandaGF.Gameplay.Replay`（`autoReferenced = false`）。`UPandaGF.Samples` 也不再自动引用，不进入 Player。
 - `Documentation~/MIGRATION-0.5.md`: assembly / namespace / path migration table and upgrade steps.
 
@@ -21,7 +39,7 @@ All notable changes to this package are documented here. The format follows Keep
 
 ### Fixed
 
-- PlayMode regression tests no longer assume `FileUpdateTransaction` / `HotUpdateFileGate` live in the `UPGameRoot` assembly; `ReporterLogStore` reflection uses its new `UPandaGF` namespace.
+- PlayMode regression tests no longer assume `FileUpdateTransaction` / `HotUpdateFileGate` live in the `UPGameRoot` assembly.
 - `Tools/ci/invoke-unity.ps1` quotes Unity command-line arguments containing spaces, so projects such as `Framework Validation` can be compiled/tested in batchmode.
 
 ### Documentation

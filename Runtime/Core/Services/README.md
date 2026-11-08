@@ -1,4 +1,4 @@
-# 应用服务与场景作用域
+﻿# 应用服务与场景作用域
 
 资源加载就绪后，`UPGameRoot` 装配 `GameServices`，并向场景中的 `IGameServicesConsumer` 提供接口集合。使用 Unity 对象、调用场景和作用域 API 时应在主线程。接入业务时可以通过构造函数或 `Configure` 传入所需接口，测试可替换后端。 [服务契约](../../Contracts/README.md) · [装配源码](../../Composition/GameServices.cs) · [启动流程](../../Composition/GameRoot/README.md)
 
@@ -60,4 +60,4 @@ WebGL 上 `Save` 写入 Unity 的虚拟文件系统。需要确认浏览器持�
 
 ## 诊断和验证
 
-`FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 可读取场景请求和作用域、流程、前后台状态、面板与资源计数。Reporter 的框架诊断页使用同一份快照。基础服务可在 EditMode 验证，作用域、原生场景和面板所有权用 PlayMode 测试覆盖。 [诊断入口](../../Composition/FrameworkDiagnostics.cs) · [基础服务测试](../../../Tests/EditMode/FoundationServiceTests.cs) · [作用域与场景回归](../../../Tests/PlayMode/P1RegressionTests.cs)
+`FrameworkDiagnostics.Capture(UPGameRoot.Instance)` 可读取场景请求和作用域、流程、前后台状态、面板与资源计数。日志控制台的框架诊断页使用同一份快照。基础服务可在 EditMode 验证，作用域、原生场景和面板所有权用 PlayMode 测试覆盖。 [诊断入口](../../Composition/FrameworkDiagnostics.cs) · [基础服务测试](../../../Tests/EditMode/FoundationServiceTests.cs) · [作用域与场景回归](../../../Tests/PlayMode/P1RegressionTests.cs)
