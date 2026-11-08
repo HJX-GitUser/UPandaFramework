@@ -22,7 +22,7 @@
 //      ├ DebugerInit        showFPS=true + LogConfig 全套开关
 //      ├ Downloader         maxConcurrentDownloads=1 / defaultTimeout=30 / defaultRetryCount=0 / retryDelay=1 / enableResume=false
 //      ├ AssetsLoader       AssetAESConfig（与 UPGameRoot 上的保持同一份）
-//      ├ BinaryDataMgrInit  savePath="/Data/" / extension=".binary"
+//      ├ BinaryDataMgrInit  savePath="Data/BinaryData" / extension=".binary"
 //      ├ UIManager          子物体 UICamera + Canvas（下面这两个是 UIManager.Init() 自己建的）
 //      │   ├ UICamera       ClearFlags=Depth / depth=10 / cullingMask=仅 UI 层
 //      │   └ Canvas         RenderMode=ScreenSpaceCamera(worldCamera=UICamera) / CanvasScaler 1920x1080 Expand
@@ -294,7 +294,7 @@ namespace UPandaGF.GFEditor
         private static void CreateBinaryDataMgrInit(Transform parent)
         {
             BinaryDataMgrInit binaryData = GetOrCreateComponent<BinaryDataMgrInit>(parent, "BinaryDataMgrInit");
-            binaryData.savePath = "/Data/";
+            binaryData.savePath = "Data/BinaryData";
             binaryData.extension = ".binary";
         }
 

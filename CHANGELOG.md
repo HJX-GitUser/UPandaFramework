@@ -15,6 +15,10 @@ All notable changes to this package are documented here. The format follows Keep
 - Added `AssetLoaddingMethod.NoAssetBundle`: startup skips AssetBundle module initialization, using Resources/packaged resources without a manifest, main bundle or hot update; scenes use Build Settings. Added `NoAssetBundleModeTests`.
 - `UPandaGF.Diagnostics` now uses `autoReferenced: true` so the log/diagnostics assembly is referenced by default; `FrameworkConventionValidator` checks the setting.
 
+### Fixed
+
+- Excel binary table startup no longer treats `BinaryDataMgrInit.savePath` values beginning with `/` as absolute filesystem paths. On Android/iOS the leading-slash default (`/Data/BinaryData/`) pointed at the read-only system root and aborted startup with `IOException: Read-only file system`; leading separators are now resolved under `Application.persistentDataPath`, while Windows drive/UNC paths stay absolute. The resolved directory is also kept separate from the serialized `savePath`, so repeated `Init`/`InitAsync` calls no longer re-prefix the path.
+
 ### Removed
 
 - The third-party log-viewer attribution section from `THIRD_PARTY_NOTICES.md`; the derived implementation it referenced has been deleted. The log-console icons are project-owned assets and were moved to `Runtime/Composition/LogConsole/Icons`, not third-party material.

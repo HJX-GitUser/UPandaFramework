@@ -51,7 +51,7 @@ public static class SaveExample
 
 旧的 v1 表（无文件头、按字段声明顺序读取）仍然兼容，用于旧包/旧表迁移。生成端与读取端共用 [ExcelBinaryCodec](ExcelBinaryCodec.cs)；生成端的 DataTable → 强类型行转换在 [ExcelTableBuilder](../../../Editor/Excel/ExcelTableBuilder.cs)，写入前会用同一份 codec 解码自检。ExcelTool 页签的「校验二进制表（v2 自检）」可批量检查已生成文件。bool 固定 4 字节。
 
-工具把文件写到 `StreamingAssets/Data/BinaryData/`；运行时的可写目录为 `persistentDataPath/Data/BinaryData/`。桌面/主机首次启动会按文件长度自动安装表。Android/WebGL 无法枚举 StreamingAssets，`ExcelTool` 会在同目录生成 `BinaryDataIndex.txt`（文件名 + 大小）；构建入口和标准 Build 的 `BinaryDataIndexBuildHook` 都会在打包前自动重建索引。运行时由 `UPGameRoot` 的 Data 步骤调用 `BinaryDataMgrInit.InitAsync()`，按索引通过 UnityWebRequest 安装表到可写目录，未变化的表按大小跳过。索引缺失时会给出明确告警；此时需要重新运行「UPandaGF → 工具 → 重建二进制表索引」，或改用 AB 安装表。 [表读取实现](BinaryMgr/BinaryDataMgr.cs) [格式常量](ExcelBinaryFormat.cs)
+工具把文件写到 `StreamingAssets/Data/BinaryData/`；运行时的可写目录为 `persistentDataPath/Data/BinaryData/`。`BinaryDataMgrInit.savePath` 按相对 `persistentDataPath` 解析：推荐写 `Data/BinaryData`；旧场景里的 `/Data/BinaryData/` 也会按相对路径处理（前导 `/` 在 Android/iOS 上会被当成只读系统根目录，不要用绝对路径）。桌面/主机首次启动会按文件长度自动安装表。Android/WebGL 无法枚举 StreamingAssets，`ExcelTool` 会在同目录生成 `BinaryDataIndex.txt`（文件名 + 大小）；构建入口和标准 Build 的 `BinaryDataIndexBuildHook` 都会在打包前自动重建索引。运行时由 `UPGameRoot` 的 Data 步骤调用 `BinaryDataMgrInit.InitAsync()`，按索引通过 UnityWebRequest 安装表到可写目录，未变化的表按大小跳过。索引缺失时会给出明确告警；此时需要重新运行「UPandaGF → 工具 → 重建二进制表索引」，或改用 AB 安装表。 [表读取实现](BinaryMgr/BinaryDataMgr.cs) [格式常量](ExcelBinaryFormat.cs)
 
 ## PlayerPrefs 对象适配
 
