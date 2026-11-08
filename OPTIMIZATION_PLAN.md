@@ -59,14 +59,14 @@
 
 ### P1：结构与可靠性（3–6 周）
 
-1. **程序集拆分**：`UPandaGF.Core`（启动/服务/事件/计时器）、`Assets`、`UI`、`Audio`、`Save`、`Diagnostics`；`Game` 拆为可选 `Gameplay.*`；Samples 用 `Samples~` 或独立程序集。
-2. **命名空间收敛**：全部 `UPandaGF.*` 前缀；修正 `RunTime`、`StateMechine`、`BineryMgr`（用 `[Obsolete]` 过渡）。
+1. **程序集拆分**：`UPandaGF.Core`（启动/服务/事件/计时器）、`Assets`、`UI`、`Audio`、`Save`、`Diagnostics`；`Game` 拆为可选 `Gameplay.*`；Samples 用 `Samples~` 或独立程序集。**状态：已完成（0.5.0，2026-11-08）**：`Core/Assets/UI/Audio/Save/Diagnostics` + 组合根 `UPandaGF.Runtime`；`Gameplay`/`.Tasks`/`.InteractiveScoring`/`.Replay` 可选；Samples `autoReferenced=false`。说明：`UPGameRoot`/`GameServices` 作为组合根必须引用全部模块，保留在 `UPandaGF.Runtime`；`Core` 放不依赖具体模块的启动生命周期与服务原语。
+2. **命名空间收敛**：全部 `UPandaGF.*` 前缀；修正 `RunTime`、`StateMechine`、`BinaryMgr`（用 `[Obsolete]` 过渡）。**状态：已完成（0.5.0，2026-11-08）**：0 个无命名空间文件；`UPandaGF.RunTime.*`→`UPandaGF.Gameplay.*`、`StateMechine`→`Gameplay.StateMachine`、`ReplaySystem`→`Gameplay.Replay`、`AssetBundleBrowser`→`UPandaGF.AssetBundleBrowser`、`BineryMgr`→`BinaryMgr`。命名空间无法用 `[Obsolete]` 转发，迁移表见 `Documentation~/MIGRATION-0.5.md`。
 3. **服务层收口**：新增 `IHttpService`、`IPoolService`、`ILogService`；`UIManager`/`AudioMgr`/`QuestManager` 改为注入；运行时实例化对象的注入入口。**状态：已完成（0.3.0，2026-11-08）**，同时移除了 `UIManager`/`AudioMgr`/`QuestManager`/`HttpManager`/`GameObjectPoolMgr` 的静态单例入口，并新增 `IUIService`/`IUIServiceConsumer` 与 `services.Inject(GameObject)`。
-4. **Excel 二进制 v2**：文件头（magic/version/column schema），按列名映射，兼容旧格式；生成端/运行端共用 codec 与自检。
-5. **AB 加载性能**：去掉 `Task.Yield` 轮询，改 `AsyncOperation` 完成回调；`legacyBundles` 收敛到租约模型。
-6. **Editor 工具安全**：所有删除/覆盖/上传统一护栏；上传顺序改为“AB 全部完成后提交清单”；FTP 凭据不落 EditorPrefs 明文。
-7. **测试补齐**：Excel 往返、PlayerPrefs、UI 关闭、对象池、HTTP 重试策略、AB 目标校验；Editor 工具的最小集成测试。
-8. **CI**：Unity batchmode + EditMode/PlayMode + Windows/Android/WebGL 构建；失败返回非 0；测试 XML 归档。
+4. **Excel 二进制 v2**：文件头（magic/version/column schema），按列名映射，兼容旧格式；生成端/运行端共用 codec 与自检。**状态：已完成（0.4.0，2026-11-08）**：`ExcelBinaryCodec` + `ExcelTableBuilder`，CRC32 自检、列名映射、v1 兼容；EditMode 覆盖编解码/损坏/列顺序。
+5. **AB 加载性能**：去掉 `Task.Yield` 轮询，改 `AsyncOperation` 完成回调；`legacyBundles` 收敛到租约模型。**状态：已完成（0.4.0，2026-11-08）**：完成回调 + `Update` 进度泵；旧接口 pin 计入租约，`ReleaseLegacyBundles()` 释放。
+6. **Editor 工具安全**：所有删除/覆盖/上传统一护栏；上传顺序改为“AB 全部完成后提交清单”；FTP 凭据不落 EditorPrefs 明文。**状态：已完成（0.4.0，2026-11-08）**：`EditorDestructiveGuard` 扩展 + 有序上传 + 密码仅会话内存/环境变量。
+7. **测试补齐**：Excel 往返、PlayerPrefs、UI 关闭、对象池、HTTP 重试策略、AB 目标校验；Editor 工具的最小集成测试。**状态：已完成（0.4.0，2026-11-08）**：EditMode 47（Excel v2/生成端/护栏/构建校验），PlayMode 302（新增 UI Shutdown、legacy pin）。
+8. **CI**：Unity batchmode + EditMode/PlayMode + Windows/Android/WebGL 构建；失败返回非 0；测试 XML 归档。**状态：已完成（0.4.0，2026-11-08）**：`Tools/ci/` 与 `.github/workflows/ci.yml`；本机验证 Windows/WebGL/Android 三平台产物，XML 门禁 0 用例/失败均非 0。
 
 ### P2：产品化与性能（6–12 周）
 
@@ -128,7 +128,7 @@
 | 版本 | 门槛 |
 |---|---|
 | `0.2.0`（P0） | 编译通过；EditMode 全绿；P0 缺陷关闭；包可安装；CHANGELOG 完整 |
-| `0.5.0`（P1） | 程序集拆分；核心服务注入；Excel v2；CI 三平台；PlayMode 核心回归全绿 |
+| `0.5.0`（P1） | 程序集拆分；核心服务注入；Excel v2；CI 三平台；PlayMode 核心回归全绿。**2026-11-08 已达成**：模块程序集 + 组合根、服务注入（0.3.0）、Excel v2、CI 脚本与三平台本机构建、PlayMode 302/302 |
 | `1.0.0`（P2） | API 冻结；平台矩阵验证；安全/合规结论；性能基线达标；迁移文档 |
 
 ---
@@ -140,5 +140,7 @@
 | 2026-11-07 | 计划建立 | 基线 `c6af6bd`；P0 启动 | 本文件 |
 | 2026-11-07 | P0-1..P0-8 | 完成 | 见 CHANGELOG、`OptimzeLog/P0-2026-11-07/` 与 Unity XML；2022.3/2021.3 双版本通过 |
 | 2026-11-08 | P1-3 服务层收口 | 完成：补齐三个契约、移除五个静态单例、三类改为构造/Configure 注入、Quest 存档走 ISaveService | `OptimzeLog/P1Services-2026-11-08/`；2021.3 编译 0 错、EditMode 24/24、PlayMode 300/300 |
+| 2026-11-08 | P1-4..P1-8 数据/性能/编辑器/测试/CI | 完成：Excel v2、AB 完成回调+租约、护栏+有序上传+密码不落盘、测试补齐、三平台 CI 脚本 | `OptimzeLog/P1-2026-11-08/`；2021.3 编译 0 错、EditMode 47/47、PlayMode 302/302；Windows/WebGL/Android 构建产物 |
+| 2026-11-08 | P1-1/P1-2 程序集与命名空间 | 完成：7 个运行时模块 + 组合根、4 个可选玩法程序集、Samples 隔离；全局命名空间 0 个；`RunTime`/`StateMechine`/`BineryMgr` 修正；迁移指南 | `OptimzeLog/P1Structure-2026-11-08/`；2021.3/2022.3 编译 0 错、EditMode 47/47、PlayMode 302/302 |
 
 > 维护规则：每完成一项，更新本表与 `CHANGELOG.md`；未完成项不得标记为“已解决”。

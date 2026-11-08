@@ -2,6 +2,9 @@
 using UnityEditor;
 using UnityEngine;
 
+namespace UPandaGF.GFEditor
+{
+
 public class PLoggerEditor
 {
     [MenuItem("UPandaGF/日志系统/启动日志", false, 0)]
@@ -20,5 +23,7 @@ public class PLoggerEditor
         Debug.Log("已移除 OPEN_PLOG 宏定义，重新编译后日志调用会被整体剔除。日志配置文件保持不变："
             + Application.streamingAssetsPath + "/Data/LogConfig.json");
     }
+
+}
 
 }

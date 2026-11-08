@@ -1,0 +1,137 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      runBuilds:
+        description: 是否执行三平台构建
+        type: boolean
+        default: true
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UNITY_VERSION: 2021.3.45f2c1
+  PACKAGE_PATH: ${{ github.workspace }}
+
+jobs:
+  package:
+    name: 包元数据
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 校验 package.json / CHANGELOG
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          pkg = json.loads(pathlib.Path('package.json').read_text(encoding='utf-8'))
+          for key in ('name', 'version', 'displayName', 'unity'):
+              assert key in pkg, f'package.json 缺少 {key}'
+          assert pathlib.Path('CHANGELOG.md').exists(), '缺少 CHANGELOG.md'
+          print('package.json ok:', pkg['name'], pkg['version'], 'unity', pkg['unity'])
+          PY
+
+  test:
+    name: 测试 · ${{ matrix.unityVersion }} · ${{ matrix.testMode }}
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        unityVersion: [ '2021.3.45f2c1', '2022.3.53f1c1' ]
+        testMode: [ editmode, playmode ]
+    steps:
+      - name: 要求已配置宿主工程
+        run: |
+          if [ -z "${{ vars.UNITY_PROJECT_REPOSITORY }}" ]; then
+            echo "::error::请设置仓库变量 UNITY_PROJECT_REPOSITORY（宿主 Unity 工程仓库，owner/repo）"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - name: 检出宿主 Unity 工程
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.UNITY_PROJECT_REPOSITORY }}
+          token: ${{ secrets.HOST_PROJECT_TOKEN || github.token }}
+          path: host-project
+      - name: 同步包到宿主工程
+        run: bash Tools/ci/sync-package.sh host-project "$PACKAGE_PATH"
+      - name: 运行 Unity 测试
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath: host-project
+          unityVersion: ${{ matrix.unityVersion }}
+          testMode: ${{ matrix.testMode }}
+          artifactsPath: test-results/${{ matrix.unityVersion }}-${{ matrix.testMode }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: 结果校验（0 用例或 failed>0 直接失败）
+        if: always()
+        run: bash Tools/ci/check-test-results.sh "test-results/${{ matrix.unityVersion }}-${{ matrix.testMode }}"
+      - name: 归档测试结果
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.unityVersion }}-${{ matrix.testMode }}
+          path: test-results/
+          if-no-files-found: warn
+
+  build:
+    name: 构建 · ${{ matrix.target }}
+    needs: test
+    if: github.event_name != 'pull_request' || inputs.runBuilds
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: StandaloneWindows64
+            buildMethod: UPandaGF.GFEditor.FrameworkBuildPipeline.BuildWindows64
+          - target: Android
+            buildMethod: UPandaGF.GFEditor.FrameworkBuildPipeline.BuildAndroid
+          - target: WebGL
+            buildMethod: UPandaGF.GFEditor.FrameworkBuildPipeline.BuildWebGL
+    steps:
+      - uses: actions/checkout@v4
+      - name: 检出宿主 Unity 工程
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.UNITY_PROJECT_REPOSITORY }}
+          token: ${{ secrets.HOST_PROJECT_TOKEN || github.token }}
+          path: host-project
+      - name: 同步包到宿主工程
+        run: bash Tools/ci/sync-package.sh host-project "$PACKAGE_PATH"
+      - name: 构建 Player
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath: host-project
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: ${{ matrix.target }}
+          buildMethod: ${{ matrix.buildMethod }}
+          buildPath: Build
+          allowDirtyBuild: true
+      - name: 归档构建产物
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.target }}
+          path: |
+            host-project/Build/
+            host-project/*.log
+          if-no-files-found: warn

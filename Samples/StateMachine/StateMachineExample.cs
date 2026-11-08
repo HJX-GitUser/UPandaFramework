@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UPandaGF.StateMechine
+namespace UPandaGF.Gameplay.StateMachine
 {
     // ============================================================
     // 状态机使用案例

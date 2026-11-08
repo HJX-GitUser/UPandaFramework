@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>示例 NPC：点击（或用外部代码调用 Interact）即上报"完成一次对话"。</summary>
     [DisallowMultipleComponent]

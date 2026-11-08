@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UPandaGF;
 
 namespace UPandaGF.Tests.EditMode

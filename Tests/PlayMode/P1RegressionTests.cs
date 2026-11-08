@@ -11,6 +11,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UPandaGF;
+using UPandaGF.Gameplay;
+using UPandaGF.Samples;
+
+namespace UPandaGF.Tests
+{
 using Object = UnityEngine.Object;
 
 public static class P1TestWait
@@ -115,12 +120,21 @@ public class P1ScopeAndInputTests
         }
         Object.DestroyImmediate(clip);
     }
-    [Test] public void ContractsAndRuntimeDoNotReferenceBusinessOrSamples()
+    [Test] public void FrameworkModulesDoNotReferenceGameplayOrSamples()
     {
         Assert.AreEqual("UPandaGF.Contracts", typeof(IAssetService).Assembly.GetName().Name);
-        foreach (var assembly in new[] { typeof(IAssetService).Assembly, typeof(UPGameRoot).Assembly })
-            Assert.IsFalse(assembly.GetReferencedAssemblies().Any(x => x.Name == "UPandaGF.Extensions" || x.Name == "UPandaGF.Samples"));
-        Assert.AreEqual("UPandaGF.Extensions", typeof(VehicleInput).Assembly.GetName().Name);
+        var modules = new[]
+        {
+            typeof(IAssetService).Assembly, typeof(PLogger).Assembly, typeof(TimerService).Assembly,
+            typeof(ABLoadMgr).Assembly, typeof(UIManager).Assembly, typeof(AudioMgr).Assembly,
+            typeof(BinaryDataMgr).Assembly, typeof(UPGameRoot).Assembly
+        };
+        foreach (var assembly in modules)
+            Assert.IsFalse(
+                assembly.GetReferencedAssemblies().Any(x =>
+                    x.Name == "UPandaGF.Samples" || x.Name == "UPandaGF.Gameplay" || x.Name.StartsWith("UPandaGF.Gameplay.")),
+                assembly.GetName().Name + " 不应引用玩法/示例程序集");
+        Assert.AreEqual("UPandaGF.Gameplay", typeof(VehicleInput).Assembly.GetName().Name);
         Assert.AreEqual("UPandaGF.Samples", typeof(GameLaunchExample).Assembly.GetName().Name);
     }
     [Test] public void ConfigSnapshotDoesNotShareNestedObjectsAndRejectsInvalidSettings()
@@ -317,7 +331,25 @@ public class P1ResourceIntegrationTests
         var raw = manager.LoadResAsync<GameObject>("audit_target", "Box", ABLoadPath.PersistentDataPath); yield return P1TestWait.For(raw);
         var owned = manager.AcquireAsync<GameObject>("audit_target", "Box", ABLoadPath.PersistentDataPath); yield return P1TestWait.For(owned);
         owned.Result.Dispose(); yield return null; Assert.IsTrue(Loaded("audit_target")); Assert.IsTrue(Loaded("audit_shared"));
+        // 旧接口占用纳入租约模型：有 legacy pin 时 UnLoadAB 应拒绝，必须先显式释放。
+        Assert.IsTrue(manager.IsLegacyPinned("audit_target"));
+        Assert.IsFalse(manager.UnLoadAB("audit_target"));
+        Assert.GreaterOrEqual(manager.ReleaseLegacyBundles(), 1);
+        Assert.IsFalse(manager.IsLegacyPinned("audit_target"));
         Assert.IsTrue(manager.UnLoadAB("audit_target"));
+    }
+    [UnityTest] public IEnumerator LegacyLoadPinsBundleUntilReleaseLegacyBundles()
+    {
+        yield return Initialize(); var manager = ABLoadMgr.Instance;
+        var legacy = manager.GetAssetBundle("audit_target", ABLoadPath.PersistentDataPath); yield return P1TestWait.For(legacy);
+        Assert.IsNotNull(legacy.Result);
+        Assert.IsTrue(manager.IsLegacyPinned("audit_target"));
+        Assert.IsTrue(manager.IsLegacyPinned("audit_shared"), "依赖包也必须被 legacy pin 保护");
+        Assert.GreaterOrEqual(manager.GetDiagnostics().LegacyPins, 2);
+        Assert.IsFalse(manager.UnLoadAB("audit_target"));
+        Assert.GreaterOrEqual(manager.ReleaseLegacyBundles(), 2);
+        Assert.AreEqual(0, manager.GetDiagnostics().LegacyPins);
+        Assert.IsFalse(manager.IsLegacyPinned("audit_shared"));
     }
     [UnityTest] public IEnumerator LegacySceneNamePreparationFindsUniqueFullManifestPath()
     {
@@ -409,6 +441,17 @@ public class P1UIOwnershipTests
         oldRequest.SetResult(prefab); yield return null; Assert.AreEqual(1, assets.Released); Assert.AreSame(current.Result, ui.GetPanel<P1TestPanel>());
         currentScope.Dispose(); yield return null; Assert.AreEqual(2, assets.Released);
     }
+    [UnityTest] public IEnumerator ShutdownClosesOpenPanelsAndReleasesTheirLeases()
+    {
+        var scope = new LifetimeScope("ShutdownUI");
+        var task = ui.ShowPanelInScopeAsync<P1TestPanel>(scope);
+        assets.Requests.Dequeue().SetResult(prefab);
+        yield return P1TestWait.For(task); var panel = task.Result; Assert.IsNotNull(panel);
+        ui.Shutdown(); yield return null;
+        Assert.AreEqual(1, panel.Closed);
+        Assert.AreEqual(1, assets.Released);
+        Assert.IsNull(ui.GetPanel<P1TestPanel>());
+    }
 }
 
 [PrebuildSetup(typeof(CoordinationFixtures))]
@@ -498,4 +541,6 @@ public class P1RootCompositionTests
             foreach (var pair in original) if (pair.Value == null) File.Delete(pair.Key); else File.WriteAllBytes(pair.Key, pair.Value);
         }
     }
+}
+
 }

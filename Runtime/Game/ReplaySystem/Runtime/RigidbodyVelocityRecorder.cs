@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace ReplaySystem
+namespace UPandaGF.Gameplay.Replay
 {
     /// <summary>
     /// 示例扩展：录制/回放 Rigidbody 速度。

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+namespace UPandaGF.Gameplay.InteractiveScoring
 {
     /// <summary>
     /// 单个步骤的“运行状态”（纯 C# 类，与配置资产完全分离）。

@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.TestTools;
 
+namespace UPandaGF.Tests
+{
+
 public class CoordinationFixtures:IPrebuildSetup,IPostBuildCleanup
 {
     private const string Config="Temp/upanda-coordination-scenes.json";
@@ -83,4 +86,6 @@ internal sealed class CoordinationHttpServer:IDisposable
         }
     }
     public void Dispose(){lock(gate){disposed=true;listener.Stop();foreach(var client in clients)client.Dispose();clients.Clear();}}
+}
+
 }

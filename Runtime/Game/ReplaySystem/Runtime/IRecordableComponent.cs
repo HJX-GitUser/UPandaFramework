@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace ReplaySystem
+namespace UPandaGF.Gameplay.Replay
 {
     /// <summary>
     /// 可录制组件扩展接口：为其他组件（如 Rigidbody velocity、ParticleSystem time、

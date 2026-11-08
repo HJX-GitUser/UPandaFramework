@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace ReplaySystem
+namespace UPandaGF.Gameplay.Replay
 {
     /// <summary>
     /// 单帧内单个物体的状态快照。

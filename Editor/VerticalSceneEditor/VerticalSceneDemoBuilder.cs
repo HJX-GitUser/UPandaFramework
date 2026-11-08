@@ -59,6 +59,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UPandaGF.Gameplay;
 
 namespace UPandaGF.GFEditor
 {

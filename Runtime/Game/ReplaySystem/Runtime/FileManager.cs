@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace ReplaySystem
+namespace UPandaGF.Gameplay.Replay
 {
     /// <summary>
     /// 录制文件的保存/加载逻辑。

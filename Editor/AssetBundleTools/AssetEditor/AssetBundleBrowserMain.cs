@@ -2,10 +2,11 @@
 using UnityEditor;
 using UnityEngine;
 using System;
+using UPandaGF.GFEditor;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleToAttribute("Unity.AssetBundleBrowser.Editor.Tests")]
 
-namespace AssetBundleBrowser
+namespace UPandaGF.AssetBundleBrowser
 {
 
     public class AssetBundleBrowserMain : EditorWindow, IHasCustomMenu, ISerializationCallbackReceiver

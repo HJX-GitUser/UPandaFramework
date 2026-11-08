@@ -12,6 +12,9 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UPandaGF;
+
+namespace UPandaGF.Tests
+{
 using Object = UnityEngine.Object;
 
 public class SerializationMigrationTests
@@ -331,7 +334,7 @@ public class SerializationMigrationTests
     [TestCase("Build")] [TestCase("Inspect")] public void ActualEditorCacheTypesMigrateIncludingPrivateCollections(string tab)
     {
 #if UNITY_EDITOR
-        var assembly=Assembly.Load("UPandaGF.Editor");string typeName=tab=="Build"?"AssetBundleBrowser.AssetBundleBuildTab+BuildTabData":"AssetBundleBrowser.AssetBundleInspectTab+InspectTabData";
+        var assembly=Assembly.Load("UPandaGF.Editor");string typeName=tab=="Build"?"UPandaGF.AssetBundleBrowser.AssetBundleBuildTab+BuildTabData":"UPandaGF.AssetBundleBrowser.AssetBundleInspectTab+InspectTabData";
         Type type=assembly.GetType(typeName,true);object value=Activator.CreateInstance(type,true);
         if(tab=="Build"){type.GetField("m_OutputPath").SetValue(value,"输出目录/AB");type.GetField("m_OnToggles").SetValue(value,new List<string>{"ToggleA"});}
         else{type.GetMethod("AddPath",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(value,new object[]{"Assets/TestBundle"});type.GetMethod("AddFolder",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(value,new object[]{"Assets/TestFolder"});}
@@ -343,4 +346,6 @@ public class SerializationMigrationTests
         else Assert.AreEqual(1,((System.Collections.ICollection)type.GetField("m_BundleFolders",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(restored)).Count);
 #endif
     }
+}
+
 }

@@ -1,22 +1,29 @@
 {
-  "name": "UPandaGF.Tests.EditMode",
-  "rootNamespace": "",
-  "references": [
-    "UPandaGF.Runtime",
-    "UPandaGF.Contracts"
-  ],
-  "includePlatforms": [
-    "Editor"
-  ],
-  "excludePlatforms": [],
-  "allowUnsafeCode": false,
-  "overrideReferences": false,
-  "precompiledReferences": [],
-  "autoReferenced": false,
-  "defineConstraints": [],
-  "versionDefines": [],
-  "noEngineReferences": false,
-  "optionalUnityReferences": [
-    "TestAssemblies"
-  ]
+    "name": "UPandaGF.Tests.EditMode",
+    "rootNamespace": "",
+    "references": [
+        "UPandaGF.Runtime",
+        "UPandaGF.Contracts",
+        "UPandaGF.Core",
+        "UPandaGF.Assets",
+        "UPandaGF.UI",
+        "UPandaGF.Audio",
+        "UPandaGF.Save",
+        "UPandaGF.Diagnostics",
+        "UPandaGF.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
 }

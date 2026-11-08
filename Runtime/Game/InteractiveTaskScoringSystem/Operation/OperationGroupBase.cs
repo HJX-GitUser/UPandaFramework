@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 
 
-namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+namespace UPandaGF.Gameplay.InteractiveScoring
 {
     /// <summary>
     /// 操作监听组

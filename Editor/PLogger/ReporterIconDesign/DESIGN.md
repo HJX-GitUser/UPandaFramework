@@ -1,6 +1,6 @@
 # Reporter 图标重设计
 
-替换位置：`Runtime/Manager/DebugSystem/Reporter/Images`，共 36 张 PNG：23 个功能图标、13 张界面纹理。
+替换位置：`Runtime/Composition/Reporter/Images`，共 36 张 PNG：23 个功能图标、13 张界面纹理。
 
 ## 视觉规范
 
@@ -13,7 +13,7 @@
 
 ## 兼容性
 
-保留全部原 PNG 文件名、源尺寸、`.meta` 与 GUID；无需重新绑定 Reporter 组件。滚动条 GUISkin 的 8 个既有失效 GUID 已修正为当前纹理 GUID。界面和日志逻辑的后续重构见 `Runtime/Manager/DebugSystem/Reporter/README.md`。Unity 导入器原有 NPOT 缩放规则保留，因此部分非二次幂 PNG 的导入尺寸与源尺寸不同。
+保留全部原 PNG 文件名、源尺寸、`.meta` 与 GUID；无需重新绑定 Reporter 组件。滚动条 GUISkin 的 8 个既有失效 GUID 已修正为当前纹理 GUID。界面和日志逻辑的后续重构见 `Runtime/Composition/Reporter/README.md`。Unity 导入器原有 NPOT 缩放规则保留，因此部分非二次幂 PNG 的导入尺寸与源尺寸不同。
 
 ## 文件与维护
 

@@ -9,6 +9,9 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UPandaGF;
+
+namespace UPandaGF.Tests
+{
 using Object = UnityEngine.Object;
 
 public class PlatformCompatibilityTests
@@ -98,4 +101,6 @@ public class PlatformCompatibilityTests
         var probe = PlatformStorage.AvailableSpaceAsync(directory); while (!probe.IsCompleted) yield return null;
         Assert.Greater(probe.Result, 0); var flush = PlatformStorage.FlushAsync(); while (!flush.IsCompleted) yield return null; Assert.IsFalse(flush.IsFaulted);
     }
+}
+
 }

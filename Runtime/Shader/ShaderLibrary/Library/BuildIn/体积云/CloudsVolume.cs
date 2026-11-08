@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UPandaGF.RunTime.ShaderCtr
+namespace UPandaGF.Gameplay.ShaderControl
 {
     [ExecuteInEditMode]
     public class CloudsVolume : MonoBehaviour

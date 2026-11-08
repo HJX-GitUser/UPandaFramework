@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>
     /// 任务「运行时实例」：保存当前状态与各目标进度。

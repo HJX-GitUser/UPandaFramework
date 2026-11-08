@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+namespace UPandaGF.Gameplay
+{
+
 [RequireComponent(typeof(Camera))]
 public class SimpleCameraController : MonoBehaviour
 {
@@ -186,4 +189,6 @@ public class SimpleCameraController : MonoBehaviour
         targetRotation = Quaternion.identity;
         currentZoom = 10f;
     }
+}
+
 }

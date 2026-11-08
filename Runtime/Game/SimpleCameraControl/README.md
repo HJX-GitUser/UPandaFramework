@@ -1,6 +1,6 @@
 # 自由相机控制
 
-[SimpleCameraController](SimpleCameraController.cs) 是带 Camera 的独立场景组件，编入 `UPandaGF.Extensions`。它用旧 Input Manager 更新目标位置和旋转，再用 SmoothDamp 与 Slerp 平滑相机。无需 UPGameRoot 或服务注入。
+[SimpleCameraController](SimpleCameraController.cs) 是带 Camera 的独立场景组件，编入 `UPandaGF.Gameplay`。它用旧 Input Manager 更新目标位置和旋转，再用 SmoothDamp 与 Slerp 平滑相机。无需 UPGameRoot 或服务注入。
 
 ## 操作
 

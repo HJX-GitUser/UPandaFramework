@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace ReplaySystem
+namespace UPandaGF.Gameplay.Replay
 {
     public enum ReplayTargetMode { Scene, Registered }
     public enum RecordingStopReason { None, User, Disabled, FrameLimit, SnapshotLimit, MemoryLimit, DurationLimit, CaptureError }

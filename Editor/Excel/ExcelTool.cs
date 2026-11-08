@@ -1,13 +1,15 @@
 ﻿using Excel;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UPandaGF;
+using UPandaGF.GFEditor;
+
+namespace UPandaGF.GFEditor
+{
 
 public class ExcelTool : EditorWindow
 {
@@ -26,7 +28,7 @@ public class ExcelTool : EditorWindow
     /// <summary>
     /// Excel表中真正内容开始的行号
     /// </summary>
-    public int BEGIN_INDEX = 4;
+    public int BEGIN_INDEX = ExcelTableBuilder.DefaultBeginIndex;
     /// <summary>
     /// 二进制数据文件后缀
     /// </summary>
@@ -39,11 +41,6 @@ public class ExcelTool : EditorWindow
     {
         ExcelTool excelTool = GetWindow<ExcelTool>();
         excelTool.Show();
-    }
-
-    private void OnEnable()
-    {
-
     }
 
     private void OnGUI()
@@ -66,12 +63,17 @@ public class ExcelTool : EditorWindow
         EditorGUILayout.LabelField("数据容器类存储位置", DATA_CONTAINER_PATH);
         EditorGUILayout.LabelField("数据存储路径", ExcelBinaryFormat.RelativeFolder + "/");
         EditorGUILayout.LabelField("数据文件后缀", SUFFIX);
+        EditorGUILayout.LabelField("二进制格式", "v" + ExcelBinaryFormat.CurrentVersion + "（magic + 列结构 + CRC32）");
         EditorGUILayout.LabelField("Excel配置开始的行号", BEGIN_INDEX.ToString());
         GUILayout.Space(5);
 
         if (GUILayout.Button("创建数据"))
         {
             GenerateExcelInfo();
+        }
+        if (GUILayout.Button("校验二进制表（v2 自检）"))
+        {
+            ValidateGeneratedTables();
         }
         if (GUILayout.Button("打印数据"))
         {
@@ -101,10 +103,35 @@ public class ExcelTool : EditorWindow
         return Application.dataPath + "/" + path;
     }
 
-    //[MenuItem("UPandaGF/Tools/ExcelTool/生成数据类和数据容器类")]
+    /// <summary>
+    /// 校验生成目标是否在 Assets 内：数据类/容器类写到 Assets 外不会被 Unity 导入，属于误操作。
+    /// </summary>
+    private static void EnsureInsideAssets(string path, string label)
+    {
+        string full = Path.GetFullPath(path).Replace('\\', '/').TrimEnd('/');
+        string data = Path.GetFullPath(Application.dataPath).Replace('\\', '/').TrimEnd('/');
+        if (!full.Equals(data, StringComparison.OrdinalIgnoreCase) &&
+            !full.StartsWith(data + "/", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException($"ExcelTool 的{label}必须位于 Assets 内：{full}");
+    }
+
     private void GenerateExcelInfo()
     {
+        if (!EditorUtility.DisplayDialog(
+            "生成 Excel 数据",
+            "将覆盖同名的数据类、容器类与二进制表文件。\n\n" +
+            "Excel 目录：" + EXCEL_PATH + "\n" +
+            "数据类：" + DATA_CLASS_PATH + "\n" +
+            "容器类：" + DATA_CONTAINER_PATH + "\n" +
+            "二进制表：" + ExcelBinaryFormat.RelativeFolder + "/\n\n" +
+            "继续生成吗？",
+            "生成", "取消"))
+            return;
+
         Debug.Log(PathAddHead(EXCEL_PATH));
+        EnsureInsideAssets(PathAddHead(DATA_CLASS_PATH), "数据类存储路径");
+        EnsureInsideAssets(PathAddHead(DATA_CONTAINER_PATH), "容器类存储路径");
+
         //记下在指定路径中的所有Excel文件 用于生成对应的3个文件
         DirectoryInfo dInfo = Directory.CreateDirectory(PathAddHead(EXCEL_PATH));
         //得到指定路径中的所有文件信息 相当于就是得到所有的Excel表
@@ -142,10 +169,13 @@ public class ExcelTool : EditorWindow
     /// <param name="table"></param>
     private void GenerateExcelDataClass(DataTable table)
     {
+        if (table.Rows.Count < 2)
+            throw new InvalidDataException($"Excel 表 {table.TableName} 至少需要字段名行与类型行。");
+
         //字段名行
-        DataRow rowName = GetVariableNameRow(table);
+        DataRow rowName = table.Rows[0];
         //字段类型
-        DataRow rowType = GetVariableTypeRow(table);
+        DataRow rowType = table.Rows[1];
 
         //判断路径是否存在 没有的话 就创建文件夹
         if (!Directory.Exists(PathAddHead(DATA_CLASS_PATH)))
@@ -170,10 +200,13 @@ public class ExcelTool : EditorWindow
     /// <param name="table"></param>
     private void GenerateExcelContainerContainer(DataTable table)
     {
+        if (table.Rows.Count < 2)
+            throw new InvalidDataException($"Excel 表 {table.TableName} 至少需要字段名行与类型行。");
+
         //得到主键的索引
-        int keyIndex = GetKeyIndex(table);
+        int keyIndex = ExcelTableBuilder.GetKeyIndex(table);
         //得到字段类型行
-        DataRow rowType = GetVariableTypeRow(table);
+        DataRow rowType = table.Rows[1];
         //没有路径创建路径
         if (!Directory.Exists(PathAddHead(DATA_CONTAINER_PATH)))
             Directory.CreateDirectory(PathAddHead(DATA_CONTAINER_PATH));
@@ -186,9 +219,9 @@ public class ExcelTool : EditorWindow
         AssetDatabase.Refresh();
     }
     /// <summary>
-    /// 生成excel的2进制数据
-    /// 这里怎么写的存储规则 取的时候就怎么读
-    /// 其他类型直接转成二进制后就存进去，字符类型就先把二进制数组长度存进去，再存转成二进制的字符）
+    /// 生成excel的2进制数据（v2：文件头带 magic/版本/列结构，行按列名映射，末尾带 CRC32）。
+    /// <para>转换/编码在 <see cref="ExcelTableBuilder"/>，生成端与运行端共用 <see cref="ExcelBinaryCodec"/>；
+    /// 写盘前先用同一份 codec 解码做自检，避免出现“生成成功、运行读不出”。</para>
     /// </summary>
     /// <param name="table"></param>
     private void GenerateExcelBinary(DataTable table)
@@ -197,126 +230,64 @@ public class ExcelTool : EditorWindow
         //没有路径创建路径
         if (!Directory.Exists(path)) Directory.CreateDirectory(path);
         string filePath = Path.Combine(path, table.TableName + SUFFIX);
-        // FileMode.Create：表变短时必须截断，否则旧文件尾部会残留，读端无法判断。
-        using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-        {
-            //存储具体的excel对应的2进制信息
-            //1.先要存储 需要写多少行的数据 方便读取
-            // 行数必须与读取循环使用同一个起点，不能硬编码 -4。
-            fs.Write(BitConverter.GetBytes(Math.Max(0, table.Rows.Count - BEGIN_INDEX)), 0, 4);
-            //2.存储主键的变量名
-            string keyName = GetVariableNameRow(table)[GetKeyIndex(table)].ToString();
-            byte[] bytes = Encoding.UTF8.GetBytes(keyName);
-            //存储字符串字节数组的长度
-            fs.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
-            //存储字符串字节数组
-            fs.Write(bytes, 0, bytes.Length);
 
-            //遍历所有内容的行 进行2进制的写入
-            DataRow row;
-            //得到类型行 根据类型来决定应该如何写入数据
-            DataRow rowType = GetVariableTypeRow(table);
-            for (int i = BEGIN_INDEX; i < table.Rows.Count; i++)
-            {
-                //得到一行的数据
-                row = table.Rows[i];
-                //遍历列
-                for (int j = 0; j < table.Columns.Count; j++)
-                {
-                    string type = rowType[j].ToString().Trim();
-                    string cell = row[j] == null || row[j] == DBNull.Value ? string.Empty : row[j].ToString().Trim();
-                    switch (type)
-                    {
-                        case "int":
-                            fs.Write(BitConverter.GetBytes(ParseIntCell(cell, table.TableName, j)), 0, 4);
-                            break;
-                        case "float":
-                            fs.Write(BitConverter.GetBytes(ParseFloatCell(cell, table.TableName, j)), 0, 4);
-                            break;
-                        case "bool":
-                            // 与读取端 ExcelBinaryFormat.BoolByteSize 对齐（4 字节），不能写 1 字节。
-                            fs.Write(BitConverter.GetBytes(ParseBoolCell(cell, table.TableName, j) ? 1 : 0), 0, 4);
-                            break;
-                        case "string":
-                            bytes = Encoding.UTF8.GetBytes(cell);
-                            fs.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
-                            fs.Write(bytes, 0, bytes.Length);
-                            break;
-                        default:
-                            throw new InvalidDataException(
-                                $"Excel 表 {table.TableName} 第 {j + 1} 列类型无效：{type}（只支持 int / float / bool / string）");
-                    }
-                }
-            }
-            fs.Close();
-        }
+        ExcelTableSchema schema;
+        int rowCount;
+        byte[] bytes = ExcelTableBuilder.Encode(table, out schema, out rowCount, BEGIN_INDEX);
+
+        // File.WriteAllBytes = 覆盖 + 截断，表变短时不会残留旧文件尾部
+        File.WriteAllBytes(filePath, bytes);
+        Debug.Log($"[ExcelTool] 已生成 v{ExcelBinaryFormat.CurrentVersion} 二进制表：{filePath}" +
+                  $"（{schema.ColumnCount} 列，{rowCount} 行，{bytes.Length} 字节）");
         AssetDatabase.Refresh();
     }
 
-    private static int ParseIntCell(string value, string table, int column)
-    {
-        if (string.IsNullOrEmpty(value)) { Debug.LogWarning($"[ExcelTool] {table} 第 {column + 1} 列为空，按 0 处理"); return 0; }
-        int result;
-        if (!int.TryParse(value, out result))
-            throw new InvalidDataException($"Excel 表 {table} 第 {column + 1} 列不是 int：{value}");
-        return result;
-    }
-
-    private static float ParseFloatCell(string value, string table, int column)
-    {
-        if (string.IsNullOrEmpty(value)) { Debug.LogWarning($"[ExcelTool] {table} 第 {column + 1} 列为空，按 0 处理"); return 0f; }
-        float result;
-        if (!float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out result))
-            throw new InvalidDataException($"Excel 表 {table} 第 {column + 1} 列不是 float：{value}");
-        return result;
-    }
-
-    private static bool ParseBoolCell(string value, string table, int column)
-    {
-        if (string.IsNullOrEmpty(value)) { Debug.LogWarning($"[ExcelTool] {table} 第 {column + 1} 列为空，按 false 处理"); return false; }
-        bool result;
-        if (bool.TryParse(value, out result)) return result;
-        if (value == "1" || value.Equals("true", StringComparison.OrdinalIgnoreCase)) return true;
-        if (value == "0" || value.Equals("false", StringComparison.OrdinalIgnoreCase)) return false;
-        throw new InvalidDataException($"Excel 表 {table} 第 {column + 1} 列不是 bool：{value}");
-    }
-
     /// <summary>
-    /// 获取主键索引
+    /// 校验 StreamingAssets 下所有二进制表：magic/版本/列结构/CRC 全部通过才算成功。
+    /// <para>用于发布前自检，也用于生成后确认“运行时读得出来”。</para>
     /// </summary>
-    /// <param name="table"></param>
-    /// <returns></returns>
-    private static int GetKeyIndex(DataTable table)
+    private void ValidateGeneratedTables()
     {
-        DataRow row = table.Rows[2];
-        for (int i = 0; i < table.Columns.Count; i++)
+        string path = ExcelBinaryFormat.StreamingAssetsDirectory;
+        if (!Directory.Exists(path))
         {
-            if (row[i].ToString() == "key") return i;
+            Debug.LogWarning($"[ExcelTool] 未找到二进制表目录：{path}");
+            return;
         }
-        //默认第一列是主键
-        return 0;
-    }
+        string[] files = Directory.GetFiles(path, "*" + SUFFIX, SearchOption.TopDirectoryOnly);
+        if (files.Length == 0)
+        {
+            Debug.LogWarning($"[ExcelTool] 目录中没有 {SUFFIX} 文件：{path}");
+            return;
+        }
 
+        var failures = new List<string>();
+        int passed = 0;
+        foreach (string file in files)
+        {
+            byte[] bytes;
+            try { bytes = File.ReadAllBytes(file); }
+            catch (Exception e) { failures.Add(Path.GetFileName(file) + "：读取失败 " + e.Message); continue; }
 
+            if (!ExcelBinaryCodec.IsVersion2(bytes))
+            {
+                failures.Add(Path.GetFileName(file) + "：旧版 v1 格式（无文件头），建议重新生成");
+                continue;
+            }
+            ExcelTableData data;
+            string error;
+            if (!ExcelBinaryCodec.TryDecode(bytes, out data, out error))
+            {
+                failures.Add(Path.GetFileName(file) + "：" + error);
+                continue;
+            }
+            passed++;
+        }
 
-    /// <summary>
-    /// 获取变量名所在行
-    /// 封装的目的是，变量名所在行可以在这里改
-    /// </summary>
-    /// <param name="table"></param>
-    /// <returns></returns>
-    private static DataRow GetVariableNameRow(DataTable table)
-    {
-        return table.Rows[0];
-    }
-    /// <summary>
-    /// 获取变量类型所在行
-    /// </summary>
-    /// <param name="table"></param>
-    /// <returns></returns>
-    private static DataRow GetVariableTypeRow(DataTable table)
-    {
-        return table.Rows[1];
+        if (failures.Count == 0)
+            Debug.Log($"[ExcelTool] 二进制表自检通过：{passed}/{files.Length}");
+        else
+            Debug.LogError($"[ExcelTool] 二进制表自检失败 {failures.Count}/{files.Length}：\n" + string.Join("\n", failures));
     }
 
     private static string excelFile = Application.dataPath + "/ArtAssets/Excel/Exceltest.xlsx";
@@ -340,10 +311,6 @@ public class ExcelTool : EditorWindow
             {
                 //得到其中一张表的具体数据
                 DataTable table = result.Tables[i];
-                //得到其中一行的数据
-                //DataRow row = table.Rows[0];
-                //得到行中某一列的信息
-                //Debug.Log(row[1].ToString());
                 DataRow row;
                 for (int j = 0; j < table.Rows.Count; j++)
                 {
@@ -359,6 +326,6 @@ public class ExcelTool : EditorWindow
             fs.Close();
         }
     }
-
+}
 
 }

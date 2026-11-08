@@ -1,0 +1,23 @@
+{
+  "name": "UPandaGF.Runtime",
+  "rootNamespace": "",
+  "references": [
+    "UPandaGF.Contracts",
+    "UPandaGF.Core",
+    "UPandaGF.Assets",
+    "UPandaGF.UI",
+    "UPandaGF.Audio",
+    "UPandaGF.Save",
+    "UPandaGF.Diagnostics",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

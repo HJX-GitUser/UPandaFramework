@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+namespace UPandaGF.Gameplay
+{
+
 /// <summary>
 /// 视角管理器：支持第三人称、第一人称、环绕三种视角。
 /// C 键循环切换，1/2/3 数字键直达；切换时有 0.5 秒平滑过渡。
@@ -159,4 +162,6 @@ public class CameraModeManager : MonoBehaviour
         orbitPitchCurrent -= Input.GetAxis("Mouse Y") * orbitMouseSensitivity;
         orbitPitchCurrent = Mathf.Clamp(orbitPitchCurrent, orbitMinPitch, orbitMaxPitch);
     }
+}
+
 }

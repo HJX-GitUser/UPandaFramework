@@ -1,0 +1,4 @@
+﻿项目：_verify/P1Verify（框架以 Assets/upanda-framework 导入）
+命令：Unity.exe -batchmode -nographics -quit -projectPath <project> -logFile <log>
+Unity：2021.3.45f2c1
+结果：0 个 error CS；Library/ScriptAssemblies 生成 17 个 UPandaGF*.dll（含 Tests/Editor/Visuals）

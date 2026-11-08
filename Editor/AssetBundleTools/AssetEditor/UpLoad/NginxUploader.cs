@@ -6,6 +6,10 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using UnityEngine.Networking;
+using UPandaGF.GFEditor;
+
+namespace UPandaGF.GFEditor
+{
 
 public class NginxUploader : EditorWindow
 {
@@ -125,6 +129,7 @@ public class NginxUploader : EditorWindow
         {
             if (GUILayout.Button("上传所有文件", GUILayout.Height(30), GUILayout.Width(100)))
             {
+                if (!EditorDestructiveGuard.ConfirmUpload("HTTP 上传", serverUrl, filePaths.Count, false)) return;
                 cancelUpload = false;
                 StartUploadAll();
             }
@@ -329,4 +334,6 @@ public class NginxUploader : EditorWindow
 
     private Vector2 scrollPosition;
     private Vector2 logScrollPosition;
+}
+
 }

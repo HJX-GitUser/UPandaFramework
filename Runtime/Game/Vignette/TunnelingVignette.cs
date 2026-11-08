@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace UPandaGF.Gameplay
+{
+
 public class TunnelingVignette : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -15,4 +18,6 @@ public class TunnelingVignette : MonoBehaviour
     {
 
     }
+}
+
 }

@@ -4,7 +4,7 @@
 //
 // =============================================================================
 //  作用：一键重建 ObjPool（对象池）的示例场景
-//        （原型：Runtime/Manager/ObjPool/Example/PoolUseScene.unity）
+//        （原型：Runtime/Assets/ObjPool/Example/PoolUseScene.unity）
 //
 //  菜单：
 //    UPandaGF/Runtime/ObjPool/创建对象池示例场景（新建场景）
@@ -31,7 +31,7 @@
 //
 //    ⇒ 进 Play 后：UPGameRoot 初始化完毕会派发 GFLoadedEvent，TestPoolMgr 收到后按 prewarmCount
 //      预热两个预制体；随后用左上角的 IMGUI 按钮即可取/回收对象。（演示预制体：
-//      Runtime/Manager/ObjPool/Resources/Obj1.prefab、Obj2.prefab）
+//      Runtime/Assets/ObjPool/Resources/Obj1.prefab、Obj2.prefab）
 //
 //  ---- 与原型的差异（有意为之）----
 //    1. UPGameRoot.method：原型存的是 Assetbundles(1)（需要先烘好 AssetBundle + 清单才能跑）。
@@ -59,6 +59,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UPandaGF;
+using UPandaGF.Samples;
 
 namespace UPandaGF.GFEditor
 {
@@ -71,7 +72,7 @@ namespace UPandaGF.GFEditor
 
         private const string MenuRoot = "UPandaGF/Runtime/ObjPool/";
 
-        private const string DefaultSceneFolder = "Assets/upanda-framework/Runtime/Manager/ObjPool/Demo";
+        private const string DefaultSceneFolder = "Assets/upanda-framework/Runtime/Assets/ObjPool/Demo";
         private const string DefaultSceneName   = "PoolUseSceneDemo.unity";
 
         /// <summary>
@@ -81,7 +82,7 @@ namespace UPandaGF.GFEditor
         /// </summary>
         private const AssetLoaddingMethod RootLoadMethod = AssetLoaddingMethod.Editor;
 
-        // 演示预制体（位于 Runtime/Manager/ObjPool/Resources/ 下，按 Resources 相对路径加载）
+        // 演示预制体（位于 Runtime/Assets/ObjPool/Resources/ 下，按 Resources 相对路径加载）
         private static readonly string[] DemoPrefabPaths = { "Obj1", "Obj2" };
 
         // =====================================================================
@@ -334,7 +335,7 @@ namespace UPandaGF.GFEditor
                 if (Resources.Load<GameObject>(path) == null)
                 {
                     Debug.LogWarning("[ObjPool] 找不到演示预制体：" + path +
-                                     "（应在 Runtime/Manager/ObjPool/Resources/" + path + ".prefab）" +
+                                     "（应在 Runtime/Assets/ObjPool/Resources/" + path + ".prefab）" +
                                      "，运行时点「创建" + path + "」会失败。");
                 }
             }

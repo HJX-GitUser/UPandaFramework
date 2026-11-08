@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace ReplaySystem
+namespace UPandaGF.Gameplay.Replay
 {
     public partial class ReplayManager
     {

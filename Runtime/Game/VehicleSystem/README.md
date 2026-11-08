@@ -1,6 +1,6 @@
 # 车辆控制与视角
 
-`VehicleSystem` 是基于 Rigidbody 和 WheelCollider 的后驱车辆示例，代码在 `UPandaGF.Extensions`。输入、物理和视角分成三个组件，既可接框架的 `IGameServices`，也可在没有启动根的演示场景运行。 [VehicleInput](Runtime/VehicleInput.cs) [VehicleController](Runtime/VehicleController.cs) [CameraModeManager](Runtime/CameraModeManager.cs)
+`VehicleSystem` 是基于 Rigidbody 和 WheelCollider 的后驱车辆示例，代码在 `UPandaGF.Gameplay`。输入、物理和视角分成三个组件，既可接框架的 `IGameServices`，也可在没有启动根的演示场景运行。 [VehicleInput](Runtime/VehicleInput.cs) [VehicleController](Runtime/VehicleController.cs) [CameraModeManager](Runtime/CameraModeManager.cs)
 
 ## 搭建
 
@@ -8,7 +8,7 @@
 2. 在独立场景对象挂 `CameraModeManager`，为它明确指定车辆 Transform、相机 Transform 和 VehicleInput。组件在 LateUpdate 应用第三人称、第一人称、环绕视角及切换插值。
 3. 使用默认输入映射时，W/S 或上下方向键驱动，A/D 或左右方向键转向，空格拉手刹，C 循环切视角，1/2/3 直达，环绕视角用鼠标轴。
 
-`VehicleInput.Configure(IGameServices services)` 采用服务的动作映射。未注入时 Awake 创建基于旧 Input Manager 的本地 `InputService`，替换或销毁时释放本地服务。动态生成车辆时可以显式注入服务。 [动作绑定与输入后端](../../Manager/Services/InputAndTime.cs)
+`VehicleInput.Configure(IGameServices services)` 采用服务的动作映射。未注入时 Awake 创建基于旧 Input Manager 的本地 `InputService`，替换或销毁时释放本地服务。动态生成车辆时可以显式注入服务。 [动作绑定与输入后端](../../Core/Services/InputAndTime.cs)
 
 ## 边界与验证
 

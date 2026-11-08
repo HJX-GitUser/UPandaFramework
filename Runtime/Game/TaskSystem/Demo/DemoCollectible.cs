@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>示例可拾取物：进入触发器即上报"收集到物品"。</summary>
     [DisallowMultipleComponent]

@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>
     /// 任务目标「定义」：由策划在 QuestDefinition（ScriptableObject）里配置，运行时只读。

@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>任务日志列表中的一行（挂在自己的列表项预制体上，各引用可留空）。</summary>
     public class QuestLogEntryView : MonoBehaviour

@@ -1,6 +1,6 @@
 # QuickOutline 高亮描边
 
-本地组件是 [OutDrawline](Scripts/OutDrawline.cs)。Mask pass 写模板，Fill pass 沿平滑法线外扩，用深度和模板测试控制描边可见范围。组件运行在 `UPandaGF.Extensions`，从 Resources 加载并实例化两份描边材质，无需启动根。原项目归属及说明保留在 [Readme.txt](Readme.txt)。
+本地组件是 [OutDrawline](Scripts/OutDrawline.cs)。Mask pass 写模板，Fill pass 沿平滑法线外扩，用深度和模板测试控制描边可见范围。组件运行在 `UPandaGF.Gameplay`，从 Resources 加载并实例化两份描边材质，无需启动根。原项目归属及说明保留在 [Readme.txt](Readme.txt)。
 
 ## 接入与使用
 

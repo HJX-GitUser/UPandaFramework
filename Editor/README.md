@@ -17,7 +17,7 @@
 
 | 工具 | 入口与边界 |
 | --- | --- |
-| Excel | `UPandaGF → Tools → Excel配置工具`。按约定的表头、类型和主键生成数据类、容器与二进制表。当前写入器的 `bool` 宽度与旧读取器不一致，含该字段的表需要验证生成物。 [ExcelTool.cs](Excel/ExcelTool.cs) · [数据读取](../Runtime/Manager/StorageDataMgr/README.md) |
+| Excel | `UPandaGF → Tools → Excel配置工具`。按约定的表头、类型和主键生成数据类、容器与二进制表。当前写入器的 `bool` 宽度与旧读取器不一致，含该字段的表需要验证生成物。 [ExcelTool.cs](Excel/ExcelTool.cs) · [数据读取](../Runtime/Save/StorageDataMgr/README.md) |
 | UI | 从 `UPandaGF → Tools → UI` 或 GameObject 右键菜单生成 UI 脚本。当前自动绑定依赖编译和延迟回调，生成后核对组件挂载、字段绑定和监听器。 [UIAutoGenerator.cs](UIEditor/UIAutoGenerator.cs) |
 | HybridCLR | `UPandaGF → Tools → HybridCLR DLL Copy Tool` 按规则复制 DLL，可生成 `.dll.bytes`。启用清空时会先确认，并拒绝源/目标互相包含或工程根/Assets 根；源目录没有匹配文件时不清空目标。该工具用于准备拷贝产物，程序集生成和 AOT 元数据由宿主的 HybridCLR 流程处理。 [DLLCopyConfigWindow.cs](HyBridCLREditor/DLLCopyConfigWindow.cs) |
 | Cubemap | `UPandaGF → Tools → 立方体纹理生成工具` 按相机六面渲染输出 Cubemap。覆盖同路径时会删除旧资产再创建，已有 GUID 引用需要核对。 [CubemapTextureGenerator.cs](CubemapTextureGenerator.cs) |
@@ -25,7 +25,7 @@
 
 ## 模块工具
 
-- 日志菜单提供编译宏、诊断、自检和 uGUI 面板生成。Reporter 的编辑器钩子也会在编译结束后生成 `StreamingAssets/build_info`，包含机器名和时间。 [日志模块](../Runtime/Manager/DebugSystem/README.md) · [BuildInfo](PLogger/ReporterEditor.cs)
+- 日志菜单提供编译宏、诊断、自检和 uGUI 面板生成。Reporter 的编辑器钩子也会在编译结束后生成 `StreamingAssets/build_info`，包含机器名和时间。 [日志模块](../Runtime/Diagnostics/README.md) · [BuildInfo](PLogger/ReporterEditor.cs)
 - 事件系统有订阅调试窗口与自检。交互评分有流程校验器、Inspector、自检、日志复盘和演示生成。任务系统提供任务资产、UI 与 3D 演示安装器。 [事件工具](CustomInspector/EventCenterModule/) · [评分工具](CustomInspector/InteractiveTaskScoringSystem/) · [任务工具](CustomInspector/TaskSystem/)
 - 对象池、回放、描边、载具可从 `UPandaGF → Runtime` 下对应菜单生成示例。可新建场景或向当前场景追加内容。描边模块另有材质修复工具。 [示例索引](../Samples/README.md)
 - `EditorStu` 的控件备忘录和开发案例展示 IMGUI、SerializedObject、Undo、拖放、菜单和资产工作流。 [EditorStu](EditorStu/)

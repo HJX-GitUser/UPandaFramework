@@ -1,5 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UPandaGF;
+
+namespace UPandaGF.Gameplay
+{
 
 /// <summary>
 /// 车辆输入：统一读取键盘输入，供 VehicleController 和 CameraModeManager 使用。
@@ -47,4 +50,6 @@ public class VehicleInput : MonoBehaviour, IGameServicesConsumer
         else if (input.GetButtonDown("Camera2")) DirectCamera = 1;
         else if (input.GetButtonDown("Camera3")) DirectCamera = 2;
     }
+}
+
 }

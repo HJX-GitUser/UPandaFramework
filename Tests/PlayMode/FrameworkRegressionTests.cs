@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -7,10 +7,13 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using ReplaySystem;
+using UPandaGF.Gameplay.Replay;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UPandaGF;
+
+namespace UPandaGF.Tests
+{
 using Object = UnityEngine.Object;
 
 public class FrameworkRegressionTests
@@ -141,12 +144,12 @@ public class FrameworkRegressionTests
     }
     [Test] public void ReplayRoundTripPreservesComponentState()
     {
-        string path = ReplaySystem.FileManager.Save(SampleFrames());
+        string path = UPandaGF.Gameplay.Replay.FileManager.Save(SampleFrames());
         Assert.IsNotNull(path);
         try
         {
             Assert.IsTrue(File.ReadAllText(path).StartsWith("UPANDA_REPLAY:2"));
-            var frames = ReplaySystem.FileManager.Load(path);
+            var frames = UPandaGF.Gameplay.Replay.FileManager.Load(path);
             Assert.IsNotNull(frames);
             Assert.AreEqual(new Vector3(1, 2, 3), frames[0].snapshots[0].componentData["RigidbodyVelocity"]);
         }
@@ -161,15 +164,15 @@ public class FrameworkRegressionTests
 #pragma warning disable SYSLIB0011
         using (var stream = File.Create(path)) new BinaryFormatter().Serialize(stream, file);
 #pragma warning restore SYSLIB0011
-        Assert.AreEqual(1, ReplaySystem.FileManager.Load(path).Count);
+        Assert.AreEqual(1, UPandaGF.Gameplay.Replay.FileManager.Load(path).Count);
     }
     [Test] public void CorruptReplayReturnsNull()
     {
         string path = Path.Combine(directory, "corrupt.dat");
         File.WriteAllText(path, "broken");
-        Assert.IsNull(ReplaySystem.FileManager.Load(path));
+        Assert.IsNull(UPandaGF.Gameplay.Replay.FileManager.Load(path));
         File.WriteAllText(path, "UPANDA_REPLAY:2\n{\"version\":2,\"frames\":[{\"time\":0}]}");
-        Assert.IsNull(ReplaySystem.FileManager.Load(path));
+        Assert.IsNull(UPandaGF.Gameplay.Replay.FileManager.Load(path));
     }
     private static void Transaction(string method, params object[] args)
     {
@@ -260,4 +263,6 @@ public class FrameworkRegressionTests
         loader.LoadAsync<GameObject>("missing", value => { called = true; Assert.IsNull(value); });
         Assert.IsTrue(called, "失败也必须结束回调请求");
     }
+}
+
 }

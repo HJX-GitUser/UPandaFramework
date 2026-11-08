@@ -1,6 +1,6 @@
 # 串联机械臂 CCD 逆运动学
 
-`CCDIKController` 通过逐关节旋转，让末端执行器逼近给定的世界位置和姿态。`RobotAngleRecoder` 提供目标操作和姿态录制回放。组件属于 `UPandaGF.Extensions`，命名空间为 `UPandaGF.RunTime.RobotCCDIK`。使用 Unity Transform 和协程，无需 DOTween。 [IK 控制器](CCDIKController.cs) [姿态工具](RobotAngleRecoder.cs)
+`CCDIKController` 通过逐关节旋转，让末端执行器逼近给定的世界位置和姿态。`RobotAngleRecoder` 提供目标操作和姿态录制回放。组件属于 `UPandaGF.Gameplay`，命名空间为 `UPandaGF.Gameplay.RobotCCDIK`。使用 Unity Transform 和协程，无需 DOTween。 [IK 控制器](CCDIKController.cs) [姿态工具](RobotAngleRecoder.cs)
 
 ## 绑定模型并求解
 

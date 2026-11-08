@@ -3,8 +3,9 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UPandaGF.GFEditor;
+using UPandaGF.Samples;
 
-namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+namespace UPandaGF.Gameplay.InteractiveScoring
 {
     /// <summary>
     /// 一键生成"交互任务评分系统"的最小可运行示例：

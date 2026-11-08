@@ -17,7 +17,7 @@
 4. 检查 `assetData.assetref` 和 Unity 主包来自同一批产物。特别是右键单包构建或只构建依赖子集后，目标目录可能同时留有旧包。发布前以全量构建产物重新核对依赖。
 5. 在 `UPGameRoot` 使用 AssetBundle 模式。确认 `bundleTarget`、`LoadAssetPath`、`remoteURL` 和 AES 选项与这次产物相符。先在目标平台验证关闭热更时的随包启动，再验证启用热更的配置。
 
-[构建与分类](AssetEditor/AssetBundleClassificationWindow.cs) · [AssetDatabase 数据源](AssetEditor/AssetBundleDataSource/AssetDatabaseABDataSource.cs) · [根配置](../../Runtime/Manager/GameRoot/README.md)
+[构建与分类](AssetEditor/AssetBundleClassificationWindow.cs) · [AssetDatabase 数据源](AssetEditor/AssetBundleDataSource/AssetDatabaseABDataSource.cs) · [根配置](../../Runtime/Composition/GameRoot/README.md)
 
 ## 清单与路径
 
@@ -29,12 +29,13 @@
 | `PersistentDataPath` | 从 `persistentDataPath/<LoadAssetPath>/` 加载，启用启动热更时按清单检查并下载。 |
 | `RemotePath` | 从 `<remoteURL>/<LoadAssetPath>/` 直接读取。运行时加载这个来源的包时需要远端可用。 |
 
-远程清单的请求路径固定为 `<remoteURL>/AssetBundles/assetData.assetref`，包文件路径包含 `LoadAssetPath`。同一服务器同时发布多个平台时，应分别配置远端根地址或发布命名空间，避免不同平台共享这个固定清单位置。清单加密启用时，工具与运行时要使用相同配置。包的 MD5 用于大小与内容比对，清单格式校验与发布来源的可信度需要分别考虑。 [数据结构](../../Runtime/Manager/GameRoot/SourcesLoadMgr/ABSourcesRelated.cs) · [清单编码](../../Runtime/Manager/StorageDataMgr/Serialization/README.md) · [热更实现](../../Runtime/Manager/GameRoot/HotUpdate/ContentUpdateService.cs)
+远程清单的请求路径固定为 `<remoteURL>/AssetBundles/assetData.assetref`，包文件路径包含 `LoadAssetPath`。同一服务器同时发布多个平台时，应分别配置远端根地址或发布命名空间，避免不同平台共享这个固定清单位置。清单加密启用时，工具与运行时要使用相同配置。包的 MD5 用于大小与内容比对，清单格式校验与发布来源的可信度需要分别考虑。 [数据结构](../../Runtime/Assets/SourcesLoadMgr/ABSourcesRelated.cs) · [清单编码](../../Runtime/Assets/Serialization/README.md) · [热更实现](../../Runtime/Assets/HotUpdate/ContentUpdateService.cs)
 
 ## 本地复制与远端发布
 
 - **本地复制**会递归清空选中的目标目录，再复制全部源文件；执行前会弹出确认，并拒绝工程根、Assets 根及与源目录互相包含的目标。目标应为单独的部署目录，操作前检查绝对路径和现有内容。
-- **FTP** 的批量上传与清单上传分别发起。界面上的「上传AB包和清单」无法保证清单最后可见。需要有序发布时，可用独立发布步骤上传并验证包，再通过「只上传清单」切换入口。工具把 FTP 配置保存在 EditorPrefs。
-- **HTTP** 页签打开 Nginx 上传窗口。它依赖外部服务提供接收 multipart 的接口，并会把单个文件读入内存。大包上传需要单独核对内存、请求限制和发布结果。
+- **重新构建**清空输出目录 / StreamingAssets 拷贝目标时统一走 `EditorDestructiveGuard`；复制到 StreamingAssets 覆盖同名文件前也会确认。取消清空不会删除现有内容。
+- **FTP**：上传按钮会先**顺序上传全部 AB 包并等待完成**，只有全部成功后才提交清单（`assetData.assetref`）；任一包失败会中止并保留远端旧清单。也可用「只上传清单」单独提交。上传前会确认目标地址与文件数。地址与用户名保存在 EditorPrefs；**密码只保存在本次编辑器会话内存**，不落盘，需要免输入时用环境变量 `UPANDA_FTP_PASSWORD`（旧版本写在 EditorPrefs 的明文密码键会在首次读取时删除）。
+- **HTTP** 页签打开 Nginx 上传窗口。它依赖外部服务提供接收 multipart 的接口，并会把单个文件读入内存；上传前会确认目标地址与文件数。大包上传需要单独核对内存、请求限制和发布结果。
 
 Player 构建菜单只负责 Player 和启动 JSON 对齐。资源包由本工具单独构建，当前构建校验只检查 JSON。发布验收应同时检查目标包、主包、首场景和启动配置。 [上传页签](AssetEditor/UpLoad/UpLoadABEditor.cs) · [FTP](AssetEditor/UpLoad/UpLoadFTP.cs) · [HTTP](AssetEditor/UpLoad/NginxUploader.cs) · [Player 构建](../Build/FrameworkBuildPipeline.cs)

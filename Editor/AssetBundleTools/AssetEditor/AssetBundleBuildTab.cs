@@ -2,11 +2,12 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
-using AssetBundleBrowser.AssetBundleDataSource;
+using UPandaGF.AssetBundleBrowser.AssetBundleDataSource;
 using UPandaGF;
+using UPandaGF.GFEditor;
 using System;
 
-namespace AssetBundleBrowser
+namespace UPandaGF.AssetBundleBrowser
 {
     [System.Serializable]
     public class AssetBundleBuildTab
@@ -321,6 +322,8 @@ namespace AssetBundleBrowser
 
             // 1. 记录开始时间（Ticks为100纳秒单位）
             long startTicks = System.DateTime.UtcNow.Ticks;
+            string streamingTarget = null;
+            bool streamingTargetCleared = false;
 
             if (AssetBundleModel.Model.DataSource.CanSpecifyBuildOutputDirectory)
             {
@@ -333,29 +336,38 @@ namespace AssetBundleBrowser
                     return;
                 }
 
+                // 必须在 BrowseForFolder 之后解析：否则空输出目录会算成 StreamingAssets 根，误清整目录。
+                streamingTarget = GetStreamingTargetPath();
                 if (m_ForceRebuild.state)
                 {
-                    string streamingTarget = GetStreamingTargetPath();
-                    string message = "Do you want to delete all files in the directory " + m_UserData.m_OutputPath;
-                    if (m_CopyToStreaming.state)
-                        message += " and " + streamingTarget;
-                    message += "?";
-                    if (EditorUtility.DisplayDialog("File delete confirmation", message, "Yes", "No"))
-                    {
-                        try
-                        {
-                            if (Directory.Exists(m_UserData.m_OutputPath))
-                                Directory.Delete(m_UserData.m_OutputPath, true);
+                    bool deletedOutput = true, deletedStreaming = true;
+                    // 清空输出目录：统一走破坏性操作护栏（拒绝工程根/Assets 根，确认目标）。
+                    if (!EditorDestructiveGuard.ConfirmDelete(
+                        "清空 AB 输出目录", m_UserData.m_OutputPath,
+                        "重新构建前将清空 AB 输出目录下的全部内容。"))
+                        deletedOutput = false;
 
-                            // 只删本次的拷贝目标（<StreamingAssets>/<OutputPath>），绝不删整个 StreamingAssets
-                            if (m_CopyToStreaming.state)
-                                if (Directory.Exists(streamingTarget))
-                                    Directory.Delete(streamingTarget, true);
-                        }
-                        catch (System.Exception e)
+                    // 只删本次的拷贝目标（<StreamingAssets>/<OutputPath>），绝不删整个 StreamingAssets。
+                    if (m_CopyToStreaming.state && Directory.Exists(streamingTarget))
+                        deletedStreaming = EditorDestructiveGuard.ConfirmDelete(
+                            "清空 StreamingAssets 拷贝目标", streamingTarget,
+                            "重新构建前将清空 StreamingAssets 下的 AB 拷贝目标（不会删除整个 StreamingAssets）。",
+                            m_UserData.m_OutputPath);
+
+                    try
+                    {
+                        if (deletedOutput && Directory.Exists(m_UserData.m_OutputPath))
+                            Directory.Delete(m_UserData.m_OutputPath, true);
+
+                        if (deletedStreaming && m_CopyToStreaming.state && Directory.Exists(streamingTarget))
                         {
-                            UnityEngine.Debug.LogException(e);
+                            Directory.Delete(streamingTarget, true);
+                            streamingTargetCleared = true;
                         }
+                    }
+                    catch (System.Exception e)
+                    {
+                        UnityEngine.Debug.LogException(e);
                     }
                 }
                 if (!Directory.Exists(m_UserData.m_OutputPath))
@@ -382,7 +394,24 @@ namespace AssetBundleBrowser
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
             if (m_CopyToStreaming.state)
-                DirectoryCopy(m_UserData.m_OutputPath, GetStreamingTargetPath());
+            {
+                if (string.IsNullOrEmpty(streamingTarget)) streamingTarget = GetStreamingTargetPath();
+                int copiedFiles = 0;
+                try { copiedFiles = Directory.GetFiles(m_UserData.m_OutputPath, "*", SearchOption.AllDirectories).Length; }
+                catch (System.Exception) { }
+
+                // force rebuild 已经确认过清空拷贝目标时不再重复询问。
+                if (streamingTargetCleared || EditorDestructiveGuard.ConfirmOverwriteDirectory(
+                    "复制 AB 到 StreamingAssets", streamingTarget, copiedFiles,
+                    $"将把本次构建的 {copiedFiles} 个文件复制到 StreamingAssets，同名文件会被覆盖。"))
+                {
+                    DirectoryCopy(m_UserData.m_OutputPath, streamingTarget);
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("已跳过复制到 StreamingAssets（用户取消）；AB 仍保留在输出目录。");
+                }
+            }
 
             // 2. 计算耗时并输出（转换为毫秒）
             long endTicks = System.DateTime.UtcNow.Ticks;

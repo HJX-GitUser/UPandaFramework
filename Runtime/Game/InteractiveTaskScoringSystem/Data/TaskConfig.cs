@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+namespace UPandaGF.Gameplay.InteractiveScoring
 {
 
     [System.Serializable]

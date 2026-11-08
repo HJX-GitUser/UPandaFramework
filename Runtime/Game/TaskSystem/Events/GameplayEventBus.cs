@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>
     /// 玩法 → 任务 的「事件总线」。

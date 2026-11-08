@@ -1,4 +1,4 @@
-﻿namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+﻿namespace UPandaGF.Gameplay.InteractiveScoring
 {
     /// <summary>难度等级（配合 <see cref="DifficultyScorePolicy"/> 使用）</summary>
     public enum TaskDifficulty

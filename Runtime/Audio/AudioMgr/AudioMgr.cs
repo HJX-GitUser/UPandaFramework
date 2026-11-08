@@ -1,0 +1,865 @@
+﻿// =============================================================================
+//  AudioMgr.cs —— 音频管理器（背景音乐 + 音效）
+// -----------------------------------------------------------------------------
+//  职责：
+//      · 背景音乐：双路 AudioSource 交叉淡入淡出切换，支持暂停 / 恢复 / 停止 / 调音量
+//      · 音效：唯一音效（同时只响一个）+ 叠加音效（播完自动回收）
+//      · 资源：Resources / AssetBundle 两种加载方式；Resources 模式下会把
+//              ResourcesLoader 的引用计数还回去，避免 AudioClip 常驻内存
+//
+//  为什么是两路 AudioSource？
+//      交叉淡入淡出要求"新的淡入"与"旧的淡出"同时存在；只有一路 AudioSource 时
+//      给 clip 赋值会立刻打断当前播放，只能硬切。
+//
+//  常驻结构（切场景不销毁，避免引用变成"假 null"）：
+//      AudioRoot (DontDestroyOnLoad)
+//        ├── BGM_A / BGM_B     ← 交叉淡入淡出的两路
+//        └── SFX               ← 唯一音效 + 所有叠加音效都挂在它上面
+//
+//  生命周期 / 线程注意：
+//      · 由 GameServices 创建并持有（不再有静态单例）；依赖全部从构造函数注入。
+//      · 帧更新由注入的 PublicMono 驱动；测试可以不传，此时淡变立即完成。
+//      · Update 内部兜底记录异常；PublicMono 对监听器分别隔离异常。
+//      · 本类实现 IDisposable，服务关闭时由 GameServices 调用 Dispose() 解绑更新。
+//
+//  使用示例（业务侧）：
+//      services.Audio.PlayBKMusic("Audio/Bgm_Main", fadeDuration: 1.5f);   // 交叉淡入 1.5 秒
+//      services.Audio.PlayUniqueSound("Audio/Click");                     // 唯一音效
+//      ((AudioMgr)services.Audio)…                                        // 需要叠加音效等扩展 API 时
+// =============================================================================
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.Events;
+
+namespace UPandaGF
+{
+    /// <summary>
+    /// 音频管理器：BGM 支持交叉淡入淡出；音效支持 Resources / AssetBundle 加载并自动回收。
+    /// <para>依赖注入：IAssetService（资源）、PublicMono（帧驱动，可为 null）、ILogService。</para>
+    /// </summary>
+    public class AudioMgr : IDisposable, IAudioService
+    {
+        #region 常量
+
+        /// <summary>BGM 通道数：固定 2 路用于交叉淡入淡出</summary>
+        private const int BgmSourceCount = 2;
+
+        private const string AudioRootName = "AudioRoot";
+        private const string BgmNodeName = "BGM";
+        private const string SoundNodeName = "SFX";
+
+        #endregion
+
+        #region 字段
+
+        // ---------- 常驻节点与播放组件 ----------
+        private GameObject audioRoot;                   // 常驻根节点（DontDestroyOnLoad）
+        private GameObject soundObj;                    // 音效容器
+        private AudioSource[] bgmSources;               // 两路 BGM
+        private PlayingClip[] bgmClips;                 // 每路 BGM 当前持有的资源记录（与 bgmSources 一一对应）
+        private AudioSource uniqueSound;                // 唯一音效的播放组件
+        private readonly PlayingClip uniqueClip = new PlayingClip();
+        private readonly List<SoundHandle> soundList = new List<SoundHandle>();   // 叠加音效
+
+        // ---------- BGM 状态 ----------
+        private AudioSource bgmCurrent;                 // 正在发声（或正在淡出）的那一路
+        private AudioSource bgmIncoming;                // 正在淡入的那一路（没有交叉淡变时为 null）
+        private float bgmValue = 1f;                    // BGM 音量上限（0~1）
+        private float bgmDefaultFade = 1f;              // 默认淡入淡出时长（秒）
+        private float bgmActiveFade;                    // 本次淡变的时长
+        private float bgmFadeElapsed;                   // 本次淡变已经过去的时间
+        private float bgmFadeFromVolume;                // 淡出方开始淡出时的音量
+        private bool bgmIsFading;
+        private bool bgmPaused;
+        private int bgmRequestId;                       // 请求序号：用于丢弃过期的异步加载回调
+
+        // ---------- 音效状态 ----------
+        private float soundValue = 1f;                  // 音效音量（0~1）
+        private int uniqueRequestId;                    // 唯一音效的请求序号
+
+        // ---------- 注入依赖 ----------
+        private readonly IAssetService assetService;
+        private readonly ILogService log;
+        private readonly PublicMono driver;          // 固定帧驱动；可为 null
+        private readonly Func<PublicMono> driverProvider; // 可选：驱动被销毁/重建时重新解析（由组合根提供）
+        private PublicMono registeredMono;
+        private bool disposed;
+        private int soundGeneration;
+        private enum ClipKind { Bgm, Unique, Stacked, Sounds, All }
+        private sealed class ClipRequest
+        {
+            public ClipKind kind;
+            public readonly TaskCompletionSource<AssetLease<AudioClip>> result = new TaskCompletionSource<AssetLease<AudioClip>>();
+            public readonly TaskCompletionSource<bool> canceled = new TaskCompletionSource<bool>();
+        }
+        private readonly List<ClipRequest> clipRequests = new List<ClipRequest>();
+        private bool updateRegistered;                  // 是否已注册到 PublicMono
+
+        /// <summary>
+        /// 创建音频管理器。依赖全部由组合根（GameServices）注入；不要自行查找单例。
+        /// </summary>
+        /// <param name="assets">资源服务（路径播放必需；直接播 AudioClip 的入口不依赖它）</param>
+        /// <param name="driver">固定帧驱动；为 null 且没有 provider 时淡变立即完成</param>
+        /// <param name="log">日志；为 null 时静默</param>
+        /// <param name="driverProvider">可选：每次注册帧更新时重新解析驱动（驱动被重建时仍能恢复）</param>
+        public AudioMgr(IAssetService assets, PublicMono driver = null, ILogService log = null, Func<PublicMono> driverProvider = null)
+        {
+            assetService = assets ?? throw new ArgumentNullException(nameof(assets));
+            this.driver = driver;
+            this.log = log;
+            this.driverProvider = driverProvider;
+        }
+
+        /// <summary>当前帧驱动：优先用 provider 解析，失败再退回固定实例。</summary>
+        private PublicMono CurrentDriver
+        {
+            get
+            {
+                if (driverProvider != null)
+                {
+                    var resolved = driverProvider();
+                    if (resolved != null) return resolved;
+                }
+                return driver != null ? driver : null;
+            }
+        }
+
+        #endregion
+
+        #region 查询属性
+
+        /// <summary>BGM 音量上限（0~1）</summary>
+        public float BgmVolume { get { return bgmValue; } }
+
+        /// <summary>音效音量（0~1）</summary>
+        public float SoundVolume { get { return soundValue; } }
+
+        /// <summary>BGM 是否正在播放（暂停时为 false）</summary>
+        public bool IsBgmPlaying { get { return bgmCurrent != null && bgmCurrent.isPlaying; } }
+
+        /// <summary>BGM 是否处于暂停状态</summary>
+        public bool IsBgmPaused { get { return bgmPaused; } }
+
+        /// <summary>最近一次请求播放的 BGM 路径（用 AudioClip 直接播放时为 null）</summary>
+        public string CurrentBgmPath { get; private set; }
+
+        /// <summary>当前正在播放的叠加音效数量</summary>
+        public int PlayingSoundCount { get { return soundList.Count; } }
+
+        /// <summary>默认淡入淡出时长（秒）</summary>
+        public float DefaultBgmFadeDuration
+        {
+            get { return bgmDefaultFade; }
+            set { bgmDefaultFade = Mathf.Max(0f, value); }
+        }
+
+        #endregion
+
+        #region 生命周期
+
+        /// <summary>
+        /// 按需创建常驻节点与播放组件、注册帧更新。
+        /// 播放入口调用它；构造函数不访问 Unity API。
+        /// </summary>
+        private bool EnsureSetup()
+        {
+            if (disposed) return false;
+            EnsureUpdateRegistered();
+
+            if (audioRoot != null) return true;
+
+            // 节点被外部销毁过（例如手动 Destroy）：先把旧记录的资源引用还回去，再重建
+            bgmRequestId++; uniqueRequestId++; soundGeneration++;
+            ReleaseAllBgmClips();
+            uniqueClip.Release();
+            ClearAllSounds();
+            bgmCurrent = null;
+            bgmIncoming = null;
+            bgmIsFading = false; bgmPaused = false; CurrentBgmPath = null;
+
+            audioRoot = new GameObject(AudioRootName);
+            if (Application.isPlaying)
+            {
+                // 切场景不销毁：否则 soundList / bgmSources 里的引用会变成"假 null"，
+                // 更新逻辑需处理 Unity 对象被外部销毁的情况。
+                UnityEngine.Object.DontDestroyOnLoad(audioRoot);
+            }
+
+            bgmSources = new AudioSource[BgmSourceCount];
+            bgmClips = new PlayingClip[BgmSourceCount];
+            for (int i = 0; i < BgmSourceCount; i++)
+            {
+                string nodeName = string.Format("{0}_{1}", BgmNodeName, (char)('A' + i));
+                GameObject node = new GameObject(nodeName);
+                node.transform.SetParent(audioRoot.transform);
+                bgmSources[i] = CreateSource(node);
+                bgmClips[i] = new PlayingClip();
+            }
+
+            GameObject soundNode = new GameObject(SoundNodeName);
+            soundNode.transform.SetParent(audioRoot.transform);
+            soundObj = soundNode;
+            uniqueSound = CreateSource(soundObj);
+            CancelRequests(ClipKind.All);
+            return true;
+        }
+
+        /// <summary>统一的 AudioSource 创建：2D 播放、不自动播放</summary>
+        private static AudioSource CreateSource(GameObject host)
+        {
+            AudioSource source = host.AddComponent<AudioSource>();
+            source.playOnAwake = false;   // 显式关闭（AddComponent 默认是 true，只是因为没 clip 才没出声）
+            source.spatialBlend = 0f;     // 0 = 2D
+            return source;
+        }
+
+        /// <summary>注册帧更新（惰性；解析不到驱动时不注册，驱动重建后下次使用会重新注册）</summary>
+        private void EnsureUpdateRegistered()
+        {
+            PublicMono mono = CurrentDriver;
+            if (mono == null) return;
+            if (updateRegistered && registeredMono == mono) return;
+            if (registeredMono != null) registeredMono.RemoveUpdateListener(Update);
+            mono.AddUpdateListener(Update);
+            registeredMono = mono;
+            updateRegistered = true;
+        }
+
+        /// <summary>帧更新：推进 BGM 淡变 + 回收播放完的音效</summary>
+        private void Update()
+        {
+            // 帧更新兜底，保留音频内部异常的日志。
+            try
+            {
+                UpdateBgmFade();
+                RecycleFinishedSounds();
+            }
+            catch (Exception e)
+            {
+                log?.LogException(e);
+            }
+        }
+
+        /// <summary>
+        /// 释放：解绑帧更新、停掉全部音频、归还资源引用、销毁常驻节点。
+        /// 由 <see cref="LazySingletonBase{T}.Release"/> 调用。
+        /// </summary>
+        public void Dispose()
+        {
+            if (disposed) return;
+            disposed = true;
+            if (registeredMono != null) registeredMono.RemoveUpdateListener(Update);
+            registeredMono = null; updateRegistered = false;
+            bgmRequestId++; uniqueRequestId++; soundGeneration++;
+            bgmIsFading = false; bgmPaused = false; CurrentBgmPath = null;
+            if (bgmSources != null)
+                foreach (var source in bgmSources) StopAndClearBgmSource(source);
+            ReleaseAllBgmClips(); ClearAllSounds(); StopUniqueSource(); uniqueClip.Release();
+            bgmCurrent = bgmIncoming = null;
+            if (audioRoot != null) UnityEngine.Object.Destroy(audioRoot);
+            audioRoot = null; soundObj = null; uniqueSound = null; bgmSources = null; bgmClips = null;
+            // 状态全部清理后再通知等待者，避免取消回调重入复活旧实例。
+            CancelRequests(ClipKind.All);
+        }
+
+        #endregion
+
+        #region 背景音乐
+
+        /// <summary>
+        /// 播放背景音乐（异步加载完成后交叉淡入淡出切换；加载失败时保持当前 BGM 不变）。
+        /// </summary>
+        /// <param name="AcPath">资源路径；AssetBundle 模式用编辑器下的路径（带后缀）</param>
+        /// <param name="method">加载方式</param>
+        /// <param name="fadeDuration">交叉淡变时长（秒）：小于 0 用默认值（默认 1 秒），0 = 立即切换</param>
+        /// <param name="restartIfSame">与当前正在播的是同一路径时，是否重新从头播放（默认 false：什么都不做）</param>
+        public void PlayBKMusic(string AcPath, AssetLoadMethod method = AssetLoadMethod.Resources,
+                                float fadeDuration = -1f, bool restartIfSame = false)
+        {
+            if (!EnsureSetup()) return;
+
+            if (string.IsNullOrEmpty(AcPath))
+            {
+                log?.Error("[AudioMgr] PlayBKMusic 收到空路径");
+                return;
+            }
+
+            int requestId = ++bgmRequestId;
+            CancelRequests(ClipKind.Bgm);
+
+            // 同一首且没有正在进行的淡变：默认不重复加载（避免白白 AddRefCount、也避免从头重播）
+            if (!restartIfSame && !bgmIsFading && bgmCurrent != null && CurrentBgmPath == AcPath)
+            {
+                if (!bgmCurrent.isPlaying && !bgmPaused) bgmCurrent.Play();
+                return;
+            }
+
+            RequestClip(AcPath, method, ClipKind.Bgm, lease =>
+            {
+                var clip = lease?.Asset;
+                if (requestId != bgmRequestId || audioRoot == null)
+                {
+                    lease?.Dispose();   // 过期请求：把自己加上的引用计数还回去
+                    return;
+                }
+
+                if (clip == null)
+                {
+                    log?.Error($"[AudioMgr] 背景音乐加载失败，当前 BGM 保持不变：{AcPath}");
+                    lease?.Dispose();
+                    return;
+                }
+
+                SwitchBgm(clip, AcPath, lease, fadeDuration);
+            });
+        }
+
+        /// <summary>
+        /// 直接播放一个已加载好的 AudioClip（资源由外部管理，本类不归还引用计数）。
+        /// </summary>
+        public void PlayBKMusic(AudioClip clip, float fadeDuration = -1f, bool restartIfSame = false)
+        {
+            if (!EnsureSetup()) return;
+
+            if (clip == null)
+            {
+                log?.Error("[AudioMgr] PlayBKMusic 收到 null clip");
+                return;
+            }
+
+            bgmRequestId++;
+            CancelRequests(ClipKind.Bgm);
+            if (!restartIfSame && !bgmIsFading && bgmCurrent != null && bgmCurrent.clip == clip)
+            {
+                if (!bgmCurrent.isPlaying && !bgmPaused) bgmCurrent.Play();
+                return;
+            }
+
+            SwitchBgm(clip, null, null, fadeDuration);
+        }
+
+        /// <summary>
+        /// 停止背景音乐（默认 1 秒淡出；传 0 立即停止）。
+        /// </summary>
+        /// <param name="fadeDuration">淡出时长（秒），小于 0 用默认值</param>
+        public void StopBKMusic(float fadeDuration = -1f)
+        {
+            bgmRequestId++;      // 丢弃还在加载中的请求
+            CancelRequests(ClipKind.Bgm);
+            bgmPaused = false;
+
+            // 交叉淡变进行到一半时停止：以"正在淡入的那路"为当前，另一路直接收掉
+            AudioSource audible = bgmIncoming != null ? bgmIncoming : bgmCurrent;
+            if (bgmCurrent != null && bgmCurrent != audible) StopAndClearBgmSource(bgmCurrent);
+            bgmIncoming = null;
+            bgmCurrent = audible;
+            CurrentBgmPath = null;
+
+            if (bgmCurrent == null)
+            {
+                bgmIsFading = false;
+                return;
+            }
+
+            float duration = fadeDuration < 0f ? bgmDefaultFade : Mathf.Max(0f, fadeDuration);
+            if (CurrentDriver == null) duration = 0f;   // 没有帧驱动时淡变无法推进：直接完成，避免停在 0 音量
+            bgmFadeFromVolume = bgmCurrent.volume;
+            bgmActiveFade = duration;
+            bgmFadeElapsed = 0f;
+            bgmIsFading = true;
+
+            if (duration <= 0f) CompleteBgmFade();
+        }
+
+        /// <summary>暂停背景音乐（暂停期间淡变进度也一起冻结）</summary>
+        public void PauseBKMusic()
+        {
+            if (bgmPaused) return;
+            bgmPaused = true;
+            SetBgmSourcesPaused(true);
+        }
+
+        /// <summary>恢复背景音乐</summary>
+        public void ResumeBKMusic()
+        {
+            if (!bgmPaused) return;
+            bgmPaused = false;
+            SetBgmSourcesPaused(false);
+        }
+
+        /// <summary>改变背景音乐音量（0~1）。正在淡变时会在淡变过程中生效。</summary>
+        public void ChangeBKValue(float v)
+        {
+            bgmValue = Mathf.Clamp01(v);
+
+            // 淡变中由 UpdateBgmFade 每帧按新上限重算，这里不要再直接赋值，否则会跳一下
+            if (!bgmIsFading && bgmCurrent != null) bgmCurrent.volume = bgmValue;
+        }
+
+        /// <summary>真正切换 BGM：把 clip 放到"空闲的那一路"，两路交叉淡入淡出</summary>
+        private void SwitchBgm(AudioClip clip, string path, AssetLease<AudioClip> lease, float fadeDuration)
+        {
+            float duration = fadeDuration < 0f ? bgmDefaultFade : Mathf.Max(0f, fadeDuration);
+            if (CurrentDriver == null) duration = 0f;   // 没有帧驱动时淡变无法推进：直接完成，避免停在 0 音量
+
+            AudioSource audible = bgmIncoming != null ? bgmIncoming : bgmCurrent;   // 现在真正听得见的那一路
+            AudioSource target = audible == bgmSources[0] ? bgmSources[1] : bgmSources[0];
+
+            // 目标路可能正是上一轮淡出的那路（上一轮还没结束就又切歌）：先彻底收掉，避免三路同时响
+            if (target != audible) StopAndClearBgmSource(target);
+
+            bgmCurrent = audible;                                  // 淡出方
+            bgmIncoming = target;                                  // 淡入方
+            bgmFadeFromVolume = audible != null ? audible.volume : 0f;
+
+            target.clip = clip;
+            target.loop = true;
+            target.volume = duration > 0f ? 0f : bgmValue;
+            target.Play();
+            SetBgmSourceClip(target, lease);
+
+            bgmPaused = false;                  // 明确要求播放 → 解除暂停
+            CurrentBgmPath = path;
+            bgmActiveFade = duration;
+            bgmFadeElapsed = 0f;
+            bgmIsFading = true;
+
+            if (duration <= 0f) CompleteBgmFade();
+        }
+
+        /// <summary>推进淡变进度（暂停时冻结）</summary>
+        private void UpdateBgmFade()
+        {
+            if (!bgmIsFading || bgmPaused || bgmSources == null) return;
+
+            if (bgmActiveFade <= 0f)
+            {
+                CompleteBgmFade();
+                return;
+            }
+
+            bgmFadeElapsed += Time.unscaledDeltaTime;      // 用非缩放时间：暂停游戏不该冻结音乐
+            float t = Mathf.Clamp01(bgmFadeElapsed / bgmActiveFade);
+
+            if (bgmIncoming != null) bgmIncoming.volume = bgmValue * t;
+            if (bgmCurrent != null && bgmCurrent != bgmIncoming) bgmCurrent.volume = bgmFadeFromVolume * (1f - t);
+
+            if (t >= 1f) CompleteBgmFade();
+        }
+
+        /// <summary>淡变结束：收掉旧的那一路，把淡入方提为当前</summary>
+        private void CompleteBgmFade()
+        {
+            bgmIsFading = false;
+
+            if (bgmCurrent != null && bgmCurrent != bgmIncoming)
+                StopAndClearBgmSource(bgmCurrent);      // 停播 + 解除 clip + 归还引用计数
+
+            bgmCurrent = bgmIncoming;
+            bgmIncoming = null;
+
+            if (bgmCurrent != null) bgmCurrent.volume = bgmValue;
+        }
+
+        /// <summary>停掉并清空一路 BGM，同时归还它占用的资源引用</summary>
+        private void StopAndClearBgmSource(AudioSource source)
+        {
+            if (source == null) return;
+
+            source.Stop();
+            source.clip = null;      // 先解除引用，引用计数归零时 UnloadAsset 才安全
+
+            int index = IndexOfBgmSource(source);
+            if (index >= 0 && bgmClips[index] != null) bgmClips[index].Release();
+        }
+
+        private void SetBgmSourcesPaused(bool pause)
+        {
+            if (bgmSources == null) return;
+
+            for (int i = 0; i < bgmSources.Length; i++)
+            {
+                AudioSource source = bgmSources[i];
+                if (source == null) continue;
+
+                if (pause) source.Pause();
+                else source.UnPause();
+            }
+        }
+
+        private int IndexOfBgmSource(AudioSource source)
+        {
+            if (bgmSources == null || source == null) return -1;
+
+            for (int i = 0; i < bgmSources.Length; i++)
+            {
+                if (bgmSources[i] == source) return i;
+            }
+            return -1;
+        }
+
+        private void SetBgmSourceClip(AudioSource source, AssetLease<AudioClip> lease)
+        {
+            int index = IndexOfBgmSource(source);
+            if (index >= 0 && bgmClips[index] != null) bgmClips[index].Set(lease);
+        }
+
+        private void ReleaseAllBgmClips()
+        {
+            if (bgmClips == null) return;
+
+            for (int i = 0; i < bgmClips.Length; i++)
+            {
+                if (bgmClips[i] != null) bgmClips[i].Release();
+            }
+        }
+
+        #endregion
+
+        #region 唯一音效
+
+        /// <summary>
+        /// 播放唯一音效（同一时刻只有一个；新音效加载完成后才会顶掉上一个，
+        /// 因此加载失败时不会把正在响的音效打断）。
+        /// </summary>
+        public void PlayUniqueSound(string AcPath, AssetLoadMethod method = AssetLoadMethod.Resources)
+        {
+            if (!EnsureSetup()) return;
+
+            if (string.IsNullOrEmpty(AcPath))
+            {
+                log?.Error("[AudioMgr] PlayUniqueSound 收到空路径");
+                return;
+            }
+
+            int requestId = ++uniqueRequestId;
+            CancelRequests(ClipKind.Unique);
+            RequestClip(AcPath, method, ClipKind.Unique, lease =>
+            {
+                var clip = lease?.Asset;
+                if (requestId != uniqueRequestId || audioRoot == null)
+                {
+                    lease?.Dispose();
+                    return;
+                }
+
+                if (clip == null)
+                {
+                    log?.Error($"[AudioMgr] 唯一音效加载失败，保持上一个音效：{AcPath}");
+                    lease?.Dispose();
+                    return;
+                }
+
+                // 顺序很重要：先停播并解除 clip 引用，再归还引用计数，
+                // 否则 UnloadAsset 时 clip 还被 AudioSource 引用着
+                StopUniqueSource();
+                uniqueClip.Release();
+                PlayOnSource(uniqueSound, clip, false);
+                uniqueClip.Set(lease);
+            });
+        }
+
+        /// <summary>播放唯一音效（直接给 AudioClip，资源由外部管理）</summary>
+        public void PlayUniqueSound(AudioClip clip)
+        {
+            if (!EnsureSetup()) return;
+
+            if (clip == null)
+            {
+                log?.Error("[AudioMgr] PlayUniqueSound 收到 null clip");
+                return;
+            }
+
+            uniqueRequestId++;
+            CancelRequests(ClipKind.Unique);
+            StopUniqueSource();
+            uniqueClip.Release();       // 同样：先解除 clip 引用再归还引用计数
+            PlayOnSource(uniqueSound, clip, false);
+        }
+
+        /// <summary>暂停 / 恢复唯一音效</summary>
+        public void PauseUniqueSound(bool isPause = true)
+        {
+            if (uniqueSound == null) return;
+
+            if (isPause) uniqueSound.Pause();
+            else uniqueSound.UnPause();
+        }
+
+        /// <summary>停止唯一音效（并归还资源引用）</summary>
+        public void StopUniqueSound()
+        {
+            uniqueRequestId++;      // 丢弃还在加载中的请求
+
+            StopUniqueSource();
+            uniqueClip.Release();
+            CancelRequests(ClipKind.Unique);
+        }
+
+        /// <summary>停播唯一音效并解除它持有的 clip 引用（释放顺序：先解除引用，再归还引用计数）</summary>
+        private void StopUniqueSource()
+        {
+            if (uniqueSound == null) return;
+
+            uniqueSound.Stop();
+            uniqueSound.clip = null;
+        }
+
+        #endregion
+
+        #region 叠加音效
+
+        /// <summary>
+        /// 加载并播放一个音效；同一个时刻可以有多个音效同时播放（与"唯一音效"相对）。
+        /// 播放结束后会自动回收（销毁 AudioSource 并归还资源引用）。
+        /// </summary>
+        /// <param name="AcPath">资源路径</param>
+        /// <param name="isLoop">是否循环（循环音效不会被自动回收，需要自己调 StopSound）</param>
+        /// <param name="method">加载方式</param>
+        /// <param name="callBack">加载回调，参数是音效组件；失败时以 null 回调，调用方需判空</param>
+        public void LoadSoundAndPlay(string AcPath, bool isLoop = false,
+                                     AssetLoadMethod method = AssetLoadMethod.Resources,
+                                     UnityAction<AudioSource> callBack = null)
+        {
+            if (!EnsureSetup()) { ResourcesLoader.InvokeCallbacks(callBack, (AudioSource)null); return; }
+
+            if (string.IsNullOrEmpty(AcPath))
+            {
+                log?.Error("[AudioMgr] LoadSoundAndPlay 收到空路径");
+                ResourcesLoader.InvokeCallbacks(callBack, (AudioSource)null);
+                return;
+            }
+
+            int epoch = soundGeneration;
+            RequestClip(AcPath, method, ClipKind.Stacked, lease =>
+            {
+                var clip = lease?.Asset;
+                // 加载失败，或本类已经被 Dispose：明确以 null 回调，不给调用方"马上会被回收的空壳"
+                if (epoch != soundGeneration || clip == null || audioRoot == null || disposed)
+                {
+                    if (epoch == soundGeneration && !disposed && clip == null) log?.Error($"[AudioMgr] 音效加载失败：{AcPath}");
+                    lease?.Dispose();
+                    ResourcesLoader.InvokeCallbacks(callBack, (AudioSource)null);
+                    return;
+                }
+
+                AudioSource source = CreateSource(soundObj);
+                PlayOnSource(source, clip, isLoop);
+
+                SoundHandle handle = new SoundHandle(source);
+                handle.clip.Set(lease);
+                soundList.Add(handle);
+
+                ResourcesLoader.InvokeCallbacks(callBack, source);
+            });
+        }
+
+        /// <summary>改变音效音量（0~1），同时作用于唯一音效与所有正在播放的音效</summary>
+        public void ChangeSoundValue(float value)
+        {
+            soundValue = Mathf.Clamp01(value);
+
+            for (int i = 0; i < soundList.Count; i++)
+            {
+                AudioSource source = soundList[i].source;
+                if (source != null) source.volume = soundValue;
+            }
+
+            if (uniqueSound != null) uniqueSound.volume = soundValue;   // 修复：以前漏了唯一音效
+        }
+
+        /// <summary>
+        /// 停止某个音效并回收它（<see cref="LoadSoundAndPlay"/> 回调里拿到的 source）。
+        /// 传进来的 source 不在本类管理范围内时，只停止、不销毁。
+        /// </summary>
+        public void StopSound(AudioSource source)
+        {
+            if (source == null) return;
+
+            for (int i = soundList.Count - 1; i >= 0; i--)
+            {
+                if (soundList[i].source == source)
+                {
+                    DestroySoundHandle(soundList[i]);
+                    soundList.RemoveAt(i);
+                    return;
+                }
+            }
+
+            source.Stop();
+        }
+
+        /// <summary>
+        /// 暂停 / 恢复某个音效。被暂停的音效不会被自动回收，
+        /// 恢复后用 <see cref="StopSound"/> 结束它。
+        /// </summary>
+        public void PauseSound(AudioSource source, bool isPause = true)
+        {
+            if (source == null) return;
+
+            for (int i = 0; i < soundList.Count; i++)
+            {
+                if (soundList[i].source == source) soundList[i].pausedByUser = isPause;
+            }
+
+            if (isPause) source.Pause();
+            else source.UnPause();
+        }
+
+        /// <summary>停止所有音效（含唯一音效）；背景音乐不受影响</summary>
+        public void StopAllSound()
+        {
+            soundGeneration++;
+            ClearAllSounds();
+
+            uniqueRequestId++;
+            StopUniqueSource();
+            uniqueClip.Release();
+            CancelRequests(ClipKind.Sounds);
+        }
+
+        /// <summary>回收播放完的音效</summary>
+        private void RecycleFinishedSounds()
+        {
+            if (AudioListener.pause) return;
+            for (int i = soundList.Count - 1; i >= 0; i--)
+            {
+                SoundHandle handle = soundList[i];
+                if (handle == null)
+                {
+                    soundList.RemoveAt(i);
+                    continue;
+                }
+
+                // source == null 说明组件被外部销毁了（旧实现直接访问 isPlaying 会每帧抛异常），
+                // 这里当成"已结束"处理，顺便把资源引用还回去
+                bool finished = handle.source == null || (!handle.source.isPlaying && !handle.pausedByUser);
+                if (finished)
+                {
+                    DestroySoundHandle(handle);
+                    soundList.RemoveAt(i);
+                }
+            }
+        }
+
+        private void DestroySoundHandle(SoundHandle handle)
+        {
+            if (handle == null) return;
+
+            if (handle.source != null)
+            {
+                handle.source.Stop();
+                handle.source.clip = null;      // 先解除引用，再归还引用计数
+                UnityEngine.Object.Destroy(handle.source);
+            }
+
+            handle.clip.Release();
+        }
+
+        private void ClearAllSounds()
+        {
+            for (int i = soundList.Count - 1; i >= 0; i--)
+            {
+                DestroySoundHandle(soundList[i]);
+            }
+            soundList.Clear();
+        }
+
+        private void PlayOnSource(AudioSource source, AudioClip clip, bool loop)
+        {
+            if (source == null) return;
+
+            source.Stop();
+            source.clip = clip;
+            source.loop = loop;
+            source.volume = soundValue;
+            source.Play();
+        }
+
+        #endregion
+
+        #region 内部：加载与资源引用
+
+        /// <summary>
+        /// 注册异步音频请求，完成时交付绑定原资源记录的持有凭据。
+        /// 失败或取消以 null 完成；迟到资源在后台归还，AB 包仍显式卸载。
+        /// </summary>
+        private void RequestClip(string path, AssetLoadMethod method, ClipKind kind, UnityAction<AssetLease<AudioClip>> callback)
+        {
+            var request = new ClipRequest { kind = kind };
+            clipRequests.Add(request);
+            _ = DeliverClip(request, callback);
+            _ = LoadClip(request, path, method);
+        }
+        private async Task DeliverClip(ClipRequest request, UnityAction<AssetLease<AudioClip>> callback)
+        {
+            var lease = await request.result.Task;
+            try { callback(lease); }
+            catch (Exception e) { lease?.Dispose(); log?.LogException(e); }
+        }
+        private async Task<AssetLease<AudioClip>> AcquireClip(string path, AssetLoadMethod method)
+        {
+            // 唯一的资源入口：由组合根注入。没有注入时明确失败，而不是回退到全局单例。
+            return await assetService.AcquireAsync<AudioClip>(path, method);
+        }
+        private async Task LoadClip(ClipRequest request, string path, AssetLoadMethod method)
+        {
+            AssetLease<AudioClip> lease = null;
+            try
+            {
+                var native = AcquireClip(path, method);
+                if (await Task.WhenAny(native, request.canceled.Task) != native)
+                { _ = DisposeLateClip(native); return; }
+                lease = await native;
+                clipRequests.Remove(request);
+                if (request.result.TrySetResult(lease)) lease = null;
+            }
+            catch (Exception e) { log?.LogException(e); }
+            finally { lease?.Dispose(); clipRequests.Remove(request); request.result.TrySetResult(null); }
+        }
+        private async Task DisposeLateClip(Task<AssetLease<AudioClip>> task)
+        {
+            try { (await task)?.Dispose(); } catch (Exception e) { log?.LogException(e); }
+        }
+        private void CancelRequests(ClipKind kind)
+        {
+            var canceled = clipRequests.FindAll(request => kind == ClipKind.All || request.kind == kind || (kind == ClipKind.Sounds && request.kind != ClipKind.Bgm));
+            foreach (var request in canceled) clipRequests.Remove(request);
+            foreach (var request in canceled) { request.canceled.TrySetResult(true); request.result.TrySetResult(null); }
+        }
+
+        #endregion
+
+        #region 内部类型
+
+        /// <summary>
+        /// "某一路播放源当前占用的音频资源"记录。
+        /// 用于在该路被替换 / 回收时归还 ResourcesLoader 的引用计数 —— 否则
+        /// AudioClip 会被 resDic 永久缓存（引用计数只增不减）。
+        /// </summary>
+        private sealed class PlayingClip
+        {
+            private AssetLease<AudioClip> lease;
+            public void Set(AssetLease<AudioClip> value) { Release(); lease = value; }
+            public void Release() { var old = lease; lease = null; old?.Dispose(); }
+        }
+
+        /// <summary>一个正在播放的叠加音效</summary>
+        private sealed class SoundHandle
+        {
+            public readonly AudioSource source;
+            public readonly PlayingClip clip = new PlayingClip();
+            public bool pausedByUser;      // 用户手动暂停过：不自动回收
+
+            public SoundHandle(AudioSource source)
+            {
+                this.source = source;
+            }
+        }
+
+        #endregion
+    }
+}

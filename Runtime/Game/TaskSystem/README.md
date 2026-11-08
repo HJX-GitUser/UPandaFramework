@@ -1,6 +1,6 @@
 # 通用任务系统
 
-`TaskSystem` 用于主线、支线和可重复任务。任务定义、玩家进度、奖励接收和界面分别维护。代码位于 `UPandaGF.Extensions`，命名空间为 `UPandaGF.RunTime.TaskSystem`。任务日志和 HUD 使用 UGUI，任务推进本身可脱离 UI 使用。 [任务定义](Core/QuestDefinition.cs) [任务管理器](Manager/QuestManager.cs)
+`TaskSystem` 用于主线、支线和可重复任务。任务定义、玩家进度、奖励接收和界面分别维护。代码位于 `UPandaGF.Gameplay`，命名空间为 `UPandaGF.Gameplay.Tasks`。任务日志和 HUD 使用 UGUI，任务推进本身可脱离 UI 使用。 [任务定义](Core/QuestDefinition.cs) [任务管理器](Manager/QuestManager.cs)
 
 ## 在场景里接入
 
@@ -10,7 +10,7 @@
 4. 目标满足后任务变为 `Completed`。调用 `TurnInQuest` 发奖并解锁后继任务。可重复任务提交后立即回到可接受状态。演示的重复规则没有按日期刷新。
 
 ```csharp
-using UPandaGF.RunTime.TaskSystem;
+using UPandaGF.Gameplay.Tasks;
 
 // 场景里的 QuestManager 通过 Inspector 引用传给业务脚本；不再使用静态单例。
 public QuestManager quests;

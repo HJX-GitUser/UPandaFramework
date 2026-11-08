@@ -1,4 +1,4 @@
-﻿namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+﻿namespace UPandaGF.Gameplay.InteractiveScoring
 {
     /// <summary>
     /// 一次评分的上下文。

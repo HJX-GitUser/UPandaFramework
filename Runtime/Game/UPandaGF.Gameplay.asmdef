@@ -1,0 +1,13 @@
+{
+  "name": "UPandaGF.Gameplay",
+  "references": [
+    "UPandaGF.Contracts",
+    "UPandaGF.Core",
+    "UPandaGF.Assets",
+    "UPandaGF.UI",
+    "UPandaGF.Save",
+    "UPandaGF.Diagnostics",
+    "Unity.TextMeshPro"
+  ],
+  "autoReferenced": false
+}

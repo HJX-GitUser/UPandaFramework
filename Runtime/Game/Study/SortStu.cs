@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace UPandaGF.Gameplay
+{
+
 public static class SortStu
 {
     /// <summary>
@@ -496,4 +499,6 @@ public static class SortStu
             }
         }
     }
+}
+
 }

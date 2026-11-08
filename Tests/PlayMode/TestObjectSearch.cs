@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+namespace UPandaGF.Tests
+{
+
 /// <summary>测试用对象查找：兼容 2022.2+ 的 FindObjectsByType 与旧版 FindObjectsOfType。</summary>
 internal static class TestObjectSearch
 {
@@ -11,4 +14,6 @@ internal static class TestObjectSearch
         return Object.FindObjectsOfType<T>();
 #endif
     }
+}
+
 }

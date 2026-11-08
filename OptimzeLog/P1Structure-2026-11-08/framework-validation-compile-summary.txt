@@ -1,0 +1,7 @@
+﻿工程：D:\MySouce\Unity框架\Framework Validation（Unity 2021.3.45f2c1）
+框架：Assets/upanda-framework 0.5.0（由 Tools/ci/sync-package.ps1 从仓库同步）
+编译：0 个 error CS；生成 UPandaGF.Core/Assets/UI/Audio/Save/Diagnostics/Runtime/Gameplay*/Editor/Tests* 程序集
+EditMode：47 / 47
+PlayMode：302 / 302
+原始文件：Logs/p1-structure-compile.log、Logs/p1-structure-editmode.xml、Logs/p1-structure-playmode.xml
+备注：工程路径含空格，Unity 参数需加引号；本轮修复了 Tools/ci/invoke-unity.ps1 的参数引用。

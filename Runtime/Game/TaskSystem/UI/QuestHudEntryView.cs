@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>HUD 追踪条中的一行（挂在自己的条目预制体上，各引用可留空）。</summary>
     public class QuestHudEntryView : MonoBehaviour

@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UPandaGF;
 
+namespace UPandaGF.GFEditor
+{
+
 [CustomEditor(typeof(DebugerInit))]
 public class DebugerInitEditor : Editor
 {
@@ -84,4 +87,6 @@ public class DebugerInitEditor : Editor
         if (component == null || component.logConfig == null || config == null) return false;
         return component.logConfig.Equals(config);
     }
+}
+
 }

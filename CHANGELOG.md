@@ -2,6 +2,65 @@
 
 All notable changes to this package are documented here. The format follows Keep a Changelog and the project uses Semantic Versioning.
 
+## [0.5.0] - 2026-11-08
+
+### Added
+
+- Assembly split: `UPandaGF.Diagnostics`, `UPandaGF.Core`, `UPandaGF.Assets`, `UPandaGF.UI`, `UPandaGF.Audio`, `UPandaGF.Save`; `UPandaGF.Runtime` is now the composition root (`UPGameRoot` / `GameServices` / `Reporter`).
+- Optional gameplay assemblies: `UPandaGF.Gameplay`, `UPandaGF.Gameplay.Tasks`, `UPandaGF.Gameplay.InteractiveScoring`, `UPandaGF.Gameplay.Replay`（`autoReferenced = false`）。`UPandaGF.Samples` 也不再自动引用，不进入 Player。
+- `Documentation~/MIGRATION-0.5.md`: assembly / namespace / path migration table and upgrade steps.
+
+### Changed (breaking)
+
+- All C# files now declare a namespace. Global-namespace runtime types move to `UPandaGF`; editor tools to `UPandaGF.GFEditor`; samples to `UPandaGF.Samples`; PlayMode tests to `UPandaGF.Tests`.
+- `UPandaGF.RunTime.*` → `UPandaGF.Gameplay.*`; `UPandaGF.StateMechine` → `UPandaGF.Gameplay.StateMachine`; `ReplaySystem` → `UPandaGF.Gameplay.Replay`; `AssetBundleBrowser` → `UPandaGF.AssetBundleBrowser`; `UPandaGF.Extensions` assembly → `UPandaGF.Gameplay`.
+- Directory moves: `Runtime/Manager/*` split into `Runtime/Core|Assets|UI|Audio|Save|Diagnostics|Composition`; `BineryMgr` renamed to `BinaryMgr`; serialization codecs moved to `Runtime/Assets/Serialization`.
+- Module boundaries: diagnostic accessors (`SceneService.DiagnosticScopeCount` / `DiagnosticPendingRequestCount` / `UIManager.Diagnostic*` / `AssetsLoader.BundleLoader`), `FileUpdateTransaction` and `HotUpdateFileGate` are public so the composition root can use them across assemblies. `AssetLoaddingMethod` moved to Contracts; diagnostic data structs moved to Core.
+- `ResourcesLoader.InvokeCallbacks` is public (used by Audio/UI).
+- `FrameworkConventionValidator` scans the whole `Runtime` tree again after the composition-root asmdef moved to `Runtime/Composition`.
+
+### Fixed
+
+- PlayMode regression tests no longer assume `FileUpdateTransaction` / `HotUpdateFileGate` live in the `UPGameRoot` assembly; `ReporterLogStore` reflection uses its new `UPandaGF` namespace.
+- `Tools/ci/invoke-unity.ps1` quotes Unity command-line arguments containing spaces, so projects such as `Framework Validation` can be compiled/tested in batchmode.
+
+### Documentation
+
+- Updated root README assembly table/module links, module READMEs and relative links after the directory moves.
+- Added `OptimzeLog/P1Structure-2026-11-08/` with compile and test evidence.
+
+## [0.4.0] - 2026-11-08
+
+### Added
+
+- Excel binary **v2** format: `UPXF` magic, version, table/key/column schema, row data and CRC32 tail. `ExcelBinaryCodec` is shared by the generator (`ExcelTableBuilder`) and the runtime reader, validates magic/schema/row count/CRC, and rejects truncated or corrupted files with `InvalidDataException`.
+- `BinaryDataMgr.LoadTable<T, K>(byte[] bytes)` for in-memory tables (tests/custom installation). v2 columns map to data-class fields **by name**, so Excel column order can change without breaking reads; legacy v1 tables remain readable.
+- ExcelTool "校验二进制表（v2 自检）" action and generation self-check (encode → decode before writing).
+- `ABLoadMgr.ReleaseLegacyBundles()` / `IsLegacyPinned()`; legacy `GetAssetBundle` / `LoadResAsync` pins now use the lease model (`AssetBundleDiagnostics.LegacyPins`).
+- `EditorDestructiveGuard.ConfirmOverwriteDirectory` / `ConfirmUpload`, used by AB upload, StreamingAssets copy, build-tab rebuild and HTTP upload.
+- CI tooling: `Tools/ci/` PowerShell + bash scripts (`sync-package`, `invoke-unity`, `run-tests`, `check-test-results`, `build-player`) and `.github/workflows/ci.yml` (EditMode/PlayMode matrix + Windows/Android/WebGL builds, XML gating, artifacts).
+- `FrameworkBuildPipeline.BuildFromCommandLine` (exit codes 0/1/2, `-buildTarget`/`-buildPath` or `UPANDA_BUILD_TARGET`/`UPANDA_BUILD_OUTPUT`) and an explicit error for non-ASCII Android project paths.
+
+### Changed
+
+- AB native loads now await `AsyncOperation.completed` instead of polling with `Task.Yield`; progress events are advanced by a single `ABLoadMgr.Update` pump while loads are in flight.
+- Legacy AB callers are pinned through the same lease counter as `AcquireBundleAsync`; `UnLoadAB` refuses while a legacy pin exists and `ReleaseLegacyBundles()` releases them. `legacyBundles` (the "never unload" side set) was removed.
+- FTP upload is now asynchronous and ordered: all bundles upload first, and the manifest (`assetData.assetref`) is submitted only when every bundle succeeded. `UpLoadAllABFile` / `UpLoadFile` are obsolete wrappers.
+- FTP password is no longer written to `EditorPrefs` (it lives in session memory or `UPANDA_FTP_PASSWORD`); the legacy plaintext key is deleted after a one-time migration. The UI uses a password field.
+- ExcelTool generation asks for confirmation, refuses to write generated classes outside `Assets`, and uses `ExcelTableBuilder` (DataTable → typed rows → codec).
+- `AssetBundleBuildTab` rebuild deletion and StreamingAssets copy use `EditorDestructiveGuard`; cubemap overwrite and Nginx upload ask for confirmation.
+- `AssetBundleDiagnostics` gained `LegacyPins` (optional constructor parameter).
+
+### Fixed
+
+- FTP upload streams are disposed on failures (previously leaked when `GetRequestStream`/copy threw).
+- Generation-side Excel pipeline is now covered by EditMode tests without a real `.xlsx`, including Chinese text, empty cells, bool text and negative floats.
+
+### Documentation
+
+- Updated StorageDataMgr (Excel v2), AssetBundleMgr (lease model/progress), Editor AssetBundleTools (ordered upload/credentials) and root README (CI/Android ASCII path).
+- Added `Tools/ci/README.md` and `OptimzeLog/P1-2026-11-08/` verification evidence.
+
 ## [0.3.0] - 2026-11-08
 
 ### Added

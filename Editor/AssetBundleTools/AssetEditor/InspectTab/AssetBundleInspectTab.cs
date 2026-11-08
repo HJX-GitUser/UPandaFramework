@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace AssetBundleBrowser
+namespace UPandaGF.AssetBundleBrowser
 {
     [System.Serializable]
     internal class AssetBundleInspectTab

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+namespace UPandaGF.Gameplay.InteractiveScoring
 {
     /// <summary>
     /// 一条动作级日志（P2 新增）。

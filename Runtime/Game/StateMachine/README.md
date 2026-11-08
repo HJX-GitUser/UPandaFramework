@@ -1,13 +1,13 @@
 # 分层状态机
 
-`StateMachineManager` 管理一棵状态树并通过 Unity 的 Update、FixedUpdate 驱动活动分支。`BaseState` 提供子状态、默认子状态与递归生命周期，`IState` 定义可实现的最小契约。组件位于 `UPandaGF.Extensions`，沿用源码命名空间 `UPandaGF.StateMechine`。此模块适合角色等局部行为，应用级流程另见 [GameFlowService](../../Manager/Services/README.md)。 [管理器](StateMachineManager.cs) [基础状态](BaseState.cs)
+`StateMachineManager` 管理一棵状态树并通过 Unity 的 Update、FixedUpdate 驱动活动分支。`BaseState` 提供子状态、默认子状态与递归生命周期，`IState` 定义可实现的最小契约。组件位于 `UPandaGF.Gameplay`，沿用源码命名空间 `UPandaGF.Gameplay.StateMachine`。此模块适合角色等局部行为，应用级流程另见 [GameFlowService](../../Core/Services/README.md)。 [管理器](StateMachineManager.cs) [基础状态](BaseState.cs)
 
 ## 注册与切换
 
 先注册唯一根，再按父 ID 注册子状态。状态 ID 在整棵树中唯一，根只能有一个，需要挂子状态的父节点须继承 `BaseState`。下面的入口可在业务组件的 Start 中使用。
 
 ```csharp
-using UPandaGF.StateMechine;
+using UPandaGF.Gameplay.StateMachine;
 using UnityEngine;
 
 public class CharacterStates : MonoBehaviour

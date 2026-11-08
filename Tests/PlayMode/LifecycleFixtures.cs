@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.TestTools;
 
+namespace UPandaGF.Tests
+{
+
 [Serializable]
 public class LifecycleFixtureConfig
 {
@@ -122,4 +125,6 @@ internal sealed class LifecycleBundleServer : IDisposable
         }
     }
     public void Dispose() { disposed = true; listener.Stop(); }
+}
+
 }

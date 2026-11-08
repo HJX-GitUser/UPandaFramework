@@ -39,6 +39,7 @@ using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UPandaGF.GFEditor;
 
 namespace UPandaGF.GFEditor
 {
@@ -308,6 +309,14 @@ namespace UPandaGF.GFEditor
 
             int size = ResolutionValues[Mathf.Clamp(resolutionIndex, 0, ResolutionValues.Length - 1)];
             string assetPath = BuildAssetPath(folder, center.name);
+
+            // 覆盖同名资产属于破坏性操作：先确认，再开始昂贵的渲染。
+            if (AssetDatabase.LoadMainAssetAtPath(assetPath) != null &&
+                !EditorDestructiveGuard.ConfirmOverwrite("生成立方体贴图", assetPath))
+            {
+                Debug.LogWarning("[CubemapTextureGenerator] 用户取消覆盖同名资产：" + assetPath);
+                return;
+            }
 
             Cubemap cubemap = null;
             RenderTexture rt = null;

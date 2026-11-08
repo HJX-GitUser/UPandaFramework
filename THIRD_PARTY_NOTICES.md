@@ -46,7 +46,7 @@ SHA-256 `91B44F95992F2D649CB6262C40850A7A4FE007271169AB1687002788010AA1B9`
 
 ## Reporter / Unity Logs Viewer
 
-`ReporterMessageReceiver` 等既有实现可追溯到 Unity Logs Viewer，框架中含后续修改。上游仓库指向 Unity Asset Store 的 Log Viewer，商店列明标准 Unity Asset Store EULA。原始源码和随附素材作为独立框架文件再分发的权限仍待确认。 [本地兼容组件](Runtime/Manager/DebugSystem/Reporter/ReporterMessageReceiver.cs) · [上游源码](https://github.com/aliessmael/Unity-Logs-Viewer) · [商店发布页](https://assetstore.unity.com/packages/tools/integration/log-viewer-12047) · [Unity Asset Store EULA](https://unity.com/legal/as-terms)
+`ReporterMessageReceiver` 等既有实现可追溯到 Unity Logs Viewer，框架中含后续修改。上游仓库指向 Unity Asset Store 的 Log Viewer，商店列明标准 Unity Asset Store EULA。原始源码和随附素材作为独立框架文件再分发的权限仍待确认。 [本地兼容组件](Runtime/Composition/Reporter/ReporterMessageReceiver.cs) · [上游源码](https://github.com/aliessmael/Unity-Logs-Viewer) · [商店发布页](https://assetstore.unity.com/packages/tools/integration/log-viewer-12047) · [Unity Asset Store EULA](https://unity.com/legal/as-terms)
 
 ## Unity XR Tunneling Vignette
 

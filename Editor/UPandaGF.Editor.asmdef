@@ -1,24 +1,33 @@
 {
-  "name": "UPandaGF.Editor",
-  "rootNamespace": "",
-  "references": [
-    "UPandaGF.Runtime",
-    "UPandaGF.Contracts",
-    "UPandaGF.Extensions",
-    "UPandaGF.Samples"
-  ],
-  "includePlatforms": [
-    "Editor"
-  ],
-  "excludePlatforms": [],
-  "allowUnsafeCode": false,
-  "overrideReferences": true,
-  "precompiledReferences": [
-    "Excel.dll",
-    "ICSharpCode.SharpZipLib.dll"
-  ],
-  "autoReferenced": true,
-  "defineConstraints": [],
-  "versionDefines": [],
-  "noEngineReferences": false
+    "name": "UPandaGF.Editor",
+    "rootNamespace": "",
+    "references": [
+        "UPandaGF.Runtime",
+        "UPandaGF.Contracts",
+        "UPandaGF.Core",
+        "UPandaGF.Assets",
+        "UPandaGF.UI",
+        "UPandaGF.Audio",
+        "UPandaGF.Save",
+        "UPandaGF.Diagnostics",
+        "UPandaGF.Gameplay",
+        "UPandaGF.Gameplay.Tasks",
+        "UPandaGF.Gameplay.InteractiveScoring",
+        "UPandaGF.Gameplay.Replay",
+        "UPandaGF.Samples"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Excel.dll",
+        "ICSharpCode.SharpZipLib.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

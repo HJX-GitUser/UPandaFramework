@@ -1,4 +1,4 @@
-﻿namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+﻿namespace UPandaGF.Gameplay.InteractiveScoring
 {
     /// <summary>
     /// 任务级进度（纯 C#）：当前步骤下标、总分、推进与完成判定。

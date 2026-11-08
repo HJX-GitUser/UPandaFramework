@@ -19,6 +19,9 @@ using System.Collections;
 using System.Threading;
 using UnityEngine;
 
+namespace UPandaGF.Samples
+{
+
 /// <summary>
 /// 用法示例（普通 C# 对象版）：非 MonoBehaviour 的类如何接入帧更新与协程。
 /// </summary>
@@ -194,4 +197,6 @@ public class PublicMonoSampleBehaviour : MonoBehaviour
     {
         // 这里的每帧逻辑由 PublicMono 统一驱动
     }
+}
+
 }

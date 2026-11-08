@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -11,6 +11,9 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UPandaGF;
+
+namespace UPandaGF.Tests
+{
 using Object = UnityEngine.Object;
 
 [PrebuildSetup(typeof(LifecycleFixtures))]
@@ -366,4 +369,6 @@ public class LifecycleDelayedAssets : IAssetsLoader
     public Task<Assembly> LoadAssemblyAsync(string path){throw new NotSupportedException();}
     public bool UnLoadAB(string name){return true;}
     public void ClearAB(){}
+}
+
 }

@@ -1,0 +1,19 @@
+{
+    "name": "UPandaGF.Save",
+    "rootNamespace": "",
+    "references": [
+        "UPandaGF.Contracts",
+        "UPandaGF.Core",
+        "UPandaGF.Assets",
+        "UPandaGF.Diagnostics"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

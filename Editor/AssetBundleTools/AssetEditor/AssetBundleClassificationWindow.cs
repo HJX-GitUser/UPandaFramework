@@ -11,7 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using UPandaGF.GFEditor;
 
-namespace AssetBundleBrowser
+namespace UPandaGF.AssetBundleBrowser
 {
     /// <summary>
     /// AssetBundle分类窗口

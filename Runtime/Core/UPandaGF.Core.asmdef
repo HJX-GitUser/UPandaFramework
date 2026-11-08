@@ -1,0 +1,17 @@
+{
+    "name": "UPandaGF.Core",
+    "rootNamespace": "",
+    "references": [
+        "UPandaGF.Contracts",
+        "UPandaGF.Diagnostics"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

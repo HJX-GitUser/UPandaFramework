@@ -2,7 +2,7 @@
 using System.Text;
 using UnityEngine;
 
-namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+namespace UPandaGF.Gameplay.InteractiveScoring
 {
     /// <summary>
     /// 示例：任务 HUD（演示用 OnGUI，正式项目请换成 UGUI/TMP）。

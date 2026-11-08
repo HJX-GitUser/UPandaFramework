@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UPandaGF.StateMechine
+namespace UPandaGF.Gameplay.StateMachine
 {
     /// <summary>分层状态机。活动叶状态与成功切换历史分开；状态 ID 在一台机器中唯一。</summary>
     public class StateMachineManager : MonoBehaviour

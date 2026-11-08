@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+
+namespace UPandaGF.Tests
+{
 using Object = UnityEngine.Object;
 
 public class ReporterRegressionTests
@@ -45,7 +48,7 @@ public class ReporterRegressionTests
     {
         typeof(Reporter).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(reporter, args);
     }
-    private static object NewStore() { return Activator.CreateInstance(typeof(Reporter).Assembly.GetType("ReporterLogStore"), true); }
+    private static object NewStore() { return Activator.CreateInstance(typeof(Reporter).Assembly.GetType("UPandaGF.ReporterLogStore"), true); }
     private static object StoreCall(object store, string method, params object[] args) { return store.GetType().GetMethod(method).Invoke(store, args); }
     private static T Property<T>(object store, string name) { return (T)store.GetType().GetProperty(name).GetValue(store); }
     private static Reporter.Log Log(string message, Reporter._LogType type = Reporter._LogType.Log, string stack = "")
@@ -148,4 +151,6 @@ public class ReporterRegressionTests
         Assert.LessOrEqual(bytes, 1024L * 1024L);
         Assert.Greater(reporter.DroppedLogCount, 0);
     }
+}
+
 }

@@ -1,7 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UPandaGF.RunTime.InteractiveTaskScoringSystem;
+using UPandaGF.Gameplay.InteractiveScoring;
+
+namespace UPandaGF.Samples
+{
 
 /// <summary>
 /// 交互触发案例，获取interactiveTrigger接口，根据需求触发
@@ -40,4 +43,6 @@ public class TaskTriggerExample : MonoBehaviour
 
         if (interactiveTrigger != null) interactiveTrigger.OnExit();   // 修复：空引用保护
     }
+}
+
 }

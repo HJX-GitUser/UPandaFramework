@@ -1,10 +1,14 @@
-﻿using AssetBundleBrowser;
+﻿using UPandaGF.AssetBundleBrowser;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using UPandaGF.GFEditor;
+
+namespace UPandaGF.GFEditor
+{
 /// <summary>
 /// 上传更新AB包
 /// </summary>
@@ -30,6 +34,9 @@ internal class UpLoadABEditor
     private Vector2 m_ScrollPosition;
 
     private AssetBundleBrowserMain abMainE;
+
+    /// <summary>上传进行中：避免重复点击导致同一批包并发上传、清单提前提交。</summary>
+    private bool isUploading;
 
     //本地AB包路径
     public string LocalABPath;
@@ -92,6 +99,11 @@ internal class UpLoadABEditor
             //string savePath = LocalABPath.Substring(LocalABPath.IndexOf("Assets") + "Assets".Length);//AssetBundle放到Assets路径下用这个
             string savePath = $"/{LocalABPath}";
             savePath = Application.streamingAssetsPath + savePath;
+            int count = CountBundleFiles(LocalABPath);
+            if (!EditorDestructiveGuard.ConfirmOverwriteDirectory(
+                "复制 AB 到 StreamingAssets", savePath, count,
+                $"将把 {count} 个 AB 包复制到 StreamingAssets，同名文件会被覆盖。"))
+                return;
             if (!Directory.Exists(savePath))
             {
                 Directory.CreateDirectory(savePath);
@@ -152,25 +164,119 @@ internal class UpLoadABEditor
         FTPConfig.ManifestABURL = EditorGUILayout.TextField("清单上传地址", FTPConfig.ManifestABURL);
         EditorGUILayout.LabelField("FTP通信凭证:");
         FTPConfig.Ftp_UserName = EditorGUILayout.TextField("ftp用户名", FTPConfig.Ftp_UserName);
-        FTPConfig.Ftp_Password = EditorGUILayout.TextField("ftp密码", FTPConfig.Ftp_Password);
+        FTPConfig.Ftp_Password = EditorGUILayout.PasswordField("ftp密码", FTPConfig.Ftp_Password);
+        if (!upLoadFTP.HasCredentials)
+        {
+            EditorGUILayout.HelpBox(
+                "密码只保存在本次编辑器会话的内存里，不会写入 EditorPrefs。\n" +
+                "需要免输入时，请设置环境变量 " + UpLoadFTP.PasswordEnvironmentVariable + "。",
+                MessageType.Info);
+        }
         EditorGUILayout.LabelField("清单本地路径", AssetDataFullPath);
-        if (GUILayout.Button("上传AB包和清单"))
+
+        using (new EditorGUI.DisabledScope(isUploading))
         {
-            DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
-            if (config.contactMethod == ContactMethod.FTP)
+            if (GUILayout.Button(isUploading ? "上传中…" : "上传AB包和清单"))
             {
-                upLoadFTP.UpLoadAllABFile(LocalABPath);
-                // 清单必须与AB包一起更新，否则远端清单没变，热更的 MD5 比对与下载都不会发生
-                upLoadFTP.UpLoadFile(AssetDataFullPath, FTPConfig.ManifestABURL);
+                _ = UploadAllAsync(FTPConfig);
+            }
+            if (GUILayout.Button("只上传清单（assetData.assetref）"))
+            {
+                _ = UploadManifestOnlyAsync(FTPConfig);
             }
         }
-        if (GUILayout.Button("只上传清单（assetData.assetref）"))
+    }
+
+    /// <summary>
+    /// 上传顺序：先上传全部 AB 包并等待完成；全部成功后最后提交清单。
+    /// 任何一个包失败都中止并保留旧清单，避免远端清单指向不存在的包。
+    /// </summary>
+    private async Task UploadAllAsync(FTPUpLoadABConfig config)
+    {
+        if (isUploading) return;
+        if (!Directory.Exists(LocalABPath))
         {
-            if (config.contactMethod == ContactMethod.FTP)
-            {
-                upLoadFTP.UpLoadFile(AssetDataFullPath, FTPConfig.ManifestABURL);
-            }
+            EditorUtility.DisplayDialog("上传 AB 包", "本地 AB 目录不存在：\n" + LocalABPath, "确定");
+            return;
         }
+        int bundleCount = CountBundleFiles(LocalABPath);
+        if (bundleCount == 0)
+        {
+            EditorUtility.DisplayDialog("上传 AB 包", "本地 AB 目录没有可上传的包：\n" + LocalABPath, "确定");
+            return;
+        }
+        if (!File.Exists(AssetDataFullPath))
+        {
+            EditorUtility.DisplayDialog("上传 AB 包",
+                "清单不存在：\n" + AssetDataFullPath + "\n\n请先在资源分类窗口点「更新配置」生成清单。", "确定");
+            return;
+        }
+        if (!EditorDestructiveGuard.ConfirmUpload("上传 AB 包和清单", config.UpABURL, bundleCount + 1, true)) return;
+
+        isUploading = true;
+        try
+        {
+            FTPUploadResult result = await upLoadFTP.UpLoadAllABFileAsync(LocalABPath, (processed, total, name) =>
+            {
+                EditorUtility.DisplayProgressBar("上传 AB 包", $"{processed}/{total} {name}",
+                    total <= 0 ? 0f : (float)processed / total);
+            });
+
+            if (result.FailedCount > 0 || result.SuccessCount == 0)
+            {
+                EditorUtility.DisplayDialog("上传中止",
+                    $"AB 包上传失败 {result.FailedCount}/{bundleCount}，清单未提交（远端仍是旧清单）。\n\n{result.FirstError}",
+                    "确定");
+                return;
+            }
+
+            bool manifestUploaded = await upLoadFTP.UpLoadFileAsync(AssetDataFullPath, config.ManifestABURL);
+            EditorUtility.DisplayDialog(
+                manifestUploaded ? "上传完成" : "清单上传失败",
+                manifestUploaded
+                    ? $"AB 包 {result.SuccessCount} 个、清单 1 个已上传。"
+                    : "AB 包已上传，但清单上传失败；远端仍是旧清单，请查看 Console 后重试「只上传清单」。",
+                "确定");
+        }
+        finally
+        {
+            EditorUtility.ClearProgressBar();
+            isUploading = false;
+        }
+    }
+
+    private async Task UploadManifestOnlyAsync(FTPUpLoadABConfig config)
+    {
+        if (isUploading) return;
+        if (!File.Exists(AssetDataFullPath))
+        {
+            EditorUtility.DisplayDialog("上传清单",
+                "清单不存在：\n" + AssetDataFullPath + "\n\n请先在资源分类窗口点「更新配置」生成清单。", "确定");
+            return;
+        }
+        if (!EditorDestructiveGuard.ConfirmUpload("上传清单", config.ManifestABURL, 1, true)) return;
+
+        isUploading = true;
+        try
+        {
+            bool uploaded = await upLoadFTP.UpLoadFileAsync(AssetDataFullPath, config.ManifestABURL);
+            EditorUtility.DisplayDialog(uploaded ? "上传完成" : "上传失败",
+                uploaded ? "清单已上传：" + config.ManifestABURL : "清单上传失败，请查看 Console。", "确定");
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+
+    /// <summary>与 UpLoadFTP 的筛选规则一致：无扩展名或 .txt 视为 AB 包/对比文件。</summary>
+    private static int CountBundleFiles(string path)
+    {
+        if (!Directory.Exists(path)) return 0;
+        int count = 0;
+        foreach (FileInfo file in new DirectoryInfo(path).GetFiles())
+            if (file.Extension == "" || file.Extension == ".txt") count++;
+        return count;
     }
 
     private void HTTPGUI()
@@ -452,4 +558,6 @@ internal class UpLoadABEditor
             CopyDirectory(subDir, destDir);
         }
     }
+}
+
 }

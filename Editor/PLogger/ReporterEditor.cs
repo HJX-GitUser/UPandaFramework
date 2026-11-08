@@ -5,6 +5,9 @@ using UnityEditor.Callbacks;
 using System.IO;
 using System.Collections;
 
+namespace UPandaGF.GFEditor
+{
+
 
 public class ReporterEditor : Editor
 {
@@ -94,4 +97,6 @@ public class ReporterModificationProcessor : UnityEditor.AssetModificationProces
             isCompiling = EditorApplication.isCompiling;
         }
     }
+}
+
 }

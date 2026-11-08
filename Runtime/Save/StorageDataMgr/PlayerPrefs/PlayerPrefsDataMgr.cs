@@ -1,0 +1,279 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine;
+using UPandaGF;
+
+namespace UPandaGF
+{
+
+public class PlayerPrefsDataMgr : LazySingletonBase<PlayerPrefsDataMgr>
+{
+    /// <summary>
+    /// 打印工具
+    /// </summary>
+    /// <param name="db">内容</param>
+    private void MyDebug(string db)
+    {
+        PLogger.Log(db);
+    }
+    /// <summary>
+    /// 存储数据
+    /// </summary>
+    /// <param name="data">数据对象</param>
+    /// <param name="keyName">数据对象的唯一key</param>
+    public void SaveData(object data, string keyName)
+    {
+        //就是要通过 Type 得到传入数据对象的所有的 字段
+        //然后结合 PlayerPrefs来进行存储
+
+        #region 第一步 获取传入数据对象的所有字段
+        if (data == null) throw new ArgumentNullException(nameof(data), "PlayerPrefsDataMgr.SaveData 的 data 不能为空。");
+        Type dataType = data.GetType();
+        //得到所有的字段（只取公开实例字段，静态字段不参与存档）
+        FieldInfo[] infos = dataType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+        #endregion
+
+        #region 第二步 自己定义一个key的规则 进行数据存储
+        //我们存储都是通过PlayerPrefs来进行存储的
+        //保证key的唯一性 我们就需要自己定一个key的规则
+
+        //我们自己定一个规则
+        // keyName_数据类型_字段类型_字段名
+        #endregion
+
+        #region 第三步 遍历这些字段 进行数据存储
+        string saveKeyName = "";
+        FieldInfo info;
+        for (int i = 0; i < infos.Length; i++)
+        {
+            //对每一个字段 进行数据存储
+            //得到具体的字段信息
+            info = infos[i];
+            //通过FieldInfo可以直接获取到 字段的类型 和字段的名字
+            //字段的类型 info.FieldType.Name
+            //字段的名字 info.Name;
+
+            //要根据我们定的key的拼接规则 来进行key的生成
+            //Player1_PlayerInfo_Int32_age
+            saveKeyName = keyName + "_" + dataType.Name + "_" + info.FieldType.Name + "_" + info.Name;
+
+            //现在得到了Key 按照我们的规则
+            //接下来就要来通过PlayerPrefs来进行存储
+            //如何获取值
+            //info.GetValue(data)
+            //封装了一个方法 专门来存储值
+            SaveValue(info.GetValue(data), saveKeyName);
+        }
+        PlayerPrefs.Save();
+        #endregion
+    }
+    /// <summary>
+    /// 存储
+    /// </summary>
+    /// <param name="value">数据对象</param>
+    /// <param name="keyName">数据的Key</param>
+    private void SaveValue(object value, string keyName)
+    {
+        // null 不能取 Type；直接删键，避免把空引用写坏/抛 NRE。
+        if (value == null) { PlayerPrefs.DeleteKey(keyName); return; }
+
+        Type fieldType = value.GetType();
+        // 枚举按底层整型存储，避免被当成嵌套对象。
+        if (fieldType.IsEnum)
+        {
+            PlayerPrefs.SetInt(keyName, Convert.ToInt32(value));
+            return;
+        }
+
+        if (fieldType == typeof(int))
+        {
+            MyDebug($"{keyName}存储int,类型成员{fieldType.Name}");
+            int intValue = (int)value;
+            //TODO:在这里可以为int数据加密
+            //rValue += 10;
+            PlayerPrefs.SetInt(keyName, intValue);
+        }
+        else if (fieldType == typeof(float))
+        {
+            MyDebug($"{keyName}存储float,类型成员{fieldType.Name}");
+            PlayerPrefs.SetFloat(keyName, (float)value);
+        }
+        else if (fieldType == typeof(string))
+        {
+            MyDebug($"{keyName}存储string,类型成员{fieldType.Name}");
+            PlayerPrefs.SetString(keyName, (string)value);
+        }
+        else if (fieldType == typeof(bool))
+        {
+            MyDebug($"{keyName}存储bool,类型成员{fieldType.Name}");
+            //自己定的存储bool的规则，1 true,0 false
+            PlayerPrefs.SetInt(keyName, (bool)value ? 1 : 0);
+        }
+        //数组：先存长度，再按索引存元素（读取端用 Array.CreateInstance 还原）
+        else if (fieldType.IsArray)
+        {
+            Array array = (Array)value;
+            PlayerPrefs.SetInt(keyName, array.Length);
+            for (int i = 0; i < array.Length; i++)
+                SaveValue(array.GetValue(i), keyName + i);
+        }
+        //如果是List类型
+        else if (typeof(IList).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
+        {
+            MyDebug($"{keyName}存储List数组,类型成员{fieldType.Name}");
+            //父类装子类
+            IList list = value as IList;
+            //先存储数组数量
+            PlayerPrefs.SetInt(keyName, list.Count);
+            int index = 0;
+            foreach (object item in list)
+            {
+                //存储具体的值
+                SaveValue(item, keyName + index);
+                index++;
+            }
+        }
+        //判断是不是Dictionary类型 通过Dictionary的父类来判断
+        else if (typeof(IDictionary).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
+        {
+            MyDebug($"{keyName}存储Dictionary,类型成员{fieldType.Name}");
+            //父类装子类
+            IDictionary dic = value as IDictionary;
+            //先存字典长度
+            PlayerPrefs.SetInt(keyName, dic.Count);
+            //遍历存储Dic里面的具体值
+            //用于区分 表示的 区分 key
+            int index = 0;
+            foreach (object key in dic.Keys)
+            {
+                SaveValue(key, keyName + "_key_" + index);
+                SaveValue(dic[key], keyName + "_value_" + index);
+                index++;
+            }
+        }
+        else
+        {
+            SaveData(value, keyName);
+        }
+    }
+    /// <summary>
+    /// 读取数据
+    /// </summary>
+    /// <param name="type">想要读取数据的 数据类型Type</param>
+    /// <param name="keyName">数据对象的唯一key 自己控制的</param>
+    /// <returns></returns>
+    public object LoadData(Type type, string keyName)
+    {
+        //不用object对象传入 而使用 Type传入
+        //主要目的是节约一行代码（在外部）
+        //假设现在你要 读取一个Player类型的数据 如果是object 你就必须在外部new一个对象传入
+        //现在有Type的 你只用传入 一个Type typeof(Player) 然后我在内部动态创建一个对象给你返回出来
+        //达到了 让你在外部 少写一行代码的作用
+
+        //根据你传入的类型 和 keyName
+        //依据你存储数据时  key的拼接规则 来进行数据的获取赋值 返回出去
+
+        //根据传入的Type 创建一个对象 用于存储数据
+        if (type == null) throw new ArgumentNullException(nameof(type));
+        object data;
+        try { data = Activator.CreateInstance(type); }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException($"类型 {type.FullName} 需要公开无参构造函数才能用 PlayerPrefsDataMgr 读取。", e);
+        }
+        //要往这个new出来的对象中存储数据 填充数据
+        //得到所有字段（只取公开实例字段，静态字段不参与存档）
+        FieldInfo[] infos = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+        //用于拼接key的字符串
+        string loadKeyName = "";
+        //用于存储 单个字段信息的 对象
+        FieldInfo info;
+        for (int i = 0; i < infos.Length; i++)
+        {
+            info = infos[i];
+            //key的拼接规则 一定是和存储时一模一样 这样才能找到对应数据
+            loadKeyName = keyName + "_" + type.Name + "_" + info.FieldType.Name + "_" + info.Name;
+            //有key 就可以结合 PlayerPrefs来读取数据
+            //填充数据到data中
+            info.SetValue(data, LoadValue(info.FieldType, loadKeyName));
+        }
+        return data;
+    }
+    /// <summary>
+    /// 得到单个数据的方法
+    /// </summary>
+    /// <param name="fieldType">字段类型 用于判断 用哪个api来读取</param>
+    /// <param name="keyName">用于获取具体数据</param>
+    /// <returns></returns>
+    private object LoadValue(Type fieldType, string keyName)
+    {
+        //根据 字段类型 来判断 用哪个API来读取
+        if (fieldType.IsEnum)
+        {
+            return Enum.ToObject(fieldType, PlayerPrefs.GetInt(keyName, 0));
+        }
+        if (fieldType == typeof(int))
+        {
+            //TODO:如果存储时有加密操作，要在这里进行解密
+            return PlayerPrefs.GetInt(keyName, 0);//第二个参数是如果没有这个值，给出的默认值
+        }
+        else if (fieldType == typeof(float))
+        {
+            return PlayerPrefs.GetFloat(keyName, 0);
+        }
+        else if (fieldType == typeof(string))
+        {
+            return PlayerPrefs.GetString(keyName, "");
+        }
+        else if (fieldType == typeof(bool))
+        {
+            //根据自定义存储bool的规则 来进行值的获取
+            return PlayerPrefs.GetInt(keyName, 0) == 1 ? true : false;
+        }
+        else if (fieldType.IsArray)
+        {
+            int count = PlayerPrefs.GetInt(keyName, 0);
+            Type elementType = fieldType.GetElementType();
+            Array array = Array.CreateInstance(elementType, count);
+            for (int i = 0; i < count; i++)
+                array.SetValue(LoadValue(elementType, keyName + i), i);
+            return array;
+        }
+        else if (typeof(IList).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
+        {
+            //得到长度
+            int count = PlayerPrefs.GetInt(keyName, 0);
+            //实例化一个List对象 来进行赋值
+            //用了反射中双A中 Activator进行快速实例化List对象
+            IList list = Activator.CreateInstance(fieldType) as IList;
+            if (list == null) throw new InvalidOperationException("无法创建列表类型：" + fieldType.FullName);
+            for (int i = 0; i < count; i++)
+            {
+                //目的是要得到 List中泛型的类型
+                list.Add(LoadValue(fieldType.GetGenericArguments()[0], keyName + i));
+            }
+            return list;
+        }
+        else if (typeof(IDictionary).IsAssignableFrom(fieldType) && fieldType.IsGenericType)
+        {
+            //得到字典的长度
+            int count = PlayerPrefs.GetInt(keyName, 0);
+            //实例化一个字典对象 用父类装子类
+            IDictionary dic = Activator.CreateInstance(fieldType) as IDictionary;
+            Type[] kvType = fieldType.GetGenericArguments();
+            for (int i = 0; i < count; i++)
+            {
+                dic.Add(LoadValue(kvType[0], keyName + "_key_" + i), LoadValue(kvType[1], keyName + "_value_" + i));
+            }
+            return dic;
+        }
+        else
+        {
+            return LoadData(fieldType, keyName);
+        }
+    }
+}
+
+}

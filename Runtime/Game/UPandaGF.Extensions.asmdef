@@ -1,9 +1,0 @@
-{
-  "name": "UPandaGF.Extensions",
-  "references": [
-    "UPandaGF.Runtime",
-    "UPandaGF.Contracts",
-    "Unity.TextMeshPro"
-  ],
-  "autoReferenced": true
-}

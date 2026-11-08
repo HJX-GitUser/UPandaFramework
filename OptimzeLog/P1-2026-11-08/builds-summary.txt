@@ -1,0 +1,14 @@
+﻿Windows（Unity 2021.3.45f2c1）
+  命令：Tools/ci/build-player.ps1 -Target StandaloneWindows64 -OutputPath Build/CIWindows
+  结果：exit 0；产物 _verify/P1Verify/Build/CIWindows/UPandaGF.exe（653,824 B）
+  备注：为满足 AB 模式构建校验，先在同一工程生成 smoke AB 主包与清单，构建后恢复工程配置。
+
+WebGL（Unity 2022.3.53f1c1）
+  命令：Tools/ci/build-player.ps1 -Target WebGL -OutputPath Build/CIWebGL
+  结果：exit 0；产物 _verify/P1Verify2022/Build/CIWebGL/index.html（目录约 9.0 MB）
+
+Android（Unity 2022.3.53f1c1，ASCII 工程路径 D:\UnityCISmoke\P1Verify2022）
+  命令：Tools/ci/build-player.ps1 -Target Android -OutputPath Build/CIAndroid
+  结果：exit 0；产物 Build/CIAndroid/UPandaGF.apk（22,026,634 B）
+  备注：原路径 D:\MySouce\Unity框架\_verify\P1Verify2022 含中文，Android Tools 抛 Invalid project path；
+        FrameworkBuildPipeline 现在会在非 ASCII 路径上提前报错。

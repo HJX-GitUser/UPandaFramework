@@ -1,10 +1,13 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UPandaGF;
+
+namespace UPandaGF.Samples
+{
 
 /// <summary>
 /// 游戏启动案例。
@@ -236,4 +239,6 @@ public class GameLaunchExample : MonoBehaviour, IUIServiceConsumer
         if (simpleLoadUI != null)
             simpleLoadUI.SetMessage(1f, message);
     }
+}
+
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +8,10 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UPandaGF;
-using UPandaGF.StateMechine;
+using UPandaGF.Gameplay.StateMachine;
+
+namespace UPandaGF.Tests
+{
 
 public class P0StartupRegressionTests
 {
@@ -195,4 +198,6 @@ public class P0StateMachineRegressionTests
         machine.SwitchState("B/B1"); UnityEngine.Object.DestroyImmediate(go);
         Assert.AreEqual(1, root.Exits); Assert.AreEqual(1, b.Exits); Assert.AreEqual(1, b1.Exits);
     }
+}
+
 }

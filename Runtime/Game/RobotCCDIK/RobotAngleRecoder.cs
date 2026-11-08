@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace UPandaGF.RunTime.RobotCCDIK
+namespace UPandaGF.Gameplay.RobotCCDIK
 {
     public enum RobotAngleCtrModel
     {

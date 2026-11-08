@@ -24,6 +24,9 @@ namespace UPandaGF.GFEditor
         /// <summary>CI 入口：UPANDA_VERSION 环境变量存在时注入 PlayerSettings.bundleVersion。</summary>
         public static BuildReport Build(BuildTarget target, BuildTargetGroup group, string relativeOutput)
         {
+            // Android Tools 不接受非 ASCII 工程路径；提前给出可操作的错误，而不是在 BuildPlayer 里抛 UnityException。
+            if (target == BuildTarget.Android) EnsureAndroidPathIsAscii();
+
             var scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
             if (scenes.Length == 0)
                 throw new InvalidOperationException("Build Settings 中没有启用的场景，无法构建。");
@@ -52,6 +55,101 @@ namespace UPandaGF.GFEditor
             else
                 Debug.LogError($"[FrameworkBuild] {target} 构建失败：{summary.result}，错误 {summary.totalErrors}。详见 Console。");
             return report;
+        }
+
+        /// <summary>
+        /// CI 构建入口：从命令行参数/环境变量解析目标与输出，失败返回非 0。
+        /// <para>参数：<c>-buildTarget &lt;StandaloneWindows64|Android|WebGL|...&gt;</c>、<c>-buildPath &lt;目录或文件&gt;</c>；
+        /// 也可用环境变量 <c>UPANDA_BUILD_TARGET</c> / <c>UPANDA_BUILD_OUTPUT</c>（本地脚本更方便）。</para>
+        /// <para>退出码：0 成功，1 构建失败，2 参数/配置异常。CI 直接拿退出码判红绿。</para>
+        /// </summary>
+        public static void BuildFromCommandLine()
+        {
+            try
+            {
+                string targetName = Environment.GetEnvironmentVariable("UPANDA_BUILD_TARGET");
+                if (string.IsNullOrEmpty(targetName)) targetName = GetCommandLineValue("-buildTarget");
+                if (string.IsNullOrEmpty(targetName)) targetName = "StandaloneWindows64";
+
+                BuildTarget target = ParseBuildTarget(targetName);
+                BuildTargetGroup group = BuildPipeline.GetBuildTargetGroup(target);
+
+                string output = Environment.GetEnvironmentVariable("UPANDA_BUILD_OUTPUT");
+                if (string.IsNullOrEmpty(output)) output = GetCommandLineValue("-buildPath");
+                output = NormalizeBuildOutput(output, target);
+
+                BuildReport report = Build(target, group, output);
+                EditorApplication.Exit(report != null && report.summary.result == BuildResult.Succeeded ? 0 : 1);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[FrameworkBuild] CI 构建失败：" + e);
+                EditorApplication.Exit(2);
+            }
+        }
+
+        /// <summary>接受 BuildTarget 名（StandaloneWindows64）与常用别名（windows/android/webgl）。</summary>
+        public static BuildTarget ParseBuildTarget(string value)
+        {
+            if (string.IsNullOrEmpty(value)) throw new ArgumentException("构建目标为空。");
+            foreach (BuildTarget target in Enum.GetValues(typeof(BuildTarget)))
+                if (string.Equals(target.ToString(), value, StringComparison.OrdinalIgnoreCase)) return target;
+
+            switch (value.Trim().ToLowerInvariant())
+            {
+                case "windows":
+                case "win64": return BuildTarget.StandaloneWindows64;
+                case "android": return BuildTarget.Android;
+                case "webgl": return BuildTarget.WebGL;
+                case "ios": return BuildTarget.iOS;
+                case "osx":
+                case "macos": return BuildTarget.StandaloneOSX;
+                case "linux": return BuildTarget.StandaloneLinux64;
+                default: throw new ArgumentException("未知构建目标：" + value);
+            }
+        }
+
+        /// <summary>把 -buildPath 规整成 Player 的完整输出路径；目录样式会补默认文件名。</summary>
+        public static string NormalizeBuildOutput(string output, BuildTarget target)
+        {
+            if (string.IsNullOrEmpty(output)) output = "Build/" + BundleTargetName(target);
+            bool looksLikeDirectory = output.EndsWith("/") || output.EndsWith("\\")
+                || string.IsNullOrEmpty(Path.GetExtension(output));
+            switch (target)
+            {
+                case BuildTarget.StandaloneWindows:
+                case BuildTarget.StandaloneWindows64:
+                    return looksLikeDirectory ? Path.Combine(output, "UPandaGF.exe") : output;
+                case BuildTarget.Android:
+                    return looksLikeDirectory ? Path.Combine(output, "UPandaGF.apk") : output;
+                case BuildTarget.StandaloneOSX:
+                    return looksLikeDirectory ? Path.Combine(output, "UPandaGF.app") : output;
+                default:
+                    // WebGL 等平台的产物本身就是目录
+                    return output;
+            }
+        }
+
+        private static string GetCommandLineValue(string name)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length - 1; i++)
+                if (string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase)) return args[i + 1];
+            return null;
+        }
+
+        /// <summary>Android 构建工具链不支持非 ASCII 工程路径（中文字符会抛 UnityException: Invalid project path）。</summary>
+        private static void EnsureAndroidPathIsAscii()
+        {
+            string projectRoot = Path.GetDirectoryName(Application.dataPath);
+            if (string.IsNullOrEmpty(projectRoot)) return;
+            foreach (char c in projectRoot)
+            {
+                if (c > 127)
+                    throw new InvalidOperationException(
+                        "Android 构建要求工程路径只包含 ASCII 字符（Android Tools 不支持中文/非 ASCII 路径）。当前路径："
+                        + projectRoot + "\n请把工程移动到纯英文路径后重试。");
+            }
         }
 
         /// <summary>

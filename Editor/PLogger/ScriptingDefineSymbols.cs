@@ -2,6 +2,9 @@
 using UnityEditor;
 using UnityEditor.Build;
 
+namespace UPandaGF.GFEditor
+{
+
 /// <summary>
 /// 脚本宏定义。
 /// </summary>
@@ -180,4 +183,6 @@ public static class ScriptingDefineSymbols
 #endif
         throw new System.ArgumentException("Unsupported build target group type");
     }
+}
+
 }

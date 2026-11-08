@@ -44,6 +44,9 @@ using System.Linq;
 using UnityEngine;
 using UPandaGF;
 
+namespace UPandaGF.Gameplay
+{
+
 // 同一物体上不允许挂多个描边组件（避免重复追加材质、描边叠加变粗）
 [DisallowMultipleComponent]
 
@@ -493,4 +496,6 @@ public class OutDrawline : MonoBehaviour
                 break;
         }
     }
+}
+
 }

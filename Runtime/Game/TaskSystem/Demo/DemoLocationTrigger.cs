@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>示例到达区域：玩家进入一次即上报"到达地点"。</summary>
     [DisallowMultipleComponent]

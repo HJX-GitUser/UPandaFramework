@@ -7,11 +7,14 @@
 | 范围 | 入口 |
 | --- | --- |
 | 计时、配置、流程、启动指标和场景归属 | [FoundationServiceTests](EditMode/FoundationServiceTests.cs) · [场景分类](EditMode/ScenePathClassificationTests.cs) · [场景提供者](EditMode/SceneServiceAssetProviderTests.cs) |
+| 数据管线与编辑器护栏 | [Excel 二进制 v2](EditMode/ExcelBinaryV2Tests.cs) · [Excel 生成端链路](EditMode/ExcelGenerationPipelineTests.cs) · [编辑器护栏/AB 构建校验](EditMode/EditorGuardTests.cs) · [PlayerPrefs](EditMode/ExcelAndPlayerPrefsTests.cs) |
 | 启动、回滚、状态机和根装配 | [P0RegressionTests](PlayMode/P0RegressionTests.cs) · [P1RegressionTests](PlayMode/P1RegressionTests.cs) |
 | 资源、请求协调、事件与销毁 | [FrameworkRegressionTests](PlayMode/FrameworkRegressionTests.cs) · [LifecycleRegressionTests](PlayMode/LifecycleRegressionTests.cs) · [CoordinationRegressionTests](PlayMode/CoordinationRegressionTests.cs) |
 | 平台、热更、序列化、回放与日志 | [PlatformCompatibilityTests](PlayMode/PlatformCompatibilityTests.cs) · [HotUpdateRegressionTests](PlayMode/HotUpdateRegressionTests.cs) · [SerializationMigrationTests](PlayMode/SerializationMigrationTests.cs) · [ReplayPerformanceTests](PlayMode/ReplayPerformanceTests.cs) · [ReporterRegressionTests](PlayMode/ReporterRegressionTests.cs) |
 
 部分 PlayMode fixture 会生成临时资产、构建 AssetBundle 或暂时修改场景列表。整套测试适合在隔离宿主中运行，并核对 fixture 清理结果。Editor 菜单中的日志、事件和交互评分自检是额外验证入口。 [生命周期 fixture](PlayMode/LifecycleFixtures.cs) · [协调 fixture](PlayMode/CoordinationFixtures.cs) · [回放 fixture](PlayMode/ReplayPerformanceFixtures.cs)
+
+CI 用 `Tools/ci/run-tests.*` 跑 EditMode/PlayMode，并由 `check-test-results.*` 解析 NUnit XML：**0 个用例或 `failed > 0` 都返回非 0**（不只看 Unity 退出码）。同步包后脚本会先做一次 `-quit` 预热编译，避免 Unity 增量导入时序导致首轮漏文件。 [CI 说明](../Tools/ci/README.md)
 
 ## 历史与发布验证
 

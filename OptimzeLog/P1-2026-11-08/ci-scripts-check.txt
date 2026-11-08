@@ -1,0 +1,8 @@
+﻿CI 脚本本机验证（Windows PowerShell 5.1）
+  1. Tools/ci/run-tests.ps1 -TestPlatform EditMode
+     -> 同步包 + 预热编译 + Unity 测试：total=47 passed=47 failed=0，脚本 exit 0
+  2. Tools/ci/check-test-results.ps1（failed=1 的 XML）-> exit 1
+  3. Tools/ci/check-test-results.ps1（total=0 的 XML）-> exit 1
+  4. Tools/ci/build-player.ps1 Windows/WebGL/Android -> 均 exit 0（见 builds-summary.txt）
+  5. 非 ASCII 路径 Android 构建 -> Unity 抛 Invalid project path；framework 前置校验会给出明确错误并返回非 0
+  bash 脚本未在 Windows 本机执行（无 bash）；GitHub Actions 未在本机执行（缺宿主仓库与 CI License）。

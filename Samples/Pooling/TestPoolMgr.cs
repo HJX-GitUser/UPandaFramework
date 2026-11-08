@@ -1,6 +1,9 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UPandaGF;
+
+namespace UPandaGF.Samples
+{
 
 /// <summary>
 /// 对象池使用示例：演示取对象（Task / 回调两种异步形式）、回收、预热与统计。
@@ -145,4 +148,6 @@ public class TestPoolMgr : MonoBehaviour, IGameServicesConsumer
         body.velocity = Vector3.zero;
         body.angularVelocity = Vector3.zero;
     }
+}
+
 }

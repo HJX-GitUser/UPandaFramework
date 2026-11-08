@@ -11,6 +11,9 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UPandaGF;
+
+namespace UPandaGF.Tests
+{
 using Object = UnityEngine.Object;
 
 [PrebuildSetup(typeof(CoordinationFixtures))]
@@ -374,4 +377,6 @@ public class CoordinationCountingPack:GenericHttpPack<string>
 {
     public int creates;public bool throwOnSecond;public Action beforeCreate;
     public override void CreateWebRequest(){creates++;if(throwOnSecond&&creates==2)throw new InvalidOperationException("coordination retry create failure");beforeCreate?.Invoke();base.CreateWebRequest();}
+}
+
 }

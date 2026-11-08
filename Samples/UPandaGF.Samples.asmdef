@@ -3,8 +3,17 @@
   "references": [
     "UPandaGF.Runtime",
     "UPandaGF.Contracts",
-    "UPandaGF.Extensions",
+    "UPandaGF.Core",
+    "UPandaGF.Assets",
+    "UPandaGF.UI",
+    "UPandaGF.Audio",
+    "UPandaGF.Save",
+    "UPandaGF.Diagnostics",
+    "UPandaGF.Gameplay",
+    "UPandaGF.Gameplay.Tasks",
+    "UPandaGF.Gameplay.InteractiveScoring",
+    "UPandaGF.Gameplay.Replay",
     "Unity.TextMeshPro"
   ],
-  "autoReferenced": true
+  "autoReferenced": false
 }

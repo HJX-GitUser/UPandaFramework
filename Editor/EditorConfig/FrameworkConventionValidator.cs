@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -78,8 +78,12 @@ namespace UPandaGF.GFEditor
             foreach (string guid in AssetDatabase.FindAssets("UPandaGF.Runtime t:AssemblyDefinitionAsset"))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (path.EndsWith("UPandaGF.Runtime.asmdef", StringComparison.OrdinalIgnoreCase))
-                    return Path.GetDirectoryName(path);
+                if (!path.EndsWith("UPandaGF.Runtime.asmdef", StringComparison.OrdinalIgnoreCase)) continue;
+                string dir = Path.GetDirectoryName(path);
+                // 0.5.0 起组合根 asmdef 位于 Runtime/Composition；扫描范围应回到 Runtime 根，
+                // 否则只检查 Composition，Core/Assets/UI 等模块的 Editor 泄漏会被漏掉。
+                string parent = Path.GetDirectoryName(dir);
+                return parent != null && Directory.Exists(Path.Combine(parent, "Contracts")) ? parent : dir;
             }
             return null;
         }

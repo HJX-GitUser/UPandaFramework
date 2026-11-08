@@ -1,0 +1,23 @@
+{
+    "name": "UPandaGF.Gameplay.InteractiveScoring",
+    "rootNamespace": "",
+    "references": [
+        "UPandaGF.Contracts",
+        "UPandaGF.Core",
+        "UPandaGF.Assets",
+        "UPandaGF.UI",
+        "UPandaGF.Save",
+        "UPandaGF.Diagnostics",
+        "UPandaGF.Gameplay",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

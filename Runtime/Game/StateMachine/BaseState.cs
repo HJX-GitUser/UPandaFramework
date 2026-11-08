@@ -1,8 +1,8 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UPandaGF.StateMechine
+namespace UPandaGF.Gameplay.StateMachine
 {
     /// <summary>
     /// 状态接口

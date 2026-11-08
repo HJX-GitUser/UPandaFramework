@@ -4,6 +4,9 @@ using UnityEngine.UI;
 using System.IO;
 using UPandaGF.GFEditor;
 
+namespace UPandaGF.GFEditor
+{
+
 public class LogListenerUIPrefabCreator : EditorWindow
 {
     private string prefabName = "LogListenerPanel";
@@ -679,4 +682,6 @@ public class LogListenerUIPrefabCreator : EditorWindow
 
         return scrollbar;
     }
+}
+
 }

@@ -61,6 +61,54 @@ namespace UPandaGF.GFEditor
             return IsWithin(full, Normalize(Application.dataPath));
         }
 
+        /// <summary>
+        /// 覆盖目录内同名文件前的确认。目标目录必须存在；文件数为 0 时直接返回 true。
+        /// </summary>
+        public static bool ConfirmOverwriteDirectory(string title, string targetDirectory, int fileCount, string detail = null)
+        {
+            string target = Normalize(targetDirectory);
+            if (string.IsNullOrEmpty(target)) return false;
+            if (fileCount <= 0) return true;
+            if (IsProjectOrAssetsRoot(target))
+            {
+                EditorUtility.DisplayDialog(title, "拒绝对工程根目录或 Assets 根目录执行覆盖操作：\n" + target, "确定");
+                return false;
+            }
+            string message = string.IsNullOrEmpty(detail) ? $"目标目录内 {fileCount} 个同名文件将被覆盖。" : detail;
+            return EditorUtility.DisplayDialog(title, message + "\n\n目标：" + target, "覆盖", "取消");
+        }
+
+        /// <summary>
+        /// 上传/发布前确认：目标地址非空且为 ftp/http(s) 协议，并明确告知会覆盖远端同名文件。
+        /// </summary>
+        public static bool ConfirmUpload(string title, string remoteUrl, int fileCount, bool includesManifest)
+        {
+            if (string.IsNullOrWhiteSpace(remoteUrl))
+            {
+                EditorUtility.DisplayDialog(title, "上传地址为空，已取消。", "确定");
+                return false;
+            }
+            string url = remoteUrl.Trim();
+            bool supported = url.StartsWith("ftp://", StringComparison.OrdinalIgnoreCase)
+                || url.StartsWith("ftps://", StringComparison.OrdinalIgnoreCase)
+                || url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+            if (!supported)
+            {
+                EditorUtility.DisplayDialog(title, "只支持 ftp / ftps / http / https 上传地址：\n" + url, "确定");
+                return false;
+            }
+            if (fileCount <= 0)
+            {
+                EditorUtility.DisplayDialog(title, "没有可上传的文件，已取消。", "确定");
+                return false;
+            }
+            string message = "将上传 " + fileCount + " 个文件到：\n" + url
+                + "\n\n远端同名文件会被覆盖。"
+                + (includesManifest ? "\n清单会在 AB 包全部上传成功后最后提交。" : string.Empty);
+            return EditorUtility.DisplayDialog(title, message, "开始上传", "取消");
+        }
+
         public static bool IsWithin(string path, string root)
         {
             if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(root)) return false;

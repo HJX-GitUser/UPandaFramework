@@ -55,7 +55,7 @@
 //        所以这些物理物体不需要额外挂脚本 —— 与原型一致。
 // =============================================================================
 
-using ReplaySystem;
+using UPandaGF.Gameplay.Replay;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;

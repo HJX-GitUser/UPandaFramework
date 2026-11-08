@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>
     /// 演示用的「玩家奖励钱包」：把经验 / 金币 / 物品存在内存里并派发变化事件。

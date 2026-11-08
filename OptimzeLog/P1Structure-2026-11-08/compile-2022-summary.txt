@@ -1,0 +1,4 @@
+﻿项目：_verify/P1Verify2022
+Unity：2022.3.53f1c1
+命令：Unity.exe -batchmode -nographics -quit -projectPath <project> -logFile <log>
+结果：0 个 error CS；17 个 UPandaGF*.dll（模块 + 组合根 + 玩法子程序集 + Editor/Tests）

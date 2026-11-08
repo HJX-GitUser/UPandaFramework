@@ -1,0 +1,17 @@
+﻿UPandaGF.Assets.dll  163840 bytes
+UPandaGF.Audio.dll  18944 bytes
+UPandaGF.Contracts.dll  12800 bytes
+UPandaGF.Core.dll  88064 bytes
+UPandaGF.Diagnostics.dll  27648 bytes
+UPandaGF.Editor.dll  377856 bytes
+UPandaGF.Gameplay.dll  37376 bytes
+UPandaGF.Gameplay.InteractiveScoring.dll  28160 bytes
+UPandaGF.Gameplay.Replay.dll  46592 bytes
+UPandaGF.Gameplay.Tasks.dll  44032 bytes
+UPandaGF.Runtime.dll  70144 bytes
+UPandaGF.Samples.dll  41472 bytes
+UPandaGF.Save.dll  24064 bytes
+UPandaGF.Tests.dll  256000 bytes
+UPandaGF.Tests.EditMode.dll  31232 bytes
+UPandaGF.UI.dll  29184 bytes
+UPandaGF.Visuals.dll  4608 bytes

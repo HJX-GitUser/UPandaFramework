@@ -7,13 +7,16 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using ReplaySystem;
+using UPandaGF.Gameplay.Replay;
 using UnityEngine;
 using UnityEngine.Profiling;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
+
+namespace UPandaGF.Tests
+{
 using Object = UnityEngine.Object;
-using ReplayFiles = ReplaySystem.FileManager;
+using ReplayFiles = UPandaGF.Gameplay.Replay.FileManager;
 
 [PrebuildSetup(typeof(ReplayPerformanceFixtures))]
 [PostBuildCleanup(typeof(ReplayPerformanceFixtures))]
@@ -280,4 +283,6 @@ public class ReplayPerformanceTests
         var manager = Manager(); var button = Go("button").AddComponent<Button>(); var ui = Go("UI").AddComponent<ReplayUI>(); ui.manager = manager; ui.recordButton = button; yield return null;
         Object.DestroyImmediate(ui.gameObject); button.onClick.Invoke(); Assert.AreEqual(ReplayManager.State.Idle, manager.CurrentState);
     }
+}
+
 }

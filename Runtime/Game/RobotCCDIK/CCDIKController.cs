@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace UPandaGF.RunTime.RobotCCDIK
+namespace UPandaGF.Gameplay.RobotCCDIK
 {
     /// <summary>
     /// CCD 逆运动学控制器（串联机械臂，每个关节只绕单一局部轴旋转）

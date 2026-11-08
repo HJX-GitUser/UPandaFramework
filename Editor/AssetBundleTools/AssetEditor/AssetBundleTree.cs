@@ -6,7 +6,7 @@ using System.Linq;
 using System;
 
 
-namespace AssetBundleBrowser
+namespace UPandaGF.AssetBundleBrowser
 {
     internal class AssetBundleTree : TreeView
     {

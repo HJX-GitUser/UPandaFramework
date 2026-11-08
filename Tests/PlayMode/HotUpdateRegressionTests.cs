@@ -12,6 +12,9 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UPandaGF;
+
+namespace UPandaGF.Tests
+{
 using Object = UnityEngine.Object;
 
 public class HotUpdateRegressionTests
@@ -203,7 +206,7 @@ public class HotUpdateRegressionTests
     [Test] public void CancellationDuringCommitRestoresCompleteOldVersion()
     {
         string a = Bundle("one"), b = Bundle("two"), sa = Path.Combine(directory, "staged-one"), sb = Path.Combine(directory, "staged-two"); Write(a, Bytes(3, 1)); Write(b, Bytes(4, 2)); Write(sa, Bytes(6, 3)); Write(sb, Bytes(7, 4));
-        var type = typeof(UPGameRoot).Assembly.GetType("UPandaGF.FileUpdateTransaction");
+        var type = typeof(UPandaGF.FileUpdateTransaction);
         using (var cts = new CancellationTokenSource())
         {
             long copied = 0; var error = Assert.Throws<TargetInvocationException>(() => type.GetMethod("CommitCancelable").Invoke(null, new object[] { new[] { sa, sb }, new[] { a, b }, Path.Combine(directory, "recovery"), cts.Token, null, (Action<long>)(n => { copied += n; if (copied > 7) cts.Cancel(); }) }));
@@ -266,7 +269,7 @@ public class HotUpdateRegressionTests
     }
     [UnityTest] public IEnumerator FileMaintenanceGateDefersNewBundleLoadWithoutBlockingMainThread()
     {
-        var type = typeof(UPGameRoot).Assembly.GetType("UPandaGF.HotUpdateFileGate"); var writer = (IDisposable)type.GetMethod("TryMaintenance").Invoke(null, null);
+        var type = typeof(UPandaGF.HotUpdateFileGate); var writer = (IDisposable)type.GetMethod("TryMaintenance").Invoke(null, null);
         Assert.IsNotNull(writer); var pending = (Task<IDisposable>)type.GetMethod("EnterLoad").Invoke(null, null);
         try { Assert.IsFalse(pending.IsCompleted); yield return null; Assert.IsFalse(pending.IsCompleted); }
         finally { writer.Dispose(); }
@@ -281,4 +284,6 @@ public class HotUpdateRegressionTests
         Assert.IsFalse(task.IsFaulted, task.Exception?.ToString()); Assert.Greater(frames, 0); Assert.AreNotEqual(thread, store.Statistics.ioThreadId); Assert.IsEmpty(task.Result.Downloads);
         Debug.Log("HOTUPDATE_BACKGROUND_HASH bytes=" + bytes.Length + " frames=" + frames + " ms=" + store.Statistics.verifyMilliseconds);
     }
+}
+
 }

@@ -1,6 +1,6 @@
 # 交互任务评分系统
 
-该模块用场景实体组织实训流程，支持按顺序或按完成数量推进操作、难度评分、引导、跳过和动作日志。代码位于 `UPandaGF.Extensions`，命名空间为 `UPandaGF.RunTime.InteractiveTaskScoringSystem`。步骤配置保存在 `TaskConfig`，`TaskProgress` 与 `TaskStepRuntime` 保存本轮运行状态。宿主借助框架 EventCenter 广播提示。 [任务配置](Data/TaskConfig.cs) [宿主与运行状态](Task/TaskDataManager.cs) [核心逻辑](Core/)
+该模块用场景实体组织实训流程，支持按顺序或按完成数量推进操作、难度评分、引导、跳过和动作日志。代码位于 `UPandaGF.Gameplay`，命名空间为 `UPandaGF.Gameplay.InteractiveScoring`。步骤配置保存在 `TaskConfig`，`TaskProgress` 与 `TaskStepRuntime` 保存本轮运行状态。宿主借助框架 EventCenter 广播提示。 [任务配置](Data/TaskConfig.cs) [宿主与运行状态](Task/TaskDataManager.cs) [核心逻辑](Core/)
 
 ## 运行演示
 

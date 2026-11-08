@@ -3,6 +3,9 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.TestTools;
 
+namespace UPandaGF.Tests
+{
+
 public class ReplayPerformanceFixtures : IPrebuildSetup, IPostBuildCleanup
 {
     private const string Config = "Temp/upanda-replay-fixtures.json";
@@ -24,4 +27,6 @@ public class ReplayPerformanceFixtures : IPrebuildSetup, IPostBuildCleanup
         File.Delete(Config);
 #endif
     }
+}
+
 }

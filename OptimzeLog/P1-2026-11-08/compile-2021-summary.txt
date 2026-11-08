@@ -1,0 +1,5 @@
+﻿项目：_verify/P1Verify（框架以 Assets/upanda-framework 导入）
+命令：Unity.exe -batchmode -nographics -quit -projectPath <project> -logFile <log>
+Unity：2021.3.45f2c1
+结果：0 个 error CS；Library/ScriptAssemblies 生成 UPandaGF.Runtime/Editor/Tests 等程序集
+备注：Unity 偶发在打印 "Batchmode quit successfully" 后挂住，验证脚本按进程树清理，不影响编译结果。

@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 
-namespace AssetBundleBrowser
+namespace UPandaGF.AssetBundleBrowser
 {
     [System.Serializable]
     internal class AssetBundleManageTab

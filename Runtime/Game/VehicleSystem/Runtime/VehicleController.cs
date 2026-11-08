@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+namespace UPandaGF.Gameplay
+{
+
 /// <summary>
 /// 车辆控制器：基于 Rigidbody + WheelCollider 的简易汽车物理。
 /// 挂载在车体根物体（带 Rigidbody）上；WheelCollider 作为其子物体。
@@ -107,4 +110,6 @@ public class VehicleController : MonoBehaviour
             meshes[i].rotation = rot;
         }
     }
+}
+
 }

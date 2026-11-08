@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -8,7 +8,10 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UPandaGF;
-using UPandaGF.RunTime.TaskSystem;
+using UPandaGF.Gameplay.Tasks;
+
+namespace UPandaGF.Tests
+{
 
 [Serializable]
 public class ServicesContractPayload
@@ -225,4 +228,6 @@ public class ServicesContractRegressionTests
         }
         finally { UnityEngine.Object.DestroyImmediate(definition); }
     }
+}
+
 }

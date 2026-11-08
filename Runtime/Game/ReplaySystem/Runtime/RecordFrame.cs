@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace ReplaySystem
+namespace UPandaGF.Gameplay.Replay
 {
     /// <summary>
     /// 一帧的录制数据：录制时的游戏时间 + 该帧所有发生变化的物体快照。

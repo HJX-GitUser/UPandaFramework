@@ -1,6 +1,6 @@
 # 场景录制与回放
 
-`ReplayManager` 录制 Transform、Animator 的 float 参数及注册的组件状态，支持变速、暂停、跳转和持久化。代码在 `UPandaGF.Extensions` 的 `ReplaySystem` 命名空间内。核心可单独挂在场景对象，`ReplayUI` 可选，用 UGUI 绑定按钮、进度条和速度控件。 [回放管理器](Runtime/ReplayManager.cs) [回放 UI](Runtime/ReplayUI.cs)
+`ReplayManager` 录制 Transform、Animator 的 float 参数及注册的组件状态，支持变速、暂停、跳转和持久化。代码在 `UPandaGF.Gameplay` 的 `ReplaySystem` 命名空间内。核心可单独挂在场景对象，`ReplayUI` 可选，用 UGUI 绑定按钮、进度条和速度控件。 [回放管理器](Runtime/ReplayManager.cs) [回放 UI](Runtime/ReplayUI.cs)
 
 ## 从目标录制到播放
 

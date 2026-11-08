@@ -1,13 +1,22 @@
 {
-  "name": "UPandaGF.Tests",
-  "references": [
-    "UPandaGF.Runtime",
-    "UPandaGF.Contracts",
-    "UPandaGF.Extensions",
-    "UPandaGF.Samples"
-  ],
-  "optionalUnityReferences": [
-    "TestAssemblies"
-  ],
-  "autoReferenced": false
+    "name": "UPandaGF.Tests",
+    "references": [
+        "UPandaGF.Runtime",
+        "UPandaGF.Contracts",
+        "UPandaGF.Core",
+        "UPandaGF.Assets",
+        "UPandaGF.UI",
+        "UPandaGF.Audio",
+        "UPandaGF.Save",
+        "UPandaGF.Diagnostics",
+        "UPandaGF.Gameplay",
+        "UPandaGF.Gameplay.Tasks",
+        "UPandaGF.Gameplay.InteractiveScoring",
+        "UPandaGF.Gameplay.Replay",
+        "UPandaGF.Samples"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "autoReferenced": false
 }

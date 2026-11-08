@@ -12,7 +12,7 @@
 
 ## 启动示例约定
 
-`GameLaunchExample` 在 Awake 订阅 `GFLoadedEvent` 和 `GFLoadedFailedEvent`。应在根完成前挂载，晚挂载不会补收已广播的事件。`firstScene` 推荐填写 Unity 项目内完整路径。Editor 直读模式由 Build Settings 提供场景，AssetBundle 模式可由清单提供。仅在 AOT 元数据、程序集和实际包产物已按业务配置时打开 `loadHotUpdateScripts`。`onAssemblyLoaded` 在列表加载完后回调。该示例提供调用顺序，项目的 HybridCLR 发布配置仍需单独准备。 [启动根文档](../Runtime/Manager/GameRoot/README.md) [场景服务](../Runtime/Manager/Services/README.md)
+`GameLaunchExample` 在 Awake 订阅 `GFLoadedEvent` 和 `GFLoadedFailedEvent`。应在根完成前挂载，晚挂载不会补收已广播的事件。`firstScene` 推荐填写 Unity 项目内完整路径。Editor 直读模式由 Build Settings 提供场景，AssetBundle 模式可由清单提供。仅在 AOT 元数据、程序集和实际包产物已按业务配置时打开 `loadHotUpdateScripts`。`onAssemblyLoaded` 在列表加载完后回调。该示例提供调用顺序，项目的 HybridCLR 发布配置仍需单独准备。 [启动根文档](../Runtime/Composition/GameRoot/README.md) [场景服务](../Runtime/Core/Services/README.md)
 
 ## 分散的 Demo 与资源
 

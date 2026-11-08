@@ -1,4 +1,4 @@
-﻿namespace UPandaGF.RunTime.TaskSystem
+﻿namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>
     /// 奖励接收端：任务系统只负责"说出要发什么"，由具体实现决定发给谁、怎么发。

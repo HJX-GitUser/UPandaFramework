@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using UPandaGF.GFEditor;
+using UPandaGF.Samples;
 
 namespace UPandaGF
 {

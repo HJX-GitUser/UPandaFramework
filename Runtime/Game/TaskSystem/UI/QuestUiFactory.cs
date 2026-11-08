@@ -1,7 +1,7 @@
 ﻿﻿using UnityEngine;
 using UnityEngine.UI;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>
     /// UGUI 构建工具：让任务 UI 既能用编辑器搭好（手动/一键生成），

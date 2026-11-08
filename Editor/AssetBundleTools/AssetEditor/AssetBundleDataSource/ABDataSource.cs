@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using System;
 
-namespace AssetBundleBrowser.AssetBundleDataSource
+namespace UPandaGF.AssetBundleBrowser.AssetBundleDataSource
 {
     /// <summary>
     /// Build Info struct used by ABDataSource to pass needed build data around.

@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+
+namespace UPandaGF.GFEditor
+{
 
 [System.Serializable]
 public class FTPUpLoadABConfig
@@ -21,7 +23,7 @@ public class FTPUpLoadABConfig
     //FTP通信凭证
     //ftp用户名
     public string Ftp_UserName;
-    //ftp密码
+    //ftp密码（只在内存中使用，不写入 EditorPrefs；可通过环境变量 UPANDA_FTP_PASSWORD 提供）
     public string Ftp_Password;
 
     public FTPUpLoadABConfig(string BuidTarget)
@@ -29,25 +31,60 @@ public class FTPUpLoadABConfig
         UpABURL = $"ftp://127.0.0.1/AssetBundles/{BuidTarget}/";
         ManifestABURL = "ftp://127.0.0.1/AssetBundles/";
         Ftp_UserName = "Admin";
-        Ftp_Password = "Admin123";
+        Ftp_Password = string.Empty;
     }
 }
+
+/// <summary>批量上传结果：成功/失败文件数与第一条错误，供上传页做“全部成功才提交清单”的判断。</summary>
+public struct FTPUploadResult
+{
+    public int SuccessCount;
+    public int FailedCount;
+    public string FirstError;
+    public bool AllSucceeded => FailedCount == 0 && SuccessCount > 0;
+}
+
 public class UpLoadFTP
 {
+    private const string UrlKey = "UpLoadABEditor_UpABURL";
+    private const string ManifestUrlKey = "UpLoadABEditor_ManifestABURL";
+    private const string UserNameKey = "UpLoadABEditor_Ftp_UserName";
+    /// <summary>旧版本明文密码键：只用于一次性迁移读取，读取后立即删除。</summary>
+    private const string LegacyPasswordKey = "UpLoadABEditor_Ftp_Password";
+    /// <summary>密码不落盘；需要免输入时用该环境变量提供。</summary>
+    public const string PasswordEnvironmentVariable = "UPANDA_FTP_PASSWORD";
+
     private FTPUpLoadABConfig Config;
+
     public UpLoadFTP(string BuidTarget)
     {
         if (Config == null)
         {
             Config = new FTPUpLoadABConfig(BuidTarget);
-            Config.UpABURL = EditorPrefs.GetString("UpLoadABEditor_UpABURL", Config.UpABURL);
-            Config.ManifestABURL = EditorPrefs.GetString("UpLoadABEditor_ManifestABURL", Config.ManifestABURL);
-            Config.Ftp_UserName = EditorPrefs.GetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
-            Config.Ftp_Password = EditorPrefs.GetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
+            Config.UpABURL = EditorPrefs.GetString(UrlKey, Config.UpABURL);
+            Config.ManifestABURL = EditorPrefs.GetString(ManifestUrlKey, Config.ManifestABURL);
+            Config.Ftp_UserName = EditorPrefs.GetString(UserNameKey, Config.Ftp_UserName);
+
+            // 迁移：旧版本把 FTP 密码明文写进 EditorPrefs（注册表/plist）。读到本次会话内存后删除该键。
+            string legacyPassword = EditorPrefs.GetString(LegacyPasswordKey, string.Empty);
+            if (!string.IsNullOrEmpty(legacyPassword))
+            {
+                Config.Ftp_Password = legacyPassword;
+                EditorPrefs.DeleteKey(LegacyPasswordKey);
+                Debug.LogWarning("[UpLoadFTP] 检测到旧版本保存在 EditorPrefs 的 FTP 明文密码，已迁移到本次会话内存并删除该键。" +
+                                 "后续请每次输入，或使用环境变量 " + PasswordEnvironmentVariable + "。");
+            }
+            else
+            {
+                Config.Ftp_Password = Environment.GetEnvironmentVariable(PasswordEnvironmentVariable) ?? string.Empty;
+            }
         }
     }
 
-    public FTPUpLoadABConfig GetConfig=> Config;
+    public FTPUpLoadABConfig GetConfig => Config;
+
+    /// <summary>用户名和密码都为空时 FTP 服务器通常只允许匿名；UI 用该属性给出提示。</summary>
+    public bool HasCredentials => !string.IsNullOrEmpty(Config.Ftp_UserName) && !string.IsNullOrEmpty(Config.Ftp_Password);
 
     public void ResetData(string BuidTarget)
     {
@@ -55,59 +92,96 @@ public class UpLoadFTP
         SaveData();
     }
 
+    /// <summary>只持久化地址与用户名；密码永远不写入 EditorPrefs，并顺手清理旧版本的明文键。</summary>
     public void SaveData()
     {
-        EditorPrefs.SetString("UpLoadABEditor_UpABURL", Config.UpABURL);
-        EditorPrefs.SetString("UpLoadABEditor_ManifestABURL", Config.ManifestABURL);
-        EditorPrefs.SetString("UpLoadABEditor_Ftp_UserName", Config.Ftp_UserName);
-        EditorPrefs.SetString("UpLoadABEditor_Ftp_Password", Config.Ftp_Password);
-        Debug.Log("FTP配置已保存");
+        EditorPrefs.SetString(UrlKey, Config.UpABURL);
+        EditorPrefs.SetString(ManifestUrlKey, Config.ManifestABURL);
+        EditorPrefs.SetString(UserNameKey, Config.Ftp_UserName);
+        EditorPrefs.DeleteKey(LegacyPasswordKey);
+        Debug.Log("FTP配置已保存（密码不落盘；可用环境变量 " + PasswordEnvironmentVariable + " 提供）");
     }
 
     /// <summary>
-    /// 上传
+    /// 顺序上传目录内的 AB 包与对比文件，全部完成后才返回；调用方在成功后上传清单。
     /// </summary>
-    public void UpLoadAllABFile(string LocalABPath)
+    /// <param name="localPath">本地 AB 输出目录</param>
+    /// <param name="onProgress">(已处理数, 总数, 文件名)；在主线程回调</param>
+    public async Task<FTPUploadResult> UpLoadAllABFileAsync(string localPath, Action<int, int, string> onProgress = null, CancellationToken token = default)
     {
-        Debug.Log($"开始上传：{Config.UpABURL}");
-        if(!Directory.Exists(LocalABPath))
+        var result = new FTPUploadResult();
+        if (!Directory.Exists(localPath))
         {
-            Debug.LogError($"路径不存在：{LocalABPath}");
-            return;
+            result.FirstError = "路径不存在：" + localPath;
+            Debug.LogError(result.FirstError);
+            return result;
         }
-        DirectoryInfo directory = Directory.CreateDirectory(LocalABPath);
-        FileInfo[] fileInfos = directory.GetFiles();
-        int uploadCount = 0;
-        foreach (FileInfo fileInfo in fileInfos)
+
+        FileInfo[] files = new DirectoryInfo(localPath).GetFiles();
+        int total = 0;
+        foreach (FileInfo file in files) if (IsABAssets(file)) total++;
+
+        int processed = 0;
+        foreach (FileInfo file in files)
         {
-            if (IsABAssets(fileInfo))
+            if (!IsABAssets(file)) continue;
+            if (token.IsCancellationRequested) break;
+            onProgress?.Invoke(processed, total, file.Name);
+            string error = await UploadAsync(file.FullName, file.Name, Config.UpABURL);
+            if (error == null) result.SuccessCount++;
+            else
             {
-                FtpUploadFile(fileInfo.FullName, fileInfo.Name);
-                uploadCount++;
+                result.FailedCount++;
+                if (result.FirstError == null) result.FirstError = file.Name + "：" + error;
+                Debug.LogError("[UpLoadFTP] 上传失败 " + file.Name + "：" + error);
             }
+            processed++;
+            onProgress?.Invoke(processed, total, file.Name);
         }
-        Debug.Log($"已发起 {uploadCount} 个AB包的上传（异步，结果见后续日志）：{Config.UpABURL}");
+
+        Debug.Log($"[UpLoadFTP] AB 上传结束：成功 {result.SuccessCount}，失败 {result.FailedCount}，目标 {Config.UpABURL}");
+        return result;
     }
 
-    /// <summary>
-    /// 上传单个文件到指定地址（用于资源清单 assetData.assetref）
-    /// </summary>
-    public void UpLoadFile(string localFilePath, string remoteURL)
+    /// <summary>上传单个文件到指定地址（用于资源清单 assetData.assetref）；返回 true 表示成功。</summary>
+    public async Task<bool> UpLoadFileAsync(string localFilePath, string remoteURL)
     {
         if (string.IsNullOrEmpty(localFilePath) || !File.Exists(localFilePath))
         {
             Debug.LogError($"文件不存在，上传已跳过：{localFilePath}\n请先在资源分类窗口点「更新配置」生成清单。");
-            return;
+            return false;
         }
         if (string.IsNullOrEmpty(remoteURL))
         {
             Debug.LogError("上传地址为空，上传已跳过");
-            return;
+            return false;
         }
-        FtpUploadFile(localFilePath, Path.GetFileName(localFilePath), remoteURL);
+
+        string error = await UploadAsync(localFilePath, Path.GetFileName(localFilePath), remoteURL);
+        if (error != null)
+        {
+            Debug.LogError("[UpLoadFTP] 清单上传失败：" + error);
+            return false;
+        }
+        Debug.Log("[UpLoadFTP] 清单上传成功：" + remoteURL);
+        return true;
     }
 
-    private bool IsABAssets(FileInfo fileInfo)
+    /// <summary>旧接口：不等待结果直接返回，清单可能在 AB 未传完时提交。保留仅为源码兼容。</summary>
+    [Obsolete("请使用 UpLoadAllABFileAsync 并在全部成功后提交清单。", false)]
+    public void UpLoadAllABFile(string LocalABPath)
+    {
+        _ = UpLoadAllABFileAsync(LocalABPath);
+    }
+
+    /// <summary>旧接口：不等待结果直接返回。保留仅为源码兼容。</summary>
+    [Obsolete("请使用 UpLoadFileAsync 等待上传结果。", false)]
+    public void UpLoadFile(string localFilePath, string remoteURL)
+    {
+        _ = UpLoadFileAsync(localFilePath, remoteURL);
+    }
+
+    private static bool IsABAssets(FileInfo fileInfo)
     {
         bool isABAssets = false;
         if (fileInfo.Extension == "" || fileInfo.Extension == ".txt")
@@ -118,63 +192,39 @@ public class UpLoadFTP
     }
 
     /// <summary>
-    /// 上传AB包和对比文件
+    /// 在后台线程执行 FTP 上传（同步 FtpWebRequest），返回 null 表示成功，否则返回错误信息。
+    /// 避免 async void 导致调用方无法等待“AB 全部完成”。
     /// </summary>
-    /// <param name="filePath"></param>
-    /// <param name="fileName"></param>
-    private async void FtpUploadFile(string filePath, string fileName, string remoteURL = null)
+    private Task<string> UploadAsync(string filePath, string fileName, string remoteURL)
     {
-        string baseUrl = string.IsNullOrEmpty(remoteURL) ? Config.UpABURL : remoteURL;
-        if (!baseUrl.EndsWith("/"))
-            baseUrl += "/";
-
-        await Task.Run(() =>
+        string baseUrl = remoteURL;
+        if (!baseUrl.EndsWith("/")) baseUrl += "/";
+        return Task.Run(() =>
         {
             try
             {
-                //1.创建一个FTP连接 用于上传
-                FtpWebRequest req = FtpWebRequest.Create(new Uri(baseUrl + fileName)) as FtpWebRequest;
-                //2.设置一个通信凭证 这样才能上传
-                NetworkCredential n = new NetworkCredential(Config.Ftp_UserName, Config.Ftp_Password);
-                req.Credentials = n;
-                //3.其它设置
-                //  设置代理为null
-                req.Proxy = null;
-                //  请求完毕后 是否关闭控制连接
-                req.KeepAlive = false;
-                //  操作命令-上传
-                req.Method = WebRequestMethods.Ftp.UploadFile;
-                //  指定传输的类型 2进制
-                req.UseBinary = true;
-                //4.上传文件
-                //  ftp的流对象
-                Stream upLoadStream = req.GetRequestStream();
-                //  读取文件信息 写入该流对象
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(new Uri(baseUrl + fileName));
+                request.Credentials = new NetworkCredential(Config.Ftp_UserName, Config.Ftp_Password);
+                request.Proxy = null;
+                request.KeepAlive = false;
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+                request.UseBinary = true;
                 using (FileStream file = File.OpenRead(filePath))
+                using (Stream upload = request.GetRequestStream())
                 {
-                    //一点一点的上传内容
-                    byte[] bytes = new byte[1024];
-                    //返回值 代表读取了多少个字节
-                    int contentLength = file.Read(bytes, 0, bytes.Length);
-                    while (contentLength != 0)
-                    {
-                        //写入到上传流中
-                        upLoadStream.Write(bytes, 0, contentLength);
-                        //写完再读
-                        contentLength = file.Read(bytes, 0, bytes.Length);
-                    }
-                    //循环完毕后 上传结束
-                    file.Close();
-                    upLoadStream.Close();
-
+                    file.CopyTo(upload, 81920);
                 }
-                Debug.Log(fileName + "上传成功");
+                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                {
+                    return null;
+                }
             }
             catch (Exception ex)
             {
-                Debug.LogError(fileName + "上传失败，错误信息：" + ex.Message);
+                return ex.Message;
             }
         });
     }
+}
 
 }

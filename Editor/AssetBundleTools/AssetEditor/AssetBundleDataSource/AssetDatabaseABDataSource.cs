@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.IMGUI.Controls;
 
-namespace AssetBundleBrowser.AssetBundleDataSource
+namespace UPandaGF.AssetBundleBrowser.AssetBundleDataSource
 {
     internal class AssetDatabaseABDataSource : ABDataSource
     {

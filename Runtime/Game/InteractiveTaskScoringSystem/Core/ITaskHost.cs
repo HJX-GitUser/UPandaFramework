@@ -1,4 +1,4 @@
-﻿namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+﻿namespace UPandaGF.Gameplay.InteractiveScoring
 {
     /// <summary>
     /// 任务宿主接口：交互实体只依赖这个接口，而不是具体的 <see cref="TaskDataManager"/> 单例。

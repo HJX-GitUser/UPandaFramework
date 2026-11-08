@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UPandaGF.RunTime.TaskSystem
+namespace UPandaGF.Gameplay.Tasks
 {
     /// <summary>
     /// 示例敌人：模拟"怪物死亡时把击杀上报给任务系统"。

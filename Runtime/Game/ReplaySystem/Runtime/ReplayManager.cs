@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace ReplaySystem
+namespace UPandaGF.Gameplay.Replay
 {
     /// <summary>有界录制、目标发现与回放控制器；公开入口在 Unity 主线程调用。</summary>
     public partial class ReplayManager : MonoBehaviour

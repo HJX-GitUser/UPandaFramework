@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace UPandaGF.RunTime.InteractiveTaskScoringSystem
+namespace UPandaGF.Gameplay.InteractiveScoring
 {
     /// <summary>
     /// 任务流程校验器窗口（P0 工具）：
