@@ -2,6 +2,12 @@
 
 All notable changes to this package are documented here. The format follows Keep a Changelog and the project uses Semantic Versioning.
 
+## [0.7.1] - 2026-11-10
+
+### Fixed
+
+- URP: the outline rendered nothing. URP's `DrawRenderers` executes a single matching pass per renderer, so the two-pass material only ran the invisible stencil pass. URP now builds two proxies per target and draws two single-pass materials (`OutlineMask` at queue 3100 and `OutlineFill` at queue 3101); Built-in keeps the original two-pass `Outline.shader`. Verified in URP 14 (Unity 2022.3) and Built-in (Unity 2021.3) players, plus EditMode 53/53 and PlayMode 324/324.
+
 ## [0.7.0] - 2026-11-09
 
 ### Added

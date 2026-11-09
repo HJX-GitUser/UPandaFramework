@@ -1,14 +1,16 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace UPandaGF.Gameplay
 {
     /// <summary>
-    /// 描边材质缓存：五种显示模式各一份共享材质。
+    /// 描边材质缓存。
+    /// Built-in：五种显示模式各一份共享的两 Pass 材质（模板 + 描边）。
+    /// URP：URP 的 DrawRenderers 对每个 Renderer 只执行一个匹配 Pass，两 Pass 材质只会画出
+    ///      不可见的模板 Pass，因此在 URP 下改为「模板代理 + 描边代理」两个 Renderer，
+    ///      分别使用单 Pass 的 OutlineMask / OutlineFill 材质，按渲染队列 3100/3101 排序。
     /// 深度比较写在材质里（渲染状态无法用 MaterialPropertyBlock 覆盖），
-    /// 颜色、宽度与宽度单位是普通 uniform，按对象用 MaterialPropertyBlock 覆盖，
-    /// 因此不需要给每个对象实例化材质。
-    /// Built-in 与 URP 共用同一个 Shader 资产（由 SubShader 的 RenderPipeline 标签自动选择）；
+    /// 颜色、宽度与宽度单位是普通 uniform，按对象用 MaterialPropertyBlock 覆盖。
     /// HDRP 需要单独的 Shader，按名称查找，找不到时停用描边并给出一次错误日志。
     /// </summary>
     internal static class OutlineMaterials
@@ -17,31 +19,54 @@ namespace UPandaGF.Gameplay
         internal const string HDRPShaderName = OutLine.HDRPShaderName;
 
         private const string TemplatePath = OutLine.MaterialResourcePath;
+        private const string MaskTemplatePath = "Materials/OutlineMask";
+        private const string FillTemplatePath = "Materials/OutlineFill";
         private const string HDRPPipelineTypeName = "HighDefinition";
+        private const string URPPipelineTypeName = "Universal";
 
         private static readonly int MaskTestId = Shader.PropertyToID("_MaskZTest");
         private static readonly int FillTestId = Shader.PropertyToID("_FillZTest");
         private static readonly int ColorId = Shader.PropertyToID("_OutlineColor");
         private static readonly int WidthId = Shader.PropertyToID("_OutlineWidth");
         private static readonly Material[] Cache = new Material[5];
+        private static readonly Material[] MaskCache = new Material[5];
+        private static readonly Material[] FillCache = new Material[5];
 
         private static bool reported;
+
+        /// <summary>当前是否 URP（只判断渲染管线类型名，避免包体硬依赖 URP 程序集）。</summary>
+        internal static bool IsURP
+        {
+            get
+            {
+                RenderPipelineAsset pipeline = GraphicsSettings.currentRenderPipeline;
+                return pipeline != null && pipeline.GetType().FullName.Contains(URPPipelineTypeName);
+            }
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetOnLoad()
         {
             // 关闭域重载时静态字段会跨 Play 保留，这里清掉旧材质避免泄漏。
-            for (int i = 0; i < Cache.Length; i++)
-            {
-                if (Cache[i] != null)
-                {
-                    Object.Destroy(Cache[i]);
-                    Cache[i] = null;
-                }
-            }
+            Clear(Cache);
+            Clear(MaskCache);
+            Clear(FillCache);
             reported = false;
         }
 
+        private static void Clear(Material[] cache)
+        {
+            for (int i = 0; i < cache.Length; i++)
+            {
+                if (cache[i] != null)
+                {
+                    Object.Destroy(cache[i]);
+                    cache[i] = null;
+                }
+            }
+        }
+
+        /// <summary>Built-in / HDRP 使用的两 Pass 材质。</summary>
         internal static Material Get(OutLine.描边模式 mode)
         {
             int index = IndexOf(mode);
@@ -78,6 +103,60 @@ namespace UPandaGF.Gameplay
             material.SetFloat(MaskTestId, (float)MaskTest(mode));
             material.SetFloat(FillTestId, (float)FillTest(mode));
             Cache[index] = material;
+            return material;
+        }
+
+        /// <summary>URP 的模板写入材质（单 Pass）。Built-in 下退化为两 Pass 材质。</summary>
+        internal static Material GetMask(OutLine.描边模式 mode)
+        {
+            if (!IsURP)
+            {
+                return Get(mode);
+            }
+            int index = IndexOf(mode);
+            if (MaskCache[index] != null)
+            {
+                return MaskCache[index];
+            }
+            Material material = CreateSinglePass(MaskTemplatePath, "OutLine Mask " + mode, MaskTestId, MaskTest(mode));
+            MaskCache[index] = material;
+            return material;
+        }
+
+        /// <summary>URP 的描边材质（单 Pass）。Built-in 下返回 null。</summary>
+        internal static Material GetFill(OutLine.描边模式 mode)
+        {
+            if (!IsURP)
+            {
+                return null;
+            }
+            int index = IndexOf(mode);
+            if (FillCache[index] != null)
+            {
+                return FillCache[index];
+            }
+            Material material = CreateSinglePass(FillTemplatePath, "OutLine Fill " + mode, FillTestId, FillTest(mode));
+            FillCache[index] = material;
+            return material;
+        }
+
+        private static Material CreateSinglePass(string path, string name, int testId, CompareFunction test)
+        {
+            Material template = Resources.Load<Material>(path);
+            if (template == null || template.shader == null)
+            {
+                Report("OutLine 缺少 URP 单 Pass 模板材质：Resources/" + path + "。");
+                return null;
+            }
+            var material = new Material(template)
+            {
+                name = name,
+                hideFlags = HideFlags.DontSave
+            };
+            if (material.HasProperty(testId))
+            {
+                material.SetFloat(testId, (float)test);
+            }
             return material;
         }
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UPandaGF.Gameplay
@@ -113,6 +113,29 @@ namespace UPandaGF.Gameplay
                 renderer.enabled = true;
             }
 
+            Transform fillTransform = instance.transform.Find("Fill");
+            if (fillTransform != null)
+            {
+                MeshFilter fillFilter = fillTransform.GetComponent<MeshFilter>();
+                if (fillFilter != null)
+                {
+                    fillFilter.sharedMesh = null;
+                }
+                SkinnedMeshRenderer fillSkin = fillTransform.GetComponent<SkinnedMeshRenderer>();
+                if (fillSkin != null)
+                {
+                    fillSkin.sharedMesh = null;
+                    fillSkin.bones = null;
+                    fillSkin.rootBone = null;
+                }
+                Renderer fillRenderer = fillTransform.GetComponent<Renderer>();
+                if (fillRenderer != null)
+                {
+                    fillRenderer.SetPropertyBlock(null);
+                    fillRenderer.enabled = true;
+                }
+            }
+
             instance.SetActive(false);
             // 归还时恢复隐藏：调试开关打开过的代理不能留在 Hierarchy 里。
             instance.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
@@ -202,6 +225,24 @@ namespace UPandaGF.Gameplay
             {
                 instance.AddComponent<MeshFilter>();
                 instance.AddComponent<MeshRenderer>();
+            }
+
+            // URP 只能每个 Renderer 画一个 Pass，因此模板与描边拆成两个 Renderer；
+            // Fill 作为子物体跟随根节点一起进出对象池。
+            if (OutlineMaterials.IsURP)
+            {
+                var fill = new GameObject("Fill");
+                fill.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
+                fill.transform.SetParent(instance.transform, false);
+                if (skinned)
+                {
+                    fill.AddComponent<SkinnedMeshRenderer>();
+                }
+                else
+                {
+                    fill.AddComponent<MeshFilter>();
+                    fill.AddComponent<MeshRenderer>();
+                }
             }
 
             instance.SetActive(false);

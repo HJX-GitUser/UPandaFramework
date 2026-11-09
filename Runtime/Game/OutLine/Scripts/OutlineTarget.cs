@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -33,9 +33,11 @@ namespace UPandaGF.Gameplay
 
         private GameObject proxyObject;
         private Renderer proxyRenderer;
+        private Renderer fillRenderer;
         private Mesh proxyMesh;
         private OutlineProxyKind proxyKind;
         private Material[] slotMaterials;
+        private Material[] fillSlotMaterials;
         private bool disposed;
 
         private OutlineTarget(OutLine owner, Renderer source, SkinnedMeshRenderer sourceSkin, Mesh sourceMesh, bool ownsMeshCopy)
@@ -177,12 +179,42 @@ namespace UPandaGF.Gameplay
             }
 
             // 描边只是叠加效果：不投影、不接收光照探针、不产生运动矢量。
-            proxyRenderer.shadowCastingMode = ShadowCastingMode.Off;
-            proxyRenderer.receiveShadows = false;
-            proxyRenderer.lightProbeUsage = LightProbeUsage.Off;
-            proxyRenderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
-            proxyRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
+            ConfigureRenderer(proxyRenderer);
+
+            // URP 下模板与描边拆成两个 Renderer；Fill 是对象池建好的子物体。
+            if (OutlineMaterials.IsURP)
+            {
+                Transform fill = proxyObject.transform.Find("Fill");
+                fillRenderer = fill != null ? fill.GetComponent<Renderer>() : null;
+                if (fillRenderer != null)
+                {
+                    if (skin != null)
+                    {
+                        var fillSkin = fillRenderer as SkinnedMeshRenderer;
+                        fillSkin.sharedMesh = mesh;
+                        fillSkin.bones = skin.bones;
+                        fillSkin.rootBone = skin.rootBone;
+                        fillSkin.localBounds = Inflate(skin.localBounds);
+                        fillSkin.updateWhenOffscreen = true;
+                        fillSkin.quality = skin.quality;
+                    }
+                    else
+                    {
+                        fill.GetComponent<MeshFilter>().sharedMesh = mesh;
+                    }
+                    ConfigureRenderer(fillRenderer);
+                }
+            }
             return true;
+        }
+
+        private static void ConfigureRenderer(Renderer renderer)
+        {
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.lightProbeUsage = LightProbeUsage.Off;
+            renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            renderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
         }
 
         /// <summary>按当前模式、颜色、宽度与宽度单位刷新材质和逐对象属性。</summary>
@@ -193,10 +225,15 @@ namespace UPandaGF.Gameplay
                 return;
             }
 
-            Material material = OutlineMaterials.Get(owner.OutlineMode);
+            bool urp = OutlineMaterials.IsURP;
+            Material material = urp ? OutlineMaterials.GetMask(owner.OutlineMode) : OutlineMaterials.Get(owner.OutlineMode);
             if (material == null)
             {
                 proxyRenderer.enabled = false;
+                if (fillRenderer != null)
+                {
+                    fillRenderer.enabled = false;
+                }
                 return;
             }
             proxyRenderer.enabled = true;
@@ -216,6 +253,29 @@ namespace UPandaGF.Gameplay
             block.SetFloat(WidthId, width);
             block.SetFloat(WidthModeId, widthMode);
             proxyRenderer.SetPropertyBlock(block);
+
+            if (!urp || fillRenderer == null)
+            {
+                return;
+            }
+
+            Material fill = OutlineMaterials.GetFill(owner.OutlineMode);
+            if (fill == null)
+            {
+                fillRenderer.enabled = false;
+                return;
+            }
+            fillRenderer.enabled = true;
+            if (fillSlotMaterials == null || fillSlotMaterials.Length != slots || fillSlotMaterials[0] != fill)
+            {
+                fillSlotMaterials = new Material[slots];
+                for (int i = 0; i < slots; i++)
+                {
+                    fillSlotMaterials[i] = fill;
+                }
+                fillRenderer.sharedMaterials = fillSlotMaterials;
+            }
+            fillRenderer.SetPropertyBlock(block);
         }
 
         /// <summary>蒙皮网格的表情权重需要逐帧同步到代理，否则描边会和模型变形对不上。</summary>
@@ -225,22 +285,23 @@ namespace UPandaGF.Gameplay
             {
                 return;
             }
-            var proxy = proxyRenderer as SkinnedMeshRenderer;
-            if (proxy == null || proxy.sharedMesh == null)
-            {
-                return;
-            }
 
-            int count = Mathf.Min(blendShapeWeights.Length, proxy.sharedMesh.blendShapeCount);
+            var root = proxyRenderer as SkinnedMeshRenderer;
+            var fill = fillRenderer as SkinnedMeshRenderer;
+            int count = Mathf.Min(blendShapeWeights.Length, sourceSkin.sharedMesh != null
+                ? sourceSkin.sharedMesh.blendShapeCount
+                : blendShapeWeights.Length);
             for (int i = 0; i < count; i++)
             {
-                float weight = sourceSkin.GetBlendShapeWeight(i);
-                if (Mathf.Approximately(weight, blendShapeWeights[i]))
+                blendShapeWeights[i] = sourceSkin.GetBlendShapeWeight(i);
+                if (root != null && i < root.sharedMesh.blendShapeCount)
                 {
-                    continue;
+                    root.SetBlendShapeWeight(i, blendShapeWeights[i]);
                 }
-                blendShapeWeights[i] = weight;
-                proxy.SetBlendShapeWeight(i, weight);
+                if (fill != null && i < fill.sharedMesh.blendShapeCount)
+                {
+                    fill.SetBlendShapeWeight(i, blendShapeWeights[i]);
+                }
             }
         }
 
@@ -260,9 +321,11 @@ namespace UPandaGF.Gameplay
                 OutlineProxyPool.Return(proxyObject, proxyKind, allowPool);
                 proxyObject = null;
                 proxyRenderer = null;
+                fillRenderer = null;
             }
 
             slotMaterials = null;
+            fillSlotMaterials = null;
             proxyMesh = null;
             if (ownsMeshCopy)
             {

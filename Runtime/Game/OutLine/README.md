@@ -28,10 +28,10 @@ OutLine 为模型添加选中提示、交互高亮和遮挡剪影。当前版本
 | 管线 | 接入方式 |
 | --- | --- |
 | Built-in | 直接使用 `Outline.shader` 中不带标签的 SubShader |
-| URP | 同一个 Shader 资产里的 `"RenderPipeline" = "UniversalPipeline"` 分支；Pass 以 `SRPDefaultUnlit` 由 URP 的 DrawObjectsPass 绘制，材质与 Shader 资产不用替换 |
+| URP | **双代理**：URP 的 `DrawRenderers` 对每个 Renderer 只执行一个匹配 Pass，两 Pass 材质只会画出不可见的模板 Pass。因此运行时为目标建两个代理（模板 + 描边），分别使用单 Pass 的 `OutlineMask.shader` / `OutlineFill.shader`，渲染队列 3100 / 3101，靠队列顺序先写模板再描边 |
 | HDRP | 需要单独启用 `Shaders~/HDRP/OutlineHDRP.shader`：把文件复制到 `Shaders/`（`~` 结尾的目录 Unity 不导入），运行时会按 `UPandaGF/OutLine/Outline (HDRP)` 名称查找；找不到会打一次错误日志并停用描边渲染 |
 
-HDRP 模板只覆盖透视相机，且未在本仓库的 Built-in 验证工程里编译过，接入 HDRP 项目时需要在目标管线里重新验收五种模式与模板缓冲效果。URP 分支同样依赖项目的深度/模板缓冲配置，启用 Depth Priming 或自定义 Renderer 时建议实测。
+HDRP 模板只覆盖透视相机，且未在本仓库的 Built-in 验证工程里编译过，接入 HDRP 项目时需要在目标管线里重新验收五种模式与模板缓冲效果。URP 需要相机带模板缓冲（URP 默认的深度-模板附件即可）；已在 Unity 2022.3 + URP 14 的 Player 中实测五种模式所用材质正常出图，启用 Depth Priming 或自定义 Renderer 时建议在目标工程复测。
 
 ## 模式与参数
 
@@ -81,8 +81,8 @@ public class SelectionHighlight : MonoBehaviour
 
 - 可读网格：取一份副本，把全部子网格合并成 1 个绘制单元，并将**面积加权**的平滑法线写进副本的 `NORMAL` 通道（不再占用 UV3，也不会和模型的第二/第四套 UV 冲突）。相同源网格的多个物体共享同一份副本，最后一个使用者释放时销毁。
 - 不可读网格：直接复用原网格（原始法线，硬边模型可能出现接缝），代理按原子网格数量重复使用描边材质。
-- 每个参与描边的 Renderer 增加一个代理对象；描边本身是 2 次绘制。代理不投影、不接收光照探针、不产生运动矢量。
-- 代理对象来自对象池（`Mesh` 与 `Skinned` 各缓存一份，每类上限 64）：频繁开关高亮只做重新挂接与属性刷新，不再反复创建/销毁 GameObject；池根节点隐藏且不随场景保存或卸载。
+- Built-in：每个参与描边的 Renderer 增加一个代理对象（内部两个 Pass）；URP：增加两个代理对象（模板 + 描边，各一个 Pass）。代理不投影、不接收光照探针、不产生运动矢量。
+- 代理对象来自对象池（URP 下模板与描边两个 Renderer 作为同一个池对象进出；`Mesh` 与 `Skinned` 各缓存一份，每类上限 64）：频繁开关高亮只做重新挂接与属性刷新，不再反复创建/销毁 GameObject；池根节点隐藏且不随场景保存或卸载。
 - 目标整体停用或销毁时，代理会被直接销毁而不是搬回池（Unity 不允许在父物体激活/停用过程中 `SetParent`）；挂接被拒绝时会在下一帧自动重试。
 - 层级变化时按「来源 Renderer + 网格」匹配旧绑定，未受影响的代理直接复用，只有新增/换网格的目标才创建代理。
 - 组件的 **Reveal Proxy In Hierarchy** 可让代理显示在 Hierarchy 中，便于排查；只影响显隐，不影响渲染。
