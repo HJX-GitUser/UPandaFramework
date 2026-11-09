@@ -50,9 +50,10 @@ namespace UPandaGF.Gameplay
                 : null;
         }
 
-        /// <summary>为 Renderer 建立代理；不支持或缺少网格时返回 null。</summary>
-        internal static OutlineTarget Bind(OutLine owner, Renderer source, List<Vector3> bakedNormals)
+        /// <summary>为 Renderer 建立代理；不支持或缺少网格时返回 null。retry 表示失败是暂时的（目标正在激活/停用）。</summary>
+        internal static OutlineTarget Bind(OutLine owner, Renderer source, List<Vector3> bakedNormals, out bool retry)
         {
+            retry = false;
             if (owner == null || source == null)
             {
                 return null;
@@ -83,7 +84,12 @@ namespace UPandaGF.Gameplay
             }
 
             var target = new OutlineTarget(owner, source, skin, mesh, copy);
-            target.CreateProxy(proxyMesh, skin);
+            if (!target.CreateProxy(proxyMesh, skin))
+            {
+                retry = true;
+                target.Dispose();
+                return null;
+            }
             return target;
         }
 
@@ -139,13 +145,18 @@ namespace UPandaGF.Gameplay
         }
 
 
-        private void CreateProxy(Mesh mesh, SkinnedMeshRenderer skin)
+        private bool CreateProxy(Mesh mesh, SkinnedMeshRenderer skin)
         {
             proxyKind = skin != null ? OutlineProxyKind.Skinned : OutlineProxyKind.Mesh;
             proxyMesh = mesh;
 
             // 代理来自对象池：频繁开关高亮时不再反复创建/销毁 GameObject。
             proxyObject = OutlineProxyPool.Rent(proxyKind, owner, source.transform);
+            if (proxyObject == null)
+            {
+                // 目标正在激活/停用，Unity 拒绝了挂接；由调用方下一帧重试。
+                return false;
+            }
             proxyObject.name = source.name + " (OutLine)";
 
             if (skin != null)
@@ -171,6 +182,7 @@ namespace UPandaGF.Gameplay
             proxyRenderer.lightProbeUsage = LightProbeUsage.Off;
             proxyRenderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
             proxyRenderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
+            return true;
         }
 
         /// <summary>按当前模式、颜色、宽度与宽度单位刷新材质和逐对象属性。</summary>
@@ -242,7 +254,10 @@ namespace UPandaGF.Gameplay
 
             if (proxyObject != null)
             {
-                OutlineProxyPool.Return(proxyObject, proxyKind);
+                // 目标正在停用/销毁时不要跨层级搬运代理：Unity 会拒绝 SetParent 并报错，
+                // 这种情况直接销毁，避免池里留下挂在待销毁层级下的对象。
+                bool allowPool = source != null && source.gameObject.activeInHierarchy;
+                OutlineProxyPool.Return(proxyObject, proxyKind, allowPool);
                 proxyObject = null;
                 proxyRenderer = null;
             }

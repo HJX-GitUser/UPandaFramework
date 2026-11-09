@@ -30,6 +30,10 @@ All notable changes to this package are documented here. The format follows Keep
 
 - The Quick Outline attribution section in `THIRD_PARTY_NOTICES.md`; the outline module is no longer derived from it.
 
+### Fixed
+
+- Proxy pooling no longer tries to reparent a proxy while its target is being deactivated or destroyed (`Cannot set the parent of the GameObject ... while activating or deactivating the parent GameObject ...`). In that case the proxy is destroyed instead of being pooled, and a bind that Unity rejects is retried on the next frame.
+
 ## [0.6.0] - 2026-11-08
 
 ### Changed (breaking)

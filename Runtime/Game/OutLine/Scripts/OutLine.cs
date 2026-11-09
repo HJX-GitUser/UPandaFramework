@@ -282,10 +282,15 @@ namespace UPandaGF.Gameplay
                         continue;
                     }
 
-                    OutlineTarget created = OutlineTarget.Bind(this, renderer, BakedFor(renderer));
+                    OutlineTarget created = OutlineTarget.Bind(this, renderer, BakedFor(renderer), out bool retry);
                     if (created != null)
                     {
                         targets.Add(created);
+                    }
+                    else if (retry)
+                    {
+                        // 目标正在激活/停用，代理挂接被拒绝：下一帧重试。
+                        hierarchyDirty = true;
                     }
                 }
                 scanned.Clear();

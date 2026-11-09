@@ -252,6 +252,32 @@ namespace UPandaGF.Tests
                 "未受影响的代理应复用，避免整树重建");
         }
 
+        [UnityTest]
+        public IEnumerator DeactivatingTargetDestroysProxyWithoutErrors()
+        {
+            Mesh source = CreateMesh();
+            var root = new GameObject("Outline root");
+            fixtures.Add(root);
+            OutLine outline = root.AddComponent<OutLine>();
+            outline.CanFlash = false;
+
+            MeshRenderer renderer = CreateRenderer(source);
+            renderer.transform.SetParent(root.transform, false);
+            yield return null;
+            Assert.That(FindProxy(renderer), Is.Not.Null);
+
+            // 停用父物体时不能把代理挪出层级（Unity 会拒绝 SetParent 并报错），
+            // 应直接销毁代理；测试框架默认把未预期的 error 日志判为失败。
+            root.SetActive(false);
+            yield return null;
+            Assert.That(FindProxy(renderer), Is.Null);
+
+            root.SetActive(true);
+            yield return null;
+            yield return null;
+            Assert.That(FindProxy(renderer), Is.Not.Null, "重新激活后应重新挂上代理");
+        }
+
         private static Renderer FindProxy(Renderer source)
         {
             Renderer[] renderers = source.GetComponentsInChildren<Renderer>(true);

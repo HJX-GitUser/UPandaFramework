@@ -31,6 +31,14 @@ $unity = 'D:\Unity\2021.3.45f2c1\Editor\Unity.exe'
   -runTests -testPlatform EditMode -testResults "<输出>.xml" -logFile "<日志>.log"
 ```
 
+## 后续修复验证（同日）
+
+高亮 demo 停止运行时出现 `Cannot set the parent of the GameObject ... while activating or deactivating the parent GameObject ...`：代理池在目标停用/销毁过程中仍尝试把代理搬回池。已修复为「目标停用/销毁时直接销毁代理；挂接被拒绝时下一帧重试」，并补充回归用例。
+
+- PlayMode：**324 / 324**（新增「停用父物体不报错、重新激活后重新挂接代理」）
+- EditMode：**53 / 53**
+- 原始文件：[playmode-fix-2026-11-09.xml](playmode-fix-2026-11-09.xml) · [editmode-fix-2026-11-09.xml](editmode-fix-2026-11-09.xml)
+
 ## 备注
 
 - 测试在工程副本中运行，`Assets/upanda-framework` 与仓库一致；原工程未参与本轮批处理。
