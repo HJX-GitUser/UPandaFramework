@@ -38,6 +38,9 @@ namespace UPandaGF.Gameplay
         /// <summary>模板材质在 Resources 下的路径（不含扩展名）。</summary>
         public const string MaterialResourcePath = "Materials/Outline";
 
+        /// <summary>HDRP 专用 Shader 的声明名；模板位于 Shaders~/HDRP，需要手动复制到 Shaders/ 才生效。</summary>
+        public const string HDRPShaderName = "UPandaGF/OutLine/Outline (HDRP)";
+
         /// <summary>序列化数值 0~4 对应已有场景与预制体，不要调整顺序。</summary>
         public enum 描边模式
         {
@@ -46,6 +49,13 @@ namespace UPandaGF.Gameplay
             遮挡描边 = 2,
             描边与剪影 = 3,
             仅剪影 = 4
+        }
+
+        /// <summary>描边宽度的单位。</summary>
+        public enum 宽度单位
+        {
+            屏幕相对 = 0,
+            像素 = 1
         }
 
         [Serializable]
@@ -61,8 +71,11 @@ namespace UPandaGF.Gameplay
         [SerializeField, Tooltip("轮廓颜色；Alpha 为整体透明度，会被闪烁再次调制。")]
         private Color outlineColor = Color.white;
 
-        [SerializeField, Range(0f, 200f), Tooltip("屏幕相对厚度，透视按视深、正交按视野高度补偿。")]
+        [SerializeField, Range(0f, 200f), Tooltip("屏幕相对厚度：透视按视深、正交按视野高度补偿；配合宽度单位使用。")]
         private float outlineWidth = 4f;
+
+        [SerializeField, Tooltip("屏幕相对：远近与缩放的观感一致；像素：按设备像素定宽，适合 HUD 或 DPI 敏感场景。")]
+        private 宽度单位 outlineWidthUnit = 宽度单位.屏幕相对;
 
         [Header("行为")]
         [Tooltip("开启后轮廓做呼吸闪烁，受 Time.timeScale 影响。")]
@@ -119,6 +132,21 @@ namespace UPandaGF.Gameplay
             set
             {
                 outlineWidth = Mathf.Max(0f, value);
+                appearanceDirty = true;
+            }
+        }
+
+        /// <summary>宽度单位：屏幕相对厚度或设备像素。</summary>
+        public 宽度单位 OutlineWidthUnit
+        {
+            get => outlineWidthUnit;
+            set
+            {
+                if (outlineWidthUnit == value)
+                {
+                    return;
+                }
+                outlineWidthUnit = value;
                 appearanceDirty = true;
             }
         }
@@ -265,9 +293,10 @@ namespace UPandaGF.Gameplay
             Color tint = outlineColor;
             tint.a *= alpha;
             float width = outlineMode == 描边模式.仅剪影 ? 0f : outlineWidth;
+            float widthMode = outlineWidthUnit == 宽度单位.像素 ? 1f : 0f;
             for (int i = 0; i < targets.Count; i++)
             {
-                targets[i].ApplyAppearance(tint, width);
+                targets[i].ApplyAppearance(tint, width, widthMode);
             }
         }
 

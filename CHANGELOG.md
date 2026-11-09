@@ -4,6 +4,13 @@ All notable changes to this package are documented here. The format follows Keep
 
 ## [Unreleased]
 
+### Added
+
+- `OutlineWidthUnit` (`屏幕相对` / `像素`) backed by the shader property `_WidthMode`; pixel mode uses a fixed device-pixel thickness, while the default keeps the screen-relative thickness that compensates for view depth and orthographic height.
+- A URP branch inside `Outline.shader` (`"RenderPipeline" = "UniversalPipeline"`, drawn by URP as `SRPDefaultUnlit`), so Built-in and URP share one shader and one material asset. Shared pass code moved to `Shaders/OutlineShared.cginc`.
+- An opt-in HDRP template at `Shaders~/HDRP/OutlineHDRP.shader`. Unity skips folders ending in `~`, so Built-in/URP projects are unaffected; HDRP projects copy it into `Shaders/` and the runtime picks it up via `Shader.Find("UPandaGF/OutLine/Outline (HDRP)")`, failing with a single error log if absent.
+- Proxy renderers are pooled (`OutlineProxyPool`, 64 per kind): toggling highlights reuses proxy objects instead of creating and destroying GameObjects.
+
 ### Changed (breaking)
 
 - `OutLine` (`Runtime/Game/OutLine`) is now an original implementation. Outline rendering no longer appends two materials to the target `Renderer`: the component creates a hidden proxy `Renderer` under each target and draws a single two-pass shader (`UPandaGF/OutLine/Outline`) that writes stencil first and then expands along the normal. Per-object color and width go through a `MaterialPropertyBlock` over five shared mode materials, so target meshes, material arrays and material instances are left untouched.

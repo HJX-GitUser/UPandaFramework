@@ -182,6 +182,51 @@ namespace UPandaGF.Tests
             Assert.That(renderer.sharedMaterials.Length, Is.EqualTo(1));
         }
 
+        [UnityTest]
+        public IEnumerator PixelWidthUnitSwitchesShaderMode()
+        {
+            Mesh source = CreateMesh();
+            MeshRenderer renderer = CreateRenderer(source);
+            OutLine outline = renderer.gameObject.AddComponent<OutLine>();
+            outline.CanFlash = false;
+            outline.OutlineWidth = 6f;
+            outline.OutlineWidthUnit = OutLine.宽度单位.像素;
+            yield return null;
+
+            Renderer proxy = FindProxy(renderer);
+            var block = new MaterialPropertyBlock();
+            proxy.GetPropertyBlock(block);
+            Assert.That(block.GetFloat("_WidthMode"), Is.EqualTo(1f));
+            Assert.That(block.GetFloat("_OutlineWidth"), Is.EqualTo(6f));
+
+            outline.OutlineWidthUnit = OutLine.宽度单位.屏幕相对;
+            yield return null;
+            proxy.GetPropertyBlock(block);
+            Assert.That(block.GetFloat("_WidthMode"), Is.EqualTo(0f));
+        }
+
+        [UnityTest]
+        public IEnumerator ProxyIsReusedFromPoolWhenToggled()
+        {
+            Mesh source = CreateMesh();
+            MeshRenderer renderer = CreateRenderer(source);
+            OutLine outline = renderer.gameObject.AddComponent<OutLine>();
+            outline.CanFlash = false;
+            yield return null;
+
+            int proxyId = FindProxy(renderer).gameObject.GetInstanceID();
+
+            outline.enabled = false;
+            yield return null;
+            Assert.That(FindProxy(renderer), Is.Null, "禁用后代理应脱离目标并回到对象池");
+
+            outline.enabled = true;
+            yield return null;
+            Renderer reused = FindProxy(renderer);
+            Assert.That(reused, Is.Not.Null);
+            Assert.That(reused.gameObject.GetInstanceID(), Is.EqualTo(proxyId), "重新启用应复用池中的代理");
+        }
+
         private static Renderer FindProxy(Renderer source)
         {
             Renderer[] renderers = source.GetComponentsInChildren<Renderer>(true);

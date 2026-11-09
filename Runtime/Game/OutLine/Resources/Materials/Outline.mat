@@ -28,6 +28,7 @@ Material:
     - _FillZTest: 8
     - _MaskZTest: 8
     - _OutlineWidth: 4
+    - _WidthMode: 0
     m_Colors:
     - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

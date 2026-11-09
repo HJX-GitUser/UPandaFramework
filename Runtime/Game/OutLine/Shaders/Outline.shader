@@ -15,8 +15,14 @@
 //    描边与剪影 Mask=LessEqual Fill=Always    可见处画轮廓，遮挡处填剪影
 //    仅剪影     Mask=LessEqual Fill=Greater   只填遮挡处的剪影（宽度 0）
 //
-//  【宽度】_OutlineWidth 是屏幕相对厚度：透视相机按视深补偿，正交相机按视野高度补偿，
-//  因此同一宽度在远近、缩放变化下看起来一样粗。换算比例 0.001 与 Inspector 的 0~200 对应。
+//  【宽度】_WidthMode = 0 时 _OutlineWidth 是屏幕相对厚度（透视按视深、正交按视野高度
+//  补偿，远近与缩放观感一致）；_WidthMode = 1 时按设备像素定宽。
+//
+//  【渲染管线】本文件带两个 SubShader：
+//    · 第一个打 "RenderPipeline" = "UniversalPipeline"，供 URP 选择；
+//      它只使用内建宏，作为 SRPDefaultUnlit 透明 Pass 由 URP 的 DrawObjectsPass 绘制；
+//    · 第二个不带标签，供 Built-in 管线使用。
+//    HDRP 不识别这两种 SubShader，需要单独启用 Shaders~/HDRP/OutlineHDRP.shader。
 // =============================================================================
 
 Shader "UPandaGF/OutLine/Outline"
@@ -27,23 +33,23 @@ Shader "UPandaGF/OutLine/Outline"
         [Enum(UnityEngine.Rendering.CompareFunction)] _FillZTest("Fill ZTest", Float) = 8
         _OutlineColor("Outline Color", Color) = (1, 1, 1, 1)
         _OutlineWidth("Outline Width", Range(0, 200)) = 4
+        [ToggleUI] _WidthMode("Width In Pixels", Float) = 0
     }
 
+    // -------------------------------------------------------------------------
+    //  URP 分支：由 "RenderPipeline" 标签选中，Pass 以 SRPDefaultUnlit 执行。
+    // -------------------------------------------------------------------------
     SubShader
     {
         Tags
         {
-            // 透明队列：深度缓冲已由场景中的不透明物体写好，遮挡关系才正确。
+            "RenderPipeline" = "UniversalPipeline"
             "Queue" = "Transparent+100"
             "RenderType" = "Transparent"
             "IgnoreProjector" = "True"
-            // 关闭动态合批：合批会把顶点烘焙到世界空间，外扩方向需要对象空间法线。
             "DisableBatching" = "True"
         }
 
-        // ---------------------------------------------------------------------
-        //  Pass 1：只写模板缓冲
-        // ---------------------------------------------------------------------
         Pass
         {
             Name "Stencil"
@@ -60,42 +66,13 @@ Shader "UPandaGF/OutLine/Outline"
             }
 
             CGPROGRAM
-            #pragma vertex Vert
-            #pragma fragment Frag
+            #pragma vertex OutlineStencilVertex
+            #pragma fragment OutlineStencilFragment
             #pragma multi_compile_instancing
-            #include "UnityCG.cginc"
-
-            struct VertexInput
-            {
-                float4 position : POSITION;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-            };
-
-            struct VertexOutput
-            {
-                float4 position : SV_POSITION;
-                UNITY_VERTEX_OUTPUT_STEREO
-            };
-
-            VertexOutput Vert(VertexInput input)
-            {
-                VertexOutput output;
-                UNITY_SETUP_INSTANCE_ID(input);
-                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
-                output.position = UnityObjectToClipPos(input.position);
-                return output;
-            }
-
-            fixed4 Frag(VertexOutput input) : SV_Target
-            {
-                return fixed4(0.0, 0.0, 0.0, 0.0);
-            }
+            #include "OutlineShared.cginc"
             ENDCG
         }
 
-        // ---------------------------------------------------------------------
-        //  Pass 2：沿法线外扩并着色
-        // ---------------------------------------------------------------------
         Pass
         {
             Name "Outline"
@@ -112,54 +89,73 @@ Shader "UPandaGF/OutLine/Outline"
             }
 
             CGPROGRAM
-            #pragma vertex Vert
-            #pragma fragment Frag
+            #pragma vertex OutlineFillVertex
+            #pragma fragment OutlineFillFragment
             #pragma multi_compile_instancing
-            #include "UnityCG.cginc"
-
-            struct VertexInput
-            {
-                float4 position : POSITION;
-                float3 normal : NORMAL;
-                UNITY_VERTEX_INPUT_INSTANCE_ID
-            };
-
-            struct VertexOutput
-            {
-                float4 position : SV_POSITION;
-                UNITY_VERTEX_OUTPUT_STEREO
-            };
-
-            fixed4 _OutlineColor;
-            float _OutlineWidth;
-
-            VertexOutput Vert(VertexInput input)
-            {
-                VertexOutput output;
-                UNITY_SETUP_INSTANCE_ID(input);
-                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
-
-                float4 clip = UnityObjectToClipPos(input.position);
-
-                // 视图空间法线：逆转置矩阵保证非等比缩放下依然垂直于表面。
-                float3 viewNormal = normalize(mul((float3x3)UNITY_MATRIX_IT_MV, input.normal));
-
-                // 透视按视深补偿，正交按视野高度补偿，使屏幕上的厚度与距离无关。
-                float depth = -UnityObjectToViewPos(input.position).z;
-                float distanceScale = unity_OrthoParams.w > 0.5 ? unity_OrthoParams.y : depth;
-
-                // 外扩量换算到裁剪空间：法线方向乘上比例后再投影，避免逐轴缩放失真。
-                float3 viewOffset = viewNormal * (distanceScale * _OutlineWidth * 0.001);
-                clip += mul(UNITY_MATRIX_P, float4(viewOffset, 0.0));
-                output.position = clip;
-                return output;
-            }
-
-            fixed4 Frag(VertexOutput input) : SV_Target
-            {
-                return _OutlineColor;
-            }
+            #include "OutlineShared.cginc"
             ENDCG
         }
     }
+
+    // -------------------------------------------------------------------------
+    //  Built-in 分支：没有 RenderPipeline 标签，Built-in 管线使用这一个。
+    // -------------------------------------------------------------------------
+    SubShader
+    {
+        Tags
+        {
+            "Queue" = "Transparent+100"
+            "RenderType" = "Transparent"
+            "IgnoreProjector" = "True"
+            "DisableBatching" = "True"
+        }
+
+        Pass
+        {
+            Name "Stencil"
+            Cull Off
+            ZTest [_MaskZTest]
+            ZWrite Off
+            ColorMask 0
+
+            Stencil
+            {
+                Ref 1
+                Comp Always
+                Pass Replace
+            }
+
+            CGPROGRAM
+            #pragma vertex OutlineStencilVertex
+            #pragma fragment OutlineStencilFragment
+            #pragma multi_compile_instancing
+            #include "OutlineShared.cginc"
+            ENDCG
+        }
+
+        Pass
+        {
+            Name "Outline"
+            Cull Off
+            ZTest [_FillZTest]
+            ZWrite Off
+            ColorMask RGB
+            Blend SrcAlpha OneMinusSrcAlpha
+
+            Stencil
+            {
+                Ref 1
+                Comp NotEqual
+            }
+
+            CGPROGRAM
+            #pragma vertex OutlineFillVertex
+            #pragma fragment OutlineFillFragment
+            #pragma multi_compile_instancing
+            #include "OutlineShared.cginc"
+            ENDCG
+        }
+    }
+
+    Fallback Off
 }
