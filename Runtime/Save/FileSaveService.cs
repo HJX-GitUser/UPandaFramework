@@ -11,6 +11,8 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Runtime.ExceptionServices;
 
 namespace UPandaGF
 {
@@ -27,31 +29,111 @@ namespace UPandaGF
                 || slot.Contains("/") || slot.Contains("\\") || slot == "." || slot == "..") throw new ArgumentException("存档槽名称无效。", nameof(slot));
             return Path.Combine(directory, slot + ".save");
         }
-        /// <summary>写入存档（自动建目录；同槽位覆盖）。</summary>
+        private static string BackupPath(string path) => path + ".bak";
+        private static string RecoveryPath(string path) => path + ".recovery";
+
+        /// <summary>事务写入主存档，成功后同步有效备份。</summary>
         public void Save<T>(string slot, T data) where T : class
         {
             string path = PathFor(slot);
             Directory.CreateDirectory(directory);
             VersionedDataSerializer.SaveFile(path, data, "save");
+            TrySynchronizeBackup(path);
         }
-        /// <summary>读取存档；文件不存在返回 null（不是异常，方便首次运行）。</summary>
+        /// <summary>先恢复中断的事务；主文件缺失或损坏时读取有效备份并尝试修复主文件。</summary>
         public T Load<T>(string slot) where T : class
         {
             string path = PathFor(slot);
-            if (!File.Exists(path)) return null;
-            bool legacy;
-            return VersionedDataSerializer.Deserialize<T>(VersionedDataSerializer.ReadFile(path), "save", out legacy);
-        }
-        /// <summary>槽位是否有存档文件。</summary>
-        public bool Exists(string slot) => File.Exists(PathFor(slot));
+            string backup = BackupPath(path);
+            Exception primaryError = null;
+            try
+            {
+                FileUpdateTransaction.Recover(RecoveryPath(path));
+                if (File.Exists(path))
+                {
+                    T value = ReadSlot<T>(path);
+                    TrySynchronizeBackup(path);
+                    return value;
+                }
+            }
+            catch (Exception e) { primaryError = e; }
 
-        /// <summary>删除槽位；不存在返回 false（不是异常）。</summary>
+            try
+            {
+                FileUpdateTransaction.Recover(RecoveryPath(backup));
+                if (File.Exists(backup))
+                {
+                    T value = ReadSlot<T>(backup);
+                    UnityEngine.Debug.LogWarning(primaryError == null
+                        ? "主存档缺失，已从备份恢复：" + path
+                        : "主存档读取失败，已从备份恢复：" + path + "\n" + primaryError.Message);
+                    TryRestorePrimary(path, backup);
+                    return value;
+                }
+            }
+            catch (Exception backupError)
+            {
+                if (primaryError != null)
+                    throw new InvalidDataException("主存档和备份均无法读取。", new AggregateException(primaryError, backupError));
+                throw;
+            }
+
+            if (primaryError != null) ExceptionDispatchInfo.Capture(primaryError).Throw();
+            return null;
+        }
+        /// <summary>主存档或备份是否存在。</summary>
+        public bool Exists(string slot)
+        {
+            string path = PathFor(slot);
+            return File.Exists(path) || File.Exists(BackupPath(path));
+        }
+
+        /// <summary>删除主存档、备份和恢复状态；不存在返回 false。</summary>
         public bool Delete(string slot)
         {
             string path = PathFor(slot);
-            if (!File.Exists(path)) return false;
+            string backup = BackupPath(path);
+            bool existed = File.Exists(path) || File.Exists(backup);
+            DeleteRecovery(RecoveryPath(path));
+            DeleteRecovery(RecoveryPath(backup));
+            File.Delete(backup);
+            File.Delete(backup + ".legacy.bak");
+            File.Delete(path + ".legacy.bak");
             File.Delete(path);
-            return true;
+            return existed;
+        }
+        private static void DeleteRecovery(string path)
+        {
+            if (Directory.Exists(path)) Directory.Delete(path, true);
+        }
+        private static T ReadSlot<T>(string path) where T : class
+        {
+            bool legacy;
+            return VersionedDataSerializer.Deserialize<T>(VersionedDataSerializer.ReadFile(path), "save", out legacy);
+        }
+        private static void TrySynchronizeBackup(string path)
+        {
+            try
+            {
+                byte[] current = VersionedDataSerializer.ReadFile(path);
+                string backup = BackupPath(path);
+                bool same = false;
+                try { same = File.Exists(backup) && VersionedDataSerializer.ReadFile(backup).SequenceEqual(current); }
+                catch (Exception e) when (e is IOException || e is InvalidDataException || e is UnauthorizedAccessException) { }
+                if (!same) VersionedDataSerializer.WriteFile(backup, current);
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogWarning("主存档已可用，但备份同步失败：" + path + "\n" + e.Message);
+            }
+        }
+        private static void TryRestorePrimary(string path, string backup)
+        {
+            try { VersionedDataSerializer.WriteFile(path, VersionedDataSerializer.ReadFile(backup)); }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogWarning("备份存档已读取，但主文件修复失败：" + path + "\n" + e.Message);
+            }
         }
     }
 }

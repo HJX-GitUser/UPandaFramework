@@ -166,7 +166,67 @@ public class P1ScopeAndInputTests
         {
             ISaveService saves = new FileSaveService(folder); Assert.IsFalse(saves.Exists("one"));
             saves.Save("one", new SaveData { score = 42 }); Assert.AreEqual(42, saves.Load<SaveData>("one").score);
+            string path = Path.Combine(folder, "one.save");
+            Assert.IsTrue(File.Exists(path + ".bak"));
             Assert.IsNull(saves.Load<SaveData>("missing")); Assert.Throws<ArgumentException>(() => saves.Save("../escape", new SaveData()));
+            Assert.IsTrue(saves.Delete("one")); Assert.IsFalse(saves.Exists("one")); Assert.IsFalse(File.Exists(path + ".bak"));
+            Assert.IsNull(saves.Load<SaveData>("one")); Assert.IsFalse(saves.Delete("one"));
+        }
+        finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+    }
+    private static void SimulateInterruptedOverwrite(string path, byte[] replacement)
+    {
+        string recovery = path + ".recovery";
+        Directory.CreateDirectory(recovery);
+        File.Copy(path, Path.Combine(recovery, "0.bak"), true);
+        using (var stream = new FileStream(Path.Combine(recovery, "journal"), FileMode.Create, FileAccess.Write, FileShare.None))
+        using (var writer = new BinaryWriter(stream))
+        {
+            writer.Write(1); writer.Write(path); writer.Write(true);
+            writer.Flush(); stream.Flush(true);
+        }
+        File.WriteAllBytes(path, replacement);
+    }
+    [Test] public void SaveServiceRecoversInterruptedCommitBeforeLoad()
+    {
+        string folder = Path.Combine(Application.temporaryCachePath, "P1Save_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            ISaveService saves = new FileSaveService(folder);
+            saves.Save("one", new SaveData { score = 42 });
+            string path = Path.Combine(folder, "one.save");
+            SimulateInterruptedOverwrite(path, VersionedDataSerializer.Serialize(new SaveData { score = 99 }, "save"));
+            Assert.AreEqual(42, saves.Load<SaveData>("one").score);
+            Assert.IsFalse(File.Exists(path + ".recovery/journal"));
+            Assert.AreEqual(42, saves.Load<SaveData>("one").score);
+        }
+        finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+    }
+    [TestCase(false)] [TestCase(true)] public void SaveServiceRestoresBackupWhenPrimaryUnavailable(bool deletePrimary)
+    {
+        string folder = Path.Combine(Application.temporaryCachePath, "P1Save_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            ISaveService saves = new FileSaveService(folder);
+            saves.Save("one", new SaveData { score = 42 }); saves.Save("one", new SaveData { score = 43 });
+            string path = Path.Combine(folder, "one.save");
+            CollectionAssert.AreEqual(File.ReadAllBytes(path), File.ReadAllBytes(path + ".bak"));
+            if (deletePrimary) File.Delete(path); else File.WriteAllBytes(path, new byte[] { 1, 2, 3 });
+            Assert.IsTrue(saves.Exists("one")); Assert.AreEqual(43, saves.Load<SaveData>("one").score);
+            Assert.IsTrue(VersionedDataSerializer.IsVersioned(VersionedDataSerializer.ReadFile(path)));
+            Assert.AreEqual(43, saves.Load<SaveData>("one").score);
+        }
+        finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+    }
+    [Test] public void SaveServiceThrowsWhenPrimaryAndBackupAreBothCorrupt()
+    {
+        string folder = Path.Combine(Application.temporaryCachePath, "P1Save_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            ISaveService saves = new FileSaveService(folder); saves.Save("one", new SaveData { score = 42 });
+            string path = Path.Combine(folder, "one.save");
+            File.WriteAllBytes(path, new byte[] { 1, 2, 3 }); File.WriteAllBytes(path + ".bak", new byte[] { 4, 5, 6 });
+            Assert.Throws<InvalidDataException>(() => saves.Load<SaveData>("one"));
         }
         finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
     }

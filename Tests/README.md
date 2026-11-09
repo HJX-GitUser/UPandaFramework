@@ -8,7 +8,7 @@
 | --- | --- |
 | 计时、配置、流程、启动指标和场景归属 | [FoundationServiceTests](EditMode/FoundationServiceTests.cs) · [场景分类](EditMode/ScenePathClassificationTests.cs) · [场景提供者](EditMode/SceneServiceAssetProviderTests.cs) |
 | 数据管线与编辑器护栏 | [Excel 二进制 v2](EditMode/ExcelBinaryV2Tests.cs) · [Excel 生成端链路](EditMode/ExcelGenerationPipelineTests.cs) · [编辑器护栏/AB 构建校验](EditMode/EditorGuardTests.cs) · [PlayerPrefs](EditMode/ExcelAndPlayerPrefsTests.cs) |
-| 启动、回滚、状态机和根装配 | [P0RegressionTests](PlayMode/P0RegressionTests.cs) · [P1RegressionTests](PlayMode/P1RegressionTests.cs) |
+| 启动、回滚、状态机、槽位存档恢复和根装配 | [P0RegressionTests](PlayMode/P0RegressionTests.cs) · [P1RegressionTests](PlayMode/P1RegressionTests.cs) |
 | 资源、请求协调、事件与销毁 | [FrameworkRegressionTests](PlayMode/FrameworkRegressionTests.cs) · [LifecycleRegressionTests](PlayMode/LifecycleRegressionTests.cs) · [CoordinationRegressionTests](PlayMode/CoordinationRegressionTests.cs) |
 | 平台、热更、序列化、回放与日志 | [PlatformCompatibilityTests](PlayMode/PlatformCompatibilityTests.cs) · [HotUpdateRegressionTests](PlayMode/HotUpdateRegressionTests.cs) · [SerializationMigrationTests](PlayMode/SerializationMigrationTests.cs) · [ReplayPerformanceTests](PlayMode/ReplayPerformanceTests.cs) · [LogConsoleRegressionTests](PlayMode/LogConsoleRegressionTests.cs) · [日志图标绑定](EditMode/LogConsoleIconTests.cs) |
 

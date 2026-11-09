@@ -24,8 +24,9 @@ namespace UPandaGF
     {
         void Save<T>(string slot, T data) where T : class;
         T Load<T>(string slot) where T : class;
+        /// <summary>主存档或其备份是否存在。</summary>
         bool Exists(string slot);
-        /// <summary>删除槽位；文件不存在返回 false。槽位校验规则与 Save/Load 一致。</summary>
+        /// <summary>删除槽位及其备份；均不存在返回 false。槽位校验规则与 Save/Load 一致。</summary>
         bool Delete(string slot);
     }
     public interface IInputService

@@ -37,7 +37,7 @@ public static class SaveExample
 }
 ```
 
-槽名传纯文件名，不附扩展名。`Load<T>` 在槽位缺失时返回 `null`，无效槽名和读取失败会抛异常。调用方应决定读取失败时的提示与回退。`FileSaveService` 的写入使用事务，当前读入口直接解析槽文件。若进程在覆盖阶段被终止，仅调用 `Load<T>` 不会先重放恢复日志。需要手工排查此情况时，保留槽文件及其 `.recovery` 目录。WebGL 的同步写入需在主线程等待 `PlatformStorage.FlushAsync()` 才能检查浏览器写回结果。 [存档实现](../FileSaveService.cs) [平台存储](../../Assets/AssetsMgr/README.md)
+槽名传纯文件名，不附扩展名。`Load<T>` 在主存档和备份均不存在时返回 `null`，无效槽名会抛异常。`FileSaveService` 的写入使用事务；读取会先重放 `<slot>.save.recovery` 中尚未完成的提交，恢复覆盖前的有效文件。正常保存或读取主文件后，会把有效内容同步到 `<slot>.save.bak`；主文件缺失、截断或校验失败时读取备份，并尝试事务化修复主文件。主文件和备份均无法读取时抛出 `InvalidDataException`，不会静默返回空存档。备份同步或主文件修复失败只记录警告，不会丢弃已经成功读取的数据。`Delete` 会同时删除主文件、备份和恢复目录，避免删除后被旧备份恢复。WebGL 的同步写入需在主线程等待 `PlatformStorage.FlushAsync()` 才能检查浏览器写回结果。 [存档实现](../FileSaveService.cs) [平台存储](../../Assets/AssetsMgr/README.md)
 
 旧 `BinaryDataMgr.Load<T>` 会先恢复事务，成功读到旧格式后尝试备份迁移。读失败记录日志并返回默认值。`BinaryDataMgr.Save` 与 `Load<T>` 的文件名应使用受控名称，旧接口没有新槽位服务的路径校验。两个入口的目录与扩展名不同，迁移旧玩家时应显式读旧槽、校验数据，再保存到新槽。 [BinaryDataMgr.cs](BinaryMgr/BinaryDataMgr.cs) [初始化组件](BinaryMgr/BinaryDataMgrInit.cs)
 
