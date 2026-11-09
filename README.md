@@ -6,9 +6,9 @@ Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行�
 
 - **UPM（推荐）**：Package Manager → Add package from git URL，按所在网络环境二选一填写：
   - Gitee：`https://gitee.com/he-jinxian/upanda-framework.git#master`
-  - GitHub：`https://github.com/HJX-GitUser/UPandaFramework.git#master`
+  - GitHub：`https://github.com/HJX-GitUser/UPandaFramework.git#main`
 
-  两个地址内容一致，`#master` 可换成具体 tag 固定版本。需要宿主已安装 Git，并确认 TextMeshPro 依赖可解析。
+  两个地址指向同一份代码，分支名取各自默认分支（Gitee 为 `master`，GitHub 为 `main`），也可把后缀换成具体 tag 固定版本。需要宿主已安装 Git，并确认 TextMeshPro 依赖可解析。
 - **源码拷贝**：把整个 `upanda-framework` 目录（含 `.meta`）复制到 `Assets/upanda-framework`。
 
 要求 **Unity 2021.3 LTS 或更高**；2021.3.45f2c1 与 2022.3.53f1c1 均已编译并跑通 EditMode/PlayMode 回归。
