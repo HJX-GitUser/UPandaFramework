@@ -1,0 +1,7 @@
+﻿start 2026-11-09T21:51:19.4581311+08:00
+unity=D:\Unity\2021.3.45f2c1\Editor\Unity.exe
+project=D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09
+synced 2026-11-09T21:51:19.5763841+08:00
+compile: exit=0 errors=0
+editmode: total=53 passed=53 failed=0 skipped=0 result=Passed
+playmode: total=324 passed=324 failed=0 skipped=0 result=Passed

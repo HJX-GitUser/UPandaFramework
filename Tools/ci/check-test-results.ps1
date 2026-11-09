@@ -1,8 +1,10 @@
 ﻿param(
-    [Parameter(Mandatory = $true)][string]$Path
+    [Parameter(Mandatory = $true)][string]$Path,
+    [int]$MinTotal = 0
 )
 
 # 校验 NUnit XML（单个文件或目录）：必须至少 1 个用例且 failed=0，否则退出码 1。
+# -MinTotal：期望的最少用例数（防止测试被误删/未收集），低于该值同样失败。
 # 单独抽出来是为了让 CI 不依赖 Unity 的退出码（Unity 在部分失败场景仍返回 0）。
 
 $ErrorActionPreference = 'Stop'
@@ -31,4 +33,5 @@ foreach ($file in $files) {
 Write-Host "汇总：total=$total passed=$passed failed=$failed skipped=$skipped"
 if ($failed -gt 0) { Write-Error "测试失败 $failed 个。"; exit 1 }
 if ($total -le 0) { Write-Error "没有执行任何测试用例。"; exit 1 }
+if ($MinTotal -gt 0 -and $total -lt $MinTotal) { Write-Error "用例数少于期望：$total < $MinTotal"; exit 1 }
 exit 0

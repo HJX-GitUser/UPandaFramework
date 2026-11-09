@@ -1,0 +1,322 @@
+Mono path[0] = 'D:/upanda_build_p0p1/Build/Windows/UPandaGF_Data/Managed'
+Mono config path = 'D:/upanda_build_p0p1/Build/Windows/MonoBleedingEdge/etc'
+[PhysX] Initialized MultithreadedTaskDispatcher with 32 workers.
+Initialize engine version: 2022.3.53f1c1 (f16e16b78e06)
+[Subsystems] Discovering subsystems at path D:/upanda_build_p0p1/Build/Windows/UPandaGF_Data/UnitySubsystems
+Forcing GfxDevice: Null
+GfxDevice: creating device client; threaded=0; jobified=0
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  0.084 seconds
+- Finished resetting the current domain, in  0.001 seconds
+ERROR: Shader Sprites/Default shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
+Microsoft Media Foundation video decoding to texture disabled: graphics device is Null, only Direct3D 11 and Direct3D 12 (only on desktop) are supported for hardware-accelerated video decoding.
+ERROR: Shader Sprites/Mask shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
+ERROR: Shader GUI/Text Shader shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
+[PhysX] Initialized MultithreadedTaskDispatcher with 32 workers.
+UnloadTime: 0.834200 ms
+[UPandaGF.UPGameRoot] EagerMonoSingleton Awake初始化
+[LazySingleton] 创建 EventCenter 实例
+<###>  22:11:28.817  ThreadID:1
+[UPGameRoot] 配置已加载：Assets/StreamingAssets/Data/GameRootConfig.json（加载方式=NoAssetBundle，热更=False，URL=http://127.0.0.1:80/）
+[UPandaGF.PublicMono] EagerMonoSingleton Awake初始化
+[UPandaGF.PublicMono] 创建单例实例(Eager)
+<###>  日志系统初始化...
+[LazySingleton] 创建 BinaryDataMgr 实例
+<###>  BinaryDataMgr Init!
+存储路径：C:/Users/HeJinxian/AppData/LocalLow/DefaultCompany/Framework Validation\Data\BinaryData\，后缀：.binary
+<###>  AssetsLoader Init
+[LazySingleton] 创建 EditorSourcesMgr 实例
+<###>  AssetsLoader Inited (Resources)
+[UPandaGF.ResourcesLoader] 创建单例实例(Lazy)
+<###>  <color=white>GameRoot Initialization completed in 38 ms!</color>
+<###>  <color=white>框架加载结束，进入游戏逻辑</color>
+<###>  SimpleLoadUI Open
+Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+ERROR: Shader UI/Default shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
+[PhysX] Initialized MultithreadedTaskDispatcher with 32 workers.
+UnloadTime: 1.749500 ms
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 1446.
+Total: 0.557900 ms (FindLiveObjects: 0.035400 ms CreateObjectMapping: 0.012600 ms MarkObjects: 0.501500 ms  DeleteObjects: 0.008200 ms)
+
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  SimpleLoadUI Close
+<###>  <color=blue>进入场景</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>
+<###>  TestLog Update
+<###>  TestLog LogWarning
+<###>  TestLog LogError
+<###>  <color=white>TestLog Log_white</color>
+<###>  <color=red>TestLog Log_red</color>
+<###>  <color=green>TestLog Log_green</color>

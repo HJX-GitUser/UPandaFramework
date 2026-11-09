@@ -35,6 +35,8 @@ jobs:
           assert pathlib.Path('CHANGELOG.md').exists(), '缺少 CHANGELOG.md'
           print('package.json ok:', pkg['name'], pkg['version'], 'unity', pkg['unity'])
           PY
+      - name: 校验程序集默认引用策略
+        run: python3 Tools/ci/check_asmdef_settings.py
 
   test:
     name: 测试 · ${{ matrix.unityVersion }} · ${{ matrix.testMode }}
@@ -46,6 +48,11 @@ jobs:
       matrix:
         unityVersion: [ '2021.3.45f2c1', '2022.3.53f1c1' ]
         testMode: [ editmode, playmode ]
+        include:
+          - testMode: editmode
+            minTests: 53
+          - testMode: playmode
+            minTests: 324
     steps:
       - name: 要求已配置宿主工程
         run: |
@@ -75,9 +82,9 @@ jobs:
           testMode: ${{ matrix.testMode }}
           artifactsPath: test-results/${{ matrix.unityVersion }}-${{ matrix.testMode }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-      - name: 结果校验（0 用例或 failed>0 直接失败）
+      - name: 结果校验（0 用例、失败或少于基线用例数直接失败）
         if: always()
-        run: bash Tools/ci/check-test-results.sh "test-results/${{ matrix.unityVersion }}-${{ matrix.testMode }}"
+        run: bash Tools/ci/check-test-results.sh "test-results/${{ matrix.unityVersion }}-${{ matrix.testMode }}" --min "${{ matrix.minTests }}"
       - name: 归档测试结果
         if: always()
         uses: actions/upload-artifact@v4
@@ -96,12 +103,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - target: StandaloneWindows64
+          - unityVersion: '2021.3.45f2c1'
+            target: StandaloneWindows64
             buildMethod: UPandaGF.GFEditor.FrameworkBuildPipeline.BuildWindows64
-          - target: Android
+          - unityVersion: '2021.3.45f2c1'
+            target: Android
             buildMethod: UPandaGF.GFEditor.FrameworkBuildPipeline.BuildAndroid
-          - target: WebGL
+          - unityVersion: '2021.3.45f2c1'
+            target: WebGL
             buildMethod: UPandaGF.GFEditor.FrameworkBuildPipeline.BuildWebGL
+          - unityVersion: '2022.3.53f1c1'
+            target: StandaloneWindows64
+            buildMethod: UPandaGF.GFEditor.FrameworkBuildPipeline.BuildWindows64
     steps:
       - uses: actions/checkout@v4
       - name: 检出宿主 Unity 工程
@@ -121,7 +134,7 @@ jobs:
           UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
         with:
           projectPath: host-project
-          unityVersion: ${{ env.UNITY_VERSION }}
+          unityVersion: ${{ matrix.unityVersion }}
           targetPlatform: ${{ matrix.target }}
           buildMethod: ${{ matrix.buildMethod }}
           buildPath: Build
@@ -130,7 +143,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.target }}
+          name: build-${{ matrix.unityVersion }}-${{ matrix.target }}
           path: |
             host-project/Build/
             host-project/*.log

@@ -53,7 +53,7 @@
 | P0-5 | 运行时修复：UGUI 日志面板不再自禁用；对象池出池重置 Transform；`UIManager.Shutdown` 调用 `OnClose` | F12 可打开面板；复用对象位置/旋转/缩放归零；关闭路径一致 | 已完成 |
 | P0-6 | 数据/网络/状态机：`PlayerPrefsDataMgr` 支持 null/数组/enum；HTTP 按方法与状态码决定重试；状态机路径仅变化时重建 | 对应 EditMode/PlayMode 用例通过（或静态核对） | 已完成 |
 | P0-7 | 包元数据：`package.json`、`CHANGELOG.md`、`OPTIMIZATION_PLAN.md`；版本 `0.2.0` | 元数据齐全；源码导入编译通过；Git URL 安装未在本轮网络验证 | 已完成（安装未验证） |
-| P0-8 | 验证：Unity 2021.3/2022.3 批处理编译 + EditMode/PlayMode 测试；记录命令、耗时、结果 | 0 编译错误；Unity 2022.3 与 2021.3 均 EditMode 24/24、PlayMode 294/294 | 已完成 |
+| P0-8 | 验证：Unity 2021.3/2022.3 批处理编译 + EditMode/PlayMode 测试；记录命令、耗时、结果 | 0 编译错误；Unity 2022.3 与 2021.3 均 EditMode 24/24、PlayMode 294/294（0.2.0 基线） | 已完成 |
 
 **P0 完成定义**：上述 8 项全部有代码/文档产出，Unity 编译通过，EditMode 测试通过；未通过项转入 P1 阻塞清单。
 
@@ -65,7 +65,7 @@
 4. **Excel 二进制 v2**：文件头（magic/version/column schema），按列名映射，兼容旧格式；生成端/运行端共用 codec 与自检。**状态：已完成（0.4.0，2026-11-08）**：`ExcelBinaryCodec` + `ExcelTableBuilder`，CRC32 自检、列名映射、v1 兼容；EditMode 覆盖编解码/损坏/列顺序。
 5. **AB 加载性能**：去掉 `Task.Yield` 轮询，改 `AsyncOperation` 完成回调；`legacyBundles` 收敛到租约模型。**状态：已完成（0.4.0，2026-11-08）**：完成回调 + `Update` 进度泵；旧接口 pin 计入租约，`ReleaseLegacyBundles()` 释放。
 6. **Editor 工具安全**：所有删除/覆盖/上传统一护栏；上传顺序改为“AB 全部完成后提交清单”；FTP 凭据不落 EditorPrefs 明文。**状态：已完成（0.4.0，2026-11-08）**：`EditorDestructiveGuard` 扩展 + 有序上传 + 密码仅会话内存/环境变量。
-7. **测试补齐**：Excel 往返、PlayerPrefs、UI 关闭、对象池、HTTP 重试策略、AB 目标校验；Editor 工具的最小集成测试。**状态：已完成（0.4.0，2026-11-08）**：EditMode 47（Excel v2/生成端/护栏/构建校验），PlayMode 302（新增 UI Shutdown、legacy pin）。
+7. **测试补齐**：Excel 往返、PlayerPrefs、UI 关闭、对象池、HTTP 重试策略、AB 目标校验；Editor 工具的最小集成测试。**状态：已完成（0.4.0，2026-11-08）**：EditMode 47（Excel v2/生成端/护栏/构建校验），PlayMode 302（新增 UI Shutdown、legacy pin）（0.4.0 基线）。
 8. **CI**：Unity batchmode + EditMode/PlayMode + Windows/Android/WebGL 构建；失败返回非 0；测试 XML 归档。**状态：已完成（0.4.0，2026-11-08）**：`Tools/ci/` 与 `.github/workflows/ci.yml`；本机验证 Windows/WebGL/Android 三平台产物，XML 门禁 0 用例/失败均非 0。
 
 ### P2：产品化与性能（6–12 周）
@@ -135,6 +135,8 @@
 
 ## 6. 当前执行记录
 
+> 下表按日期记录历史；用例数对应当日版本（0.2.0：24/294，0.4.0：47/302，0.5.0：47/302，0.6.0：48/307，当前：EditMode 53、PlayMode 324）。当前版本以 `VALIDATION.md` 与最新 `OptimzeLog/` 为准，CI 已加“用例数不得低于基线”的门禁。
+
 | 日期 | 项 | 结果 | 证据 |
 |---|---|---|---|
 | 2026-11-07 | 计划建立 | 基线 `c6af6bd`；P0 启动 | 本文件 |
@@ -143,5 +145,8 @@
 | 2026-11-08 | P1-4..P1-8 数据/性能/编辑器/测试/CI | 完成：Excel v2、AB 完成回调+租约、护栏+有序上传+密码不落盘、测试补齐、三平台 CI 脚本 | `OptimzeLog/P1-2026-11-08/`；2021.3 编译 0 错、EditMode 47/47、PlayMode 302/302；Windows/WebGL/Android 构建产物 |
 | 2026-11-08 | 0.6 日志面板自研替换 | 完成：新增 `UPandaLogConsole`（有界线程队列/主线程存储/三页签/显示设置/诊断/搜索折叠/复制导出）与 `AssetLoaddingMethod.NoAssetBundle`（跳过 AB 初始化），删除旧日志面板代码、编辑器钩子与回归测试；项目自有图标迁移到新模块；移除对应第三方声明 | `OptimzeLog/LogConsole-2026-11-08/`；2021.3/2022.3 编译 0 错、EditMode 48/48、PlayMode 307/307 |
 | 2026-11-08 | P1-1/P1-2 程序集与命名空间 | 完成：7 个运行时模块 + 组合根、4 个可选玩法程序集、Samples 隔离；全局命名空间 0 个；`RunTime`/`StateMechine`/`BineryMgr` 修正；迁移指南 | `OptimzeLog/P1Structure-2026-11-08/`；2021.3/2022.3 编译 0 错、EditMode 47/47、PlayMode 302/302 |
+| 2026-11-09 | 描边重写 / 存档加固 | 完成：`OutLine` 原创代理渲染 + 单材质双 Pass（含 URP 分支与 HDRP 模板）、代理池与增量重建；`FileSaveService` 回退收窄、迁移副本清理、`OutlineMeshCache` 按 InstanceID 清理 | `OptimzeLog/P0-P1-2026-11-09/`；2021.3 编译 0 错、EditMode 53/53、PlayMode 324/324 |
+| 2026-11-09 | 剩余项汇总 | 核对当前树并重排剩余项（P0×4、P1×6、P2×8、P3×5、新增×4）；修复 11-08 文档编码损坏 | `OptimzeLog/REMAINING-2026-11-09.md` |
+| 2026-11-09 | P0/P1 执行 | 完成 P0-1（隔离副本）/P0-4、P1-2/P1-3/P1-5/P1-6；P0-2 部分完成、P0-3 无真机阻塞、P1-1 无远端阻塞、P1-4 待解耦；修复 WebGL 构建编译错误（`PlatformStorage` 移入 Contracts） | `OptimzeLog/P0P1-2026-11-09/README.md`；53/53、324/324；Windows/Android/WebGL 构建成功 |
 
 > 维护规则：每完成一项，更新本表与 `CHANGELOG.md`；未完成项不得标记为“已解决”。

@@ -1,8 +1,18 @@
 #!/usr/bin/env bash
 # 校验 NUnit XML（文件或目录）：必须至少 1 个用例且 failed=0，否则返回非 0。
+# 用法：check-test-results.sh <xml-file-or-directory> [--min N]
+#   --min N  期望的最少用例数（防止测试被误删/未收集），低于该值同样失败。
 set -euo pipefail
 
-TARGET="${1:?用法: check-test-results.sh <xml-file-or-directory>}"
+TARGET="${1:?用法: check-test-results.sh <xml-file-or-directory> [--min N]}"
+shift || true
+MIN=0
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --min) MIN="${2:?--min 需要一个数字}"; shift 2 ;;
+        *) echo "未知参数：$1" >&2; exit 2 ;;
+    esac
+done
 
 [ -e "$TARGET" ] || { echo "测试结果不存在：$TARGET" >&2; exit 2; }
 if [ -d "$TARGET" ]; then
@@ -26,4 +36,5 @@ done
 echo "汇总：total=$TOTAL passed=$PASSED failed=$FAILED skipped=$SKIPPED"
 if [ "$FAILED" -gt 0 ]; then echo "测试失败 $FAILED 个。" >&2; exit 1; fi
 if [ "$TOTAL" -le 0 ]; then echo "没有执行任何测试用例。" >&2; exit 1; fi
+if [ "$MIN" -gt 0 ] && [ "$TOTAL" -lt "$MIN" ]; then echo "用例数少于期望：$TOTAL < $MIN" >&2; exit 1; fi
 exit 0

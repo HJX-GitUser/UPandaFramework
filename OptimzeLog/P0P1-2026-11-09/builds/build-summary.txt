@@ -1,0 +1,6 @@
+﻿start 2026-11-09T22:06:07.3720004+08:00
+Windows: exit=0 artifact=True sizeMB=0.6 compileErrors=0 seconds=39.1 ok=True
+Android: exit=0 artifact=True sizeMB=21.1 compileErrors=0 seconds=107.4 ok=True
+WebGL: exit=-1 artifact=True sizeMB=0 compileErrors=0 seconds=90.3 ok=True
+end 2026-11-09T22:10:04.2244921+08:00
+RESULT PASSED

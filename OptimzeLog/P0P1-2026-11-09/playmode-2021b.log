@@ -1,0 +1,220 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Successfully connected to the License Client on channel: "LicenseClient-HeJinxian" at "2026-11-09T14:04:50.6177335Z"
+[Licensing::Client] Error: Code 10 while verifying Licensing Client signature (process Id: 32048, path: "D:/UnityHub/Unity Hub/UnityLicensingClient_V1/Unity.Licensing.Client.exe")
+[Licensing::Module] Error: LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.16.1+e780b2e
+  Session Id:              057eef3e69a74f028b2dbceb029d399d
+  Correlation Id:          60129a582d703fbf4346886d04f07bc6
+  External correlation Id: 1758376064844248173
+  Machine Id:              Uf0aKknA3X1Fbg92Lqt0wrb8IAY=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-HeJinxian" (connect: 0.00s, validation: 0.01s, handshake: 0.04s)
+[Licensing::IpcConnector] Successfully connected to the License Notification on channel: "LicenseClient-HeJinxian-notifications" at "2026-11-09T14:04:50.6708779Z"
+Entitlement-based licensing initiated
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully updated license
+Built from '2021.3/china_unity/release' branch; Version is '2021.3.45f2c1 (8058fe21db2f) revision 8411390'; Using compiler version '192829333'; Build Type 'Release'
+OS: 'Windows 11  (10.0.26200) 64bit CoreCountrySpecific' Language: 'zh' Physical Memory: 32559 MB
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Serial number assigned to: "F4-XE9G-CVFX-Q83C-2NDU-XXXX"
+[Licensing::Module] Serial number assigned to: "33264304386069-cui-xuewen-UnitXXXX"
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1, IsPro: 1
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Serial number assigned to: "F4-XE9G-CVFX-Q83C-2NDU-XXXX"
+[Licensing::Module] Serial number assigned to: "33264304386069-cui-xuewen-UnitXXXX"
+[Package Manager] Server::Start -- Port 8164 was selected
+
+COMMAND LINE ARGUMENTS:
+D:\Unity\2021.3.45f2c1\Editor\Unity.exe
+-batchmode
+-nographics
+-projectPath
+D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09
+-runTests
+-testPlatform
+PlayMode
+-testResults
+D:\MySouce\Unity框架\upanda-framework\OptimzeLog\P0P1-2026-11-09\playmode-2021b.xml
+-logFile
+D:\MySouce\Unity框架\upanda-framework\OptimzeLog\P0P1-2026-11-09\playmode-2021b.log
+Successfully changed project path to: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09
+D:/MySouce/Unity框架/_verify/P0Validation-2026-11-09
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Player connection [64008] Host "[IP] 192.168.1.3 [Port] 55497 [Flags] 2 [Guid] 2719520257 [EditorId] 2719520257 [Version] 1048832 [Id] WindowsEditor(7,HJX) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" joined multi-casting on [225.0.0.222:54997]...
+
+Player connection [64008] Host "[IP] 192.168.1.3 [Port] 55497 [Flags] 2 [Guid] 2719520257 [EditorId] 2719520257 [Version] 1048832 [Id] WindowsEditor(7,HJX) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" joined alternative multi-casting on [225.0.0.222:34997]...
+
+AS: AutoStreaming module initializing.
+[Physics::Module] Initialized MultithreadedJobDispatcher with {0} workers.
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] 
+Registered 48 packages:
+  Packages from [https://packages.unity.cn]:
+    com.unity.collab-proxy@2.5.2 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.collab-proxy@2.5.2)
+    com.unity.ide.rider@3.0.31 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.ide.rider@3.0.31)
+    com.unity.ide.visualstudio@2.0.22 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.ide.visualstudio@2.0.22)
+    com.unity.ide.vscode@1.2.5 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.ide.vscode@1.2.5)
+    com.unity.test-framework@1.1.33 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.test-framework@1.1.33)
+    com.unity.textmeshpro@3.0.6 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.textmeshpro@3.0.6)
+    com.unity.timeline@1.6.5 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.timeline@1.6.5)
+    com.unity.visualscripting@1.9.4 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.visualscripting@1.9.4)
+    com.unity.ext.nunit@1.0.6 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.ext.nunit@1.0.6)
+    com.unity.editorcoroutines@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.editorcoroutines@1.0.0)
+    com.unity.performance.profile-analyzer@1.2.2 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.performance.profile-analyzer@1.2.2)
+    com.unity.testtools.codecoverage@1.2.6 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.testtools.codecoverage@1.2.6)
+    com.unity.settings-manager@1.0.3 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.settings-manager@1.0.3)
+  Built-in packages:
+    com.unity.feature.development@1.0.1 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.feature.development@1.0.1)
+    com.unity.ugui@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.ugui@1.0.0)
+    com.unity.modules.ai@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.ai@1.0.0)
+    com.unity.modules.androidjni@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.androidjni@1.0.0)
+    com.unity.modules.animation@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.animation@1.0.0)
+    com.unity.modules.assetbundle@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.assetbundle@1.0.0)
+    com.unity.modules.audio@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.audio@1.0.0)
+    com.unity.modules.cloth@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.cloth@1.0.0)
+    com.unity.modules.director@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.director@1.0.0)
+    com.unity.modules.imageconversion@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.imageconversion@1.0.0)
+    com.unity.modules.imgui@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.imgui@1.0.0)
+    com.unity.modules.jsonserialize@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.jsonserialize@1.0.0)
+    com.unity.modules.particlesystem@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.particlesystem@1.0.0)
+    com.unity.modules.physics@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.physics@1.0.0)
+    com.unity.modules.physics2d@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.physics2d@1.0.0)
+    com.unity.modules.screencapture@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.screencapture@1.0.0)
+    com.unity.modules.terrain@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.terrain@1.0.0)
+    com.unity.modules.terrainphysics@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.terrainphysics@1.0.0)
+    com.unity.modules.tilemap@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.tilemap@1.0.0)
+    com.unity.modules.ui@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.ui@1.0.0)
+    com.unity.modules.uielements@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.uielements@1.0.0)
+    com.unity.modules.umbra@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.umbra@1.0.0)
+    com.unity.modules.unityanalytics@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.unityanalytics@1.0.0)
+    com.unity.modules.unitywebrequest@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.unitywebrequest@1.0.0)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle@1.0.0)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.unitywebrequestaudio@1.0.0)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.unitywebrequesttexture@1.0.0)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.unitywebrequestwww@1.0.0)
+    com.unity.modules.vehicles@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.vehicles@1.0.0)
+    com.unity.modules.video@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.video@1.0.0)
+    com.unity.modules.vr@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.vr@1.0.0)
+    com.unity.modules.wind@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.wind@1.0.0)
+    com.unity.modules.xr@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.xr@1.0.0)
+    com.unity.modules.subsystems@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.subsystems@1.0.0)
+    com.unity.modules.uielementsnative@1.0.0 (location: D:\MySouce\Unity框架\_verify\P0Validation-2026-11-09\Library\PackageCache\com.unity.modules.uielementsnative@1.0.0)
+
+[Subsystems] No new subsystems found in resolved package list.
+Package Manager log level set to [2]
+[Package Manager] Done registering packages in 0.19s seconds
+Refreshing native plugins compatible for Editor in 4.50 ms, found 3 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 2021.3.45f2c1 (8058fe21db2f)
+[Subsystems] Discovering subsystems at path D:/Unity/2021.3.45f2c1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path D:/MySouce/Unity框架/_verify/P0Validation-2026-11-09/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; threaded=0; jobified=0
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Serial number assigned to: "F4-XE9G-CVFX-Q83C-2NDU-XXXX"
+[Licensing::Module] Serial number assigned to: "33264304386069-cui-xuewen-UnitXXXX"
+Initialize mono
+Mono path[0] = 'D:/Unity/2021.3.45f2c1/Editor/Data/Managed'
+Mono path[1] = 'D:/Unity/2021.3.45f2c1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'D:/Unity/2021.3.45f2c1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56108
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: D:/Unity/2021.3.45f2c1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001070 seconds.
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 1.25 ms, found 3 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.324 seconds
+Domain Reload Profiling:
+	ReloadAssembly (325ms)
+		BeginReloadAssembly (66ms)
+			ExecutionOrderSort (0ms)
+			DisableScriptedObjects (0ms)
+			BackupInstance (0ms)
+			ReleaseScriptingObjects (0ms)
+			CreateAndSetChildDomain (0ms)
+		EndReloadAssembly (207ms)
+			LoadAssemblies (66ms)
+			RebuildTransferFunctionScriptingTraits (0ms)
+			SetupTypeCache (57ms)
+			ReleaseScriptCaches (0ms)
+			RebuildScriptCaches (16ms)
+			SetupLoadedEditorAssemblies (113ms)
+				LogAssemblyErrors (0ms)
+				InitializePlatformSupportModulesInManaged (4ms)
+				SetLoadedEditorAssemblies (0ms)
+				RefreshPlugins (1ms)
+				BeforeProcessingInitializeOnLoad (1ms)
+				ProcessInitializeOnLoadAttributes (76ms)
+				ProcessInitializeOnLoadMethodAttributes (30ms)
+				AfterProcessingInitializeOnLoad (0ms)
+				EditorAssembliesLoaded (0ms)
+			ExecutionOrderSort2 (0ms)
+			AwakeInstancesAfterBackupRestoration (0ms)
+Platform modules already initialized, skipping
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Serial number assigned to: "F4-XE9G-CVFX-Q83C-2NDU-XXXX"
+[Licensing::Module] Serial number assigned to: "33264304386069-cui-xuewen-UnitXXXX"
+Application.AssetDatabase Initial Refresh Start
+Registering precompiled user dll's ...
+Registered in 0.003707 seconds.
+Assembly for Assembly Definition File 'Assets/upanda-framework/Runtime/Shader/UPandaGF.Visuals.asmdef' will not be compiled, because it has no scripts associated with it.
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:LogFormat (UnityEngine.LogType,string,object[])
+UnityEngine.Debug:LogWarningFormat (string,object[])
+UnityEditor.Scripting.ScriptCompilation.EditorCompilation:WarnIfThereAreAssembliesWithoutAnyScripts (UnityEditor.Scripting.ScriptCompilation.ScriptAssemblySettings,UnityEditor.Scripting.ScriptCompilation.ScriptAssembly[])
+UnityEditor.Scripting.ScriptCompilation.EditorCompilation:CompileScriptsWithSettings (UnityEditor.Scripting.ScriptCompilation.ScriptAssemblySettings)
+UnityEditor.Scripting.ScriptCompilation.EditorCompilation:CompileScripts (UnityEditor.Scripting.ScriptCompilation.EditorScriptCompilationOptions,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,string[])
+UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface/<>c__DisplayClass21_0:<CompileScripts>b__0 ()
+UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface:EmitExceptionAsError<UnityEditor.Scripting.ScriptCompilation.EditorCompilation/CompileStatus> (System.Func`1<UnityEditor.Scripting.ScriptCompilation.EditorCompilation/CompileStatus>,UnityEditor.Scripting.ScriptCompilation.EditorCompilation/CompileStatus)
+UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface:CompileScripts (UnityEditor.Scripting.ScriptCompilation.EditorScriptCompilationOptions,UnityEditor.BuildTargetGroup,UnityEditor.BuildTarget,int,string[])
+
+Starting: D:\Unity\2021.3.45f2c1\Editor\Data\bee_backend.exe --profile="Library/Bee/backend_profiler0.traceevents" --stdin-canary --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure ScriptAssemblies
+WorkingDir: D:/MySouce/Unity框架/_verify/P0Validation-2026-11-09
+ExitCode: 0 Duration: 0s62ms
+*** Tundra build success (0.02 seconds), 0 items updated, 428 evaluated
+AssetDatabase: script compilation time: 0.235670s
+Begin MonoManager ReloadAssembly
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 0.36 ms, found 3 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.

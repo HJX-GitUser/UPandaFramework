@@ -1,6 +1,6 @@
 {
   "name": "com.upanda.framework",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "displayName": "UPandaFramework",
   "description": "Unity 客户端基础框架：启动装配、资源与热更、UI、音频、存档、日志，以及可选玩法模块。Unity client framework with startup, assets, UI, audio, save and logging.",
   "unity": "2021.3",

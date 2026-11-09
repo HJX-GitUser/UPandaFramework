@@ -2,7 +2,7 @@
 
 All notable changes to this package are documented here. The format follows Keep a Changelog and the project uses Semantic Versioning.
 
-## [Unreleased]
+## [0.7.0] - 2026-11-09
 
 ### Added
 
@@ -32,6 +32,7 @@ All notable changes to this package are documented here. The format follows Keep
 
 ### Fixed
 
+- WebGL player builds failed to compile `UPandaGF.Diagnostics`: `PLogHelper` 的浏览器持久化分支引用了 `UPandaGF.Assets` 里的 `PlatformStorage`，而 Diagnostics 与 Assets/Core 之间存在引用环。`PlatformStorage` 已移到 `UPandaGF.Contracts`（命名空间不变），Diagnostics/Assets/Save/Replay 均可直接引用，WebGL 构建恢复。
 - Proxy pooling no longer tries to reparent a proxy while its target is being deactivated or destroyed (`Cannot set the parent of the GameObject ... while activating or deactivating the parent GameObject ...`). In that case the proxy is destroyed instead of being pooled, and a bind that Unity rejects is retried on the next frame.
 
 ## [0.6.0] - 2026-11-08

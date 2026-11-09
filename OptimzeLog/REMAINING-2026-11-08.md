@@ -1,49 +1,51 @@
-# UPandaFramework 閸撯晙缍戞导妯哄妞ょ櫢绱?026-11-08閿?
-> 閻樿埖鈧礁鐔€缁惧尅绱癭0.6.0`閿涘本褰佹禍?`541da1c`閿涙稒婀伴弫瀵告倞閺傚洦銆傛稉鐑樻煀婢х偞婀幓鎰唉閸欐ɑ娲块妴?
-> 瀹告煡鈧俺绻冮敍姝巒ity 2021.3 缂傛牞鐦?0 闁挎瑣鈧笒ditMode **48/48**閵嗕赋layMode **307/307**閿涙瞼nity 2022.3 缂傛牞鐦?0 闁挎瑣鈧?
-> 閺堫剚鏋冩禒璺哄涧閺佸鎮婇崜鈺€缍戞い鐧哥礉娑撳秳鍞悰銊ュ嚒鐎瑰本鍨氶敍娑㈢崣閺€璺哄娑撳秷顩﹂弽鍥唶娑撳搫鍑＄憴锝呭枀閵?
-## P0閿涙艾褰傜敮?妤犲矁鐦夐梼璇差敚
+> 编码修复：本文件曾因 UTF-8/GBK 二次转换损坏，2026-11-09 按可恢复内容重建；无法还原的字符以「?」保留。后续文档请直接以 UTF-8 写入。
 
-| # | 娴滃銆?| 閻滄壆濮?| 妤犲本鏁归弽鍥у櫙 |
+# UPandaFramework 剩余优化项（2026-11-08）
+> 状态基线：`0.6.0`，提�?`541da1c`；本整理文档为新增未提交变更�?
+> 已通过：Unity 2021.3 编�??0 错、EditMode **48/48**、PlayMode **307/307**；Unity 2022.3 编�??0 错�??
+> 本文件只整理剩余项，不代表已完成；验收前不要标记为已解决??
+## P0：发�?验证阻塞
+
+| # | 事�??| 现�??| 验收标准 |
 |---|---|---|---|
-| P0-1 | Framework Validation 閻?0.6.0 鏉╀胶些娑撳孩娓剁紒鍫ョ崣鐠?| 閸栧懎鍑￠崥灞绢劄閿涙稖顕氬銉р柤娴犲秵婀?Unity 缂傛牞绶崳銊﹀ⅵ瀵偓閿涘畭Start.unity` 闁插矁绻曢張澶屽繁閼存碍婀伴惃鍕＋閺冦儱绻旈棃銏℃緲鐎电钖勯敍娌梀ALIDATION.md` 娴犲秴鍟撻惈鈧?EditMode 47/47 | 閸忔娊妫?娣囨繂鐡ㄧ紓鏍帆閸?閳?閹笛嗩攽 `UPandaGF 閳?Tools 閳?鏉╀胶些閺冦儱绻旈棃銏℃緲閿涘牊绔婚悶鍡樻＋鐎电钖勯敍濉?閳?缂傛牞鐦?+ EditMode/PlayMode 鏉堟儳鍩?**48/48閵?07/307**閿涘苯鑻熼弴瀛樻煀 VALIDATION 鐠囦焦宓?|
-| P0-2 | 缁楊兛绗侀弬纭咁啅閸欘垶妫撮悳?| `THIRD_PARTY_NOTICES.md` 娴犲秴鍨張?SharpZipLib 0.86閵嗕竸ssetBundleBrowser閵嗕笒xcelDataReader 2.1.2閵嗕箑unneling Vignette閵嗕傅uickOutline閿涘奔浜掗崣濠佺秼缁夘垯绨?濮樻挳娼?Sword 缁涘绶熼弽绋款嚠缁辩姵娼?| 濮ｅ繋绔存い瑙勬箒閺勫海鈥橀悧鍫熸拱閵嗕讣HA/閺夈儲绨妴浣筋啅閸欘垵鐦夐崪灞糕偓婊冨讲閸愬秴鍨庨崣?娴犲懎鍞撮柈銊ゅ▏閻?閺囨寧宕查垾婵堢波鐠佺尨绱辨稉宥堝厴閸忣剙绱戦崚鍡楀絺閻ㄥ嫯绁禍褌绮犻崣鎴濈閸栧懎澧ч梽銈嗗灗閺囨寧宕?|
-| P0-3 | 0.6.0 閺冦儱绻旈棃銏℃緲閻喐婧€/缂傛牞绶崳銊﹀濞?| 瑜版挸澧犻崣顏呮箒 batchmode GUI 閸愭帞鍎ù瀣槸閿涘本婀崷銊ф埂閺堟椽鐛欑拠浣叫曢幗鍛婂珛閸斻劊鈧笍PI 缂傗晜鏂侀妴浣稿灛濞?鐎瑰鍙忛崠鎭掆偓浣姑粩鏍х潌閵嗕焦绮撮崝銊︽蒋閹锋牕濮╅崪灞剧箒閼规彃顕В鏂垮 | Android/iOS 閼峰啿鐨崥鍕閸欐壆婀￠張鐚寸礄閹?Device Simulator閿涘鈧俺绻冮敍姘ⅵ瀵偓/閸忔娊妫撮妴浣规偝缁鳖潿鈧胶楠囬崚顐ョ箖濠娿們鈧焦绮撮崝銊︽蒋閹锋牕濮╅妴浣稿灙鐞涖劍瀚嬮崝銊ｂ偓浣筋啎缂冾噣銆夐妴浣界槚閺傤參銆夐妴浣割嚤閸戞亽鈧焦宕查崷鐑樼缁?|
-| P0-4 | 0.6.0 娑撳閽╅崣鐗堢€鍝勬礀瑜?| 娑撳﹥顐?Windows/WebGL/Android 閺嬪嫬缂撻弰?0.5 缂佹挻鐎弮鑸垫埂閿?.6.0 閺堫亪鍣搁弬鎷岀獓 | Windows/WebGL/Android 閺嬪嫬缂撻幋鎰閿涘本妫╄箛妤佸付閸掕泛褰撮崣顖涘ⅵ瀵偓閿涘本妫?`error CS`/Missing Script/閻у€熷閸掓銆冮懗灞炬珯 |
+| P0-1 | Framework Validation ??0.6.0 迁移与最终验??| 包已同步；该工程仍�??Unity 编辑器打开，`Start.unity` 里还有缺脚本的旧日志面板对象；`VALIDATION.md` 仍写�??EditMode 47/47 | 关�??保存编辑????执行 `UPandaGF ??Tools ??迁移日志面板（清理旧对象�????编�??+ EditMode/PlayMode 达�??**48/48??07/307**，并更新 VALIDATION 证�??|
+| P0-2 | 第三方许可闭�?| `THIRD_PARTY_NOTICES.md` 仍列�?SharpZipLib 0.86、AssetBundleBrowser、ExcelDataReader 2.1.2、Tunneling Vignette、QuickOutline，以及体积�??水�??Sword 等待核对素�??| 每一项有明确版本、SHA/来源、许可证和“可再分�?仅内部使??替换”结论；不能公开分发的资产从发布包剔除或替�??|
+| P0-3 | 0.6.0 日志面板真机/编辑器手??| 当前只有 batchmode GUI 冒烟测试，未在真机验证触摸拖动、DPI 缩放、刘??安全区、横竖屏、滚动条拖动和深色对比度 | Android/iOS 至少各一台真机（??Device Simulator）通过：打开/关闭、搜索、级别过滤、滚动条拖动、列表拖动、设置页、诊断页、导出、换场清??|
+| P0-4 | 0.6.0 三平台构建回??| 上�??Windows/WebGL/Android 构建�?0.5 结构时期??.6.0 未重新跑 | Windows/WebGL/Android 构建成功，日志控制台可打开，�??`error CS`/Missing Script/白色列表背景 |
 
-## P1閿涙艾褰傜敮鍐ㄤ紣缁嬪绗屾稉鈧懛瀛樷偓?
-| # | 娴滃銆?| 閻滄壆濮?| 妤犲本鏁归弽鍥у櫙 |
+## P1：发布工程与一致�?
+| # | 事�??| 现�??| 验收标准 |
 |---|---|---|---|
-| P1-1 | CI 閸忋劎鐓╅梼鍨⒔鐞?| `.github/workflows/ci.yml` 瀹告彃鐡ㄩ崷顭掔礉娴ｅ棙婀伴張鐑樼梾閺?GitHub Actions 鏉╂劘顢戠拋鏉跨秿閿?022.3 閻?EditMode/PlayMode 閺堫亣绐?0.6.0 | 2021.3/2022.3 鑴?EditMode/PlayMode 閸忋劎璞㈤敍娑楃瑏楠炲啿褰?build job 閺堝楠囬悧鈺嬬幢婢惰精瑙﹂弮?XML/閺冦儱绻旈崣顖欑瑓鏉?|
-| P1-2 | 濞村鐦稉搴㈡瀮濡楋綀顓搁弫鎵埠娑撯偓 | `Framework Validation/VALIDATION.md` 娴犲秵璐╅張?47/47閵?02/302 娑?48/48閵?07/307閿涙矖OPTIMIZATION_PLAN` 閸樺棗褰剁悰灞藉瘶閸氼偅妫拋鈩冩殶 | 瑜版挸澧犻悧鍫熸拱閸欘亙绻氶悾娆庣婵?48/48閵?07/307閿涙稑宸婚崣鑼额攽閺勫海鈥橀弽鍥ㄦ暈閺冄呭閺堫剨绱盋I 閼奉亜濮╅弽锟犵崣 XML 閻劋绶ラ弫?|
-| P1-3 | UPM 鐎瑰顥婃宀冪槈 | 閺堫亜婀崗銊︽煀 Unity 瀹搞儳鈻奸柅姘崇箖 Git URL/閺堫剙婀?`file:` 鐎瑰顥?0.6.0 | 缁屽搫浼愮粙瀣暔鐟佸懎鎮楅敍姘辩椽鐠?0 闁挎瑣鈧梗UPandaLogConsole` Inspector 濮濓絽鐖堕妴涔PandaGF.Diagnostics` 閻?Auto Referenced 娑撳搫瀣€闁鈧焦妫╄箛妤呮桨閺夊灝褰查崚娑樼紦 |
-| P1-4 | `package.json` 鐎瑰本鏆ｉ崠?| 缂?`samples` 鐎涙顔岄敍姹糰mples 娴犲秵妲搁崠鍛敶閻╊喖缍?| 婢х偛濮?`samples` 閸忓啯鏆熼幑顕嗙礄閹存牗濯堕悪顒傜彌 Samples 閸栧拑绱氶敍娑橆嚤閸忋儲妞?Samples 閸欘垶鈧绗栨稉宥堢箻閸?Player |
-| P1-5 | 缁嬪绨梿鍡涚帛鐠併倕鈧厧娲栬ぐ?| `UPandaGF.Diagnostics` 瀹歌尪顔?`autoReferenced: true`閿涘畭FrameworkConventionValidator` 瀹稿弶顥呴弻銉幢娴ｅ棙鐥呴張澶庡殰閸斻劌瀵插ù瀣槸闁夸礁鐣?| 婢х偛濮?EditMode/CI 閺嶏繝鐛欓敍姝歎PandaGF.Diagnostics` 閻?`autoReferenced` 韫囧懘銆忔稉?true閿涘瞼宸辨径?娑?false 閺冨爼妫粋浣搞亼鐠?|
-| P1-6 | 0.6.0 閸欐垵绔烽弨璺虹啲 | 閻楀牊婀伴崣?CHANGELOG 瀹告彃鍩?0.6.0閿涘苯鐨婚張顏呭ⅵ tag/閻㈢喐鍨氶崣鎴濈鐠囧瓨妲?| 閹?tag閵嗕胶鏁撻幋?UPM release notes閿涘瞼鈥樼拋銈呭瘶閸愬懏妫?Windows 缂佹繂顕捄顖氱窞閵嗕焦妫ら張顏囩闊亙澶嶉弮鑸垫瀮娴?|
+| P1-1 | CI 全矩阵执??| `.github/workflows/ci.yml` 已存在，但本机没??GitHub Actions 运行记录??022.3 ??EditMode/PlayMode 未�??0.6.0 | 2021.3/2022.3 ??EditMode/PlayMode 全绿；三平�??build job 有产物；失败�?XML/日志可下??|
+| P1-2 | 测试与文档计数统一 | `Framework Validation/VALIDATION.md` 仍混�?47/47??02/302 ??48/48??07/307；`OPTIMIZATION_PLAN` 历史行包含旧计数 | 当前版本只保留一??48/48??07/307；历史行明确标注旧版本；CI 自动校验 XML 用例�?|
+| P1-3 | UPM 安装验证 | 未在全新 Unity 工程通过 Git URL/本�??`file:` 安�??0.6.0 | 空工程安装后：编??0 错、`UPandaLogConsole` Inspector 正常、`UPandaGF.Diagnostics` ??Auto Referenced 为勾选、日志面板可创建 |
+| P1-4 | `package.json` 完整�?| ??`samples` 字段；Samples 仍是包内目�??| 增�??`samples` 元数据（或拆独立 Samples 包）；导入�??Samples 可选且不进??Player |
+| P1-5 | 程序集默认值回�?| `UPandaGF.Diagnostics` 已�??`autoReferenced: true`，`FrameworkConventionValidator` 已检查；但没有自动化测试锁�??| 增�??EditMode/CI 校验：`UPandaGF.Diagnostics` ??`autoReferenced` 必须�?true，缺�???false 时门禁失??|
+| P1-6 | 0.6.0 发布收尾 | 版本�?CHANGELOG 已�??0.6.0，尚未打 tag/生成发布说�??| ??tag、生�?UPM release notes，确认包内�??Windows 绝对路径、无未跟踪临时文??|
 
-## P2閿涙矮鍞惍浣藉窛闁插繋绗岄幀褑鍏?
+## P2：代码质量与性�??
 
-| # | 娴滃銆?| 閻滄壆濮?閻╊喗鐖?|
+| # | 事�??| 现�??目�??|
 |---|---|---|
-| P2-1 | 閸撯晙缍戦棃娆愨偓浣稿礋娓氬鏁归弫?| `LogListenerManager.Instance`閵嗕梗TaskDataManager.Instance`閵嗕梗PlayerRewardService.Instance` 娴犲秴婀敍娑欐暭娑撶儤婀囬崝鈩冩暈閸忋儲鍨ㄩ弰搴ｂ€橀弽鍥ㄦ暈娑撳搫褰查柅澶屽负濞夋洖鐪柈銊ュ礋娓?|
-| P2-2 | 閺冦儱绻旈幒褍鍩楅崣鐗堚偓褑鍏?閸欘垳娣幎銈嗏偓?| `UPandaLogConsole.View.cs` 缁撅箑宕堢悰宀嬬幢濮ｅ繐鎶氶張?`Timestamp.ToString`閵嗕梗Message.Replace/Substring`閵嗕胶濮搁幀浣圭埉 `string.Format` 缁涘鍨庨柊宥冣偓鍌滅处鐎涙ɑ鐗稿蹇撳鐞?閸掓鏋冮張顒婄礉缁夎濮╃粩顖滄暏 Profiler 鐎佃鐦?GC閿涙稒瀵滈棁鈧幏鍡楀瀻 View 閺傚洣娆?|
-| P2-3 | 閺冦儱绻旈崶鐐垼/閻喛鍋嗗〒鍛倞 | `LogConsoleIcons` 娴犲秳绻氶悾娆庣瑝閸愬秳濞囬悽銊ф畱 `evenLogImage`閵嗕梗oddLogImage`閵嗕梗arrow` 缁涘绱╅悽銊ユ嫲鐠у嫭绨敍娑欐＋濠婃艾濮╅弶锛勵唲婢?PNG/SVG 瀹歌弓绗夌悮?skin 瀵洜鏁ら妴鍌溾€樼拋銈嗘Ц閸氾缚绻氶悾娆掝啎鐠佲剝绨粙鍨倵閿涘苯鍨归梽銈堢箥鐞涘本妞傞弮鐘垫暏鐠у嫪楠囬幋鏍ㄧ垼濞夈劋绮庣拋鎹愵吀瑜版帗銆?|
-| P2-4 | 閺冄嗙讣缁夎浼愰崗鐑解偓鈧崷?| `LogConsoleMigration.cs` 娴犲秹娼€电钖勯崥?`Reporter` 鐠囧棗鍩嗛弮褍顕挒鈽呯幢`MIGRATION-0.6.md` 娣囨繄鏆€閺?API 閺勭姴鐨犻妴鍌滅搼閹碘偓閺堝顔栨稉璇蹭紣缁嬪绺肩粔璇茬暚閹存劕鎮楅敍宀冪槑娴兼壆些闂勩倛绺肩粔璇蹭紣閸忛攱鍨ㄩ弨閫涜礋娑撯偓濞嗏剝鈧嗗壖閺?|
-| P2-5 | 閸涜棄鎮?閻╊喖缍嶆稉鈧懛瀛樷偓?| `GFEditor` 娑?`EditorTools` 閸涜棄鎮曠粚娲？鏉堝湱鏅妴涔ssetBundleTools` 閸樺棗褰堕惄顔肩秿閵嗕梗Runtime/Composition` 缂佸嫬鎮庨弽纭呬捍鐠愶綁娓剁憰浣风濞嗭紕绮烘稉鈧宕囨倞閿涙盯浼╅崗宥囨埛缂侇厽鏌婃晶鐐叉倱閸氬秴浼愰崗宄板弳閸?|
-| P2-6 | 楠炲啿褰?閻溾晜纭跺Ο鈥虫健瑜版帗銆?| 閸欘垶鈧?`Gameplay.*`閵嗕讣amples閵嗕傅uickOutline閵嗕椒鎹㈤崝?鐠囧嫬鍨?閸ョ偞鏂佸鏃傘仛娴犲秷绐℃稉璇插瘶閸氬奔绮ㄩ敍娑氣€樼拋銈呭絺鐢啫瀵橀崣顏勫瘶閸氼偊娓剁憰浣烘畱濡€虫健閿涘瞼銇氭笟瀣╃瑝鏉╂稑鍙?Player |
-| P2-7 | 缁夎濮╃粩?UI 缂佸棜濡?| 鐏忓繐鐫嗛敍?360dp閿涘銆夌粵?閹垮秳缍旈幐澶愭尦閹广垼顢戦妴浣界Т闂€鍨簚閺咁垰鎮?閸棙鐖ょ憗浣稿閵嗕浇绶崗銉︾《闁喗灏呴幖婊呭偍濡楀棎鈧焦铆鐏炲繐鍨庨弽蹇旂槷娓氬绮涢棁鈧惇鐔告簚鐠嬪啫寮?|
-| P2-8 | 閺冦儱绻旂€电厧鍤?鐠囧﹥鏌囬弫鐗堝祦 | `SaveVisible()` 閸欘亜顕遍崙鍝勭秼閸撳秴褰茬憴浣规）韫囨绱辩拠濠冩焽妞?0.5 缁夋帡鍣伴弽铚傜稻濞屸剝婀佺€电厧鍤?婢跺秴鍩楃拠濠冩焽韫囶偆鍙庨妴鍌濈槑娴兼澘顤冮崝鐘偓婊冾槻閸掓儼鐦栭弬顓濅繆閹垪鈧繂鎷扮€电厧鍤€瑰本鏆ｉ弮銉ョ箶闁銆?|
+| P2-1 | 剩余静态单例收�?| `LogListenerManager.Instance`、`TaskDataManager.Instance`、`PlayerRewardService.Instance` 仍在；改为服务注入或明确标注为可选玩法局部单??|
+| P2-2 | 日志控制台性�??可维护�?| `UPandaLogConsole.View.cs` 约千行；每帧�?`Timestamp.ToString`、`Message.Replace/Substring`、状态栏 `string.Format` 等分配。缓存格式化??列文本，移动端用 Profiler 对�??GC；按需拆分 View 文�??|
+| P2-3 | 日志图标/皮肤清理 | `LogConsoleIcons` 仍保留不再使用的 `evenLogImage`、`oddLogImage`、`arrow` 等引用和资源；旧滚动条箭??PNG/SVG 已不�?skin 引用。确认是否保留设计源稿后，删除运行时无用资产或标注仅设计归�??|
+| P2-4 | 旧迁移工具退�?| `LogConsoleMigration.cs` 仍靠对象�?`Reporter` 识别旧对象；`MIGRATION-0.6.md` 保留??API 映射。等所有宿主工程迁移完成后，评估移除迁移工具或改为一次性脚??|
+| P2-5 | 命�??目录一致�?| `GFEditor` ??`EditorTools` 命名空间边界、`AssetBundleTools` 历史目录、`Runtime/Composition` 组合根职责需要一次统一梳理；避免继续新增同名工具入??|
+| P2-6 | 平�??玩法模块归�??| 可�??`Gameplay.*`、Samples、QuickOutline、任�?评�??回放演示仍跟主包同仓；确认发布包只包含需要的模块，示例不进�??Player |
+| P2-7 | 移动�?UI 细�??| 小屏�?360dp）页�?操作按钮换行、超长场景�??堆栈裁剪、输入法遮挡搜索框、横屏分栏比例仍需真机调�??|
+| P2-8 | 日志导�??诊断数据 | `SaveVisible()` 只导出当前可见日志；诊断??0.5 秒采样但没有导�??复制诊断快照。评估增加“复制诊断信息”和导出完整日志选�??|
 
-## P3閿?.0 閸撳秳楠囬崫浣稿
+## P3??.0 前产品化
 
-| # | 娴滃銆?|
+| # | 事�??|
 |---|---|
-| P3-1 | API 閸愯崵绮ㄩ敍姝歎PandaLogConsole`閵嗕梗FrameworkDiagnosticsSnapshot`閵嗕焦婀囬崝鈩冨复閸欙絿娈戦崗顒€绱戦幋鎰喅閸嬫矮绔村▎鈥冲悑鐎硅鈧冾吀鐠?|
-| P3-2 | 鐎瑰鍙忛敍娆籘TPS 瀵搫鍩楅妴浣圭閸楁洜顒烽崥宥冣偓浣哥摠濡?HMAC閵嗕焦妫╄箛妤勫姎閺佸繈鈧焦鐎鍝勭槕闁姐儲鏁為崗?|
-| P3-3 | 閹嗗厴閿涙asePanel 缂佹垵鐣惧┃鎰晸閹存劑鈧竻inaryDataMgr 瀵櫣琚崹?reader閵嗕笒ventBus 妤傛﹢顣舵禍瀣╂閵嗕箒I/閸︾儤娅欑€电钖勫Ч?|
-| P3-4 | 閸欘垵顫囧ù瀣偓褝绱伴崥顖氬З/鐠у嫭绨?閻戭厽娲?缂冩垹绮堕幐鍥ㄧ垼缂佺喍绔寸€电厧鍤敍宀冪槚閺傤參娼伴弶鍨潔缁€鐑樻付鏉╂垿鏁婄拠?|
-| P3-5 | 閺傚洦銆傞敍姘侀崸妞烩偓婊冨嚒閻儵妾洪崚鍨涒偓婵団偓鏄忋€冮妴浣稿磳缁狙勫瘹閸楁ぜ鈧礁閽╅崣鏉垮悑鐎瑰湱鐓╅梼纰夌礄2021.3/2022.3/Unity 6閿?|
+| P3-1 | API 冻结：`UPandaLogConsole`、`FrameworkDiagnosticsSnapshot`、服务接口的公开成员做一次兼容性审??|
+| P3-2 | 安全：HTTPS 强制、清单签名、存??HMAC、日志脱敏、构建密钥注�?|
+| P3-3 | 性能：BasePanel 绑定源生成、BinaryDataMgr 强类�?reader、EventBus 高频事件、UI/场景对象�?|
+| P3-4 | 可观测性：启动/资�??热�??网络指标统一导出，诊断面板展示最近错�?|
+| P3-5 | 文档：模块“已知限制”总表、升级指南、平台兼容矩阵（2021.3/2022.3/Unity 6??|
 
-## 瀵ら缚顔呴幍褑顢戞い鍝勭碍
+## 建议执行顺序
 
-1. **P0-1** 濞撳懏甯€ Framework Validation 閺冄冩簚閺咁垰顕挒鈥宠嫙闁插秷绐?48/307閵?2. **P0-2** 閸忓牆顦╅悶?SharpZipLib / AssetBundleBrowser / ExcelDataReader 閻ㄥ嫬鍟€閸掑棗褰傜紒鎾诡啈閵?3. **P0-3/P0-4** 閻喐婧€閹靛绁?+ 娑撳閽╅崣鐗堢€鐚寸礉绾喛顓?0.6.0 閺冦儱绻旈棃銏℃緲閸欘垯姘︽禒妯糕偓?4. **P1-1/P1-2/P1-3** 鐠?CI閵嗕胶绮烘稉鈧拋鈩冩殶閵嗕胶鈹栧銉р柤 UPM 鐎瑰顥婇妴?5. 閸忔湹缍?P2 閹稿鈧粌褰傜敮鍐棑闂?> 閹嗗厴 > 娴狅絿鐖滈弫瀛樼％閳ユ繃甯规潻娑栤偓?
+1. **P0-1** 清掉 Framework Validation 旧场景对象并重�??48/307??2. **P0-2** 先处�?SharpZipLib / AssetBundleBrowser / ExcelDataReader 的再分发结论??3. **P0-3/P0-4** 真机手�??+ 三平台构建，确�??0.6.0 日志面板可交付�?4. **P1-1/P1-2/P1-3** ??CI、统一计数、空工程 UPM 安装�?5. 其�??P2 按“发布风??> 性能 > 代码整洁”推进�?
