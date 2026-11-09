@@ -62,10 +62,9 @@ D:\Unity\2022.3.53f1c1\Editor\Unity.exe -batchmode -nographics -projectPath "D:\
 3. `创建UPGameRoot` 不再自动挂 `GameLaunchExample`；对象池/交互评分演示工具移入样例 Editor 目录，生成内容改写到 `Assets/UPandaFrameworkDemos/`。
 4. 原来用 `.asmref` 并入 Samples 的 5 个模块演示目录改为独立程序集；`QuestDemoInstaller` 随任务演示移到 `Runtime/Game/TaskSystem/Demo/Editor`。
 5. 验证：2021.3 编译 0 错、EditMode 53/53、PlayMode 324/324；UPM 探针默认不导入教程示例，手动导入 Pooling 后 `UPandaGF.Samples.Pooling(.Editor).dll` 正常编译。
-6. 遗留：原 `Framework Validation` 工程又被编辑器占用，未做最后一次同步；关闭编辑器后需重新 sync 并删除 `Start.unity` 里的 `OnLoadCompleteExample` 旧对象（脚本已随示例移出包）。
+6. 原工程收尾：关闭编辑器后重新同步并复验，编译 0 错、EditMode 53/53、PlayMode 324/324；`Start.unity` 已无 `OnLoadCompleteExample`/Missing Script。（`compile-original-final.log`、`editmode-original-final.xml`、`playmode-original-final.xml`）
 ## 7. 残留与下一步
 
-- **原工程同步**：P1-4 改了包结构，`Framework Validation` 仍被编辑器占用（22:41 重新打开）；关闭后重新 sync，并删除 `Start.unity` 里的 `OnLoadCompleteExample` 旧对象，再跑一次 53/53 与 324/324。
 - **P0-2**：剩余体积云/水面等教学贴图来源确认；ABB 与 Tunneling Vignette 的本地版本号核对。
 - **P0-3**：按清单在 Android/iOS 真机执行。
 - **P1-1**：推送仓库并配置 `UNITY_PROJECT_REPOSITORY`、Unity 许可证 secrets、以及中国版镜像变量 `UNITY_IMAGE_2021_3` / `UNITY_IMAGE_2022_3`（GameCI 官方镜像不含中国版）。

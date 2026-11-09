@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="53" result="Passed" total="53" passed="53" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:46Z" duration="0.1246473">
+  <test-suite type="TestSuite" id="1071" name="Framework Validation" fullname="Framework Validation" runstate="Runnable" testcasecount="53" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:46Z" duration="0.124647" total="53" passed="53" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <test-suite type="Assembly" id="1138" name="UPandaGF.Tests.EditMode.dll" fullname="D:/MySouce/Unity框架/Framework Validation/Library/ScriptAssemblies/UPandaGF.Tests.EditMode.dll" runstate="Runnable" testcasecount="53" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:46Z" duration="0.115440" total="53" passed="53" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="53064" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+      </properties>
+      <test-suite type="TestSuite" id="1139" name="UPandaGF" fullname="UPandaGF" runstate="Runnable" testcasecount="53" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:46Z" duration="0.114951" total="53" passed="53" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1140" name="Tests" fullname="UPandaGF.Tests" runstate="Runnable" testcasecount="53" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:46Z" duration="0.111651" total="53" passed="53" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1141" name="EditMode" fullname="UPandaGF.Tests.EditMode" runstate="Runnable" testcasecount="53" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:46Z" duration="0.107857" total="53" passed="53" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1076" name="BinaryDataMgrInitPathTests" fullname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests" classname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.017348" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1081" name="DotDotSegmentIsRejected" fullname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests.DotDotSegmentIsRejected" methodname="DotDotSegmentIsRejected" classname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests" runstate="Runnable" seed="9131776" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.005879" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1079" name="EmptySavePathFallsBackToPersistentBinaryDirectory" fullname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests.EmptySavePathFallsBackToPersistentBinaryDirectory" methodname="EmptySavePathFallsBackToPersistentBinaryDirectory" classname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests" runstate="Runnable" seed="2127191500" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.002345" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1077" name="LeadingSlashSavePathStaysUnderPersistentDataPath" fullname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests.LeadingSlashSavePathStaysUnderPersistentDataPath" methodname="LeadingSlashSavePathStaysUnderPersistentDataPath" classname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests" runstate="Runnable" seed="2124686599" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000486" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1078" name="RelativeAndLeadingSlashFormsResolveToSameDirectory" fullname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests.RelativeAndLeadingSlashFormsResolveToSameDirectory" methodname="RelativeAndLeadingSlashFormsResolveToSameDirectory" classname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests" runstate="Runnable" seed="84600731" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000577" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1080" name="ResolvedPersistentPathIsIdempotent" fullname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests.ResolvedPersistentPathIsIdempotent" methodname="ResolvedPersistentPathIsIdempotent" classname="UPandaGF.Tests.EditMode.BinaryDataMgrInitPathTests" runstate="Runnable" seed="1755481227" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000326" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1082" name="EditorGuardTests" fullname="UPandaGF.Tests.EditMode.EditorGuardTests" classname="UPandaGF.Tests.EditMode.EditorGuardTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.008704" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1086" name="BundleTargetNameMatchesRuntimeConvention" fullname="UPandaGF.Tests.EditMode.EditorGuardTests.BundleTargetNameMatchesRuntimeConvention" methodname="BundleTargetNameMatchesRuntimeConvention" classname="UPandaGF.Tests.EditMode.EditorGuardTests" runstate="Runnable" seed="1063091027" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000191" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1085" name="ConfirmOverwriteAllowsNewFileWithoutDialog" fullname="UPandaGF.Tests.EditMode.EditorGuardTests.ConfirmOverwriteAllowsNewFileWithoutDialog" methodname="ConfirmOverwriteAllowsNewFileWithoutDialog" classname="UPandaGF.Tests.EditMode.EditorGuardTests" runstate="Runnable" seed="1605514365" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000511" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1084" name="IsInsideAssetsRejectsOutsidePathsAndSimilarPrefixes" fullname="UPandaGF.Tests.EditMode.EditorGuardTests.IsInsideAssetsRejectsOutsidePathsAndSimilarPrefixes" methodname="IsInsideAssetsRejectsOutsidePathsAndSimilarPrefixes" classname="UPandaGF.Tests.EditMode.EditorGuardTests" runstate="Runnable" seed="175887272" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000369" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1083" name="PathsOverlapDetectsNestedAndDisjointDirectories" fullname="UPandaGF.Tests.EditMode.EditorGuardTests.PathsOverlapDetectsNestedAndDisjointDirectories" methodname="PathsOverlapDetectsNestedAndDisjointDirectories" classname="UPandaGF.Tests.EditMode.EditorGuardTests" runstate="Runnable" seed="1386604560" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000221" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1089" name="ValidateAssetBundleOutputRejectsDirectoryWithoutManifest" fullname="UPandaGF.Tests.EditMode.EditorGuardTests.ValidateAssetBundleOutputRejectsDirectoryWithoutManifest" methodname="ValidateAssetBundleOutputRejectsDirectoryWithoutManifest" classname="UPandaGF.Tests.EditMode.EditorGuardTests" runstate="Runnable" seed="2097899967" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.004844" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1088" name="ValidateAssetBundleOutputRejectsMissingDirectory" fullname="UPandaGF.Tests.EditMode.EditorGuardTests.ValidateAssetBundleOutputRejectsMissingDirectory" methodname="ValidateAssetBundleOutputRejectsMissingDirectory" classname="UPandaGF.Tests.EditMode.EditorGuardTests" runstate="Runnable" seed="1342894790" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000266" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1087" name="ValidateAssetBundleOutputSkipsEditorModeAndRemoteMainBundle" fullname="UPandaGF.Tests.EditMode.EditorGuardTests.ValidateAssetBundleOutputSkipsEditorModeAndRemoteMainBundle" methodname="ValidateAssetBundleOutputSkipsEditorModeAndRemoteMainBundle" classname="UPandaGF.Tests.EditMode.EditorGuardTests" runstate="Runnable" seed="1748362822" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.001236" asserts="0">
+                <properties />
+                <output><![CDATA[[FrameworkBuild] 主包来源为 RemotePath，跳过随包 AB 目录检查。
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1090" name="ExcelAndPlayerPrefsTests" fullname="UPandaGF.Tests.EditMode.ExcelAndPlayerPrefsTests" classname="UPandaGF.Tests.EditMode.ExcelAndPlayerPrefsTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.018631" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1091" name="BinaryTableRoundTripsBoolStringAndFloat" fullname="UPandaGF.Tests.EditMode.ExcelAndPlayerPrefsTests.BinaryTableRoundTripsBoolStringAndFloat" methodname="BinaryTableRoundTripsBoolStringAndFloat" classname="UPandaGF.Tests.EditMode.ExcelAndPlayerPrefsTests" runstate="Runnable" seed="379848808" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.012193" asserts="0">
+                <properties />
+                <output><![CDATA[[LazySingleton] 创建 BinaryDataMgr 实例
+<###>  23:14:45.963  ThreadID:1
+BinaryDataMgr Init!
+存储路径：C:\Users\HEJINX~1\AppData\Local\Temp\upanda-excel-8b5e7aa0bf884f2ea31d64cb1ba6f2d4\，后缀：.binary
+]]></output>
+              </test-case>
+              <test-case id="1092" name="PlayerPrefsRoundTripsNullArrayAndEnum" fullname="UPandaGF.Tests.EditMode.ExcelAndPlayerPrefsTests.PlayerPrefsRoundTripsNullArrayAndEnum" methodname="PlayerPrefsRoundTripsNullArrayAndEnum" classname="UPandaGF.Tests.EditMode.ExcelAndPlayerPrefsTests" runstate="Runnable" seed="499519981" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.005851" asserts="0">
+                <properties />
+                <output><![CDATA[[LazySingleton] 创建 PlayerPrefsDataMgr 实例
+<###>  23:14:45.972  ThreadID:1
+upanda_pp_74fb70ccb5f249b08e4a7ed8755b5483_Sample_Int32_hp存储int,类型成员Int32
+<###>  23:14:45.974  ThreadID:1
+upanda_pp_74fb70ccb5f249b08e4a7ed8755b5483_Sample_Boolean_flag存储bool,类型成员Boolean
+<###>  23:14:45.974  ThreadID:1
+upanda_pp_74fb70ccb5f249b08e4a7ed8755b5483_Sample_Int32[]_values0存储int,类型成员Int32
+<###>  23:14:45.975  ThreadID:1
+upanda_pp_74fb70ccb5f249b08e4a7ed8755b5483_Sample_Int32[]_values1存储int,类型成员Int32
+<###>  23:14:45.975  ThreadID:1
+upanda_pp_74fb70ccb5f249b08e4a7ed8755b5483_Sample_Int32[]_values2存储int,类型成员Int32
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1093" name="ExcelBinaryV2Tests" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.013500" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1100" name="DecodeRejectsCrcMismatch" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.DecodeRejectsCrcMismatch" methodname="DecodeRejectsCrcMismatch" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="1665958469" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.003112" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1103" name="DecodeRejectsLegacyBytesAndReportsIt" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.DecodeRejectsLegacyBytesAndReportsIt" methodname="DecodeRejectsLegacyBytesAndReportsIt" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="1428172861" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000273" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1102" name="DecodeRejectsTrailingGarbage" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.DecodeRejectsTrailingGarbage" methodname="DecodeRejectsTrailingGarbage" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="1773780677" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000156" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1101" name="DecodeRejectsTruncatedFile" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.DecodeRejectsTruncatedFile" methodname="DecodeRejectsTruncatedFile" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="579934723" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000135" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1094" name="EncodeDecodeRoundTripsAllTypesAndKeepsContent" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.EncodeDecodeRoundTripsAllTypesAndKeepsContent" methodname="EncodeDecodeRoundTripsAllTypesAndKeepsContent" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="227052908" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000667" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1104" name="EncodeRejectsWidthMismatchAndSchemaProblems" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.EncodeRejectsWidthMismatchAndSchemaProblems" methodname="EncodeRejectsWidthMismatchAndSchemaProblems" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="1750414532" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000644" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1096" name="LoadTableMapsV2ColumnsByNameWhenColumnOrderDiffers" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.LoadTableMapsV2ColumnsByNameWhenColumnOrderDiffers" methodname="LoadTableMapsV2ColumnsByNameWhenColumnOrderDiffers" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="1254826236" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.001968" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1097" name="LoadTableV2FromFileUsesRuntimeReader" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.LoadTableV2FromFileUsesRuntimeReader" methodname="LoadTableV2FromFileUsesRuntimeReader" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="1609205389" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.003925" asserts="0">
+                <properties />
+                <output><![CDATA[<###>  23:14:45.988  ThreadID:1
+BinaryDataMgr Init!
+存储路径：C:\Users\HEJINX~1\AppData\Local\Temp\upanda-excel-v2-f1d7cf43aafd4726b6ac6c0588511411\，后缀：.binary
+]]></output>
+              </test-case>
+              <test-case id="1098" name="LoadTableV2RejectsColumnTypeMismatch" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.LoadTableV2RejectsColumnTypeMismatch" methodname="LoadTableV2RejectsColumnTypeMismatch" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="543245702" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000685" asserts="0">
+                <properties />
+                <output><![CDATA[<###>  23:14:45.991  ThreadID:1
+[BinaryDataMgr] 表 Item 的列 name 在数据类 MismatchRow 中没有对应字段，已忽略。
+]]></output>
+              </test-case>
+              <test-case id="1099" name="LoadTableV2RejectsMissingKeyField" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.LoadTableV2RejectsMissingKeyField" methodname="LoadTableV2RejectsMissingKeyField" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="1786455888" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000224" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1095" name="ParseColumnTypeIsCaseInsensitiveAndRejectsUnknown" fullname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests.ParseColumnTypeIsCaseInsensitiveAndRejectsUnknown" methodname="ParseColumnTypeIsCaseInsensitiveAndRejectsUnknown" classname="UPandaGF.Tests.EditMode.ExcelBinaryV2Tests" runstate="Runnable" seed="1035079094" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:45Z" duration="0.000226" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1105" name="ExcelGenerationPipelineTests" fullname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests" classname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:46Z" duration="0.013298" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1107" name="GeneratedBytesLoadThroughRuntimeManager" fullname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests.GeneratedBytesLoadThroughRuntimeManager" methodname="GeneratedBytesLoadThroughRuntimeManager" classname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests" runstate="Runnable" seed="1516240694" result="Passed" start-time="2026-11-09 15:14:45Z" end-time="2026-11-09 15:14:46Z" duration="0.010528" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1109" name="InvalidTypeRowAndBadCellAreRejected" fullname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests.InvalidTypeRowAndBadCellAreRejected" methodname="InvalidTypeRowAndBadCellAreRejected" classname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests" runstate="Runnable" seed="1034029023" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.001151" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1108" name="KeyColumnFallsBackToFirstColumnWithoutMarker" fullname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests.KeyColumnFallsBackToFirstColumnWithoutMarker" methodname="KeyColumnFallsBackToFirstColumnWithoutMarker" classname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests" runstate="Runnable" seed="130351867" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000191" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1110" name="MissingColumnNameIsRejected" fullname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests.MissingColumnNameIsRejected" methodname="MissingColumnNameIsRejected" classname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests" runstate="Runnable" seed="473692115" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000190" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1106" name="PipelineEncodesAndDecodesTable" fullname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests.PipelineEncodesAndDecodesTable" methodname="PipelineEncodesAndDecodesTable" classname="UPandaGF.Tests.EditMode.ExcelGenerationPipelineTests" runstate="Runnable" seed="376153195" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000374" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1111" name="FoundationServiceTests" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.018607" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1119" name="Config_OverridesAndValidation" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.Config_OverridesAndValidation" methodname="Config_OverridesAndValidation" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="1699623768" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.001706" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1118" name="Config_RegisterGetAndDuplicateGuard" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.Config_RegisterGetAndDuplicateGuard" methodname="Config_RegisterGetAndDuplicateGuard" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="255726607" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000241" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1122" name="GameFlow_EnterFailureMarksFailed" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.GameFlow_EnterFailureMarksFailed" methodname="GameFlow_EnterFailureMarksFailed" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="718727905" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.002855" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1121" name="GameFlow_GuardRejectsWithoutLeavingCurrentState" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.GameFlow_GuardRejectsWithoutLeavingCurrentState" methodname="GameFlow_GuardRejectsWithoutLeavingCurrentState" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="670763469" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000269" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1120" name="GameFlow_StartSwitchAndNotify" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.GameFlow_StartSwitchAndNotify" methodname="GameFlow_StartSwitchAndNotify" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="1443996377" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000637" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1123" name="StartupLifecycle_RecordsMetricsIncludingFailure" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.StartupLifecycle_RecordsMetricsIncludingFailure" methodname="StartupLifecycle_RecordsMetricsIncludingFailure" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="1403960185" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.006379" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1117" name="Timer_CallbackExceptionDoesNotBreakOthers" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.Timer_CallbackExceptionDoesNotBreakOthers" methodname="Timer_CallbackExceptionDoesNotBreakOthers" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="1713973720" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.002862" asserts="0">
+                <properties />
+                <output><![CDATA[
+IgnoreFailingMessages:true
+<###>  23:14:46.020  ThreadID:1
+[TimerService] 计时器回调异常：System.InvalidOperationException: boom
+  at UPandaGF.Tests.EditMode.FoundationServiceTests+<>c.<Timer_CallbackExceptionDoesNotBreakOthers>b__5_0 () [0x00000] in D:\MySouce\Unity框架\Framework Validation\Assets\upanda-framework\Tests\EditMode\FoundationServiceTests.cs:90 
+  at UPandaGF.TimerService.Fire (UPandaGF.TimerService+Entry entry) [0x00000] in D:\MySouce\Unity框架\Framework Validation\Assets\upanda-framework\Runtime\Core\Services\TimerService.cs:144 
+
+IgnoreFailingMessages:false
+]]></output>
+              </test-case>
+              <test-case id="1112" name="Timer_Delay_FiresOnlyAfterElapsed" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.Timer_Delay_FiresOnlyAfterElapsed" methodname="Timer_Delay_FiresOnlyAfterElapsed" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="246965985" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000170" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1115" name="Timer_DelayAsync_Completes" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.Timer_DelayAsync_Completes" methodname="Timer_DelayAsync_Completes" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="449072887" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000346" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1116" name="Timer_DelayAsync_HonorsCancellation" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.Timer_DelayAsync_HonorsCancellation" methodname="Timer_DelayAsync_HonorsCancellation" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="1722504254" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.001439" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1114" name="Timer_EveryRepeatsUntilCanceled" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.Timer_EveryRepeatsUntilCanceled" methodname="Timer_EveryRepeatsUntilCanceled" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="448007126" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000270" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1113" name="Timer_UnscaledRunsWhenScaledDeltaIsZero" fullname="UPandaGF.Tests.EditMode.FoundationServiceTests.Timer_UnscaledRunsWhenScaledDeltaIsZero" methodname="Timer_UnscaledRunsWhenScaledDeltaIsZero" classname="UPandaGF.Tests.EditMode.FoundationServiceTests" runstate="Runnable" seed="548874041" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000122" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1124" name="LogConsoleIconTests" fullname="UPandaGF.Tests.EditMode.LogConsoleIconTests" classname="UPandaGF.Tests.EditMode.LogConsoleIconTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.006446" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1125" name="LoaderAssignsBundledIconsAndSkin" fullname="UPandaGF.Tests.EditMode.LogConsoleIconTests.LoaderAssignsBundledIconsAndSkin" methodname="LoaderAssignsBundledIconsAndSkin" classname="UPandaGF.Tests.EditMode.LogConsoleIconTests" runstate="Runnable" seed="531991146" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.006017" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1126" name="ScenePathClassificationTests" fullname="UPandaGF.Tests.EditMode.ScenePathClassificationTests" classname="UPandaGF.Tests.EditMode.ScenePathClassificationTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.003840" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1130" name="DuplicateShortName_IsAmbiguous" fullname="UPandaGF.Tests.EditMode.ScenePathClassificationTests.DuplicateShortName_IsAmbiguous" methodname="DuplicateShortName_IsAmbiguous" classname="UPandaGF.Tests.EditMode.ScenePathClassificationTests" runstate="Runnable" seed="1544453640" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000312" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1127" name="FullPathInManifest_IsManifest" fullname="UPandaGF.Tests.EditMode.ScenePathClassificationTests.FullPathInManifest_IsManifest" methodname="FullPathInManifest_IsManifest" classname="UPandaGF.Tests.EditMode.ScenePathClassificationTests" runstate="Runnable" seed="224438567" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000174" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1129" name="ManifestWinsOverDirectlyLoadable" fullname="UPandaGF.Tests.EditMode.ScenePathClassificationTests.ManifestWinsOverDirectlyLoadable" methodname="ManifestWinsOverDirectlyLoadable" classname="UPandaGF.Tests.EditMode.ScenePathClassificationTests" runstate="Runnable" seed="1765576226" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000103" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1133" name="NonSceneAssetWithSameName_IsNotASceneMatch" fullname="UPandaGF.Tests.EditMode.ScenePathClassificationTests.NonSceneAssetWithSameName_IsNotASceneMatch" methodname="NonSceneAssetWithSameName_IsNotASceneMatch" classname="UPandaGF.Tests.EditMode.ScenePathClassificationTests" runstate="Runnable" seed="953957660" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000104" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1131" name="SceneOutsideManifest_ButLoadable_IsBuiltin" fullname="UPandaGF.Tests.EditMode.ScenePathClassificationTests.SceneOutsideManifest_ButLoadable_IsBuiltin" methodname="SceneOutsideManifest_ButLoadable_IsBuiltin" classname="UPandaGF.Tests.EditMode.ScenePathClassificationTests" runstate="Runnable" seed="135901276" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000130" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1132" name="SceneOutsideManifest_NotLoadable_IsMissing" fullname="UPandaGF.Tests.EditMode.ScenePathClassificationTests.SceneOutsideManifest_NotLoadable_IsMissing" methodname="SceneOutsideManifest_NotLoadable_IsMissing" classname="UPandaGF.Tests.EditMode.ScenePathClassificationTests" runstate="Runnable" seed="364866945" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000073" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1128" name="ShortNameInManifest_ResolvesToFullPath" fullname="UPandaGF.Tests.EditMode.ScenePathClassificationTests.ShortNameInManifest_ResolvesToFullPath" methodname="ShortNameInManifest_ResolvesToFullPath" classname="UPandaGF.Tests.EditMode.ScenePathClassificationTests" runstate="Runnable" seed="352999784" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000066" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1134" name="SceneServiceAssetProviderTests" fullname="UPandaGF.Tests.EditMode.SceneServiceAssetProviderTests" classname="UPandaGF.Tests.EditMode.SceneServiceAssetProviderTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.001027" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1136" name="AssetBundleMode_KeepsAssetProvider" fullname="UPandaGF.Tests.EditMode.SceneServiceAssetProviderTests.AssetBundleMode_KeepsAssetProvider" methodname="AssetBundleMode_KeepsAssetProvider" classname="UPandaGF.Tests.EditMode.SceneServiceAssetProviderTests" runstate="Runnable" seed="336542458" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000281" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1135" name="EditorMode_DropsAssetProvider" fullname="UPandaGF.Tests.EditMode.SceneServiceAssetProviderTests.EditorMode_DropsAssetProvider" methodname="EditorMode_DropsAssetProvider" classname="UPandaGF.Tests.EditMode.SceneServiceAssetProviderTests" runstate="Runnable" seed="1636443685" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000134" asserts="0">
+                <properties />
+              </test-case>
+              <test-case id="1137" name="EditorMode_ToleratesNullProvider" fullname="UPandaGF.Tests.EditMode.SceneServiceAssetProviderTests.EditorMode_ToleratesNullProvider" methodname="EditorMode_ToleratesNullProvider" classname="UPandaGF.Tests.EditMode.SceneServiceAssetProviderTests" runstate="Runnable" seed="2044950989" result="Passed" start-time="2026-11-09 15:14:46Z" end-time="2026-11-09 15:14:46Z" duration="0.000074" asserts="0">
+                <properties />
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
