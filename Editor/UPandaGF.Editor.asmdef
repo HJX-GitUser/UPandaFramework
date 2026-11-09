@@ -23,8 +23,8 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "Excel.dll",
-        "ICSharpCode.SharpZipLib.dll"
+        "ExcelDataReader.dll",
+        "ExcelDataReader.DataSet.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

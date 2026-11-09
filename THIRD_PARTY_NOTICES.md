@@ -6,17 +6,12 @@ UPandaFramework 的原创部分采用根目录的 MIT 许可。随附第三方�
 
 编辑器工具包含基于 Unity Asset Bundle Browser 的源码和图标。上游 `1.7.0` 许可文件署名 `Copyright © 2017 Unity Technologies ApS`，采用 Unity Companion License。该许可将使用与分发限定在其 Unity 使用范围内，并要求保留许可和版权声明。本地导入的确切上游版本仍待核对，分发时应随附对应版本的完整许可和声明。 [本地编辑器工具](Editor/AssetBundleTools/AssetEditor/) · [许可全文](Documentation~/LICENSES/Unity-Companion-License-1.0.md) · [上游 1.7.0 许可](https://github.com/Unity-Technologies/AssetBundles-Browser/blob/1.7.0/license.md)
 
-## SharpZipLib
-
-随附的 `ICSharpCode.SharpZipLib.dll` 程序集版本为 `0.86.0.518`。文件版权信息为 `Copyright 2001-2010 Mike Krueger, John Reilly`。上游说明旧版采用 GPLv2 加链接例外（可链接进闭源商业应用），并于 `1.0.0` 改用 MIT。分发该旧 DLL 时，应随附 GPLv2 与例外条款全文，并履行该库本身的对应源码提供义务。该 DLL 由 `Excel.dll`（ExcelDataReader 2.1.2）在打开 `.xlsx` 时使用，不能单独删除。 [本地 DLL](Libraries/ICSharpCode.SharpZipLib.dll) · [许可与例外](Documentation~/LICENSES/SharpZipLib-0.86-exception.md) · [GPLv2 全文](Documentation~/LICENSES/GPL-2.0.txt) · [旧版许可说明](https://icsharpcode.github.io/SharpZipLib/legacy.html) · [0.86 源码包](https://sourceforge.net/projects/sharpdevelop/files/SharpZipLib/0.86/SharpZipLib_0860_SourceSamples.zip/download)
-
-SHA-256 `40B3D590F95191F3E33E5D00E534FA40F823D9B1BB2A9AFE05F139C4E0A3AF8D`
-
 ## ExcelDataReader
 
-随附的 `Excel.dll` 产品名为 ExcelDataReader，程序集版本为 `2.1.2.0`，用于编辑器的 Excel 导表。NuGet 包 `ExcelDataReader 2.1.2` 的元数据没有 `license` 字段，且声明依赖 `SharpZipLib 0.86.0`；本地 DLL 也未附许可文本，因此**当前无法自证可再分发**。发布前必须二选一：替换为上游 MIT 版本（3.x）并重新验证导表，或取得原作者书面授权。 [本地 DLL](Libraries/Excel.dll) · [2.1.2 包元数据](https://www.nuget.org/packages/ExcelDataReader/2.1.2) · [当前上游许可（MIT）](https://github.com/ExcelDataReader/ExcelDataReader/blob/develop/LICENSE)
+随附的 `ExcelDataReader.dll` 与 `ExcelDataReader.DataSet.dll` 来自 NuGet 包 `ExcelDataReader 3.6.0` / `ExcelDataReader.DataSet 3.6.0` 的 `netstandard2.0` 目标，用于编辑器的 Excel 导表（`ExcelReaderFactory.CreateOpenXmlReader` 读取 `.xlsx`，`AsDataSet()` 转 `DataTable`）。上游采用 **MIT** 许可，NuGet 元数据已声明 `license type="expression">MIT`；该版本在 `netstandard2.0` 目标下不依赖 SharpZipLib（改用 `System.IO.Compression`），因此包内不再需要 GPL 组件。已在 Unity 2021.3 中实测读取含中文的 xlsx。 [本地 DLL](Libraries/ExcelDataReader.dll) · [DataSet DLL](Libraries/ExcelDataReader.DataSet.dll) · [3.6.0 包元数据](https://www.nuget.org/packages/ExcelDataReader/3.6.0) · [上游 MIT 许可](https://github.com/ExcelDataReader/ExcelDataReader/blob/develop/LICENSE)
 
-SHA-256 `91B44F95992F2D649CB6262C40850A7A4FE007271169AB1687002788010AA1B9`
+SHA-256 `FE5129647F6E46CDF51C59DD5198527EBA24512439DCBAB8C32D8BD1A8809F19`（ExcelDataReader.dll）
+SHA-256 `ED43E87D86EE8EA5385F55BCE311CE12427BD25C7DA5DA125404F12F5E51CF97`（ExcelDataReader.DataSet.dll）
 
 ## Unity XR Tunneling Vignette
 
@@ -24,14 +19,13 @@ SHA-256 `91B44F95992F2D649CB6262C40850A7A4FE007271169AB1687002788010AA1B9`
 
 ## 待核对的随附素材
 
-Shader 教学案例的体积云噪声贴图、水面法线贴图 `WaterBump.jpeg` 和 `Sword.rar` 中的模型及贴图，仍需确认原始来源与适用的再分发条款。体积云 Shader 中的 Amplify Shader Editor 标记说明生成工具。**在来源确认前，这些素材不得进入对外发布包**；可先移到 `Samples~` 或发布时剔除。 [Shader 教学案例](Runtime/Shader/UnityShader学习文档/案例/) · [体积云 Shader](Runtime/Shader/ShaderLibrary/Library/BuildIn/体积云/Clouds.shader)
+Shader 教学案例的体积云噪声贴图、水面法线贴图 `WaterBump.jpeg` 等，仍需确认原始来源与适用的再分发条款；体积云 Shader 中的 Amplify Shader Editor 标记说明生成工具。`Sword.rar` 已按发布决策从包内移除。**其余来源不明的素材在确认前不得进入对外发布包**，可在发布时移到 `Samples~` 或剔除。 [Shader 教学案例](Runtime/Shader/UnityShader学习文档/案例/) · [体积云 Shader](Runtime/Shader/ShaderLibrary/Library/BuildIn/体积云/Clouds.shader)
 
 ## 结论与待办
 
 | 组件 | 核对状态 | 分发结论 |
 |---|---|---|
 | Unity Asset Bundle Browser | 许可类型已确认，本地版本待核对 | 可随包分发（Unity 使用范围内），需保留许可全文 |
-| SharpZipLib 0.86 | 许可与例外已确认，源码提供义务待落实 | 可随包分发，但发布说明必须给出源码获取方式 |
-| ExcelDataReader 2.1.2 | **无法确认** | 未处理前不得对外发布导表工具 |
+| ExcelDataReader 3.6.0 | MIT，NuGet 元数据已声明 | 可随包分发，需保留 MIT 声明 |
 | Tunneling Vignette | 许可类型已确认，版本待核对 | 可随包分发（Unity 使用范围内） |
-| Shader 教学素材 | **来源不明** | 从发布包剔除或补授权后再发 |
+| Shader 教学素材 | 来源不明 | 从发布包剔除或补授权后再发；`Sword.rar` 已移除 |

@@ -8,7 +8,7 @@
 1. **描边模块原创重写**：`OutLine` 改为代理渲染 + 单材质双 Pass（先写模板、再沿法线外扩），不再向业务 Renderer 追加材质槽；新增代理对象池、增量重建、屏幕相对/像素两种宽度单位、URP 同 Shader 分支与可选 HDRP 模板。
 2. **存档加固**：`FileSaveService.Load` 只在主档确实损坏（`InvalidDataException`）时才回退备份，文件占用/权限错误直接抛出；单次读取复用字节；`Delete` 清理迁移遗留的 `*.legacy*.bak`；`OutlineMeshCache` 按 InstanceID 记账并在场景卸载时清理。
 3. **无 AB 模式**：新增 `AssetLoaddingMethod.NoAssetBundle`，启动时跳过 AssetBundle 初始化，适合小游戏与原型。
-4. **合规材料**：新增 `Documentation~/LICENSES/`，随包提供 Unity Companion License 与 GPLv2 全文，并记录 SharpZipLib/ExcelDataReader 的核对结论。
+4. **合规材料**：新增 `Documentation~/LICENSES/`，随包提供 Unity Companion License 全文与 ExcelDataReader 的 MIT 声明；导表库升级到 **ExcelDataReader 3.6.0（MIT）**，移除 GPL 的 SharpZipLib 0.86，并从包内剔除 `Sword.rar` 等来源不明的教学素材。
 
 ## 破坏性变更
 
@@ -38,5 +38,5 @@
 
 - HDRP 模板只覆盖透视相机，未在 HDRP 目标管线编译验收；URP 分支依赖项目深度/模板缓冲配置。
 - 真机（Android/iOS）日志面板手测未执行，清单见 `OptimzeLog/LogConsoleDeviceChecklist-2026-11-09.md`。
-- ExcelDataReader 2.1.2 许可无法自证，发布对外包前需替换或取得授权；SharpZipLib 0.86 需在发布说明中提供源码获取方式。
+- ExcelDataReader 已升级到 3.6.0（MIT），`SharpZipLib 0.86` 与 `Sword.rar` 已从包内移除；体积云噪声贴图、`WaterBump.jpeg` 等教学素材的来源仍需确认，确认前不得进入对外发布包。
 - 静态合批的 Renderer 不支持描边；重叠描边对象共用模板值 1，可能互相裁剪。

@@ -20,7 +20,7 @@ PlayMode 回归依赖宿主工程里的测试场景/资源（`LifecycleFixtures`
 | `sync-package.ps1` / `.sh` | 把本包镜像到宿主工程 `Assets/upanda-framework`（排除 `.git`/`Library`/`Temp`/`Logs`/`obj`）。 |
 | `invoke-unity.ps1` | 内部使用的 Unity 批处理调用器：清锁、轮询退出标记、按进程树清理、输出退出码。 |
 | `run-tests.ps1` / `.sh` | 运行 EditMode 或 PlayMode，轮询结果 XML（避免 Unity 收尾挂死），然后调用结果校验。 |
-| `check-test-results.ps1` / `.sh` | 解析 NUnit XML：`total == 0` 或 `failed > 0` 返回非 0。 |
+| `check-test-results.ps1` / `.sh` | 解析 NUnit XML：`total == 0`、`failed > 0` 或少于 `--min` 基线都返回非 0。 |
 | `build-player.ps1` / `.sh` | 调 `FrameworkBuildPipeline.BuildFromCommandLine`，按目标校验产物是否存在。 |
 
 PowerShell 脚本执行策略受限时，用 `powershell -ExecutionPolicy Bypass -File ...` 运行。
@@ -74,10 +74,23 @@ Tools/ci/build-player.sh Android /path/to/MyGame Build build-android.log
 
 工作流行为：
 
-1. 校验 `package.json` / `CHANGELOG.md` 元数据；
-2. 矩阵跑 Unity `2021.3.45f2c1` 与 `2022.3.53f1c1` 的 EditMode + PlayMode；
-3. 对每个平台（Windows / Android / WebGL）构建 Player 并归档 `Build/`；
+1. 校验 `package.json` / `CHANGELOG.md` 元数据，并执行 `check_asmdef_settings.py`（Diagnostics 必须自动引用，Samples/测试不得自动引用）；
+2. 矩阵跑 Unity `2021.3.45f2c1` 与 `2022.3.53f1c1` 的 EditMode + PlayMode，并断言用例数不低于基线（EditMode 53、PlayMode 324）；
+3. 对每个平台（Windows / Android / WebGL）构建 Player 并归档 `Build/`，2022.3 额外构建一次 Windows；
 4. 测试 XML 与构建日志作为 artifact 上传；
 5. 测试结果由 `check-test-results` 判定，0 个用例也失败。
 
 > 未配置宿主仓库时，`test`/`build` 作业会在“检出宿主工程”一步失败并提示配置 `UNITY_PROJECT_REPOSITORY`；`package` 元数据校验仍可独立通过。
+
+## 中国版 Unity 镜像
+
+GameCI 官方镜像只覆盖国际版 Unity；中国版（`2021.3.45f2c1`、`2022.3.53f1c1` 这类带 `c1` 的版本）需要自建镜像并在工作流里指定：
+
+1. 用 Unity Hub 安装对应中国版编辑器与目标平台模块（Windows/Android/WebGL），在 Linux 或 Windows 容器里制作镜像（可参考 GameCI 的 `unityci/editor` 构建脚本）。
+2. 推送到可被 Actions 拉取的仓库（GHCR / 私有 registry，私有需配置 `docker login` 步骤）。
+3. 在仓库 **Variables** 中设置：
+   - `UNITY_IMAGE_2021_3`：例如 `ghcr.io/<owner>/unity-2021.3.45f2c1:latest`
+   - `UNITY_IMAGE_2022_3`：例如 `ghcr.io/<owner>/unity-2022.3.53f1c1:latest`
+4. 工作流会把变量作为 `customImage` 传给 `game-ci/unity-test-runner` 与 `unity-builder`；**变量留空时使用 GameCI 默认镜像**（国际版）。
+
+> 镜像内需要包含对应平台的 PlaybackEngines（Android 还需 SDK/NDK/OpenJDK），否则 `build` 作业会在构建阶段失败。

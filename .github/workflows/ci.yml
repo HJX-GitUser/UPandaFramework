@@ -80,6 +80,8 @@ jobs:
           projectPath: host-project
           unityVersion: ${{ matrix.unityVersion }}
           testMode: ${{ matrix.testMode }}
+          # 中国版 Unity 需要自建镜像；未设置变量时走 GameCI 默认镜像。
+          customImage: ${{ matrix.unityVersion == '2021.3.45f2c1' && vars.UNITY_IMAGE_2021_3 || vars.UNITY_IMAGE_2022_3 }}
           artifactsPath: test-results/${{ matrix.unityVersion }}-${{ matrix.testMode }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: 结果校验（0 用例、失败或少于基线用例数直接失败）
@@ -136,6 +138,8 @@ jobs:
           projectPath: host-project
           unityVersion: ${{ matrix.unityVersion }}
           targetPlatform: ${{ matrix.target }}
+          # 中国版 Unity 需要自建镜像；未设置变量时走 GameCI 默认镜像。
+          customImage: ${{ matrix.unityVersion == '2021.3.45f2c1' && vars.UNITY_IMAGE_2021_3 || vars.UNITY_IMAGE_2022_3 }}
           buildMethod: ${{ matrix.buildMethod }}
           buildPath: Build
           allowDirtyBuild: true

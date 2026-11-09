@@ -10,7 +10,7 @@
 |---|---|
 | 已完成 | 0.2–0.6 的 P0/P1 主体；11-09 描边原创重写、存档加固、代理池停用报错修复 |
 | 剩余 | P0 四项、P1 六项、P2 八项、P3 五项；另有 4 项 11-09 后新增 |
-| 发布 0.7.0 的真正阻塞 | 第三方许可结论（P0-2）、真机手测（P0-3）、三平台构建（P0-4）、空工程 UPM 安装（P1-3）、版本与 tag（P1-6） |
+| 发布 0.7.0 的真正阻塞 | 真机手测（P0-3）、CI 实跑（P1-1）、Samples 隔离（P1-4）；许可与构建已闭环 |
 | 建议节奏 | 先 P0-1/P0-4 复验，再许可与真机，然后版本/tag 与 CI 实跑；P2 按“发布风险 > 性能 > 整洁”推进 |
 
 ### 执行状态（2026-11-09 晚更新）
@@ -18,10 +18,10 @@
 | 项 | 状态 |
 |---|---|
 | P0-1 | 完成（隔离副本）：53/53、324/324、0 编译错误；原工程仍被编辑器占用，关闭后复跑 |
-| P0-2 | 部分完成：许可全文与声明入库，依赖链确认；`ExcelDataReader 2.1.2` 待替换/授权 |
+| P0-2 | 基本完成：ExcelDataReader 3.6.0（MIT）+ DataSet，`Sword.rar` 已移除；剩教学贴图来源与 ABB/Tunneling 版本核对 |
 | P0-3 | 阻塞：无真机；清单已交付 |
 | P0-4 | 完成：Windows / Android / WebGL 构建成功，Player 冒烟无异常 |
-| P1-1 | 阻塞：无法在本机执行 GitHub Actions；工作流与门禁已加固 |
+| P1-1 | 阻塞：工作流已支持中国版镜像变量与门禁；待推送后实跑 |
 | P1-2 | 完成：计数标注 + CI 用例数下限门禁 |
 | P1-3 | 完成（`file:` 方式）；Git URL 未验证 |
 | P1-4 | 未完成：`Samples~` 迁移需先解耦 Editor/Tests 引用 |
@@ -49,7 +49,7 @@
 | # | 事项 | 现状 / 剩余动作 | 验收标准 |
 |---|---|---|---|
 | P0-1 | 原工程最终验证 | 场景已清理并绑定新控制台；剩余：保存并关闭编辑器里的场景修改 → 在 `Framework Validation` 原工程跑编译 + EditMode + PlayMode → 更新 `VALIDATION.md` 与计划计数 | 原工程 53/53、324/324，0 编译错误 |
-| P0-2 | 第三方许可闭环 | QuickOutline 已随描边重写移除（已消除）。仍待：SharpZipLib `0.86.0.518`（GPLv2+链接例外，有源码提供义务，建议升级 1.x MIT 或移除）、AssetBundleBrowser（Unity Companion License，本地版本未核对）、ExcelDataReader `2.1.2`（许可文本未核对）、Tunneling Vignette（版本未核对）、素材（体积云贴图 / `WaterBump.jpeg` / `Sword.rar` 来源未知） | 每项有版本、SHA/来源、许可证和“可再分发 / 仅内部 / 替换”结论；不可公开分发的资产从发布包剔除 |
+| P0-2 | 第三方许可闭环 | 已完成：QuickOutline 移除、ExcelDataReader 3.6.0 + DataSet 3.6.0（MIT，实测中文 xlsx）、SharpZipLib 0.86 删除、`Sword.rar` 移除、许可全文入库。仍待：AssetBundleBrowser 本地版本、Tunneling Vignette 版本、体积云/`WaterBump.jpeg` 等教学贴图来源 | 剩余三项有版本与来源结论；来源不明素材不得进入发布包 |
 | P0-3 | 日志面板真机手测 | 目前只有 batchmode GUI 冒烟测试；触摸拖动、DPI、刘海安全区、横竖屏、滚动条拖动、深色对比度未验证 | Android/iOS 至少各一台（或 Device Simulator）通过：开关、搜索、级别过滤、滚动条/列表拖动、设置页、诊断页、导出、换场清理 |
 | P0-4 | 当前树三平台构建 | 上次三平台产物是 0.5 结构期；11-09 改动了 Outline Shader 与存档路径 | Windows/WebGL/Android 构建成功、可启动并打开控制台，无 `error CS` / Missing Script / 白底列表 |
 

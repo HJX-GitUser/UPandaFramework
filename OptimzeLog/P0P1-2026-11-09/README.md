@@ -1,7 +1,7 @@
 # P0/P1 执行记录（2026-11-09）
 
 > 目标：按 `../REMAINING-2026-11-09.md` 的建议顺序执行 P0 与 P1，并留下可复现证据。
-> 结果：P0-1/P0-4 完成（P0-1 在隔离副本，原工程待关闭编辑器复跑）；P0-2 部分完成（待许可决策）；P0-3 阻塞（无真机）。P1-2/P1-3/P1-5/P1-6 完成；P1-1 阻塞（无远端 Actions）；P1-4 未完成（需先解耦 Sample 引用）。
+> 结果：P0-1/P0-4 完成（P0-1 已在原工程复跑）；P0-2 基本完成（ExcelDataReader 已换 MIT、Sword.rar 已移除）；P0-3 阻塞（无真机）。P1-2/P1-3/P1-5/P1-6 完成；P1-1 阻塞（无远端 Actions）；P1-4 未完成（需先解耦 Sample 引用）。
 
 ## 1. 环境
 
@@ -17,8 +17,8 @@
 
 | 项 | 结果 | 证据 |
 |---|---|---|
-| P0-1 原工程终验 | **完成（副本）**：编译 0 `error CS`；EditMode **53/53**；PlayMode **324/324**。原工程仍被 Unity 编辑器占用，关闭编辑器后按第 5 节命令复跑即可 | `compile-2021b.log` · `editmode-2021b.xml` · `playmode-2021c.xml` |
-| P0-2 第三方许可 | **部分完成**：许可全文入库（`Documentation~/LICENSES/`）、声明更新、依赖链确认（`Excel.dll` 2.1.2 → `SharpZipLib 0.86`）。`ExcelDataReader 2.1.2` 的 NuGet 元数据无许可字段，仍需替换或取得授权；教学素材来源仍未确认 | `THIRD_PARTY_NOTICES.md` · `Documentation~/LICENSES/` |
+| P0-1 原工程终验 | **完成（原工程）**：编辑器关闭后在 `Framework Validation` 直接复跑，编译 0 `error CS`；EditMode **53/53**；PlayMode **324/324**（与隔离副本结果一致） | `compile-original.log` · `editmode-original.xml` · `playmode-original.xml` |
+| P0-2 第三方许可 | **基本完成**：许可全文入库；`ExcelDataReader` 升级为 3.6.0 + DataSet 3.6.0（MIT，含中文 xlsx 实测），删除 GPL 的 `SharpZipLib 0.86`；`Sword.rar` 已移除。剩余：体积云/水面等教学贴图来源待确认，ABB/Tunneling 版本待核对 | `THIRD_PARTY_NOTICES.md` · `Documentation~/LICENSES/` · `excel-probe.log` |
 | P0-3 真机手测 | **阻塞**：本机无 Android/iOS 设备。验收清单已交付 | `../LogConsoleDeviceChecklist-2026-11-09.md` |
 | P0-4 三平台构建 | **完成**（2022.3）：Windows 39s / Android 107s（APK 21.1 MB）/ WebGL 90s，均 0 编译错误；Windows Player 冒烟无异常，配置以 `NoAssetBundle` 加载 | `builds/build-summary.txt` · `builds/build-*.log` · `builds/player-windows-final.log` |
 
@@ -26,7 +26,7 @@
 
 | 项 | 结果 | 证据 |
 |---|---|---|
-| P1-1 CI 实跑 | **阻塞**：本机无法执行 GitHub Actions（需要远端仓库、`UNITY_PROJECT_REPOSITORY` 与 Unity 许可证 secrets）。工作流已修正为 2021.3/2022.3 双版本构建矩阵，并接入新的门禁；本地已通过 YAML 解析、Shell 语法与脚本干跑 | `.github/workflows/ci.yml` · `Tools/ci/check_asmdef_settings.py` |
+| P1-1 CI 实跑 | **阻塞**：本机无法执行 GitHub Actions。工作流已改为 2021.3/2022.3 双版本构建矩阵，接入 asmdef/用例数门禁，并支持通过 `UNITY_IMAGE_2021_3` / `UNITY_IMAGE_2022_3` 传入中国版镜像；本地已通过 YAML 解析、Shell 语法与脚本干跑 | `.github/workflows/ci.yml` · `Tools/ci/README.md` |
 | P1-2 计数与文档 | **完成**：`OPTIMIZATION_PLAN` 历史计数标注版本；`check-test-results` 支持 `--min`（用例数下限），CI 按 editmode 53 / playmode 324 设门禁 | `Tools/ci/check-test-results.ps1` · `.sh` |
 | P1-3 UPM 安装 | **完成（file: 方式）**：空工程 2021.3 通过 `file:` 安装，编译 0 错误；`Assembly-CSharp` 直接引用 `UPandaGF.Diagnostics`，证明 `autoReferenced` 生效。Git URL 方式未验证（本地提交尚未推送） | `D:\upanda_upm_probe` · 探针 `Assets/ProbeAutoReference.cs` |
 | P1-4 Samples 隔离 | **未完成**：`Samples/` 仍随包导入。迁移 `Samples~` 需要先解耦 `Editor`（3 处）与 `Tests`（`P1RegressionTests`）对 `UPandaGF.Samples` 的引用，属于接口调整，未在本轮强行改 | 决策见第 6 节 |
@@ -66,7 +66,7 @@ D:\Unity\2022.3.53f1c1\Editor\Unity.exe -batchmode -nographics -projectPath "D:\
 ## 7. 残留与下一步
 
 - **P0-1 原工程**：关闭 `Framework Validation` 的 Unity 编辑器后按第 5 节复跑，并把结果写入 `VALIDATION.md`。
-- **P0-2**：对 `ExcelDataReader 2.1.2` 做替换（3.x MIT，需重新验证导表）或取得授权；教学素材确认来源或从发布包剔除。
+- **P0-2**：剩余体积云/水面等教学贴图来源确认；ABB 与 Tunneling Vignette 的本地版本号核对。
 - **P0-3**：按清单在 Android/iOS 真机执行。
-- **P1-1**：推送仓库并配置 `UNITY_PROJECT_REPOSITORY`、Unity 许可证 secrets 后实跑；注意 game-ci 是否提供 `2021.3.45f2c1`（中国版）镜像。
+- **P1-1**：推送仓库并配置 `UNITY_PROJECT_REPOSITORY`、Unity 许可证 secrets、以及中国版镜像变量 `UNITY_IMAGE_2021_3` / `UNITY_IMAGE_2022_3`（GameCI 官方镜像不含中国版）。
 - **P1-4**：按第 6 节执行。

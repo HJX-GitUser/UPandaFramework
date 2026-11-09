@@ -14,6 +14,7 @@ All notable changes to this package are documented here. The format follows Keep
 
 ### Changed
 
+- Excel tool now ships **ExcelDataReader 3.6.0** + **ExcelDataReader.DataSet 3.6.0** (`netstandard2.0`, MIT) instead of ExcelDataReader 2.1.2 plus SharpZipLib 0.86 (GPLv2 + linking exception). The API moved to the `ExcelDataReader` namespace (`AsDataSet()` now comes from the DataSet package), the new version reads `.xlsx` through `System.IO.Compression`, and the package no longer contains a GPL component, so the SharpZipLib source-offer obligation is gone.
 - `FileSaveService.Load` only falls back to `<slot>.save.bak` when the primary file is actually corrupt (`InvalidDataException`); file-in-use and permission errors now propagate instead of possibly overwriting a newer primary with an older backup. The primary file is read once and the bytes are reused for deserialization and backup comparison.
 - `FileSaveService.Delete` also removes the `*.legacy.bak` / `*.legacy.<guid>.bak` copies that `MigrateFile` can leave behind.
 - `OutlineMeshCache` keys entries by mesh instance ID and sweeps stale entries when a scene unloads, so destroyed source meshes no longer accumulate in the static cache.
@@ -29,6 +30,8 @@ All notable changes to this package are documented here. The format follows Keep
 ### Removed
 
 - The Quick Outline attribution section in `THIRD_PARTY_NOTICES.md`; the outline module is no longer derived from it.
+- `Libraries/Excel.dll` and `Libraries/ICSharpCode.SharpZipLib.dll` (replaced by `Libraries/ExcelDataReader.dll`), and the GPL/SharpZipLib license texts that only applied to them.
+- `Runtime/Shader/UnityShader学习文档/案例/1.纹理动画效果/Sword.rar`: an unlicensed teaching asset removed from the release package.
 
 ### Fixed
 

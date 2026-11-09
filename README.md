@@ -55,7 +55,7 @@ public static class AppEntry
 | `UPandaGF.Runtime` | 组合根（UPGameRoot / GameServices / 日志控制台），引用全部运行时模块。 |
 | `UPandaGF.Visuals` | Shader 目录边界，具体效果仍受渲染管线和材质配置约束。 |
 | `UPandaGF.Samples` | 启动、协程、池、状态机和任务示例；`autoReferenced = false`，不会进入 Player。 |
-| `UPandaGF.Editor` | Editor 工具，引用运行时、玩法、示例，以及 Excel 和 SharpZipLib DLL。 |
+| `UPandaGF.Editor` | Editor 工具，引用运行时、玩法、示例，以及 ExcelDataReader DLL（MIT）。 |
 | `UPandaGF.Tests.EditMode` / `UPandaGF.Tests` | EditMode 单元测试与 PlayMode 集成回归。 |
 
 0.4.0 → 0.5.0 的程序集、命名空间与目录迁移见 [迁移指南](Documentation~/MIGRATION-0.5.md)；业务代码需要把 `using UPandaGF.RunTime.*` / `ReplaySystem` / `AssetBundleBrowser` 替换为新命名空间，并补充直接引用的模块程序集。日志面板替换见 [0.6 迁移指南](Documentation~/MIGRATION-0.6.md)。
