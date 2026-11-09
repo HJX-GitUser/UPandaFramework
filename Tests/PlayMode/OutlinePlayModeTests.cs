@@ -227,6 +227,31 @@ namespace UPandaGF.Tests
             Assert.That(reused.gameObject.GetInstanceID(), Is.EqualTo(proxyId), "重新启用应复用池中的代理");
         }
 
+        [UnityTest]
+        public IEnumerator RebuildReusesUnaffectedTargets()
+        {
+            Mesh source = CreateMesh();
+            var root = new GameObject("Outline root");
+            fixtures.Add(root);
+            OutLine outline = root.AddComponent<OutLine>();
+            outline.CanFlash = false;
+
+            MeshRenderer first = CreateRenderer(source);
+            first.transform.SetParent(root.transform, false);
+            yield return null;
+            Assert.That(outline.TargetCount, Is.EqualTo(1));
+            int proxyId = FindProxy(first).gameObject.GetInstanceID();
+
+            // 新增一个子物体只应新增绑定，已有代理不应被销毁重建。
+            MeshRenderer second = CreateRenderer(source);
+            second.transform.SetParent(root.transform, false);
+            yield return null;
+
+            Assert.That(outline.TargetCount, Is.EqualTo(2));
+            Assert.That(FindProxy(first).gameObject.GetInstanceID(), Is.EqualTo(proxyId),
+                "未受影响的代理应复用，避免整树重建");
+        }
+
         private static Renderer FindProxy(Renderer source)
         {
             Renderer[] renderers = source.GetComponentsInChildren<Renderer>(true);

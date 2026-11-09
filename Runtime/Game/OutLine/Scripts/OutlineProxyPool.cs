@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UPandaGF.Gameplay
 {
-    /// <summary>代理渲染器的种类：普通网格或蒙皮网格。</summary>
+    /// <summary>浠ｇ悊娓叉煋鍣ㄧ殑绉嶇被锛氭櫘閫氱綉鏍兼垨钂欑毊缃戞牸銆?/summary>
     internal enum OutlineProxyKind
     {
         Mesh,
@@ -11,10 +11,10 @@ namespace UPandaGF.Gameplay
     }
 
     /// <summary>
-    /// 代理对象池。频繁开关高亮时复用代理 Renderer，避免反复创建/销毁 GameObject 与组件。
-    /// 归还时把代理移到隐藏的池根节点、清空网格与骨骼引用、停用对象；
-    /// 池根节点带 DontSave，不随场景保存，也不随场景卸载销毁。
-    /// 数量按种类封顶，超出上限直接销毁，避免无限增长。
+    /// 浠ｇ悊瀵硅薄姹犮€傞绻佸紑鍏抽珮浜椂澶嶇敤浠ｇ悊 Renderer锛岄伩鍏嶅弽澶嶅垱寤?閿€姣?GameObject 涓庣粍浠躲€?
+    /// 褰掕繕鏃舵妸浠ｇ悊绉诲埌闅愯棌鐨勬睜鏍硅妭鐐广€佹竻绌虹綉鏍间笌楠ㄩ寮曠敤銆佸仠鐢ㄥ璞★紱
+    /// 姹犳牴鑺傜偣甯?DontSave锛屼笉闅忓満鏅繚瀛橈紝涔熶笉闅忓満鏅嵏杞介攢姣併€?
+    /// 鏁伴噺鎸夌绫诲皝椤讹紝瓒呭嚭涓婇檺鐩存帴閿€姣侊紝閬垮厤鏃犻檺澧為暱銆?
     /// </summary>
     internal static class OutlineProxyPool
     {
@@ -29,11 +29,11 @@ namespace UPandaGF.Gameplay
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetOnLoad()
         {
-            // 关闭域重载时静态字段会跨 Play 保留，这里把上一轮的对象清掉。
+            // 鍏抽棴鍩熼噸杞芥椂闈欐€佸瓧娈典細璺?Play 淇濈暀锛岃繖閲屾妸涓婁竴杞殑瀵硅薄娓呮帀銆?
             Clear();
         }
 
-        /// <summary>取一个代理对象并挂到目标下；返回的对象一定是启用状态。</summary>
+        /// <summary>鍙栦竴涓唬鐞嗗璞″苟鎸傚埌鐩爣涓嬶紱杩斿洖鐨勫璞′竴瀹氭槸鍚敤鐘舵€併€?/summary>
         internal static GameObject Rent(OutlineProxyKind kind, OutLine owner, Transform parent)
         {
             Stack<GameObject> pool = PoolOf(kind);
@@ -62,7 +62,7 @@ namespace UPandaGF.Gameplay
             return instance;
         }
 
-        /// <summary>归还代理：清掉对网格/骨骼/属性的引用后放进池里复用。</summary>
+        /// <summary>褰掕繕浠ｇ悊锛氭竻鎺夊缃戞牸/楠ㄩ/灞炴€х殑寮曠敤鍚庢斁杩涙睜閲屽鐢ㄣ€?/summary>
         internal static void Return(GameObject instance, OutlineProxyKind kind)
         {
             if (instance == null)
@@ -96,6 +96,8 @@ namespace UPandaGF.Gameplay
             }
 
             instance.SetActive(false);
+            // 褰掕繕鏃舵仮澶嶉殣钘忥細璋冭瘯寮€鍏虫墦寮€杩囩殑浠ｇ悊涓嶈兘鐣欏湪 Hierarchy 閲屻€?
+            instance.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
             Transform poolRoot = Root;
             if (poolRoot != null)
             {
@@ -172,7 +174,7 @@ namespace UPandaGF.Gameplay
                 if (root == null)
                 {
                     var instance = new GameObject("[OutLine Proxy Pool]");
-                    // DontSave：不写入场景，也不随场景切换被销毁。
+                    // DontSave锛氫笉鍐欏叆鍦烘櫙锛屼篃涓嶉殢鍦烘櫙鍒囨崲琚攢姣併€?
                     instance.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
                     root = instance.transform;
                 }

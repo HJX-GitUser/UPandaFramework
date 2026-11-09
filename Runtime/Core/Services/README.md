@@ -1,4 +1,4 @@
-﻿# 应用服务与场景作用域
+# 应用服务与场景作用域
 
 资源加载就绪后，`UPGameRoot` 装配 `GameServices`，并向场景中的 `IGameServicesConsumer` 提供接口集合。使用 Unity 对象、调用场景和作用域 API 时应在主线程。接入业务时可以通过构造函数或 `Configure` 传入所需接口，测试可替换后端。 [服务契约](../../Contracts/README.md) · [装配源码](../../Composition/GameServices.cs) · [启动流程](../../Composition/GameRoot/README.md)
 
@@ -52,7 +52,7 @@ scope.Own(services.Timer.Every(1f, RefreshHud, scaled: true));
 | `Config` | 用 `Register<T>(key, value, version, validator)` 登记，`ApplyOverrides` 原地覆盖对象，`Validate` 返回问题清单。调用方自行决定 Error 是否阻断进入游戏。配置服务保留传入对象引用，覆盖按条处理，解析失败只记日志。 |
 | `Flow` | 注册 `IGameState`，用 `StartAsync` 开始，通过 `GoToAsync` 切换。依次执行进入守卫、旧状态退出、新状态进入。守卫拒绝时保留当前状态。进入失败会标记 Failed，但旧状态已执行过退出；旧状态退出本身抛错会留下 Transitioning。 |
 | `AppLifecycle` | 订阅 `PauseChanged`、`FocusChanged`、`LowMemory`、`Quitting`。后台暂停和菜单使用同一套暂停凭据。退出通知是同步的，关键存档应在退出前完成或在通知中同步保存。根节点在就绪前不转发暂停、焦点和低内存通知。 |
-| `Saves` | `Save/Load/Exists/Delete` 同步访问 `Application.persistentDataPath/Saves` 下的槽位文件。槽位名需合法，主文件与备份均缺失时返回 `null`。读取先恢复中断事务，主文件损坏时回退 `.bak`；两者均无法读取会抛出。读取旧格式时不会自动重写槽位。 |
+| `Saves` | `Save/Load/Exists/Delete` 同步访问 `Application.persistentDataPath/Saves` 下的槽位文件。槽位名需合法，主文件与备份均缺失时返回 `null`。读取先恢复中断事务；只有主文件内容损坏才回退 `.bak`，IO/权限错误直接抛出。两者均无法读取会抛 `InvalidDataException`。读取旧格式时不会自动重写槽位。 |
 
 `EnterAsync` 和 `ExitAsync` 执行期间持有流程切换闸门；后续状态切换由外部在当前切换完成后发起。根关闭时先关闭 Scenes，再退出当前流程，状态的退出清理须适配这一顺序。 [配置](ConfigService.cs) · [流程](GameFlowController.cs) · [生命周期](AppLifecycleService.cs) · [存档](../../Save/FileSaveService.cs)
 

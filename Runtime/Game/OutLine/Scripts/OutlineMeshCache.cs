@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 
 namespace UPandaGF.Gameplay
 {
@@ -10,46 +11,51 @@ namespace UPandaGF.Gameplay
     /// 把全部三角形合并到 0 号子网格，并把计算好的法线写进副本的 NORMAL 通道
     /// （不占用 UV 通道，因此不会再和模型的第二套/第四套 UV 打架）。
     /// 相同源网格 + 相同来源的组件共享同一份副本，最后一个使用者释放时才销毁。
+    ///
+    /// 键使用源网格的 InstanceID 而不是对象引用：网格被销毁后仍能安全地查询与释放，
+    /// 场景卸载时再扫一遍，清掉源网格已销毁的残留条目。
     /// </summary>
     internal static class OutlineMeshCache
     {
         private sealed class Entry
         {
-            internal Mesh Mesh;
+            internal Mesh Source;
+            internal Mesh Copy;
             internal int Users;
         }
 
-        private static readonly Dictionary<Mesh, Entry> Entries = new Dictionary<Mesh, Entry>();
+        private static readonly Dictionary<int, Entry> Entries = new Dictionary<int, Entry>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetOnLoad()
         {
-            foreach (Entry entry in Entries.Values)
-            {
-                if (entry.Mesh != null)
-                {
-                    UnityEngine.Object.Destroy(entry.Mesh);
-                }
-            }
-            Entries.Clear();
+            SceneManager.sceneUnloaded -= HandleSceneUnloaded;
+            SceneManager.sceneUnloaded += HandleSceneUnloaded;
+            Clear();
+        }
+
+        private static void HandleSceneUnloaded(Scene scene)
+        {
+            Sweep();
         }
 
         /// <summary>取一份可直接用于代理渲染的网格；调用方必须在销毁代理时调用 <see cref="Release"/>。</summary>
         internal static Mesh Acquire(Mesh source, List<Vector3> bakedNormals)
         {
-            if (ReferenceEquals(source, null))
+            if (source == null)
             {
                 return null;
             }
 
-            if (Entries.TryGetValue(source, out Entry entry) && entry.Mesh != null)
+            int id = source.GetInstanceID();
+            if (Entries.TryGetValue(id, out Entry entry) && entry.Copy != null)
             {
                 entry.Users++;
-                return entry.Mesh;
+                return entry.Copy;
             }
 
             Mesh built = Build(source, bakedNormals);
-            Entries[source] = new Entry { Mesh = built, Users = 1 };
+            Entries[id] = new Entry { Source = source, Copy = built, Users = 1 };
             return built;
         }
 
@@ -59,7 +65,9 @@ namespace UPandaGF.Gameplay
             {
                 return;
             }
-            if (!Entries.TryGetValue(source, out Entry entry))
+
+            int id = source.GetInstanceID();
+            if (!Entries.TryGetValue(id, out Entry entry))
             {
                 return;
             }
@@ -69,17 +77,63 @@ namespace UPandaGF.Gameplay
                 return;
             }
 
-            Entries.Remove(source);
-            if (entry.Mesh != null)
+            Entries.Remove(id);
+            DestroyCopy(entry.Copy);
+        }
+
+        /// <summary>清掉源网格已销毁（或副本丢失）的条目，避免跨场景累积。</summary>
+        internal static void Sweep()
+        {
+            List<int> stale = null;
+            foreach (KeyValuePair<int, Entry> pair in Entries)
             {
-                if (Application.isPlaying)
+                if (pair.Value.Source == null || pair.Value.Copy == null)
                 {
-                    UnityEngine.Object.Destroy(entry.Mesh);
+                    if (stale == null)
+                    {
+                        stale = new List<int>();
+                    }
+                    stale.Add(pair.Key);
                 }
-                else
+            }
+            if (stale == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < stale.Count; i++)
+            {
+                if (!Entries.TryGetValue(stale[i], out Entry entry))
                 {
-                    UnityEngine.Object.DestroyImmediate(entry.Mesh);
+                    continue;
                 }
+                Entries.Remove(stale[i]);
+                DestroyCopy(entry.Copy);
+            }
+        }
+
+        internal static void Clear()
+        {
+            foreach (Entry entry in Entries.Values)
+            {
+                DestroyCopy(entry.Copy);
+            }
+            Entries.Clear();
+        }
+
+        private static void DestroyCopy(Mesh mesh)
+        {
+            if (mesh == null)
+            {
+                return;
+            }
+            if (Application.isPlaying)
+            {
+                UnityEngine.Object.Destroy(mesh);
+            }
+            else
+            {
+                UnityEngine.Object.DestroyImmediate(mesh);
             }
         }
 

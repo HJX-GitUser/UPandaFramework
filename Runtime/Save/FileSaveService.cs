@@ -7,6 +7,10 @@
  * 【安全】槽位名会被拼进文件名，因此必须校验：
  *   空串、非法文件名字符、/ 和 \（路径分隔符）、"/../" 这类相对路径都要拒绝，
  *   防止调用方传入 "../../xxx" 把文件写到目录之外。
+ *
+ * 【恢复策略】读取顺序：重放 <slot>.save.recovery 未完成事务 → 读主档 → 主档缺失或内容损坏时
+ *   读 <slot>.save.bak 并尝试事务化修复主档。只有 InvalidDataException（文件内容不可用）才回退到备份；
+ *   文件被占用等 IO/权限错误直接抛出，避免把瞬时故障误判成损坏、反而用旧备份覆盖较新的主档。
  * ========================================================================================== */
 
 using System;
@@ -38,7 +42,7 @@ namespace UPandaGF
             string path = PathFor(slot);
             Directory.CreateDirectory(directory);
             VersionedDataSerializer.SaveFile(path, data, "save");
-            TrySynchronizeBackup(path);
+            TrySynchronizeBackup(BackupPath(path), VersionedDataSerializer.ReadFile(path));
         }
         /// <summary>先恢复中断的事务；主文件缺失或损坏时读取有效备份并尝试修复主文件。</summary>
         public T Load<T>(string slot) where T : class
@@ -51,27 +55,34 @@ namespace UPandaGF
                 FileUpdateTransaction.Recover(RecoveryPath(path));
                 if (File.Exists(path))
                 {
-                    T value = ReadSlot<T>(path);
-                    TrySynchronizeBackup(path);
+                    // 只读一次主档：字节同时用于反序列化和备份比对。
+                    byte[] bytes = VersionedDataSerializer.ReadFile(path);
+                    T value = ReadSlot<T>(bytes);
+                    TrySynchronizeBackup(backup, bytes);
                     return value;
                 }
             }
-            catch (Exception e) { primaryError = e; }
+            catch (InvalidDataException e)
+            {
+                // 仅“内容不可用”才回退；IO/权限错误继续向上抛。
+                primaryError = e;
+            }
 
             try
             {
                 FileUpdateTransaction.Recover(RecoveryPath(backup));
                 if (File.Exists(backup))
                 {
-                    T value = ReadSlot<T>(backup);
+                    byte[] bytes = VersionedDataSerializer.ReadFile(backup);
+                    T value = ReadSlot<T>(bytes);
                     UnityEngine.Debug.LogWarning(primaryError == null
                         ? "主存档缺失，已从备份恢复：" + path
                         : "主存档读取失败，已从备份恢复：" + path + "\n" + primaryError.Message);
-                    TryRestorePrimary(path, backup);
+                    TryRestorePrimary(path, bytes);
                     return value;
                 }
             }
-            catch (Exception backupError)
+            catch (InvalidDataException backupError)
             {
                 if (primaryError != null)
                     throw new InvalidDataException("主存档和备份均无法读取。", new AggregateException(primaryError, backupError));
@@ -88,7 +99,7 @@ namespace UPandaGF
             return File.Exists(path) || File.Exists(BackupPath(path));
         }
 
-        /// <summary>删除主存档、备份和恢复状态；不存在返回 false。</summary>
+        /// <summary>删除主存档、备份、恢复状态和旧格式迁移留下的副本；都不存在返回 false。</summary>
         public bool Delete(string slot)
         {
             string path = PathFor(slot);
@@ -96,9 +107,9 @@ namespace UPandaGF
             bool existed = File.Exists(path) || File.Exists(backup);
             DeleteRecovery(RecoveryPath(path));
             DeleteRecovery(RecoveryPath(backup));
+            DeleteLegacyBackups(path);
+            DeleteLegacyBackups(backup);
             File.Delete(backup);
-            File.Delete(backup + ".legacy.bak");
-            File.Delete(path + ".legacy.bak");
             File.Delete(path);
             return existed;
         }
@@ -106,17 +117,29 @@ namespace UPandaGF
         {
             if (Directory.Exists(path)) Directory.Delete(path, true);
         }
-        private static T ReadSlot<T>(string path) where T : class
+        /// <summary>清理 MigrateFile 可能留下的 &lt;path&gt;.legacy.bak 与 &lt;path&gt;.legacy.&lt;guid&gt;.bak。</summary>
+        private static void DeleteLegacyBackups(string path)
+        {
+            string folder = Path.GetDirectoryName(path);
+            if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder)) return;
+            string prefix = Path.GetFileName(path) + ".legacy.";
+            foreach (string candidate in Directory.EnumerateFiles(folder, prefix + "*"))
+            {
+                if (!candidate.EndsWith(".bak", StringComparison.OrdinalIgnoreCase)) continue;
+                try { File.Delete(candidate); }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
+        }
+        private static T ReadSlot<T>(byte[] bytes) where T : class
         {
             bool legacy;
-            return VersionedDataSerializer.Deserialize<T>(VersionedDataSerializer.ReadFile(path), "save", out legacy);
+            return VersionedDataSerializer.Deserialize<T>(bytes, "save", out legacy);
         }
-        private static void TrySynchronizeBackup(string path)
+        private static void TrySynchronizeBackup(string backup, byte[] current)
         {
             try
             {
-                byte[] current = VersionedDataSerializer.ReadFile(path);
-                string backup = BackupPath(path);
                 bool same = false;
                 try { same = File.Exists(backup) && VersionedDataSerializer.ReadFile(backup).SequenceEqual(current); }
                 catch (Exception e) when (e is IOException || e is InvalidDataException || e is UnauthorizedAccessException) { }
@@ -124,12 +147,12 @@ namespace UPandaGF
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogWarning("主存档已可用，但备份同步失败：" + path + "\n" + e.Message);
+                UnityEngine.Debug.LogWarning("主存档已可用，但备份同步失败：" + backup + "\n" + e.Message);
             }
         }
-        private static void TryRestorePrimary(string path, string backup)
+        private static void TryRestorePrimary(string path, byte[] bytes)
         {
-            try { VersionedDataSerializer.WriteFile(path, VersionedDataSerializer.ReadFile(backup)); }
+            try { VersionedDataSerializer.WriteFile(path, bytes); }
             catch (Exception e)
             {
                 UnityEngine.Debug.LogWarning("备份存档已读取，但主文件修复失败：" + path + "\n" + e.Message);

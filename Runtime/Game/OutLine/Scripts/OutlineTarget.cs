@@ -17,6 +17,12 @@ namespace UPandaGF.Gameplay
         private static readonly int WidthId = Shader.PropertyToID("_OutlineWidth");
         private static readonly int WidthModeId = Shader.PropertyToID("_WidthMode");
 
+        private const int LargeVertexThreshold = 20000;
+
+        // 同一个网格只提示一次，避免多物体共用网格时刷屏。
+        private static readonly HashSet<int> WarnedUnreadable = new HashSet<int>();
+        private static readonly HashSet<int> WarnedLarge = new HashSet<int>();
+
         private readonly OutLine owner;
         private readonly Renderer source;
         private readonly SkinnedMeshRenderer sourceSkin;
@@ -53,23 +59,19 @@ namespace UPandaGF.Gameplay
             }
 
             var skin = source as SkinnedMeshRenderer;
-            MeshFilter filter = null;
-            Mesh mesh;
-            if (skin != null)
-            {
-                mesh = skin.sharedMesh;
-            }
-            else
-            {
-                if (!source.TryGetComponent(out filter))
-                {
-                    return null;
-                }
-                mesh = filter.sharedMesh;
-            }
+            Mesh mesh = MeshOf(source);
             if (mesh == null || mesh.subMeshCount == 0)
             {
                 return null;
+            }
+
+            if (!mesh.isReadable)
+            {
+                WarnUnreadable(mesh, owner);
+            }
+            else if (!owner.PrecomputesNormals && mesh.vertexCount > LargeVertexThreshold)
+            {
+                WarnLargeMesh(mesh, owner);
             }
 
             // 可读网格取合并副本，顺带写入平滑法线；不可读网格直接复用原网格。
@@ -84,6 +86,58 @@ namespace UPandaGF.Gameplay
             target.CreateProxy(proxyMesh, skin);
             return target;
         }
+
+        /// <summary>取 Renderer 当前使用的网格；没有网格时返回 null。</summary>
+        internal static Mesh MeshOf(Renderer source)
+        {
+            if (source is SkinnedMeshRenderer skin)
+            {
+                return skin.sharedMesh;
+            }
+            return source.TryGetComponent(out MeshFilter filter) ? filter.sharedMesh : null;
+        }
+
+        /// <summary>来源 Renderer，用于增量重建时匹配旧绑定。</summary>
+        internal Renderer SourceRenderer => source;
+
+        /// <summary>来源 Renderer 与网格都没变时可以复用现有代理，避免整树重建。</summary>
+        internal bool CanReuse(Mesh mesh)
+        {
+            return !disposed && source != null && sourceMesh == mesh;
+        }
+
+        /// <summary>切换代理在 Hierarchy 中的可见性，便于排查。</summary>
+        internal void SetProxyVisible(bool visible)
+        {
+            if (proxyObject == null)
+            {
+                return;
+            }
+            proxyObject.hideFlags = visible
+                ? HideFlags.DontSave
+                : HideFlags.HideInHierarchy | HideFlags.DontSave;
+        }
+
+        private static void WarnUnreadable(Mesh mesh, UnityEngine.Object context)
+        {
+            if (!WarnedUnreadable.Add(mesh.GetInstanceID()))
+            {
+                return;
+            }
+            Debug.LogWarning("OutLine：网格 \"" + mesh.name +
+                "\" 不可读，无法生成平滑法线，硬边处可能出现接缝。开启模型 Read/Write 可改善。", context);
+        }
+
+        private static void WarnLargeMesh(Mesh mesh, UnityEngine.Object context)
+        {
+            if (!WarnedLarge.Add(mesh.GetInstanceID()))
+            {
+                return;
+            }
+            Debug.LogWarning("OutLine：网格 \"" + mesh.name + "\" 有 " + mesh.vertexCount +
+                " 个顶点，首次启用会同步计算平滑法线。建议在组件上开启 Precompute Outline。", context);
+        }
+
 
         private void CreateProxy(Mesh mesh, SkinnedMeshRenderer skin)
         {

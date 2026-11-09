@@ -10,6 +10,13 @@ All notable changes to this package are documented here. The format follows Keep
 - A URP branch inside `Outline.shader` (`"RenderPipeline" = "UniversalPipeline"`, drawn by URP as `SRPDefaultUnlit`), so Built-in and URP share one shader and one material asset. Shared pass code moved to `Shaders/OutlineShared.cginc`.
 - An opt-in HDRP template at `Shaders~/HDRP/OutlineHDRP.shader`. Unity skips folders ending in `~`, so Built-in/URP projects are unaffected; HDRP projects copy it into `Shaders/` and the runtime picks it up via `Shader.Find("UPandaGF/OutLine/Outline (HDRP)")`, failing with a single error log if absent.
 - Proxy renderers are pooled (`OutlineProxyPool`, 64 per kind): toggling highlights reuses proxy objects instead of creating and destroying GameObjects.
+- `OutLine` rebuilds incrementally: bindings whose source `Renderer` and mesh are unchanged are reused, so adding or removing a child no longer recreates every proxy. A `revealProxyInHierarchy` inspector switch shows proxies in the Hierarchy for debugging, and non-readable or very large meshes now log a one-time warning with a suggested fix.
+
+### Changed
+
+- `FileSaveService.Load` only falls back to `<slot>.save.bak` when the primary file is actually corrupt (`InvalidDataException`); file-in-use and permission errors now propagate instead of possibly overwriting a newer primary with an older backup. The primary file is read once and the bytes are reused for deserialization and backup comparison.
+- `FileSaveService.Delete` also removes the `*.legacy.bak` / `*.legacy.<guid>.bak` copies that `MigrateFile` can leave behind.
+- `OutlineMeshCache` keys entries by mesh instance ID and sweeps stale entries when a scene unloads, so destroyed source meshes no longer accumulate in the static cache.
 
 ### Changed (breaking)
 

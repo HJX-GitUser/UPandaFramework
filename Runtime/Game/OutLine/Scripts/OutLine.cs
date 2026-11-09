@@ -90,8 +90,14 @@ namespace UPandaGF.Gameplay
         [SerializeField, HideInInspector]
         private List<BakedNormals> bakedNormals = new List<BakedNormals>();
 
+        [Header("调试")]
+        [SerializeField, Tooltip("在 Hierarchy 里显示代理对象，便于排查；只影响显隐，不影响渲染。")]
+        private bool revealProxyInHierarchy;
+
         private readonly List<OutlineTarget> targets = new List<OutlineTarget>();
-        private readonly List<OutlineTarget> previous = new List<OutlineTarget>();
+        private readonly List<OutlineTarget> retired = new List<OutlineTarget>();
+        private readonly Dictionary<Renderer, OutlineTarget> bindings = new Dictionary<Renderer, OutlineTarget>();
+        private readonly HashSet<OutlineTarget> reused = new HashSet<OutlineTarget>();
         private readonly List<Renderer> scanned = new List<Renderer>();
         private bool hierarchyDirty = true;
         private bool appearanceDirty = true;
@@ -101,6 +107,9 @@ namespace UPandaGF.Gameplay
 
         /// <summary>当前被描边的 Renderer 数量，用于排查层级接管是否符合预期。</summary>
         public int TargetCount => targets.Count;
+
+        /// <summary>是否开启了预计算法线；供代理绑定决定是否需要运行时计算提示。</summary>
+        internal bool PrecomputesNormals => precomputeOutline;
 
         public 描边模式 OutlineMode
         {
@@ -229,10 +238,21 @@ namespace UPandaGF.Gameplay
         {
             hierarchyDirty = false;
 
-            // 先建立新绑定，再释放旧绑定：新绑定先拿到网格副本的引用，
-            // 副本的引用计数不会在中途归零，重建时不会出现网格被销毁的空档。
-            previous.AddRange(targets);
+            // 旧绑定先挂起：来源 Renderer 与网格都没变的直接复用，其余在末尾释放。
+            // 复用避免了整树重建（只增删一个子物体时不再销毁所有代理），
+            // 新建绑定先于释放旧绑定，网格副本的引用计数不会中途归零。
+            retired.AddRange(targets);
             targets.Clear();
+            bindings.Clear();
+            reused.Clear();
+            for (int i = 0; i < retired.Count; i++)
+            {
+                Renderer key = retired[i].SourceRenderer;
+                if (key != null)
+                {
+                    bindings[key] = retired[i];
+                }
+            }
 
             if (isActiveAndEnabled)
             {
@@ -253,20 +273,34 @@ namespace UPandaGF.Gameplay
                         continue;
                     }
 
-                    OutlineTarget target = OutlineTarget.Bind(this, renderer, BakedFor(renderer));
-                    if (target != null)
+                    Mesh mesh = OutlineTarget.MeshOf(renderer);
+                    if (bindings.TryGetValue(renderer, out OutlineTarget existing) && existing.CanReuse(mesh))
                     {
-                        targets.Add(target);
+                        bindings.Remove(renderer);
+                        reused.Add(existing);
+                        targets.Add(existing);
+                        continue;
+                    }
+
+                    OutlineTarget created = OutlineTarget.Bind(this, renderer, BakedFor(renderer));
+                    if (created != null)
+                    {
+                        targets.Add(created);
                     }
                 }
                 scanned.Clear();
             }
 
-            for (int i = 0; i < previous.Count; i++)
+            for (int i = 0; i < retired.Count; i++)
             {
-                previous[i].Dispose();
+                if (!reused.Contains(retired[i]))
+                {
+                    retired[i].Dispose();
+                }
             }
-            previous.Clear();
+            retired.Clear();
+            bindings.Clear();
+            reused.Clear();
 
             appearanceDirty = true;
             alpha = CanFlash ? Mathf.PingPong(phase, 1f) : 1f;
@@ -280,11 +314,13 @@ namespace UPandaGF.Gameplay
                 targets[i].Dispose();
             }
             targets.Clear();
-            for (int i = 0; i < previous.Count; i++)
+            for (int i = 0; i < retired.Count; i++)
             {
-                previous[i].Dispose();
+                retired[i].Dispose();
             }
-            previous.Clear();
+            retired.Clear();
+            bindings.Clear();
+            reused.Clear();
         }
 
         private void ApplyAppearance()
@@ -297,6 +333,7 @@ namespace UPandaGF.Gameplay
             for (int i = 0; i < targets.Count; i++)
             {
                 targets[i].ApplyAppearance(tint, width, widthMode);
+                targets[i].SetProxyVisible(revealProxyInHierarchy);
             }
         }
 

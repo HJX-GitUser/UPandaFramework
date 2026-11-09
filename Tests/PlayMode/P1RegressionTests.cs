@@ -230,6 +230,37 @@ public class P1ScopeAndInputTests
         }
         finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
     }
+    [Test] public void SaveServiceDeleteRemovesLegacyBackups()
+    {
+        string folder = Path.Combine(Application.temporaryCachePath, "P1Save_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            ISaveService saves = new FileSaveService(folder); saves.Save("one", new SaveData { score = 1 });
+            string path = Path.Combine(folder, "one.save");
+            File.WriteAllBytes(path + ".legacy.bak", new byte[] { 7 });
+            File.WriteAllBytes(path + ".legacy.0123456789abcdef0123456789abcdef.bak", new byte[] { 7 });
+
+            Assert.IsTrue(saves.Delete("one"));
+            Assert.IsFalse(File.Exists(path + ".legacy.bak"));
+            Assert.IsFalse(File.Exists(path + ".legacy.0123456789abcdef0123456789abcdef.bak"));
+        }
+        finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+    }
+    [Test] public void SaveServiceLoadPropagatesIoErrorInsteadOfFallingBack()
+    {
+        string folder = Path.Combine(Application.temporaryCachePath, "P1Save_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            ISaveService saves = new FileSaveService(folder); saves.Save("one", new SaveData { score = 42 });
+            string path = Path.Combine(folder, "one.save");
+            // 主档被占用属于环境问题而不是内容损坏：应抛出，而不是回退到旧备份。
+            using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                Assert.Catch<IOException>(() => saves.Load<SaveData>("one"));
+            }
+        }
+        finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+    }
 }
 
 public class P1SceneCoordinationTests
