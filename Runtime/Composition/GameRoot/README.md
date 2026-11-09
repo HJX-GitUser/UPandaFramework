@@ -7,7 +7,7 @@
 1. 用 `UPandaGF → 创建UPGameRoot` 创建启动对象。该菜单在找不到现有启动示例时也会创建 `GameLaunchExample`。
 2. 在 Inspector 选择加载模式。编辑器直读时，资源使用 AssetDatabase，场景按 Unity 可直接加载的场景配置。AssetBundle 模式需要准备当前目标的资源包和 `assetData.assetref`。
 3. 保存启动场景，并将启动场景加入 Build Settings。使用启动示例时，把 `firstScene` 指向业务场景。AB 场景使用完整的 `Assets/.../Scene.unity` 路径。
-4. 业务脚本等待根就绪，再访问 `Services` 或兼容接口 `GetAssetsLoader()`。在 `Awake` 订阅的旧业务可继续使用 `GFLoadedEvent` 与 `GFLoadedFailedEvent`，并在销毁时退订。晚注册的业务可直接等待共享任务。 [启动示例](../../../Samples/Startup/GameLaunchExample.cs)
+4. 业务脚本等待根就绪，再访问 `Services` 或兼容接口 `GetAssetsLoader()`。在 `Awake` 订阅的旧业务可继续使用 `GFLoadedEvent` 与 `GFLoadedFailedEvent`，并在销毁时退订。晚注册的业务可直接等待共享任务。 [启动示例](../../../Samples~/Startup/GameLaunchExample.cs)
 
 ```csharp
 using System.Threading;

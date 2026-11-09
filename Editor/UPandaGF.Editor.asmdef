@@ -13,8 +13,7 @@
         "UPandaGF.Gameplay",
         "UPandaGF.Gameplay.Tasks",
         "UPandaGF.Gameplay.InteractiveScoring",
-        "UPandaGF.Gameplay.Replay",
-        "UPandaGF.Samples"
+        "UPandaGF.Gameplay.Replay"
     ],
     "includePlatforms": [
         "Editor"

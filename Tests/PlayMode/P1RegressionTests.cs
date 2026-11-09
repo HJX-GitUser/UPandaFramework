@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +12,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UPandaGF;
 using UPandaGF.Gameplay;
-using UPandaGF.Samples;
 
 namespace UPandaGF.Tests
 {
@@ -135,7 +134,6 @@ public class P1ScopeAndInputTests
                     x.Name == "UPandaGF.Samples" || x.Name == "UPandaGF.Gameplay" || x.Name.StartsWith("UPandaGF.Gameplay.")),
                 assembly.GetName().Name + " 不应引用玩法/示例程序集");
         Assert.AreEqual("UPandaGF.Gameplay", typeof(VehicleInput).Assembly.GetName().Name);
-        Assert.AreEqual("UPandaGF.Samples", typeof(GameLaunchExample).Assembly.GetName().Name);
     }
     [Test] public void ConfigSnapshotDoesNotShareNestedObjectsAndRejectsInvalidSettings()
     {

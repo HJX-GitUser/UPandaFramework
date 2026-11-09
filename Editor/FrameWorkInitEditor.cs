@@ -1,8 +1,7 @@
-﻿using System.IO;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UPandaGF.GFEditor;
-using UPandaGF.Samples;
 
 namespace UPandaGF
 {
@@ -58,12 +57,9 @@ namespace UPandaGF
             GameObject obj = new GameObject("UPGameRoot");
             obj.AddComponent<UPGameRoot>();
 
-            if (GameObject.FindObjectOfType<GameLaunchExample>() != null)
-            {
-                return;
-            }
-            GameObject obj2 = new GameObject("OnLoadCompleteExample");
-            obj2.AddComponent<GameLaunchExample>();
+            // 启动示例（GameLaunchExample）在 Samples~/Startup 中，不再默认挂到场景；
+            // 需要时从 Package Manager 导入 “Startup” 样例后自行添加。
+            Debug.Log("已创建 UPGameRoot。启动示例见 Samples~/Startup（Package Manager 导入 Startup 样例）。");
         }
 
 

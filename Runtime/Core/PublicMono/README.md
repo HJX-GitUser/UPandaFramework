@@ -44,4 +44,4 @@ await PublicMono.Instance.RunCoroutine(
 
 `RunCoroutine` 可以只传迭代器，也可以加超时、取消令牌或两者。超时按实时时钟推进，返回 `TimeoutException`。预先取消、宿主停用、宿主销毁或托管停止会令任务取消。异常会使任务失败。嵌套 yield 的迭代器由同一驱动接管，使其异常能传到 Task，并在完成或停止时释放迭代器。调用入口和 Unity 对象操作应在主线程；其他线程触发 token 取消时只置标志，实际停止在主线程进行。
 
-停止托管协程可取消自己的 token。要停止驱动上的所有协程，使用静态类型为 `PublicMono` 的 `StopAllCoroutines()`。若通过 `MonoBehaviour` 引用调用原生停止方法，原生协程停止后，托管 Task 可能仍未结束。无超时且无取消的协程也可能因其自身条件一直未满足而继续等待。 [协程示例](../../../Samples/Coroutines/HowUseMonoMgr.cs) · [协程和帧派发回归](../../../Tests/PlayMode/CoordinationRegressionTests.cs)
+停止托管协程可取消自己的 token。要停止驱动上的所有协程，使用静态类型为 `PublicMono` 的 `StopAllCoroutines()`。若通过 `MonoBehaviour` 引用调用原生停止方法，原生协程停止后，托管 Task 可能仍未结束。无超时且无取消的协程也可能因其自身条件一直未满足而继续等待。 [协程示例](../../../Samples~/Coroutines/HowUseMonoMgr.cs) · [协程和帧派发回归](../../../Tests/PlayMode/CoordinationRegressionTests.cs)

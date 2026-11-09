@@ -10,7 +10,7 @@
 |---|---|
 | 已完成 | 0.2–0.6 的 P0/P1 主体；11-09 描边原创重写、存档加固、代理池停用报错修复 |
 | 剩余 | P0 四项、P1 六项、P2 八项、P3 五项；另有 4 项 11-09 后新增 |
-| 发布 0.7.0 的真正阻塞 | 真机手测（P0-3）、CI 实跑（P1-1）、Samples 隔离（P1-4）；许可与构建已闭环 |
+| 发布 0.7.0 的真正阻塞 | 真机手测（P0-3）、CI 实跑（P1-1）；许可、构建与 Samples 隔离已闭环 |
 | 建议节奏 | 先 P0-1/P0-4 复验，再许可与真机，然后版本/tag 与 CI 实跑；P2 按“发布风险 > 性能 > 整洁”推进 |
 
 ### 执行状态（2026-11-09 晚更新）
@@ -24,7 +24,7 @@
 | P1-1 | 阻塞：工作流已支持中国版镜像变量与门禁；待推送后实跑 |
 | P1-2 | 完成：计数标注 + CI 用例数下限门禁 |
 | P1-3 | 完成（`file:` 方式）；Git URL 未验证 |
-| P1-4 | 未完成：`Samples~` 迁移需先解耦 Editor/Tests 引用 |
+| P1-4 | 完成：5 个可选样例 + 独立程序集，Editor/Tests 已解耦 |
 | P1-5 | 完成：asmdef 校验脚本 + CI 步骤 + UPM 探针 |
 | P1-6 | 完成：0.7.0 定版、CHANGELOG、发布说明、tag |
 
@@ -60,7 +60,7 @@
 | P1-1 | CI 实跑 | 工作流齐备，但需配置 `UNITY_PROJECT_REPOSITORY` 与 Unity 许可 secrets；2022.3 只跑测试不构建（构建 job 固定 2021.3） | 2 版本 × 2 模式全绿；三平台 build job 有产物；失败时 XML/日志可下载 |
 | P1-2 | 计数与文档一致性 | `VALIDATION.md` 已统一为 53/324；`OPTIMIZATION_PLAN.md` 仍混有 24/24、294/294、47/47、302/302、48/48、307/307（历史行未标版本）；`check-test-results` 只查“0 用例/失败>0”，不校验期望用例数 | 当前版本只保留一个计数；历史行标注对应版本；CI 断言期望用例数 |
 | P1-3 | 空工程 UPM 安装 | 未在全新 Unity 工程通过 Git URL 或本地 `file:` 安装 0.6.0 | 空工程安装后编译 0 错、`UPandaLogConsole` Inspector 正常、Diagnostics Auto Referenced 勾选、控制台可创建 |
-| P1-4 | `package.json` 完整化 | 缺 `samples` 字段；Samples 仍是包内目录 | 增加 `samples` 元数据（或拆 `Samples~` 独立样例）；导入时可选且不进 Player |
+| P1-4 | `package.json` 完整化 | 已完成：新增 `samples` 元数据，`Samples~` 拆为 5 个样例，导入可选且不进 Player | 已满足 |
 | P1-5 | Auto Referenced 门禁 | `autoReferenced` 已为 true，但只有编辑器校验，无自动化用例 | EditMode/CI 断言 `UPandaGF.Diagnostics` 的 `autoReferenced` 必须为 true，改 false 时门禁失败 |
 | P1-6 | 0.7.0 发布收尾 | `[Unreleased]` 含破坏性描边变更；版本仍是 0.6.0，无 tag、无发布说明 | 版本号与 CHANGELOG 定版、打 tag、生成 UPM release notes，确认包内无 Windows 绝对路径与未跟踪临时文件 |
 

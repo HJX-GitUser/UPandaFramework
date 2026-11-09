@@ -1,0 +1,21 @@
+{
+  "name": "UPandaGF.Samples.Tasks.Editor",
+  "references": [
+    "UPandaGF.Samples.Tasks",
+    "UPandaGF.Editor",
+    "UPandaGF.Runtime",
+    "UPandaGF.Contracts",
+    "UPandaGF.Core",
+    "UPandaGF.Assets",
+    "UPandaGF.UI",
+    "UPandaGF.Audio",
+    "UPandaGF.Save",
+    "UPandaGF.Diagnostics",
+    "UPandaGF.Gameplay",
+    "UPandaGF.Gameplay.InteractiveScoring"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": false
+}

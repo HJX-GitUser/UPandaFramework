@@ -1,6 +1,6 @@
 # 整数排序学习示例
 
-[SortStu.cs](SortStu.cs) 汇集九类对 `int[]` 升序排序的实现，用于比较算法、复杂度和稳定性。代码由 [asmref](UPandaGF.Samples.asmref) 编入 `UPandaGF.Samples`，无场景、Unity 生命周期或其他框架服务依赖。
+[SortStu.cs](SortStu.cs) 汇集九类对 `int[]` 升序排序的实现，用于比较算法、复杂度和稳定性。代码由 [asmdef](UPandaGF.Samples.Study.asmdef) 编入独立程序集 `UPandaGF.Samples.Study`，无场景、Unity 生命周期或其他框架服务依赖。
 
 | 算法 | 入口 | 机制与主要取舍 |
 | --- | --- | --- |

@@ -7,6 +7,33 @@
   "dependencies": {
     "com.unity.textmeshpro": "3.0.6"
   },
+  "samples": [
+    {
+      "displayName": "Startup",
+      "description": "UPGameRoot 启动流程与 OnLoadComplete 回调示例。",
+      "path": "Samples~/Startup"
+    },
+    {
+      "displayName": "Pooling",
+      "description": "对象池取用/回收示例，附带一键生成示例场景的编辑器工具。",
+      "path": "Samples~/Pooling"
+    },
+    {
+      "displayName": "Coroutines",
+      "description": "PublicMono 协程与线程调度用法示例。",
+      "path": "Samples~/Coroutines"
+    },
+    {
+      "displayName": "StateMachine",
+      "description": "游戏状态机示例（Idle/Move/Walk/Run/Attack）。",
+      "path": "Samples~/StateMachine"
+    },
+    {
+      "displayName": "Tasks",
+      "description": "交互任务评分系统演示场景生成器与任务触发示例。",
+      "path": "Samples~/Tasks"
+    }
+  ],
   "keywords": [
     "unity",
     "framework",

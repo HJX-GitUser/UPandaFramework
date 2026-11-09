@@ -1,0 +1,19 @@
+{
+  "name": "UPandaGF.Samples.Coroutines",
+  "references": [
+    "UPandaGF.Runtime",
+    "UPandaGF.Contracts",
+    "UPandaGF.Core",
+    "UPandaGF.Assets",
+    "UPandaGF.UI",
+    "UPandaGF.Audio",
+    "UPandaGF.Save",
+    "UPandaGF.Diagnostics",
+    "UPandaGF.Gameplay",
+    "UPandaGF.Gameplay.Tasks",
+    "UPandaGF.Gameplay.InteractiveScoring",
+    "UPandaGF.Gameplay.Replay",
+    "Unity.TextMeshPro"
+  ],
+  "autoReferenced": false
+}

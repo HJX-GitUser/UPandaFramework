@@ -21,6 +21,7 @@ All notable changes to this package are documented here. The format follows Keep
 
 ### Changed (breaking)
 
+- Samples are now optional: `Samples/` moved to `Samples~` and split into five importable samples (`Startup`, `Pooling`, `Coroutines`, `StateMachine`, `Tasks`) declared in `package.json`. The shared `UPandaGF.Samples` assembly is gone; each sample has its own asmdef. The `创建UPGameRoot` menu no longer adds `GameLaunchExample` to the scene, and the object-pool / interactive-scoring demo builders moved into the samples (their generated scenes go to `Assets/UPandaFrameworkDemos/`, not the read-only package folder). The demo scripts that stay in module folders (`TaskSystem/Demo`, `InteractiveScoringSystem/Example`, `Study`, `Save/*/Test`) now use their own `UPandaGF.Samples.*` assemblies instead of `.asmref` files.
 - `OutLine` (`Runtime/Game/OutLine`) is now an original implementation. Outline rendering no longer appends two materials to the target `Renderer`: the component creates a hidden proxy `Renderer` under each target and draws a single two-pass shader (`UPandaGF/OutLine/Outline`) that writes stencil first and then expands along the normal. Per-object color and width go through a `MaterialPropertyBlock` over five shared mode materials, so target meshes, material arrays and material instances are left untouched.
 - Smooth normals are area-weighted (triangle-area weighted face normals welded by quantized position) and written to the proxy mesh `NORMAL` channel instead of `UV3`, so models no longer need a free UV3. Readable meshes are merged into one submesh; non-readable meshes reuse the source geometry with one outline material per submesh. Proxy meshes are shared between components and destroyed with the last user.
 - Skinned proxies share the source bones and mirror blend-shape weights each frame; proxies no longer cast shadows, receive light probes or generate motion vectors.
@@ -29,6 +30,7 @@ All notable changes to this package are documented here. The format follows Keep
 
 ### Removed
 
+- The shared `Samples/UPandaGF.Samples.asmdef` and the five `.asmref` files that pulled module demo scripts into it.
 - The Quick Outline attribution section in `THIRD_PARTY_NOTICES.md`; the outline module is no longer derived from it.
 - `Libraries/Excel.dll` and `Libraries/ICSharpCode.SharpZipLib.dll` (replaced by `Libraries/ExcelDataReader.dll`), and the GPL/SharpZipLib license texts that only applied to them.
 - `Runtime/Shader/UnityShader学习文档/案例/1.纹理动画效果/Sword.rar`: an unlicensed teaching asset removed from the release package.

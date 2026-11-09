@@ -21,7 +21,7 @@ Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行�
 3. 在 Inspector 选择资源模式。编辑器直读使用 AssetDatabase；Player 可直接使用 `Resources` 目录，或使用 AssetBundle（先按目标平台打包并生成 `assetData.assetref`）。保存场景会把根配置导出到 `Assets/StreamingAssets/Data/GameRootConfig.json`。
 4. 在示例上设置 `firstScene`，或在自己的入口等待根就绪，再调用 `root.Services.Scenes.LoadAsync(...)`。AB 场景使用清单登记的完整路径。接入热更前，先验证随包资源能启动。
 
-[启动与配置](Runtime/Composition/GameRoot/README.md) · [启动示例](Samples/Startup/GameLaunchExample.cs) · [AssetBundle 打包](Editor/AssetBundleTools/README.md)
+[启动与配置](Runtime/Composition/GameRoot/README.md) · [启动示例](Samples~/Startup/GameLaunchExample.cs) · [AssetBundle 打包](Editor/AssetBundleTools/README.md)
 
 ```csharp
 using System.Threading;
@@ -54,8 +54,8 @@ public static class AppEntry
 | `UPandaGF.Gameplay` / `.Tasks` / `.InteractiveScoring` / `.Replay` | 可选玩法模块；`autoReferenced = false`。 |
 | `UPandaGF.Runtime` | 组合根（UPGameRoot / GameServices / 日志控制台），引用全部运行时模块。 |
 | `UPandaGF.Visuals` | Shader 目录边界，具体效果仍受渲染管线和材质配置约束。 |
-| `UPandaGF.Samples` | 启动、协程、池、状态机和任务示例；`autoReferenced = false`，不会进入 Player。 |
-| `UPandaGF.Editor` | Editor 工具，引用运行时、玩法、示例，以及 ExcelDataReader DLL（MIT）。 |
+| `UPandaGF.Samples.*` | `Samples~` 内的可选示例（导入后才有 `UPandaGF.Samples.Startup` 等程序集）；模块内演示脚本为 `UPandaGF.Samples.*Demo`，`autoReferenced = false`，不会进入 Player。 |
+| `UPandaGF.Editor` | Editor 工具，引用运行时与玩法模块，以及 ExcelDataReader DLL（MIT）。 |
 | `UPandaGF.Tests.EditMode` / `UPandaGF.Tests` | EditMode 单元测试与 PlayMode 集成回归。 |
 
 0.4.0 → 0.5.0 的程序集、命名空间与目录迁移见 [迁移指南](Documentation~/MIGRATION-0.5.md)；业务代码需要把 `using UPandaGF.RunTime.*` / `ReplaySystem` / `AssetBundleBrowser` 替换为新命名空间，并补充直接引用的模块程序集。日志面板替换见 [0.6 迁移指南](Documentation~/MIGRATION-0.6.md)。
@@ -78,13 +78,13 @@ public static class AppEntry
 | 目标与流程 | [任务](Runtime/Game/TaskSystem/README.md) · [交互评分](Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md) · [分层状态机](Runtime/Game/StateMachine/README.md) |
 | 模拟与回放 | [场景回放](Runtime/Game/ReplaySystem/README.md) · [机械臂 CCD](Runtime/Game/RobotCCDIK/README.md) · [车辆与相机](Runtime/Game/VehicleSystem/README.md) |
 | 视觉与示例 | [自由相机](Runtime/Game/SimpleCameraControl/README.md) · [描边](Runtime/Game/OutLine/README.md) · [暗角](Runtime/Game/Vignette/README.md) · [Shader 与案例](Runtime/Shader/README.md) · [排序示例](Runtime/Game/Study/README.md) |
-| 工具链 | [Editor 工具索引](Editor/README.md) · [AssetBundle 打包与发布](Editor/AssetBundleTools/README.md) · [示例入口](Samples/README.md) |
+| 工具链 | [Editor 工具索引](Editor/README.md) · [AssetBundle 打包与发布](Editor/AssetBundleTools/README.md) · [示例入口](Samples~/README.md) |
 
 ## 构建与发布
 
 框架的 Player 构建入口会对齐启动配置并执行 Unity 构建。发布前需要单独生成目标平台的 AB、主包和资源清单，使它们与 `bundleTarget`、`LoadAssetPath` 和首场景配置一致。编辑器直读和 Player 的资源来源不同，应分别验证首场景加载。CI 用 `FrameworkBuildPipeline.BuildFromCommandLine` 或 `Tools/ci/build-player.sh` 构建目标平台；Android 要求工程路径只含 ASCII 字符（Android Tools 限制）。 [构建入口](Editor/README.md) · [打包与发布](Editor/AssetBundleTools/README.md) · [CI 脚本](Tools/ci/README.md)
 
-资源内容更新由 `enableAssetUpdate` 控制，`GameLaunchExample` 的程序集加载由 `loadHotUpdateScripts` 独立控制。按发布需要启用并分别验收。导入随附示例时，按模块文档检查序列化引用和渲染管线。 [内容更新](Runtime/Assets/HotUpdate/README.md) · [示例索引](Samples/README.md)
+资源内容更新由 `enableAssetUpdate` 控制，`GameLaunchExample` 的程序集加载由 `loadHotUpdateScripts` 独立控制。按发布需要启用并分别验收。导入随附示例时，按模块文档检查序列化引用和渲染管线。 [内容更新](Runtime/Assets/HotUpdate/README.md) · [示例索引](Samples~/README.md)
 
 ## 验证与源码维护
 

@@ -14,7 +14,7 @@
 4. 实体实现 `EnableInteractive`、`DisableInteractive`、`EnableGuide` 与 `Execute(UnityAction callback)` 等抽象方法。在动作真正结束时调用完成回调，否则操作会停留在执行阶段。需要额外判定时实现 `EntityOperationCheck`。
 5. 在任务流程校验器中检查空组、重复 ID、缺失实体、数量或顺序错误。修改后重新进入 Play 复核推进与评分。
 
-[实体接口](TaskInteractive/TaskEntityBase.cs) [串行操作组](Operation/SeriesOperationGroup.cs) [平行操作组](Operation/ParallelOperationGroup.cs) [鼠标触发示例](../../../Samples/Tasks/TaskTriggerExample.cs)
+[实体接口](TaskInteractive/TaskEntityBase.cs) [串行操作组](Operation/SeriesOperationGroup.cs) [平行操作组](Operation/ParallelOperationGroup.cs) [鼠标触发示例](../../../Samples~/Tasks/TaskTriggerExample.cs)
 
 ## 评分与对外入口
 

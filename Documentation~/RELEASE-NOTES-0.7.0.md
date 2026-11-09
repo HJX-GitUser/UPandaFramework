@@ -10,6 +10,18 @@
 3. **无 AB 模式**：新增 `AssetLoaddingMethod.NoAssetBundle`，启动时跳过 AssetBundle 初始化，适合小游戏与原型。
 4. **合规材料**：新增 `Documentation~/LICENSES/`，随包提供 Unity Companion License 全文与 ExcelDataReader 的 MIT 声明；导表库升级到 **ExcelDataReader 3.6.0（MIT）**，移除 GPL 的 SharpZipLib 0.86，并从包内剔除 `Sword.rar` 等来源不明的教学素材。
 
+## 示例结构变更（可选导入）
+
+`Samples/` 已改为 `Samples~`，拆成五个可单独导入的样例：`Startup`、`Pooling`、`Coroutines`、`StateMachine`、`Tasks`。它们不再随包自动导入，也不会进入 Player：
+
+- 在 `Package Manager → UPandaFramework → Samples` 按需 Import，示例会复制到 `Assets/Samples/UPandaFramework/<版本>/`。
+- 每个样例自带 asmdef（`UPandaGF.Samples.Startup` 等），可同时导入多个。
+- 共享的 `UPandaGF.Samples` 程序集已移除；模块内的演示脚本（TaskSystem/Demo、InteractiveScoringSystem/Example、Study、Save/*/Test）改为各自的 `UPandaGF.Samples.*` 程序集。
+- `UPandaGF → 创建UPGameRoot` 不再自动挂 `GameLaunchExample`；需要启动示例时导入 `Startup` 样例后手动添加。
+- 对象池 / 交互评分的“创建示例场景”菜单移入对应样例的 Editor 目录，生成内容写到 `Assets/UPandaFrameworkDemos/`。
+
+升级提示：如果旧工程依赖 `UPandaGF.Samples` 程序集名或 `.asmref`，需要改为导入对应样例并使用新的程序集名；场景里由 `创建UPGameRoot` 生成的 `OnLoadCompleteExample` 对象在升级后会缺少脚本，删除该对象或导入 `Startup` 样例后重新挂载。
+
 ## 破坏性变更
 
 - `OutLine` 不再修改目标 `Renderer.sharedMaterials`；依赖“末尾两个材质槽是描边材质”的代码需要改为读取代理对象（子物体名以 `(OutLine)` 结尾）。

@@ -47,4 +47,4 @@ public class CharacterStates : MonoBehaviour
 
 重写 `OnEnter`、`OnExit`、`OnUpdate`、`OnFixedUpdate` 时，调用对应的基类方法以保留子状态递归行为。非法路径与守卫拒绝不会执行 Enter/Exit。业务生命周期抛异常时管理器尝试恢复活动结构，已执行的业务副作用由业务自行处理。`OnStateChanged` 通知期间的重入切换会被拒绝。
 
-在场景挂 [StateMachineExample](../../../Samples/StateMachine/StateMachineExample.cs)，用数字键演示状态切换，B 查看回退。现有 PlayMode 用例覆盖路径与守卫、默认子状态、返回、重入及销毁。 [P0 回归](../../../Tests/PlayMode/P0RegressionTests.cs) [历史验证](../../../OptimzeLog/P0Startup/VALIDATION.md)
+在场景挂 [StateMachineExample](../../../Samples~/StateMachine/StateMachineExample.cs)，用数字键演示状态切换，B 查看回退。现有 PlayMode 用例覆盖路径与守卫、默认子状态、返回、重入及销毁。 [P0 回归](../../../Tests/PlayMode/P0RegressionTests.cs) [历史验证](../../../OptimzeLog/P0Startup/VALIDATION.md)

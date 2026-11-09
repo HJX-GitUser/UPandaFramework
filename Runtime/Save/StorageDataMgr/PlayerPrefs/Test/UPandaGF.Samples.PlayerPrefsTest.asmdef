@@ -1,0 +1,12 @@
+{
+  "name": "UPandaGF.Samples.PlayerPrefsTest",
+  "references": [
+    "UPandaGF.Runtime",
+    "UPandaGF.Contracts",
+    "UPandaGF.Core",
+    "UPandaGF.Assets",
+    "UPandaGF.Save",
+    "UPandaGF.Diagnostics"
+  ],
+  "autoReferenced": false
+}

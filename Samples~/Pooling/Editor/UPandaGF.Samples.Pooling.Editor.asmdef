@@ -1,0 +1,20 @@
+{
+  "name": "UPandaGF.Samples.Pooling.Editor",
+  "references": [
+    "UPandaGF.Samples.Pooling",
+    "UPandaGF.Editor",
+    "UPandaGF.Runtime",
+    "UPandaGF.Contracts",
+    "UPandaGF.Core",
+    "UPandaGF.Assets",
+    "UPandaGF.UI",
+    "UPandaGF.Audio",
+    "UPandaGF.Save",
+    "UPandaGF.Diagnostics",
+    "UPandaGF.Gameplay"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": false
+}
