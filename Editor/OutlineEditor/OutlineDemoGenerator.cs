@@ -1,38 +1,4 @@
-﻿//
-//  QuickOutlineDemoBuilder.cs
-//  路径：Assets/upanda-framework/Editor/QuickOutlineEditor/
-//
-// =============================================================================
-//  作用：一键重建 QuickOutline 的官方示例场景
-//        （原型：Runtime/Game/QuickOutline/Samples/Scenes/QuickOutline.unity）
-//
-//  菜单：
-//    UPandaGF/Runtime/QuickOutline/创建描边示例场景（新建场景）
-//    UPandaGF/Runtime/QuickOutline/在当前场景追加示例物体
-//
-//  重建出来的内容（逐项对齐原型）：
-//    Main Camera        pos(0,3,-4)  rot(40,0,0)   Tag = MainCamera（FOV/裁剪面用默认值 60 / 0.3~1000）
-//    Directional Light  pos(0,3,0)   rot(50,30,0)  软阴影，并设为 RenderSettings.sun（环境光的“太阳”）
-//    Plane              pos(0,0,0)   scale(10,1,10)，材质取 Samples/Resources/Materials/Plane.mat
-//    Outlined Objects   （空父节点，位于原点）
-//      ├ Silhouette Only          Sphere    (-4,0,0)  scale 1          Mode.SilhouetteOnly        CanFlash = true
-//      ├ Outline Hidden           Cylinder  (-2,0,0)  scale(1,0.5,1)   Mode.OutlineHidden         CanFlash = true
-//      ├ Outline All              Cube      ( 0,0,0)  scale 1          Mode.OutlineAll            CanFlash = false
-//      ├ Outline And Silhouette   Cylinder  ( 2,0,0)  scale(1,0.5,1)   Mode.OutlineAndSilhouette  CanFlash = true
-//      └ Outline Visible          Sphere    ( 4,0,0)  scale 1          Mode.OutlineVisible        CanFlash = true
-//
-//    共通参数：outlineColor = RGB(22,255,0) = (0.08675194, 1, 0, 1)，outlineWidth = 5，
-//              precomputeOutline = false（= 原型值）。
-//    这些物体**不带碰撞体**（原型里也没有；CreatePrimitive 默认会加，脚本会移除）。
-//
-//  与原型的已知差异（有意为之）：
-//    · 原型相机上挂着一个遗留的 GUILayer 组件（老版 Unity 的产物，现已废弃）→ 不再创建。
-//    · 原型绑定了一份 Lighting Settings（Samples/Scenes/QuickOutlineSettings.lighting）
-//      → 新场景使用默认灯光设置；本示例只依赖实时平行光 + 默认天空盒环境光，视觉一致。
-//    · 新场景不会自动写进 Build Settings（原型也没有）。
-// =============================================================================
-
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -41,23 +7,19 @@ using UPandaGF.Gameplay;
 namespace UPandaGF.GFEditor
 {
     /// <summary>
-    /// QuickOutline 示例场景一键生成器
+    /// OutLine 高亮描边示例场景生成器
     /// </summary>
-    public static class QuickOutlineDemoBuilder
+    public static class OutlineDemoGenerator
     {
         // ---------------- 菜单 ----------------
 
-        private const string MenuRoot = "UPandaGF/Runtime/QuickOutline/";
+        private const string MenuRoot = "UPandaGF/Runtime/高亮描边/";
 
         // ---------------- 路径与常量 ----------------
 
-        // 新建场景的默认落盘位置（模块自己的 Demo 目录，不动 Samples/ 里导入进来的资源）
-        private const string DefaultSceneFolder = "Assets/upanda-framework/Runtime/Game/QuickOutline/Demo";
-        private const string DefaultSceneName   = "QuickOutlineDemo.unity";
-
-        // 地面材质（原型 Plane 的 MeshRenderer 用的就是它）
-        private const string PlaneMaterialPath =
-            "Assets/upanda-framework/Runtime/Game/QuickOutline/Samples/Resources/Materials/Plane.mat";
+        // 新建场景统一保存在框架 Runtime 下的高亮描边目录。
+        private const string DefaultSceneFolder = "Assets/upanda-framework/Runtime/OutLineDemo";
+        private const string DefaultSceneName   = "OutlineDemo.unity";
 
         // 原型里 5 个物体的共用描边参数
         private static readonly Color OutlineColor = new Color(0.08675194f, 1f, 0f, 1f);
@@ -70,18 +32,18 @@ namespace UPandaGF.GFEditor
             public PrimitiveType    Shape;      // 图元类型（原型用的是内置 Cube/Cylinder/Sphere）
             public Vector3          Position;   // 父节点下的局部坐标
             public Vector3          Scale;      // 局部缩放
-            public OutDrawline.Mode Mode;       // 描边模式
+            public OutLine.描边模式 Mode;       // 描边模式
             public bool             CanFlash;   // 是否呼吸闪烁
         }
 
         // 按 X 轴从左到右排列（-4 → 4），与原型布局一致
         private static readonly DemoEntry[] DemoEntries =
         {
-            new DemoEntry { Name = "Silhouette Only",        Shape = PrimitiveType.Sphere,   Position = new Vector3(-4f, 0f, 0f), Scale = Vector3.one,               Mode = OutDrawline.Mode.SilhouetteOnly,       CanFlash = true  },
-            new DemoEntry { Name = "Outline Hidden",         Shape = PrimitiveType.Cylinder, Position = new Vector3(-2f, 0f, 0f), Scale = new Vector3(1f, 0.5f, 1f), Mode = OutDrawline.Mode.OutlineHidden,        CanFlash = true  },
-            new DemoEntry { Name = "Outline All",            Shape = PrimitiveType.Cube,     Position = Vector3.zero,             Scale = Vector3.one,               Mode = OutDrawline.Mode.OutlineAll,           CanFlash = false },
-            new DemoEntry { Name = "Outline And Silhouette", Shape = PrimitiveType.Cylinder, Position = new Vector3( 2f, 0f, 0f), Scale = new Vector3(1f, 0.5f, 1f), Mode = OutDrawline.Mode.OutlineAndSilhouette, CanFlash = true  },
-            new DemoEntry { Name = "Outline Visible",        Shape = PrimitiveType.Sphere,   Position = new Vector3( 4f, 0f, 0f), Scale = Vector3.one,               Mode = OutDrawline.Mode.OutlineVisible,       CanFlash = true  },
+            new DemoEntry { Name = "Silhouette Only",        Shape = PrimitiveType.Sphere,   Position = new Vector3(-4f, 0.5f, 0f), Scale = Vector3.one,               Mode = OutLine.描边模式.仅剪影,       CanFlash = true  },
+            new DemoEntry { Name = "Outline Hidden",         Shape = PrimitiveType.Cylinder, Position = new Vector3(-2f, 0.5f, 0f), Scale = new Vector3(1f, 0.5f, 1f), Mode = OutLine.描边模式.遮挡描边,        CanFlash = true  },
+            new DemoEntry { Name = "Outline All",            Shape = PrimitiveType.Cube,     Position = new Vector3( 0f, 0.5f, 0f), Scale = Vector3.one,               Mode = OutLine.描边模式.全部描边,           CanFlash = false },
+            new DemoEntry { Name = "Outline And Silhouette", Shape = PrimitiveType.Cylinder, Position = new Vector3( 2f, 0.5f, 0f), Scale = new Vector3(1f, 0.5f, 1f), Mode = OutLine.描边模式.描边与剪影, CanFlash = true  },
+            new DemoEntry { Name = "Outline Visible",        Shape = PrimitiveType.Sphere,   Position = new Vector3( 4f, 0.5f, 0f), Scale = Vector3.one,               Mode = OutLine.描边模式.可见描边,       CanFlash = true  },
         };
 
         // =====================================================================
@@ -110,13 +72,13 @@ namespace UPandaGF.GFEditor
 
             if (saved)
             {
-                Debug.Log("[QuickOutline] 示例场景已创建：" + scenePath +
-                          "（相机/平行光/地面 + 5 种描边模式各一个物体，直接按 Play 即可查看效果）");
+                Debug.Log("[高亮描边] 示例场景已创建：" + scenePath +
+                          "（相机/平行光/地面/遮挡物 + 5 种描边模式各一个物体，直接按 Play 即可查看效果）");
                 EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(scenePath));
             }
             else
             {
-                Debug.LogError("[QuickOutline] 场景保存失败：" + scenePath + "，请检查目录是否可写。");
+                Debug.LogError("[高亮描边] 场景保存失败：" + scenePath + "，请检查目录是否可写。");
             }
         }
 
@@ -130,15 +92,15 @@ namespace UPandaGF.GFEditor
             Scene scene = SceneManager.GetActiveScene();
             if (!scene.IsValid())
             {
-                Debug.LogError("[QuickOutline] 当前没有打开的场景，无法追加。");
+                Debug.LogError("[高亮描边] 当前没有打开的场景，无法追加。");
                 return;
             }
 
             BuildSceneContents(includeCameraAndLight: false);
             EditorSceneManager.MarkSceneDirty(scene);   // 标记为已修改，便于 Ctrl+S 保存
 
-            Debug.Log("[QuickOutline] 已向场景 \"" + scene.name +
-                      "\" 追加地面 + 5 个描边物体（相机与灯光沿用场景里现有的）。");
+            Debug.Log("[高亮描边] 已向场景 \"" + scene.name +
+                      "\" 追加地面、遮挡物和 5 个描边物体（相机与灯光沿用场景里现有的）。");
         }
 
         // =====================================================================
@@ -158,6 +120,7 @@ namespace UPandaGF.GFEditor
             }
 
             CreateGroundPlane();
+            CreateOccluder();
 
             // 5 个描边物体统一挂在这个空父节点下（原型里也是这样，便于整体缩放/移动）
             GameObject root = CreateEmptyObject("Outlined Objects", Vector3.zero);
@@ -168,14 +131,14 @@ namespace UPandaGF.GFEditor
             }
         }
 
-        /// <summary>主相机：pos(0,3,-4)、俯角 40°（FOV/裁剪面用 Camera 组件默认值）</summary>
+        /// <summary>主相机：pos(0,2.2,-10)、俯角 10°（FOV/裁剪面用 Camera 组件默认值）</summary>
         private static void CreateMainCamera()
         {
-            GameObject cameraGo = CreateEmptyObject("Main Camera", new Vector3(0f, 3f, -4f));
+            GameObject cameraGo = CreateEmptyObject("Main Camera", new Vector3(0f, 2.2f, -10f));
             cameraGo.AddComponent<Camera>();
             cameraGo.AddComponent<AudioListener>();
             cameraGo.tag = "MainCamera";
-            cameraGo.transform.rotation = Quaternion.Euler(40f, 0f, 0f);
+            cameraGo.transform.rotation = Quaternion.Euler(10f, 0f, 0f);
         }
 
         /// <summary>平行光：pos(0,3,0)、rot(50,30,0)、软阴影，并登记为环境光的“太阳”</summary>
@@ -191,7 +154,7 @@ namespace UPandaGF.GFEditor
             RenderSettings.sun = sun;
         }
 
-        /// <summary>地面 Plane：scale(10,1,10)，材质用 Samples/Resources/Materials/Plane.mat</summary>
+        /// <summary>地面 Plane 使用内置默认材质</summary>
         private static void CreateGroundPlane()
         {
             GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -199,30 +162,34 @@ namespace UPandaGF.GFEditor
             RemovePrimitiveCollider(plane);                 // 原型的地面没有碰撞体
             plane.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
             plane.transform.localScale = new Vector3(10f, 1f, 10f);
-            Undo.RegisterCreatedObjectUndo(plane, "Create QuickOutline Demo Plane");
-
-            // 找不到材质就保留 CreatePrimitive 给的默认材质，不影响示例效果
-            Material planeMaterial = AssetDatabase.LoadAssetAtPath<Material>(PlaneMaterialPath);
-            if (planeMaterial != null)
-            {
-                plane.GetComponent<MeshRenderer>().sharedMaterial = planeMaterial;
-            }
+            Undo.RegisterCreatedObjectUndo(plane, "Create 高亮描边 Demo Plane");
         }
 
-        /// <summary>创建一个描边形状：图元 + OutDrawline 组件（参数按原型逐个设置）</summary>
+        /// <summary>用不透明横梁同时遮挡五个图元的一部分，便于对照可见描边和遮挡剪影。</summary>
+        private static void CreateOccluder()
+        {
+            GameObject occluder = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            occluder.name = "Opaque Occluder";
+            occluder.transform.position = new Vector3(0f, 0.55f, -1.35f);
+            occluder.transform.localScale = new Vector3(9f, 0.45f, 0.2f);
+            RemovePrimitiveCollider(occluder);
+            Undo.RegisterCreatedObjectUndo(occluder, "Create 高亮描边 Demo Occluder");
+        }
+
+        /// <summary>创建一个描边形状：图元 + OutLine 组件（参数按原型逐个设置）</summary>
         private static void CreateOutlinedShape(DemoEntry entry, Transform parent)
         {
             GameObject go = GameObject.CreatePrimitive(entry.Shape);
             go.name = entry.Name;
             RemovePrimitiveCollider(go);                    // 原型的示例物体都没有碰撞体
-            Undo.RegisterCreatedObjectUndo(go, "Create QuickOutline Demo Object");
+            Undo.RegisterCreatedObjectUndo(go, "Create 高亮描边 Demo Object");
 
             go.transform.SetParent(parent, false);          // worldPositionStays = false：直接用局部坐标
             go.transform.localPosition = entry.Position;
             go.transform.localScale    = entry.Scale;
 
-            OutDrawline outline = go.AddComponent<OutDrawline>();
-            outline.OutlineMode  = entry.Mode;              // 属性 setter 会置 needsUpdate
+            OutLine outline = go.AddComponent<OutLine>();
+            outline.OutlineMode  = entry.Mode;
             outline.OutlineColor = OutlineColor;
             outline.OutlineWidth = OutlineWidth;
             outline.CanFlash     = entry.CanFlash;          // public 字段，直接赋值
@@ -238,7 +205,7 @@ namespace UPandaGF.GFEditor
         {
             GameObject go = new GameObject(name);
             go.transform.SetPositionAndRotation(position, Quaternion.identity);
-            Undo.RegisterCreatedObjectUndo(go, "Create QuickOutline Demo Object");
+            Undo.RegisterCreatedObjectUndo(go, "Create 高亮描边 Demo Object");
             return go;
         }
 

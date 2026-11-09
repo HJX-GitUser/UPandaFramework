@@ -73,7 +73,7 @@ public static class AppEntry
 | --- | --- |
 | 目标与流程 | [任务](Runtime/Game/TaskSystem/README.md) · [交互评分](Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md) · [分层状态机](Runtime/Game/StateMachine/README.md) |
 | 模拟与回放 | [场景回放](Runtime/Game/ReplaySystem/README.md) · [机械臂 CCD](Runtime/Game/RobotCCDIK/README.md) · [车辆与相机](Runtime/Game/VehicleSystem/README.md) |
-| 视觉与示例 | [自由相机](Runtime/Game/SimpleCameraControl/README.md) · [描边](Runtime/Game/QuickOutline/README.md) · [暗角](Runtime/Game/Vignette/README.md) · [Shader 与案例](Runtime/Shader/README.md) · [排序示例](Runtime/Game/Study/README.md) |
+| 视觉与示例 | [自由相机](Runtime/Game/SimpleCameraControl/README.md) · [描边](Runtime/Game/OutLine/README.md) · [暗角](Runtime/Game/Vignette/README.md) · [Shader 与案例](Runtime/Shader/README.md) · [排序示例](Runtime/Game/Study/README.md) |
 | 工具链 | [Editor 工具索引](Editor/README.md) · [AssetBundle 打包与发布](Editor/AssetBundleTools/README.md) · [示例入口](Samples/README.md) |
 
 ## 构建与发布

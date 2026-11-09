@@ -2,32 +2,6 @@
 
 UPandaFramework 的原创部分采用根目录的 MIT 许可。随附第三方内容沿用其权利人的版权声明和适用许可。本文件记录已经识别的来源，并标出仍待核对的导入版本或再分发权限。 [框架 MIT 许可](LICENSE)
 
-## Quick Outline
-
-本地 `OutDrawline`、两个描边 Shader、对应材质和示例场景可追溯到 Chris Nolet 的 Quick Outline GitHub 项目，框架中含本地改动。GitHub 项目采用 MIT。同名 Unity Asset Store 包有单独的许可声明。此处保留 GitHub 上游的版权和许可正文。 [本地模块](Runtime/Game/QuickOutline/) · [上游项目](https://github.com/chrisnolet/QuickOutline) · [上游许可原文](https://github.com/chrisnolet/QuickOutline/blob/master/License.txt) · [Asset Store 发布页](https://assetstore.unity.com/packages/tools/particles-effects/quick-outline-115488)
-
-```text
-Copyright (c) 2018 Chris Nolet
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
 ## Unity Asset Bundle Browser
 
 编辑器工具包含基于 Unity Asset Bundle Browser 的源码和图标。上游 `1.7.0` 许可文件署名 `Copyright © 2017 Unity Technologies ApS`，采用 Unity Companion License。该许可将使用与分发限定在其 Unity 使用范围内，并要求保留许可和版权声明。本地导入的确切上游版本仍待核对，分发时应随附对应版本的完整许可和声明。 [本地编辑器工具](Editor/AssetBundleTools/AssetEditor/) · [上游 1.7.0 许可](https://github.com/Unity-Technologies/AssetBundles-Browser/blob/1.7.0/license.md) · [Unity Companion License](https://unity.com/legal/licenses/unity-companion-license)

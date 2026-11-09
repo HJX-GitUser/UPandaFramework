@@ -10,7 +10,7 @@
 | [切片体积云](ShaderLibrary/Library/BuildIn/体积云/README.md) | Built-in Surface Shader 与 C# 绘制组件。现成场景与材质保留了旧引用，按说明重绑后使用 |
 | [隧道暗角](ShaderLibrary/Library/BuildIn/Tunneling%20Vignette/) | 半球模型、透明叠加 Shader 与旧版 Universal Unlit Shader Graph。当前 prefab 及材质的旧引用需重新绑定 |
 | [置顶文字](ShaderLibrary/Library/BuildIn/UI/AlwaysOnTopText.shader) | UGUI Shader，以 `ZTest Always` 绕过深度遮挡，仍受透明队列和 Canvas 排序影响 |
-| [QuickOutline](../Game/QuickOutline/README.md) | 两份描边 Shader 位于玩法扩展目录，配套脚本与材质单独维护 |
+| [OutLine](../Game/OutLine/README.md) | 描边 Shader 使用 `UPandaGF/OutLine/` 路径，配套脚本与材质位于玩法扩展目录 |
 
 ## 管线与验收
 
