@@ -1,6 +1,20 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this package are documented here. The format follows Keep a Changelog and the project uses Semantic Versioning.
+
+## [Unreleased]
+
+### Changed (breaking)
+
+- `OutLine` (`Runtime/Game/OutLine`) is now an original implementation. Outline rendering no longer appends two materials to the target `Renderer`: the component creates a hidden proxy `Renderer` under each target and draws a single two-pass shader (`UPandaGF/OutLine/Outline`) that writes stencil first and then expands along the normal. Per-object color and width go through a `MaterialPropertyBlock` over five shared mode materials, so target meshes, material arrays and material instances are left untouched.
+- Smooth normals are area-weighted (triangle-area weighted face normals welded by quantized position) and written to the proxy mesh `NORMAL` channel instead of `UV3`, so models no longer need a free UV3. Readable meshes are merged into one submesh; non-readable meshes reuse the source geometry with one outline material per submesh. Proxy meshes are shared between components and destroyed with the last user.
+- Skinned proxies share the source bones and mirror blend-shape weights each frame; proxies no longer cast shadows, receive light probes or generate motion vectors.
+- Replaced `OutlineMask.shader` / `OutlineFill.shader` and both materials with `Outline.shader` and `Resources/Materials/Outline.mat`. The editor repair tool now repairs that single template material, and the demo generator writes scenes under `Runtime/Game/OutLine/Demo` via `UPandaGF → Runtime → OutLine`.
+- `precomputeOutline` keeps its inspector name, but the baked payload fields were renamed to `bakedMeshes` / `bakedNormals`; existing precompute data must be rebuilt with the **重新计算描边法线** context menu.
+
+### Removed
+
+- The Quick Outline attribution section in `THIRD_PARTY_NOTICES.md`; the outline module is no longer derived from it.
 
 ## [0.6.0] - 2026-11-08
 

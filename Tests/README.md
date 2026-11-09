@@ -10,6 +10,7 @@
 | 数据管线与编辑器护栏 | [Excel 二进制 v2](EditMode/ExcelBinaryV2Tests.cs) · [Excel 生成端链路](EditMode/ExcelGenerationPipelineTests.cs) · [编辑器护栏/AB 构建校验](EditMode/EditorGuardTests.cs) · [PlayerPrefs](EditMode/ExcelAndPlayerPrefsTests.cs) |
 | 启动、回滚、状态机、槽位存档恢复和根装配 | [P0RegressionTests](PlayMode/P0RegressionTests.cs) · [P1RegressionTests](PlayMode/P1RegressionTests.cs) |
 | 资源、请求协调、事件与销毁 | [FrameworkRegressionTests](PlayMode/FrameworkRegressionTests.cs) · [LifecycleRegressionTests](PlayMode/LifecycleRegressionTests.cs) · [CoordinationRegressionTests](PlayMode/CoordinationRegressionTests.cs) |
+| 描边代理渲染、网格共享与层级接管 | [OutlinePlayModeTests](PlayMode/OutlinePlayModeTests.cs) |
 | 平台、热更、序列化、回放与日志 | [PlatformCompatibilityTests](PlayMode/PlatformCompatibilityTests.cs) · [HotUpdateRegressionTests](PlayMode/HotUpdateRegressionTests.cs) · [SerializationMigrationTests](PlayMode/SerializationMigrationTests.cs) · [ReplayPerformanceTests](PlayMode/ReplayPerformanceTests.cs) · [LogConsoleRegressionTests](PlayMode/LogConsoleRegressionTests.cs) · [日志图标绑定](EditMode/LogConsoleIconTests.cs) |
 
 部分 PlayMode fixture 会生成临时资产、构建 AssetBundle 或暂时修改场景列表。整套测试适合在隔离宿主中运行，并核对 fixture 清理结果。Editor 菜单中的日志、事件和交互评分自检是额外验证入口。 [生命周期 fixture](PlayMode/LifecycleFixtures.cs) · [协调 fixture](PlayMode/CoordinationFixtures.cs) · [回放 fixture](PlayMode/ReplayPerformanceFixtures.cs)

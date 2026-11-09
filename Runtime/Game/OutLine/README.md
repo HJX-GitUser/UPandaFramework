@@ -1,29 +1,42 @@
-# OutLine 高亮描边
+# OutLine 描边高亮
 
-OutLine 用于 Unity 3D 模型的选中提示、交互高亮和遮挡剪影。当前版本面向项目的 Unity 2022.3 Built-in Render Pipeline。
+OutLine 为模型添加选中提示、交互高亮和遮挡剪影。当前版本面向 Unity 2022.3 / 2021.3 的 Built-in Render Pipeline。
+
+本模块是原创实现：不改动业务对象的材质与网格，而是在被描边对象下创建一个隐藏的代理 Renderer 来绘制轮廓。
 
 ## 快速接入
 
-1. 在模型根对象添加 `OutLine` 组件。组件查找自身与子级的 `MeshRenderer` 和 `SkinnedMeshRenderer`，也会准备当前未激活的子对象。
-2. 在 Inspector 设置模式、颜色和宽度。清除 `Can Flash` 可显示常亮轮廓。效果在 Play Mode 中生效。
-3. 使用 `outline.enabled` 开关高亮。关闭后会移除插件材质并恢复插件替换过的网格引用。频繁切换时复用组件及其准备好的资源。
+1. 在模型根对象添加 `OutLine` 组件。组件会收集自身与子级中启用的 `MeshRenderer`、`SkinnedMeshRenderer`（包含未激活的子物体）。
+2. 在 Inspector 设置模式、颜色和宽度。关闭 `Can Flash` 显示常亮轮廓。
+3. 用 `outline.enabled` 开关高亮。禁用时整块代理被销毁，业务对象的网格与材质保持原样。
 
-运行时组件类型为 `UPandaGF.Gameplay.OutLine`。组件与 Shader 保留原 GUID，描边模式保留原有的 0–4 序列化数值，已有场景、预制体和材质引用可继续使用。升级业务 C# 时，把 `QuickOutlineHighlight` 或 `OutDrawline` 改为 `OutLine`，并改用下表中的 `OutLine.描边模式` 成员。按名称查找 Shader 时，使用 `UPandaGF/OutLine/OutlineMask` 或 `UPandaGF/OutLine/OutlineFill`。
+运行时类型是 `UPandaGF.Gameplay.OutLine`，脚本与 Shader 沿用 0.6.0 的 GUID，已有场景和预制体不需要重新绑定。描边模式保留原有的 0–4 序列化数值。
+
+## 工作原理
+
+一个材质两个 Pass，绘制同一份几何：
+
+1. **Stencil Pass**：`ColorMask 0`，把模型本体覆盖到的像素写进模板缓冲（`Ref 1`）。它不产生可见像素。
+2. **Outline Pass**：顶点沿法线向屏幕外扩一圈，`Stencil { Comp NotEqual }` 只在本体之外着色 —— 本体把内圈挖掉，留下的就是轮廓。
+
+两个 Pass 的深度比较由材质属性 `_MaskZTest` / `_FillZTest` 控制。组件为五种模式各准备一份**共享材质**；颜色与宽度是普通 uniform，用 `MaterialPropertyBlock` 逐对象覆盖，因此不会给每个对象实例化材质。
+
+外扩宽度是屏幕相对厚度：透视相机按视深补偿，正交相机按视野高度补偿，远近与缩放变化下看起来一样粗。
 
 ## 模式与参数
 
-| 模式 | 效果 |
-| --- | --- |
-| `全部描边` | 整个外轮廓可见，轮廓可透过遮挡物 |
-| `可见描边` | 只画通过场景深度测试的外轮廓 |
-| `遮挡描边` | 只画场景深度之后的外轮廓 |
-| `描边与剪影` | 可见处画外轮廓，遮挡处填充剪影 |
-| `仅剪影` | 只填充遮挡处的剪影，描边宽度强制为零 |
+| 模式 | Mask 深度比较 | Fill 深度比较 | 效果 |
+| --- | --- | --- | --- |
+| `全部描边` | Always | Always | 整个外轮廓可见，可透过遮挡物 |
+| `可见描边` | Always | LessEqual | 只画通过深度测试的外轮廓 |
+| `遮挡描边` | Always | Greater | 只画场景深度之后的外轮廓 |
+| `描边与剪影` | LessEqual | Always | 可见处画轮廓，遮挡处填剪影 |
+| `仅剪影` | LessEqual | Greater | 只填遮挡处剪影，宽度强制为零 |
 
 - `OutlineColor` 默认白色，Alpha 控制整体透明度。
-- `OutlineWidth` 默认 `4`，Inspector 范围为 `0–200`。宽度是外扩系数，最终像素宽度随投影和分辨率变化。透视相机按视深补偿，正交相机按视野高度补偿。
-- `CanFlash` 默认开启，闪烁使用受 `Time.timeScale` 影响的时间。闪烁仅调制材质的 Alpha，组件上的颜色值可继续用作业务配置。
-- `Precompute Outline` 会在编辑器中保存普通网格的平滑法线，减少首次使用时的顶点计算。启用后可从组件右键菜单执行 **Rebuild Outline Normals**。模型重新导入、替换或修改法线后可用该命令重建。运行时仍需创建并配置网格副本。
+- `OutlineWidth` 默认 `4`，Inspector 范围 `0–200`，是屏幕相对厚度。切换 `仅剪影` 时组件内部把宽度按 0 处理，组件上的配置值不变。
+- `CanFlash` 默认开启，闪烁使用受 `Time.timeScale` 影响的时间，只调制材质 Alpha，组件上的颜色值可继续用作业务配置。
+- `Precompute Outline` 在编辑器中预计算平滑法线并随对象序列化；启用后可从组件右键菜单执行 **重新计算描边法线**。模型重新导入、换网格或改法线后需要重建。
 
 ## 脚本示例
 
@@ -51,26 +64,39 @@ public class SelectionHighlight : MonoBehaviour
 }
 ```
 
-运行时也可用 `gameObject.AddComponent<OutLine>()` 添加组件。根节点的直接子级增删会触发自动刷新。替换网格、改变材质槽、在现有节点上新增 Renderer，或增删更深层的子级后，调用 `outline.RefreshTargets()`。同一 Renderer 由最近的启用描边组件负责，避免父子组件叠加。运行时生成可变几何时，用新的 Mesh 引用替换后再刷新。已缓存的副本对应源网格创建时的数据。
+运行时也可用 `gameObject.AddComponent<OutLine>()`。根节点的直接子级增删会触发自动刷新；换网格、改材质槽、在现有节点上新增 Renderer 或增删更深层的子级后，调用 `outline.RefreshTargets()`。`TargetCount` 可用来确认当前被接管的 Renderer 数量。
 
 ## 网格与性能
 
-- Mask 先写模板缓冲，Fill 沿法线外扩并进行模板与深度测试。每个参与描边的 Renderer 增加两次几何绘制。
-- 插件保持原始 Mesh 和材质资产的数据。需要平滑法线或合并子网格时，它给 Renderer 分配运行时副本。使用相同源网格和兼容材质槽布局的目标共享副本。短暂禁用组件保留已准备的副本，最后一个持有者释放后销毁副本。
-- 运行时修改材质槽时，建议先禁用描边组件，改完再启用。`Renderer.materials` 会实例化整组材质，包括插件追加的两个槽。
-- 普通可读网格优先使用平滑法线。第四套 UV 已占用、有附加顶点流、网格不可读，或属于蒙皮网格时，描边沿原顶点法线外扩。硬边模型在这种情况下可能出现接缝。
-- 多子网格模型需要三角形拓扑、开启模型的 **Read/Write**，并至少为每个子网格分配一个材质槽。已有的额外材质层会继续绘制在最后一个原子网格上。静态合批 Renderer 会跳过，可在对象的 Static 设置里清除 **Batching Static**。
-- 遮挡取决于深度缓冲。未写深度的透明材质通常不会像不透明物体一样挡住描边。多个描边对象共用模板值 `1`，屏幕上重叠时可能互相裁剪。相机目标需要支持深度模板缓冲。
+- 可读网格：取一份副本，把全部子网格合并成 1 个绘制单元，并将**面积加权**的平滑法线写进副本的 `NORMAL` 通道（不再占用 UV3，也不会和模型的第二/第四套 UV 冲突）。相同源网格的多个物体共享同一份副本，最后一个使用者释放时销毁。
+- 不可读网格：直接复用原网格（原始法线，硬边模型可能出现接缝），代理按原子网格数量重复使用描边材质。
+- 每个参与描边的 Renderer 增加一个代理对象；描边本身是 2 次绘制。代理不投影、不接收光照探针、不产生运动矢量。
+- 蒙皮网格的代理与源共用骨骼，表情权重逐帧同步，因此变形动画下描边与模型保持一致。
+- 静态合批的 Renderer 会跳过（外扩依赖对象空间法线，合批会破坏它）。请在 Static 设置里清除 **Batching Static**。
+- 遮挡取决于深度缓冲。不写深度的透明物体通常不会挡住描边。多个描边对象共用模板值 `1`，屏幕上重叠时可能互相裁剪。相机需要支持深度模板缓冲。
+- 代理对象放在目标下并隐藏（`HideInHierarchy`），不会写入场景。需要查看它们时可临时关闭组件的 `hideFlags` 逻辑进行排查。
+
+## 层级规则
+
+一个 Renderer 只由离它最近的启用组件负责：子节点上的组件优先，父级组件扫描时会跳过已被更近组件接管的 Renderer。启用/禁用子级组件会自动通知父级重建，不需要手工刷新。
+
+## 从 0.6.0 迁移
+
+- 描边改为代理渲染，业务对象的 `Renderer.sharedMaterials` 不再被追加两个描边材质槽。若有代码依赖「末尾两个槽是描边材质」，需要改为读取代理对象（子物体名以 `(OutLine)` 结尾，带 `OutlineProxy` 标记组件）。
+- 两个旧 Shader（`OutlineMask` / `OutlineFill`）与两个旧材质被一个 `Outline.shader` + `Resources/Materials/Outline.mat` 取代。直接引用旧素材的自定义材质需要改指新 Shader。
+- `Precompute Outline` 的序列化字段改名，需要重新执行一次 **重新计算描边法线**。
+- 平滑法线从 UV3 改到 `NORMAL`，因此不再要求模型预留 UV3。
 
 ## 演示与排查
 
-打开 [QuickOutlineDemo.unity](Demo/QuickOutlineDemo.unity)，在 **Game** 视图进入 Play Mode。横向遮挡板同时覆盖五个模型的一部分，可对照上表检查遮挡差异。中间的立方体常亮，其余模型默认闪烁。编辑器菜单 **UPandaGF → Runtime → QuickOutline** 可新建演示场景并保存到框架的 `Runtime/高亮描边/`，或将地面、遮挡板和五个示例模型追加到当前场景。
+编辑器菜单 **UPandaGF → Runtime → OutLine → 创建示例场景（新建场景）** 会生成相机、平行光、地面、遮挡板和五个不同模式的模型，保存到 `Assets/upanda-framework/Runtime/Game/OutLine/Demo/`。也可用 **在当前场景追加示例物体** 把内容追加到现有场景。
 
 | 现象 | 检查项 |
 | --- | --- |
-| 整个模型没有描边 | 检查组件是否启用、Alpha 和宽度，确认相机目标有模板缓冲。剪影模式需要深度写入的遮挡物 |
-| 材质缺失或粉色 | 检查 [Mask 材质](Resources/Materials/OutlineMask.mat) 和 [Fill 材质](Resources/Materials/OutlineFill.mat) 的 Shader 引用及 Console。可运行同一菜单下的 **QuictOutLine材质修复** |
-| 多材质模型被跳过 | 检查 Console、模型的 **Read/Write**、子网格拓扑、材质槽数量和 **Batching Static** |
-| 换装或深层节点加入后无描边 | 完成网格和材质的变更，再调用 `RefreshTargets()` |
+| 完全没有描边 | 组件是否启用、Alpha 与宽度是否为 0、相机是否有模板缓冲；剪影模式需要写深度的遮挡物 |
+| 材质缺失或粉色 | 运行 **UPandaGF → Runtime → OutLine → 描边材质修复**，检查 `Resources/Materials/Outline.mat` 的 Shader 引用 |
+| 多材质模型没有描边 | 模型是否开启 **Read/Write**（不可读时按原子网格绘制，仍应有描边）、是否有 **Batching Static** |
+| 换装或深层节点加入后没有描边 | 完成网格与材质变更后调用 `RefreshTargets()` |
+| 父子都有组件但只出现一圈描边 | 正常行为：最近的启用组件接管 |
 
-[运行时组件](Scripts/OutLine.cs) · [Mask Shader](Shaders/OutlineMask.shader) · [Fill Shader](Shaders/OutlineFill.shader)
+[运行时组件](Scripts/OutLine.cs) · [Shader](Shaders/Outline.shader) · [模板材质](Resources/Materials/Outline.mat)

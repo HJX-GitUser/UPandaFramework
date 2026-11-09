@@ -1,3 +1,20 @@
+﻿/* ==========================================================================================
+ *  OutLine —— 描边高亮（原创重写版）
+ *
+ *  【做法】不改动业务对象的材质与网格，而是在被描边对象下创建一个隐藏的代理 Renderer：
+ *     · 可读网格：取一份副本，合并全部子网格，并把面积加权的平滑法线写进副本的 NORMAL；
+ *     · 不可读网格：直接复用原网格（沿用原始法线，硬边处可能出现接缝）；
+ *     · 材质：五种模式各一份共享材质，颜色与宽度用 MaterialPropertyBlock 逐对象覆盖。
+ *  代理只做「模板 + 外扩轮廓」两件事，禁用组件时整块代理销毁，业务资源原样保留。
+ *
+ *  【模式】五种模式的差异只有两个 Pass 的深度比较（写入共享材质）与轮廓宽度：
+ *    全部描边 / 可见描边 / 遮挡描边 / 描边与剪影 / 仅剪影。
+ *  枚举数值 0~4 是序列化契约，调整顺序会影响已有场景。
+ *
+ *  【层级】一个 Renderer 只由离它最近的启用组件负责：子节点上的组件优先，
+ *  父级组件在扫描时会跳过已被更近组件接管的 Renderer，避免父子叠加、描边变粗。
+ * ========================================================================================== */
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,12 +26,19 @@ using UnityEditor;
 
 namespace UPandaGF.Gameplay
 {
-    /// <summary>管理模型及其子物体的描边材质与运行时网格。</summary>
-    [MovedFrom(true, "UPandaGF.Gameplay", "UPandaGF.Gameplay", "QuickOutlineHighlight")]
+    /// <summary>给模型及其子物体叠加描边高亮的组件。</summary>
+    [MovedFrom(true, "UPandaGF.Gameplay", "UPandaGF.Gameplay", "OutDrawline")]
     [DisallowMultipleComponent]
-    public class OutLine : MonoBehaviour
+    [AddComponentMenu("UPandaGF/Gameplay/OutLine")]
+    public sealed class OutLine : MonoBehaviour
     {
-        /// <summary>数值对应已有场景和预制体的序列化数据。</summary>
+        /// <summary>描边 Shader 的声明名，编辑器工具与测试按此查找。</summary>
+        public const string ShaderName = "UPandaGF/OutLine/Outline";
+
+        /// <summary>模板材质在 Resources 下的路径（不含扩展名）。</summary>
+        public const string MaterialResourcePath = "Materials/Outline";
+
+        /// <summary>序列化数值 0~4 对应已有场景与预制体，不要调整顺序。</summary>
         public enum 描边模式
         {
             全部描边 = 0,
@@ -24,73 +48,58 @@ namespace UPandaGF.Gameplay
             仅剪影 = 4
         }
 
-        private static readonly int ZTestId = Shader.PropertyToID("_ZTest");
-        private static readonly int ColorId = Shader.PropertyToID("_OutlineColor");
-        private static readonly int WidthId = Shader.PropertyToID("_OutlineWidth");
-        private static readonly int SmoothNormalsId = Shader.PropertyToID("_UseSmoothNormals");
-        // 按源网格、材质槽布局和平滑法线策略复用副本。
-        private static readonly Dictionary<(Mesh source, int extraSlots, bool smooth), PreparedMesh> Meshes =
-            new Dictionary<(Mesh, int, bool), PreparedMesh>();
-        // 每个 Renderer 同时只能由一个启用的描边组件管理。
-        private static readonly Dictionary<Renderer, Target> AttachedTargets = new Dictionary<Renderer, Target>();
-
         [Serializable]
-        private class ListVector3
+        private sealed class BakedNormals
         {
-            public List<Vector3> data = null;
+            public List<Vector3> values = new List<Vector3>();
         }
 
-        private sealed class PreparedMesh
-        {
-            public (Mesh source, int extraSlots, bool smooth) Key;
-            public Mesh Mesh;
-            public int References;
-        }
+        [Header("描边")]
+        [SerializeField, Tooltip("深度比较组合决定轮廓在遮挡物前还是后显示。")]
+        private 描边模式 outlineMode = 描边模式.全部描边;
 
-        private sealed class Target
-        {
-            public OutLine Owner;
-            public Renderer Renderer;
-            public MeshFilter Filter;
-            public SkinnedMeshRenderer Skin;
-            public PreparedMesh Prepared;
-        }
+        [SerializeField, Tooltip("轮廓颜色；Alpha 为整体透明度，会被闪烁再次调制。")]
+        private Color outlineColor = Color.white;
 
-        [SerializeField] private 描边模式 outlineMode;
-        [SerializeField] private Color outlineColor = Color.white;
-        [SerializeField, Range(0f, 200f)] private float outlineWidth = 4f;
-        [SerializeField] public bool CanFlash = true;
+        [SerializeField, Range(0f, 200f), Tooltip("屏幕相对厚度，透视按视深、正交按视野高度补偿。")]
+        private float outlineWidth = 4f;
 
-        [Header("Optional")]
-        [SerializeField, Tooltip("在编辑器中预计算并保存普通网格的描边法线。")]
-        private bool precomputeOutline = false;
+        [Header("行为")]
+        [Tooltip("开启后轮廓做呼吸闪烁，受 Time.timeScale 影响。")]
+        public bool CanFlash = true;
 
-        [SerializeField, HideInInspector] private List<Mesh> bakeKeys = new List<Mesh>();
-        [SerializeField, HideInInspector] private List<ListVector3> bakeValues = new List<ListVector3>();
+        [SerializeField, Tooltip("在编辑器中预计算平滑法线并随对象序列化，避免运行时逐顶点计算。")]
+        private bool precomputeOutline;
 
-        private List<Target> targets = new List<Target>();
-        private List<Target> nextTargets = new List<Target>();
-        private readonly List<Renderer> renderers = new List<Renderer>();
-        private readonly List<Material> materials = new List<Material>();
-        private readonly List<float> blendWeights = new List<float>();
-        private readonly HashSet<Renderer> warnedTargets = new HashSet<Renderer>();
-        private readonly Material[] fillMaterials = new Material[2];
-        private Material maskMaterial;
-        private Material fillTemplate;
-        private Transform previousParent;
-        private bool targetsDirty;
-        private bool propertiesDirty = true;
-        private bool warnedMaterials;
-        private float flashPhase;
-        private float displayedAlpha = 1f;
+        [SerializeField, HideInInspector]
+        private List<Mesh> bakedMeshes = new List<Mesh>();
+
+        [SerializeField, HideInInspector]
+        private List<BakedNormals> bakedNormals = new List<BakedNormals>();
+
+        private readonly List<OutlineTarget> targets = new List<OutlineTarget>();
+        private readonly List<OutlineTarget> previous = new List<OutlineTarget>();
+        private readonly List<Renderer> scanned = new List<Renderer>();
+        private bool hierarchyDirty = true;
+        private bool appearanceDirty = true;
+        private float phase;
+        private float alpha = 1f;
+        private Transform lastParent;
+
+        /// <summary>当前被描边的 Renderer 数量，用于排查层级接管是否符合预期。</summary>
+        public int TargetCount => targets.Count;
 
         public 描边模式 OutlineMode
         {
             get => outlineMode;
             set
             {
+                if (outlineMode == value)
+                {
+                    return;
+                }
                 outlineMode = value;
-                propertiesDirty = true;
+                appearanceDirty = true;
             }
         }
 
@@ -100,7 +109,7 @@ namespace UPandaGF.Gameplay
             set
             {
                 outlineColor = value;
-                propertiesDirty = true;
+                appearanceDirty = true;
             }
         }
 
@@ -109,113 +118,169 @@ namespace UPandaGF.Gameplay
             get => outlineWidth;
             set
             {
-                outlineWidth = value;
-                propertiesDirty = true;
+                outlineWidth = Mathf.Max(0f, value);
+                appearanceDirty = true;
             }
+        }
+
+        /// <summary>是否闪烁。与 <see cref="CanFlash"/> 同义，便于脚本按属性书写。</summary>
+        public bool Flash
+        {
+            get => CanFlash;
+            set => CanFlash = value;
         }
 
         private void OnEnable()
         {
-            previousParent = transform.parent;
-            InvalidateAncestors(previousParent);
-            RefreshTargets();
+            lastParent = transform.parent;
+            NotifyAncestors(lastParent);
+            Rebuild();
+        }
+
+        private void OnDisable()
+        {
+            ClearTargets();
+            NotifyAncestors(transform.parent);
+        }
+
+        private void OnDestroy()
+        {
+            ClearTargets();
         }
 
         private void OnTransformChildrenChanged()
         {
-            targetsDirty = true;
+            // 子物体变化会改变描边目标的集合，下一帧统一重建。
+            hierarchyDirty = true;
         }
 
         private void OnTransformParentChanged()
         {
-            InvalidateAncestors(previousParent);
-            previousParent = transform.parent;
-            InvalidateAncestors(previousParent);
-            targetsDirty = true;
-        }
-
-        private static void InvalidateAncestors(Transform parent)
-        {
-            for (; parent != null; parent = parent.parent)
-            {
-                if (parent.TryGetComponent<OutLine>(out var outline))
-                {
-                    outline.targetsDirty = true;
-                }
-            }
+            NotifyAncestors(lastParent);
+            lastParent = transform.parent;
+            NotifyAncestors(lastParent);
+            hierarchyDirty = true;
         }
 
         private void LateUpdate()
         {
-            if (targetsDirty)
+            if (hierarchyDirty)
             {
-                RefreshTargets();
+                Rebuild();
             }
-
             if (targets.Count == 0)
             {
                 return;
             }
 
+            for (int i = 0; i < targets.Count; i++)
+            {
+                targets[i].SyncPose();
+            }
+
             if (CanFlash)
             {
-                // 在 0 到 2 之间循环，再映射到 0 到 1 的往返透明度。
-                flashPhase = Mathf.Repeat(flashPhase + Time.deltaTime * 6f, 2f);
+                phase = Mathf.Repeat(phase + Time.deltaTime * 6f, 2f);
             }
-
-            float alpha = CanFlash ? Mathf.PingPong(flashPhase, 1f) : 1f;
-            if (propertiesDirty)
+            float next = CanFlash ? Mathf.PingPong(phase, 1f) : 1f;
+            if (appearanceDirty || !Mathf.Approximately(next, alpha))
             {
-                ApplyMaterialProperties();
-                SetColor(alpha);
-            }
-            else if (displayedAlpha != alpha)
-            {
-                SetColor(alpha);
+                alpha = next;
+                ApplyAppearance();
             }
         }
 
-        /// <summary>更换网格、修改材质槽或调整深层子物体后，重新收集描边目标。</summary>
+        /// <summary>网格、材质槽或深层子物体变化后调用，重新收集描边目标。</summary>
         public void RefreshTargets()
         {
-            if (!isActiveAndEnabled)
-            {
-                return;
-            }
+            hierarchyDirty = false;
+            Rebuild();
+        }
 
-            targetsDirty = false;
-            foreach (var target in targets)
-            {
-                Detach(target);
-            }
+        private void Rebuild()
+        {
+            hierarchyDirty = false;
 
-            GetComponentsInChildren(true, renderers);
-            warnedTargets.RemoveWhere(renderer => renderer == null);
-            foreach (var renderer in renderers)
+            // 先建立新绑定，再释放旧绑定：新绑定先拿到网格副本的引用，
+            // 副本的引用计数不会在中途归零，重建时不会出现网格被销毁的空档。
+            previous.AddRange(targets);
+            targets.Clear();
+
+            if (isActiveAndEnabled)
             {
-                if ((renderer is MeshRenderer || renderer is SkinnedMeshRenderer) && Owns(renderer))
+                GetComponentsInChildren(true, scanned);
+                for (int i = 0; i < scanned.Count; i++)
                 {
-                    Attach(renderer);
-                }
-            }
-            renderers.Clear();
+                    Renderer renderer = scanned[i];
+                    if (renderer == null || renderer.GetComponent<OutlineProxy>() != null)
+                    {
+                        continue;
+                    }
+                    if (!(renderer is MeshRenderer) && !(renderer is SkinnedMeshRenderer))
+                    {
+                        continue;
+                    }
+                    if (!Owns(renderer))
+                    {
+                        continue;
+                    }
 
-            // 新目标先获取副本，再释放旧引用，避免刷新时重复创建网格。
-            ReleaseMeshes(targets);
-            (targets, nextTargets) = (nextTargets, targets);
-            if (targets.Count > 0)
+                    OutlineTarget target = OutlineTarget.Bind(this, renderer, BakedFor(renderer));
+                    if (target != null)
+                    {
+                        targets.Add(target);
+                    }
+                }
+                scanned.Clear();
+            }
+
+            for (int i = 0; i < previous.Count; i++)
             {
-                ApplyMaterialProperties();
-                SetColor(CanFlash ? Mathf.PingPong(flashPhase, 1f) : 1f);
+                previous[i].Dispose();
+            }
+            previous.Clear();
+
+            appearanceDirty = true;
+            alpha = CanFlash ? Mathf.PingPong(phase, 1f) : 1f;
+            ApplyAppearance();
+        }
+
+        private void ClearTargets()
+        {
+            for (int i = 0; i < targets.Count; i++)
+            {
+                targets[i].Dispose();
+            }
+            targets.Clear();
+            for (int i = 0; i < previous.Count; i++)
+            {
+                previous[i].Dispose();
+            }
+            previous.Clear();
+        }
+
+        private void ApplyAppearance()
+        {
+            appearanceDirty = false;
+            Color tint = outlineColor;
+            tint.a *= alpha;
+            float width = outlineMode == 描边模式.仅剪影 ? 0f : outlineWidth;
+            for (int i = 0; i < targets.Count; i++)
+            {
+                targets[i].ApplyAppearance(tint, width);
             }
         }
 
-        // 跳过由更近的描边组件负责的 Renderer。
+        /// <summary>离 Renderer 最近的启用组件负责它；没有更近的组件时归当前组件。</summary>
         private bool Owns(Renderer renderer)
         {
-            for (var node = renderer.transform; node != transform; node = node.parent)
+            for (Transform node = renderer.transform; node != null; node = node.parent)
             {
-                if (node.TryGetComponent<OutLine>(out var closer) && closer.enabled)
+                if (node == transform)
+                {
+                    return true;
+                }
+                if (node.TryGetComponent<OutLine>(out OutLine closer) && closer != this && closer.isActiveAndEnabled)
                 {
                     return false;
                 }
@@ -223,407 +288,124 @@ namespace UPandaGF.Gameplay
             return true;
         }
 
-        private void Attach(Renderer renderer)
+        private static void NotifyAncestors(Transform parent)
         {
-            if (AttachedTargets.TryGetValue(renderer, out var attached))
+            for (; parent != null; parent = parent.parent)
             {
-                attached.Owner.Detach(attached);
-                attached.Owner.targetsDirty = true;
-            }
-
-            var skin = renderer as SkinnedMeshRenderer;
-            MeshFilter filter = null;
-            if (skin == null)
-            {
-                renderer.TryGetComponent(out filter);
-            }
-
-            var source = skin != null ? skin.sharedMesh : filter != null ? filter.sharedMesh : null;
-            if (source == null || source.subMeshCount == 0)
-            {
-                return;
-            }
-
-            renderer.GetSharedMaterials(materials);
-            int subMeshes = source.subMeshCount;
-            if (renderer.isPartOfStaticBatch ||
-                materials.Count < subMeshes ||
-                (subMeshes > 1 && !source.isReadable))
-            {
-                if (warnedTargets.Add(renderer))
+                if (parent.TryGetComponent<OutLine>(out OutLine outline))
                 {
-                    Debug.LogWarning("OutLine skipped a renderer. Disable static batching, assign a material slot " +
-                        "for every submesh, and enable Read/Write for multi-submesh meshes.", renderer);
-                }
-                return;
-            }
-
-            if (subMeshes > 1)
-            {
-                for (int i = 0; i < subMeshes; i++)
-                {
-                    if (source.GetTopology(i) != MeshTopology.Triangles)
-                    {
-                        if (warnedTargets.Add(renderer))
-                        {
-                            Debug.LogWarning("OutLine requires triangle topology on multi-submesh meshes.", renderer);
-                        }
-                        return;
-                    }
-                }
-            }
-
-            if (!EnsureMaterials())
-            {
-                return;
-            }
-
-            bool smooth = skin == null && source.isReadable &&
-                source.HasVertexAttribute(VertexAttribute.Normal) &&
-                !source.HasVertexAttribute(VertexAttribute.TexCoord3) &&
-                ((MeshRenderer)renderer).additionalVertexStreams == null;
-            int extraSlots = subMeshes > 1 ? materials.Count - subMeshes : 0;
-            var prepared = smooth || subMeshes > 1 ? AcquireMesh(source, extraSlots, smooth) : null;
-            var target = new Target { Owner = this, Renderer = renderer, Filter = filter, Skin = skin, Prepared = prepared };
-
-            if (prepared != null)
-            {
-                AssignMesh(target, prepared.Mesh);
-            }
-            materials.Add(maskMaterial);
-            materials.Add(GetFillMaterial(smooth));
-            renderer.SetSharedMaterials(materials);
-            AttachedTargets.Add(renderer, target);
-            nextTargets.Add(target);
-        }
-
-        private bool EnsureMaterials()
-        {
-            if (maskMaterial != null)
-            {
-                return true;
-            }
-
-            var mask = Resources.Load<Material>("Materials/OutlineMask");
-            var fill = Resources.Load<Material>("Materials/OutlineFill");
-            if (mask == null || fill == null || mask.shader == null || fill.shader == null ||
-                mask.shader.name != "UPandaGF/OutLine/OutlineMask" ||
-                fill.shader.name != "UPandaGF/OutLine/OutlineFill")
-            {
-                if (!warnedMaterials)
-                {
-                    Debug.LogError("OutLine could not load its outline materials. Check Resources/Materials and the shaders.", this);
-                    warnedMaterials = true;
-                }
-                return false;
-            }
-
-            maskMaterial = new Material(mask) { name = "OutlineMask (Instance)", hideFlags = HideFlags.DontSave };
-            fillTemplate = fill;
-            return true;
-        }
-
-        private Material GetFillMaterial(bool smooth)
-        {
-            int index = smooth ? 1 : 0;
-            if (fillMaterials[index] == null)
-            {
-                var material = new Material(fillTemplate)
-                {
-                    name = smooth ? "OutlineFill (Smooth Normals)" : "OutlineFill (Instance)",
-                    hideFlags = HideFlags.DontSave
-                };
-                material.SetFloat(SmoothNormalsId, index);
-                fillMaterials[index] = material;
-            }
-            return fillMaterials[index];
-        }
-
-        // 模板遮罩与填充的深度比较组合决定五种显示效果。
-        private void ApplyMaterialProperties()
-        {
-            var maskTest = CompareFunction.Always;
-            var fillTest = CompareFunction.Always;
-            float width = outlineWidth;
-
-            switch (outlineMode)
-            {
-                case 描边模式.可见描边:
-                    fillTest = CompareFunction.LessEqual;
-                    break;
-                case 描边模式.遮挡描边:
-                    fillTest = CompareFunction.Greater;
-                    break;
-                case 描边模式.描边与剪影:
-                    maskTest = CompareFunction.LessEqual;
-                    break;
-                case 描边模式.仅剪影:
-                    maskTest = CompareFunction.LessEqual;
-                    fillTest = CompareFunction.Greater;
-                    width = 0f;
-                    break;
-            }
-
-            maskMaterial.SetFloat(ZTestId, (float)maskTest);
-            foreach (var material in fillMaterials)
-            {
-                if (material != null)
-                {
-                    material.SetFloat(ZTestId, (float)fillTest);
-                    material.SetFloat(WidthId, width);
-                }
-            }
-            propertiesDirty = false;
-        }
-
-        private void SetColor(float alpha)
-        {
-            displayedAlpha = alpha;
-            Color color = outlineColor;
-            color.a *= alpha;
-            foreach (var material in fillMaterials)
-            {
-                if (material != null)
-                {
-                    material.SetColor(ColorId, color);
+                    outline.hierarchyDirty = true;
                 }
             }
         }
 
-        private void OnDisable()
+        private List<Vector3> BakedFor(Renderer renderer)
         {
-            foreach (var target in targets)
+            if (!precomputeOutline)
             {
-                Detach(target);
+                return null;
             }
-            InvalidateAncestors(transform.parent);
+
+            Mesh mesh;
+            if (renderer is SkinnedMeshRenderer skin)
+            {
+                mesh = skin.sharedMesh;
+            }
+            else if (renderer.TryGetComponent(out MeshFilter filter))
+            {
+                mesh = filter.sharedMesh;
+            }
+            else
+            {
+                mesh = null;
+            }
+            return BakedFor(mesh);
         }
 
-        private void OnDestroy()
+        private List<Vector3> BakedFor(Mesh mesh)
         {
-            ReleaseMeshes(targets);
-            Destroy(maskMaterial);
-            foreach (var material in fillMaterials)
+            if (!precomputeOutline || mesh == null)
             {
-                Destroy(material);
+                return null;
             }
-        }
-
-        private void Detach(Target target)
-        {
-            var renderer = target.Renderer;
-            if (!AttachedTargets.TryGetValue(renderer, out var attached) || attached != target)
+            int index = bakedMeshes.IndexOf(mesh);
+            if (index < 0 || index >= bakedNormals.Count)
             {
-                return;
+                return null;
             }
-
-            AttachedTargets.Remove(renderer);
-            if (renderer == null)
-            {
-                return;
-            }
-
-            renderer.GetSharedMaterials(materials);
-            bool changed = materials.Remove(maskMaterial);
-            foreach (var material in fillMaterials)
-            {
-                if (material != null)
-                {
-                    changed |= materials.Remove(material);
-                }
-            }
-            if (changed)
-            {
-                renderer.SetSharedMaterials(materials);
-            }
-
-            var prepared = target.Prepared;
-            if (prepared != null &&
-                ((target.Skin != null && target.Skin.sharedMesh == prepared.Mesh) ||
-                 (target.Filter != null && target.Filter.sharedMesh == prepared.Mesh)))
-            {
-                AssignMesh(target, prepared.Key.source);
-            }
-        }
-
-        private void AssignMesh(Target target, Mesh mesh)
-        {
-            // 程序生成的源网格可能在副本仍被使用时销毁。
-            mesh = mesh != null ? mesh : null;
-            if (target.Skin == null)
-            {
-                target.Filter.sharedMesh = mesh;
-                return;
-            }
-
-            var skin = target.Skin;
-            // 换入或恢复蒙皮网格时保留原包围盒与当前表情权重。
-            var bounds = skin.localBounds;
-            blendWeights.Clear();
-            for (int i = 0; i < skin.sharedMesh.blendShapeCount; i++)
-            {
-                blendWeights.Add(skin.GetBlendShapeWeight(i));
-            }
-            skin.sharedMesh = mesh;
-            skin.localBounds = bounds;
-            int restoredWeights = mesh != null ? Mathf.Min(blendWeights.Count, mesh.blendShapeCount) : 0;
-            for (int i = 0; i < restoredWeights; i++)
-            {
-                skin.SetBlendShapeWeight(i, blendWeights[i]);
-            }
-        }
-
-        private PreparedMesh AcquireMesh(Mesh source, int extraSlots, bool smooth)
-        {
-            var key = (source, extraSlots, smooth);
-            if (!Meshes.TryGetValue(key, out var prepared))
-            {
-                var mesh = Instantiate(source);
-                mesh.name = source.name + " (OutLine)";
-                mesh.hideFlags = HideFlags.DontSave;
-                if (smooth)
-                {
-                    mesh.SetUVs(3, GetSmoothNormals(source));
-                }
-                if (source.subMeshCount > 1)
-                {
-                    AddOutlineSubmesh(source, mesh, extraSlots);
-                }
-                prepared = new PreparedMesh { Key = key, Mesh = mesh };
-                Meshes.Add(key, prepared);
-            }
-            prepared.References++;
-            return prepared;
-        }
-
-        private static void ReleaseMeshes(List<Target> bindings)
-        {
-            foreach (var target in bindings)
-            {
-                var prepared = target.Prepared;
-                if (prepared != null && --prepared.References == 0)
-                {
-                    Meshes.Remove(prepared.Key);
-                    Destroy(prepared.Mesh);
-                }
-            }
-            bindings.Clear();
-        }
-
-        private static void AddOutlineSubmesh(Mesh source, Mesh mesh, int extraSlots)
-        {
-            int originalCount = source.subMeshCount;
-            int combinedSlot = originalCount + extraSlots;
-            // 合并时使用绝对索引。部分 16 位网格通过基顶点寻址更多顶点。
-            bool upgradeIndices = mesh.indexFormat == IndexFormat.UInt16 && mesh.vertexCount > 65535;
-            if (upgradeIndices)
-            {
-                mesh.indexFormat = IndexFormat.UInt32;
-            }
-
-            mesh.subMeshCount = combinedSlot + 1;
-            var combined = new List<int>();
-            var indices = new List<int>();
-            for (int i = 0; i < originalCount; i++)
-            {
-                source.GetTriangles(indices, i);
-                combined.AddRange(indices);
-                if (upgradeIndices)
-                {
-                    mesh.SetTriangles(indices, i, false);
-                }
-            }
-
-            // 为额外的原材质层保留最后一个原子网格的几何，再追加描边专用槽。
-            for (int i = originalCount; i < combinedSlot; i++)
-            {
-                mesh.SetTriangles(indices, i, false);
-            }
-            mesh.SetTriangles(combined, combinedSlot, false);
-        }
-
-        private List<Vector3> GetSmoothNormals(Mesh mesh)
-        {
-            if (precomputeOutline)
-            {
-                int index = bakeKeys.IndexOf(mesh);
-                if (index >= 0 && index < bakeValues.Count &&
-                    bakeValues[index]?.data?.Count == mesh.vertexCount)
-                {
-                    return bakeValues[index].data;
-                }
-            }
-            return CalculateSmoothNormals(mesh);
-        }
-
-        private static List<Vector3> CalculateSmoothNormals(Mesh mesh)
-        {
-            var vertices = mesh.vertices;
-            var normals = new List<Vector3>(vertices.Length);
-            mesh.GetNormals(normals);
-            // 将同一位置的法线汇总，让硬边两侧的顶点沿同一方向外扩。
-            var sums = new Dictionary<Vector3, Vector3>(vertices.Length);
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                sums.TryGetValue(vertices[i], out var sum);
-                sums[vertices[i]] = sum + normals[i];
-            }
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                normals[i] = sums[vertices[i]].normalized;
-            }
-            return normals;
+            BakedNormals baked = bakedNormals[index];
+            return baked != null && baked.values != null && baked.values.Count == mesh.vertexCount
+                ? baked.values
+                : null;
         }
 
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            propertiesDirty = true;
+            outlineWidth = Mathf.Clamp(outlineWidth, 0f, 200f);
+            if (Application.isPlaying)
+            {
+                appearanceDirty = true;
+                return;
+            }
+
             if (!precomputeOutline)
             {
-                bakeKeys.Clear();
-                bakeValues.Clear();
+                bakedMeshes.Clear();
+                bakedNormals.Clear();
+                return;
             }
-            else if (bakeKeys.Count == 0 || bakeKeys.Count != bakeValues.Count)
+            if (bakedMeshes.Count == 0 || bakedMeshes.Count != bakedNormals.Count)
             {
-                // 导入过程中也可能触发 OnValidate，延迟到下一次编辑器更新再读取网格。
-                EditorApplication.delayCall -= BakeIfNeeded;
-                EditorApplication.delayCall += BakeIfNeeded;
+                // 导入过程中也会触发 OnValidate，网格读取推迟到下一次编辑器更新。
+                EditorApplication.delayCall -= BakeIfEnabled;
+                EditorApplication.delayCall += BakeIfEnabled;
             }
         }
 
-        private void BakeIfNeeded()
+        private void BakeIfEnabled()
         {
             if (this != null && precomputeOutline && !EditorApplication.isPlayingOrWillChangePlaymode)
             {
-                Bake();
+                RebuildBakedNormals();
             }
         }
 
-        [ContextMenu("Rebuild Outline Normals")]
-        private void Bake()
+        /// <summary>重新计算并保存普通网格的平滑法线；模型重新导入或换网格后执行。</summary>
+        [ContextMenu("重新计算描边法线")]
+        private void RebuildBakedNormals()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
                 return;
             }
 
-            Undo.RecordObject(this, "Bake OutLine Normals");
-            bakeKeys.Clear();
-            bakeValues.Clear();
-            var baked = new HashSet<Mesh>();
-            foreach (var filter in GetComponentsInChildren<MeshFilter>(true))
+            Undo.RecordObject(this, "Rebuild OutLine Normals");
+            bakedMeshes.Clear();
+            bakedNormals.Clear();
+
+            var seen = new HashSet<Mesh>();
+            foreach (MeshFilter filter in GetComponentsInChildren<MeshFilter>(true))
             {
-                var mesh = filter.sharedMesh;
-                if (mesh != null && mesh.isReadable && mesh.HasVertexAttribute(VertexAttribute.Normal) &&
-                    !mesh.HasVertexAttribute(VertexAttribute.TexCoord3) && baked.Add(mesh))
-                {
-                    bakeKeys.Add(mesh);
-                    bakeValues.Add(new ListVector3 { data = CalculateSmoothNormals(mesh) });
-                }
+                CollectBaked(filter != null ? filter.sharedMesh : null, seen);
             }
+            foreach (SkinnedMeshRenderer skin in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                CollectBaked(skin != null ? skin.sharedMesh : null, seen);
+            }
+
             EditorUtility.SetDirty(this);
             PrefabUtility.RecordPrefabInstancePropertyModifications(this);
+        }
+
+        private void CollectBaked(Mesh mesh, HashSet<Mesh> seen)
+        {
+            if (mesh == null || !mesh.isReadable || !mesh.HasVertexAttribute(VertexAttribute.Normal) || !seen.Add(mesh))
+            {
+                return;
+            }
+            bakedMeshes.Add(mesh);
+            bakedNormals.Add(new BakedNormals { values = OutlineMeshCache.ComputeSmoothNormals(mesh) });
         }
 #endif
     }

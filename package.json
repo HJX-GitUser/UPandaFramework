@@ -2,7 +2,7 @@
   "name": "com.upanda.framework",
   "version": "0.6.0",
   "displayName": "UPandaFramework",
-  "description": "Unity client framework: ordered startup, service composition, asset leasing, transactional content update, UI/audio/save/logging and optional gameplay modules.",
+  "description": "Unity 客户端基础框架：启动装配、资源与热更、UI、音频、存档、日志，以及可选玩法模块。Unity client framework with startup, assets, UI, audio, save and logging.",
   "unity": "2021.3",
   "dependencies": {
     "com.unity.textmeshpro": "3.0.6"

@@ -1,304 +1,151 @@
-﻿//
-//  OutlineMaterialRepairTool.cs
-//  路径：Assets/Scripts/upanda-framework/Editor/OutlineEditor/
+﻿// =============================================================================
+//  OutlineMaterialRepairTool.cs —— 描边模板材质检查 / 修复
 //
-// =============================================================================
-//  一、这个工具解决什么问题
-// =============================================================================
-//  Outline 描边方案依赖两个「放在 Resources 下」的材质：
+//  运行时只依赖一份模板材质：Resources/Materials/Outline.mat，它引用
+//  Shader "UPandaGF/OutLine/Outline"。跨 Unity 版本升级、重装包或整体重建
+//  Samples 目录时，.mat 里保存的 Shader GUID 可能断开，表现为 Inspector 里
+//  Shader 显示 Missing、模型描边变玫红色。本工具会：
+//    1. 按运行时同样的路径（Resources.Load）取出模板材质；
+//    2. 检查 Shader 引用是否丢失（null / 名称为空 / Hidden/InternalErrorShader）；
+//    3. 丢失就按 Shader 声明名在工程里找回并重新挂上，保存材质资产；
+//    4. 顺带校验 Resources 路径是否仍能被运行时加载。
 //
-//      Materials/OutlineMask     → Shader "UPandaGF/OutLine/OutlineMask"
-//      Materials/OutlineFill     → Shader "UPandaGF/OutLine/OutlineFill"
-//
-//  （路径与 OutLine.cs 里的 Resources.Load<Material>(@"Materials/...") 完全一致）
-//
-//  跨 Unity 版本升级、重装/重新导入包（Samples 目录被整体重建）等操作会导致 .mat 里
-//  保存的 Shader GUID 引用断掉 —— 表现就是 Inspector 里 Shader 显示 Missing、
-//  模型/描边变成玫红色。本工具会：
-//
-//    1. 按运行时同样的方式（Resources.Load）取出这两个材质
-//    2. 检查它的 Shader 引用是否已丢失
-//       （null / 名称为空 / Hidden/InternalErrorShader 都算丢失）
-//    3. 丢失就按 Shader 声明名在工程里找回对应 .shader，重新挂上并保存材质资产
-//    4. 在 Console 输出逐条报告，顺带提示构建期风险
-//
-// =============================================================================
-//  二、使用方式
-// =============================================================================
-//  菜单栏：UPandaGF/Runtime/Outline/OutLine材质修复
-//
-//  Shader 的查找顺序（两级兜底）：
-//    ① Shader.Find("UPandaGF/OutLine/OutlineMask")      —— 编辑器下可搜到工程内全部 Shader
-//    ② 遍历 AssetDatabase 里所有 Shader 资源，按声明名精确匹配
-//
-//  注：本工具只修「引用」不修「编译错误」。若 Shader 本身编译失败（例如所用 API 在新
-//      版本已被移除、或工程切到了 URP/HDRP），重挂后依然是玫红色，需按 Console 的
-//      Shader 报错修 shader 源码 —— 这种情况下报告里会给出明确提示。
+//  菜单：UPandaGF/Runtime/OutLine/描边材质修复
 // =============================================================================
 
 using System;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using UPandaGF.Gameplay;
 
 namespace UPandaGF.GFEditor
 {
-    /// <summary>
-    /// QuickOutline 描边材质「Shader 引用丢失」检查 / 修复工具
-    /// </summary>
+    /// <summary>描边模板材质的 Shader 引用检查与修复工具。</summary>
     public static class OutlineMaterialRepairTool
     {
-        // ---------------- 配置：与运行时脚本、Shader 声明保持一致 ----------------
-
-        private const string MenuPath = "UPandaGF/Runtime/高亮描边/OutLine材质修复";
-
-        // 与 OutLine.cs 中 Resources.Load<Material>(@"Materials/...") 的路径一致
-        private const string MaskResourcesPath = "Materials/OutlineMask";
-        private const string FillResourcesPath = "Materials/OutlineFill";
-
-        // 与 .shader 文件里 Shader "..." 的声明名一致
-        private const string MaskShaderName = "UPandaGF/OutLine/OutlineMask";
-        private const string FillShaderName = "UPandaGF/OutLine/OutlineFill";
-
-        // Shader 引用丢失时 Unity 使用的内置占位 Shader（渲染出来就是玫红色）
-        private const string InternalErrorShaderName = "Hidden/InternalErrorShader";
-
-        // 单个材质的处理结果
-        private enum 修复结果
-        {
-            正常,    // 引用完好
-            已修复,  // 已重新挂载并保存
-            失败     // 材质或 Shader 资源缺失，无法修复
-        }
-
-        // =====================================================================
-        //  入口
-        // =====================================================================
+        private const string MenuPath = "UPandaGF/Runtime/OutLine/描边材质修复";
+        private const string InternalErrorShader = "Hidden/InternalErrorShader";
+        private const string MaterialPathSuffix = "/OutLine/Resources/Materials/Outline.mat";
 
         [MenuItem(MenuPath, false, 100)]
-        public static void RepairOutlineMaterials()
+        public static void Repair()
         {
             AssetDatabase.Refresh();
 
-            // 先确保两个 Shader 资源本身找得到（找不到就没法修）
-            Shader maskShader = FindShader(MaskShaderName);
-            Shader fillShader = FindShader(FillShaderName);
+            var report = new StringBuilder();
+            report.AppendLine("===== 描边材质修复 =====");
 
-            int repairedCount = 0;
-            int healthyCount = 0;
-            int failedCount = 0;
-
-            StringBuilder report = new StringBuilder();
-            report.AppendLine("===== Outline 描边材质修复 =====");
-
-            Count(ProcessMaterial(MaskResourcesPath, MaskShaderName, maskShader, report),
-                  ref repairedCount, ref healthyCount, ref failedCount);
-
-            Count(ProcessMaterial(FillResourcesPath, FillShaderName, fillShader, report),
-                  ref repairedCount, ref healthyCount, ref failedCount);
-
-            // 修完统一落盘（材质是资产，必须 SaveAssets 才会写进 .mat 文件）
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-
-            report.AppendLine("===== 完成：修复 " + repairedCount + " 个 / 正常 " + healthyCount +
-                              " 个 / 失败 " + failedCount + " 个 =====");
-
-            if (repairedCount > 0)
-            {
-                report.AppendLine("（已重新挂载 Shader 并保存 .mat，可直接在 Inspector 里确认，建议随后提交版本控制）");
-            }
-
-            Debug.Log(report.ToString());
-
-            // 批处理（-batchmode）下不允许弹窗，只保留 Console 日志
-            if (Application.isBatchMode) return;
-
-            if (failedCount > 0)
-            {
-                EditorUtility.DisplayDialog("QuickOutline 材质修复",
-                    "完成，但有 " + failedCount + " 个失败，详情见 Console。", "知道了");
-            }
-            else if (repairedCount > 0)
-            {
-                EditorUtility.DisplayDialog("QuickOutline 材质修复",
-                    "已修复 " + repairedCount + " 个材质，" + healthyCount + " 个本来就正常。", "好");
-            }
-            else
-            {
-                EditorUtility.DisplayDialog("QuickOutline 材质修复",
-                    "检查完毕：" + healthyCount + " 个材质的 Shader 引用都正常，无需修复。", "好");
-            }
-        }
-
-        // =====================================================================
-        //  单个材质的「检查 → 修复 → 报告」
-        // =====================================================================
-
-        private static 修复结果 ProcessMaterial(string resourcesPath, string shaderName, Shader shader,
-                                                    StringBuilder report)
-        {
-            string label = resourcesPath + "（期望 Shader：" + shaderName + "）";
-
-            // ---------- 步骤 1：取材质（与运行时同样用 Resources.Load） ----------
-            Material mat = FindMaterialAsset(resourcesPath, out string assetPath);
-
-            if (mat == null)
-            {
-                report.AppendLine("[失败] " + label);
-                report.AppendLine("        在 Resources 下找不到该材质。请确认 .mat 文件存在，且位于某个名为 Resources 的目录下" +
-                                  "（相对路径需为 " + resourcesPath + ".mat），例如：" +
-                                  "Assets/.../Runtime/Game/OutLine/Resources/" + resourcesPath + ".mat");
-                return 修复结果.失败;
-            }
-
-            // ---------- 步骤 2：Shader 资源本身在不在 ----------
+            Shader shader = FindShader(OutLine.ShaderName);
             if (shader == null)
             {
-                report.AppendLine("[失败] " + label);
-                report.AppendLine("        工程里找不到 Shader \"" + shaderName + "\"，无法修复（材质：" + assetPath + "）。");
-                report.AppendLine("        请确认对应 .shader 文件存在并编译通过（Assets/.../Runtime/Game/OutLine/Shaders/）。");
-                return 修复结果.失败;
-            }
-
-            // ---------- 步骤 3：引用完好、且指向的就是约定的 Shader → 跳过 ----------
-            bool shaderMissing = IsShaderMissing(mat);
-            bool shaderMismatched = !shaderMissing && mat.shader.name != shaderName;
-
-            if (!shaderMissing && !shaderMismatched)
-            {
-                report.AppendLine("[正常] " + label + " → 引用完好（" + assetPath + "）");
-                return 修复结果.正常;
-            }
-
-            // ---------- 步骤 4：引用断了 / 指错 → 重挂 ----------
-            string originalName = (mat.shader == null || string.IsNullOrEmpty(mat.shader.name))
-                ? "<null>"
-                : mat.shader.name;
-
-            mat.shader = shader;
-            EditorUtility.SetDirty(mat);   // 标脏；SaveAssets 由入口统一调用
-
-            report.AppendLine("[已修复] " + label);
-            if (shaderMissing)
-            {
-                report.AppendLine("        Shader 引用已丢失（原值 " + originalName + "）→ 重新挂上 \"" +
-                                  shader.name + "\"（" + assetPath + "）");
-            }
-            else
-            {
-                report.AppendLine("        原本指向 \"" + originalName + "\"，与 QuickOutline 的约定不符 → 已改回 \"" +
-                                  shader.name + "\"（" + assetPath + "）");
-            }
-
-            AppendBuildHint(shader, report);
-            EditorGUIUtility.PingObject(mat);
-
-            return 修复结果.已修复;
-        }
-
-        /// <summary>
-        /// 构建期风险提示（不影响编辑器内表现，但会决定打包后是否变玫红）
-        /// </summary>
-        private static void AppendBuildHint(Shader shader, StringBuilder report)
-        {
-            if (!shader.isSupported)
-            {
-                report.AppendLine("        [!] " + shader.name + " 在当前平台不受支持或编译失败，" +
-                                  "材质大概率仍是玫红色 —— 请看 Console 的 Shader 报错（典型原因：" +
-                                  "用了新版本才有的 API，或工程已切到 URP/HDRP）。");
+                report.AppendLine("找不到 Shader \"" + OutLine.ShaderName + "\"，请确认 Runtime/Game/OutLine/Shaders/Outline.shader 已导入。");
+                Finish(report, false);
                 return;
             }
 
-        }
-
-        // =====================================================================
-        //  资源查找
-        // =====================================================================
-
-        /// <summary>
-        /// 判断材质的 Shader 引用是否已丢失
-        /// （引用断掉时 Unity 会给出 null、空名、或内置的 Hidden/InternalErrorShader）
-        /// </summary>
-        private static bool IsShaderMissing(Material mat)
-        {
-            Shader shader = mat.shader;
-
-            if (shader == null) return true;
-            if (string.IsNullOrEmpty(shader.name)) return true;
-
-            return shader.name == InternalErrorShaderName;
-        }
-
-        /// <summary>
-        /// 取 Resources 下的材质：优先用运行时同样的 Resources.Load，
-        /// 失败再按「任意 Resources 目录 + 相同相对路径」在 AssetDatabase 里兜底检索
-        /// </summary>
-        private static Material FindMaterialAsset(string resourcesPath, out string assetPath)
-        {
-            Material mat = Resources.Load<Material>(resourcesPath);
-            if (mat != null)
+            Material material = FindTemplateMaterial(out string materialPath);
+            if (material == null)
             {
-                assetPath = AssetDatabase.GetAssetPath(mat).Replace('\\', '/');
-                return mat;
+                report.AppendLine("找不到模板材质 " + OutLine.MaterialResourcePath +
+                    "（应位于某个 Resources 目录下），请确认包的 Resources 目录完整。");
+                Finish(report, false);
+                return;
             }
 
-            // 兜底：文件名过滤 + 路径后缀匹配（相对路径必须位于某个 Resources 目录之下）
-            string fileName = resourcesPath.Substring(resourcesPath.LastIndexOf('/') + 1);
-            string wantSuffix = "/Resources/" + resourcesPath + ".mat";
+            report.AppendLine("模板材质：" + materialPath);
 
-            foreach (string guid in AssetDatabase.FindAssets("t:Material " + fileName))
+            bool repaired = false;
+            if (material.shader == null || material.shader.name != OutLine.ShaderName)
+            {
+                string previous = material.shader != null ? material.shader.name : "<丢失>";
+                if (previous == InternalErrorShader)
+                {
+                    previous = "<丢失>";
+                }
+                material.shader = shader;
+                EditorUtility.SetDirty(material);
+                AssetDatabase.SaveAssets();
+                repaired = true;
+                report.AppendLine("已修复 Shader 引用：" + previous + " → " + OutLine.ShaderName);
+            }
+            else
+            {
+                report.AppendLine("Shader 引用正常：" + OutLine.ShaderName);
+            }
+
+            Material runtimeMaterial = Resources.Load<Material>(OutLine.MaterialResourcePath);
+            if (runtimeMaterial == null)
+            {
+                report.AppendLine("警告：运行时 Resources.Load(\"" + OutLine.MaterialResourcePath +
+                    "\") 取不到材质，请确认它仍在 Resources 目录内。");
+            }
+            else if (runtimeMaterial != material)
+            {
+                report.AppendLine("警告：Resources.Load 取到的材质与该路径不是同一份资产，可能存在多份同名文件。");
+            }
+            else
+            {
+                report.AppendLine("运行时 Resources 加载正常。");
+            }
+
+            Finish(report, repaired);
+        }
+
+        private static void Finish(StringBuilder report, bool repaired)
+        {
+            report.AppendLine("===== 完成 =====");
+            Debug.Log(report.ToString());
+
+            // 批处理（-batchmode）下不弹窗，只保留 Console 日志。
+            if (!Application.isBatchMode)
+            {
+                EditorUtility.DisplayDialog("描边材质修复",
+                    repaired ? "已重新挂载 Shader 并保存材质，建议提交版本控制。" : "描边材质无需修复，详情见 Console。",
+                    "确定");
+            }
+        }
+
+        private static Material FindTemplateMaterial(out string assetPath)
+        {
+            assetPath = null;
+            foreach (string guid in AssetDatabase.FindAssets("Outline t:Material"))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid).Replace('\\', '/');
-                if (path.EndsWith(wantSuffix, StringComparison.OrdinalIgnoreCase))
+                if (!path.EndsWith(MaterialPathSuffix, StringComparison.OrdinalIgnoreCase))
                 {
-                    Material found = AssetDatabase.LoadAssetAtPath<Material>(path);
-                    if (found != null)
-                    {
-                        assetPath = path;
-                        return found;
-                    }
+                    continue;
                 }
+                assetPath = path;
+                return AssetDatabase.LoadAssetAtPath<Material>(path);
             }
 
-            assetPath = null;
-            return null;
+            Material fallback = Resources.Load<Material>(OutLine.MaterialResourcePath);
+            if (fallback != null)
+            {
+                assetPath = AssetDatabase.GetAssetPath(fallback);
+            }
+            return fallback;
         }
 
-        /// <summary>
-        /// 找回 Shader：先 Shader.Find（编辑器下能搜到工程内所有 Shader），
-        /// 再遍历 AssetDatabase 按声明名精确匹配
-        /// </summary>
         private static Shader FindShader(string shaderName)
         {
-            Shader shader = Shader.Find(shaderName);
-            if (shader != null) return shader;
+            Shader found = Shader.Find(shaderName);
+            if (found != null)
+            {
+                return found;
+            }
 
+            // Shader.Find 在部分导入状态下可能找不到，退回按资产逐个比对声明名。
             foreach (string guid in AssetDatabase.FindAssets("t:Shader"))
             {
-                string path = AssetDatabase.GUIDToAssetPath(guid);
-                Shader candidate = AssetDatabase.LoadAssetAtPath<Shader>(path);
+                Shader candidate = AssetDatabase.LoadAssetAtPath<Shader>(AssetDatabase.GUIDToAssetPath(guid));
                 if (candidate != null && candidate.name == shaderName)
                 {
                     return candidate;
                 }
             }
-
             return null;
-        }
-
-        // =====================================================================
-        //  工具方法
-        // =====================================================================
-
-        private static void Count(修复结果 result, ref int repaired, ref int healthy, ref int failed)
-        {
-            switch (result)
-            {
-                case 修复结果.已修复: repaired++; break;
-                case 修复结果.正常: healthy++; break;
-                default: failed++; break;
-            }
         }
     }
 }
