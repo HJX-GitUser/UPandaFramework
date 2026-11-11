@@ -8,7 +8,7 @@ Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行�
   - Gitee：`https://gitee.com/he-jinxian/upanda-framework.git#master`
   - GitHub：`https://github.com/HJX-GitUser/UPandaFramework.git#main`
 
-  两个地址指向同一份代码，分支名取各自默认分支（Gitee 为 `master`，GitHub 为 `main`），也可把后缀换成具体 tag 固定版本。需要宿主已安装 Git，并确认 TextMeshPro 依赖可解析。
+  两个地址指向同一份代码，分支名取各自默认分支（Gitee 为 `master`，GitHub 为 `main`），也可把后缀换成具体 tag 固定版本。需要宿主已安装 Git，并确认 TextMeshPro 与 Input System 依赖可解析。
 - **源码拷贝**：把整个 `upanda-framework` 目录（含 `.meta`）复制到 `Assets/upanda-framework`。
 
 要求 **Unity 2021.3 LTS 或更高**；2021.3.45f2c1 与 2022.3.53f1c1 均已编译并跑通 EditMode/PlayMode 回归。
@@ -16,7 +16,7 @@ Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行�
 [Gitee](https://gitee.com/he-jinxian/upanda-framework.git) · [GitHub](https://github.com/HJX-GitUser/UPandaFramework.git) · [变更记录](CHANGELOG.md) · [优化计划](OPTIMIZATION_PLAN.md)
 
 ## 集成到 Unity 项目
-1. 导入框架目录及 `.meta`，在 Package Manager 确认 uGUI 和 TextMeshPro 可用。运行时输入的默认后端使用旧 Input Manager。使用 HybridCLR 程序集加载、URP 效果或运行测试时，再核对对应宿主依赖。
+1. 导入框架目录及 `.meta`，在 Package Manager 确认 uGUI、TextMeshPro 与 Input System 可用。运行时输入后端按工程的 Active Input Handling 自动选择：启用新 Input System 时使用 `InputSystemBackend`，否则回退旧 Input Manager。使用 HybridCLR 程序集加载、URP 效果或运行测试时，再核对对应宿主依赖。
 2. 在启动场景通过 `UPandaGF → 创建UPGameRoot` 创建根节点。菜单还会创建可选的 `GameLaunchExample`。每个应用只保留一条启动流程，将启动场景加入 Build Settings。
 3. 在 Inspector 选择资源模式。编辑器直读使用 AssetDatabase；Player 可直接使用 `Resources` 目录，或使用 AssetBundle（先按目标平台打包并生成 `assetData.assetref`）。保存场景会把根配置导出到 `Assets/StreamingAssets/Data/GameRootConfig.json`。
 4. 在示例上设置 `firstScene`，或在自己的入口等待根就绪，再调用 `root.Services.Scenes.LoadAsync(...)`。AB 场景使用清单登记的完整路径。接入热更前，先验证随包资源能启动。

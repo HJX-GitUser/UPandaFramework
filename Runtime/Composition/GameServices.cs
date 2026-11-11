@@ -1,4 +1,4 @@
-﻿/* ==========================================================================================
+/* ==========================================================================================
  * GameServices —— 服务组合根（Composition Root）
  *
  * 【职责】
@@ -99,8 +99,9 @@ namespace UPandaGF
             ResourceLoader = resources;
             Assets = new AssetService(resources, assets);
             TimeService = new GameTimeService();
-            // 输入服务默认用旧版 Input 后端（UnityLegacyInputBackend），绑定表可被配置覆盖
-            InputService = new InputService(new UnityLegacyInputBackend(), TimeService, config.inputBindings);
+            // 输入后端按工程设置自动选择：启用新 Input System 时用 InputSystemBackend，
+            // 否则回退旧版 Input Manager；绑定表仍可被 UPGameRootConfig.inputBindings 覆盖。
+            InputService = new InputService(InputBackendFactory.Create(), TimeService, config.inputBindings);
             Saves = new FileSaveService(saveDirectory);
             Log = new LogService();
             // 音频：依赖全部从容器注入（资源 / 帧驱动 / 日志）；provider 让驱动重建后能自动恢复

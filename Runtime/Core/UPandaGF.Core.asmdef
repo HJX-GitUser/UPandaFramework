@@ -1,9 +1,9 @@
 {
     "name": "UPandaGF.Core",
-    "rootNamespace": "",
     "references": [
         "UPandaGF.Contracts",
-        "UPandaGF.Diagnostics"
+        "UPandaGF.Diagnostics",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

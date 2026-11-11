@@ -31,7 +31,7 @@ var pool = services.CreatePool(scope);
 
 ## 输入、暂停和计时
 
-`InputService` 按上下文查找动作。默认后端使用 Unity 旧 Input Manager，输入轴和键位由 `UPGameRootConfig.inputBindings` 提供。`PushContext("UI")` 返回上下文凭据，释放后移除该上下文。最上层命中的上下文决定输入，阻断层可屏蔽下面的上下文。暂停还会屏蔽 Gameplay 动作。 [输入实现](InputAndTime.cs)
+`InputService` 按上下文查找动作。输入后端由 `InputBackendFactory` 按工程的 Active Input Handling 选择：启用新 Input System 时用 `InputSystemBackend`（Keyboard/Mouse/Gamepad 映射），否则用旧 Input Manager。输入轴和键位仍由 `UPGameRootConfig.inputBindings` 提供，切换后端不需要改配置。`PushContext("UI")` 返回上下文凭据，释放后移除该上下文。最上层命中的上下文决定输入，阻断层可屏蔽下面的上下文。暂停还会屏蔽 Gameplay 动作。 [输入实现](InputAndTime.cs)
 
 `Pause.Pause(reason)` 返回可嵌套的暂停凭据。首个凭据冻结 `Time.timeScale` 和 `AudioListener.pause`，最后一份释放后恢复旧值。使用 `Clock.SetTimeScale` 可以在暂停期间更新待恢复的倍率。`PauseMenuController` 可挂在菜单外的常驻节点，将 `menuRoot` 绑定到菜单。控制器持有暂停和 UI 上下文凭据，关闭或禁用时归还。 [时间与暂停](InputAndTime.cs) · [菜单控制器](PauseMenuController.cs)
 

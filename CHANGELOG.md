@@ -2,6 +2,18 @@
 
 All notable changes to this package are documented here. The format follows Keep a Changelog and the project uses Semantic Versioning.
 
+## [0.8.0] - 2026-11-11
+
+### Added
+
+- New Input System support: `com.unity.inputsystem` (1.11.2) is now a package dependency and `UPandaGF.Core` references `Unity.InputSystem`, so framework code and future gameplay code can use the new input APIs directly.
+- `InputSystemBackend`: maps the existing `IInputBackend` contract (`InputBinding` axis names and `KeyCode`) onto `Keyboard` / `Mouse` / `Gamepad`, so `UPGameRootConfig.inputBindings`, `InputService` contexts and pause rules keep working after switching Active Input Handling.
+- EditMode regression `InputSystemIntegrationTests` asserting the factory picks the backend that matches the project's input setting.
+
+### Changed
+
+- `GameServices` now creates the input backend through `InputBackendFactory` instead of hard-wiring `UnityLegacyInputBackend`; projects that keep the old Input Manager stay on the legacy backend.
+
 ## [0.7.1] - 2026-11-10
 
 ### Fixed
