@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace UPandaGF
 {
@@ -17,6 +17,8 @@ namespace UPandaGF
         public int PendingSceneRequests { get; internal set; }
         public int OpenPanels { get; internal set; }
         public int PendingPanels { get; internal set; }
+        /// <summary>UI 面板状态表、加载/打开耗时与对象池统计。</summary>
+        public UIDiagnosticsSnapshot UI { get; internal set; }
     }
 
     public static class FrameworkDiagnostics
@@ -56,8 +58,12 @@ namespace UPandaGF
             var ui = root.RootUIManager;
             if (ui != null)
             {
-                snapshot.OpenPanels = ui.DiagnosticOpenPanelCount;
-                snapshot.PendingPanels = ui.DiagnosticPendingPanelCount;
+                snapshot.UI = ui.CaptureDiagnostics();
+                snapshot.OpenPanels = snapshot.UI.OpenPanels;
+                snapshot.PendingPanels = snapshot.UI.PendingPanels;
+                snapshot.Modules.Add(new FrameworkModuleDiagnostic("UI",
+                    snapshot.UI.PendingPanels > 0 ? FrameworkModuleState.Running : FrameworkModuleState.Ready,
+                    detail: $"打开 {snapshot.UI.OpenPanels} / 加载 {snapshot.UI.PendingPanels} / 池 {snapshot.UI.PooledPanels}"));
             }
             return snapshot;
         }

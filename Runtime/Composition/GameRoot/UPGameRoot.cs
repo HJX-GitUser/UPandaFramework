@@ -200,7 +200,7 @@ namespace UPandaGF
                     if (services != null) await services.ShutdownAsync();
                 });
                 lifecycle.Add("UI", ct => {
-                    _UIManager.Configure(services.Assets, services.Log);
+                    _UIManager.Configure(services);
                     _UIManager.Init();
                     return Task.CompletedTask;
                 }, () => { _UIManager?.Shutdown(); return Task.CompletedTask; });

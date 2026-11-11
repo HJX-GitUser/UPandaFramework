@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -10,56 +10,68 @@ namespace UPandaGF
 {
     /// <summary>
     /// 面板基类
-    /// 通过代码快速的找到所有的子控件，节约找控件的工作量
-    /// 在子类中处理逻辑
-    /// 必须加上[UILoadInfo]特性
+    /// 通过一次子树遍历快速找到所有 UI 控件，节约找控件的工作量。
+    /// 在子类中处理逻辑；必须加上 [UILoadInfo] 特性。
     /// </summary>
     public abstract class BasePanel : MonoBehaviour
     {
         /// <summary>创建该面板的 UIManager（由 UIManager 在实例化后注入）。</summary>
         private UIManager owner;
+        private IGameServices services;
+        private readonly UIEventScope events = new UIEventScope();
+        private readonly UIEventScope openEvents = new UIEventScope();
+
         /// <summary>
         /// 所属 UI 管理器。在 OnOpen 及之后可用；Awake/OnEnable 阶段尚未注入，请勿依赖。
         /// </summary>
         protected UIManager uiManager => owner;
+        /// <summary>UI 服务视图；在 OnOpen 及之后可用。</summary>
+        protected IUIService UI => owner;
+        /// <summary>面板可用的完整服务集合；未通过 GameServices 装配时为 null。</summary>
+        public IGameServices Services => services;
+        /// <summary>面板生命周期事件作用域；关闭/销毁时由 UIManager 统一释放。</summary>
+        protected UIEventScope Events => events;
+        /// <summary>每次打开的事件作用域；关闭时释放。当前与 Events 同生命周期，预留给池化。</summary>
+        protected UIEventScope OpenEvents => openEvents;
+
         internal void AttachManager(UIManager manager) { owner = manager; }
+        internal void AttachServices(IGameServices value) { services = value; }
+
         /// <summary>
-        /// UI组件容器
-        /// UIBehaviour是所有UI组件的基类，UI组件都是直接或者间接继承UIBehaviour这个抽象类的，
-        /// 它继承自MonoBehavior，所以拥有和Unity相同的生命周期
+        /// UI组件容器。key 是 GameObject 名称；同名控件按类型查找。
         /// </summary>
         protected Dictionary<string, List<UIBehaviour>> controlDic = new Dictionary<string, List<UIBehaviour>>();
-        /// <summary>
-        ///如果UI控件的名字存在该容器，就不记录
-        /// </summary>
-        private static List<string> defaultNameList = new List<string>() {"Image",
-                                                                       "Text (TMP)",
-                                                                       "RawImage",
-                                                                       "Background",
-                                                                       "Checkmark",
-                                                                       "Label",
-                                                                       "Text (Legacy)",
-                                                                       "Arrow",
-                                                                       "Placeholder",
-                                                                       "Fill",
-                                                                       "Handle",
-                                                                       "Viewport",
-                                                                       "Scrollbar Horizontal",
-                                                                       "Scrollbar Vertical"
-    };
 
+        private static readonly HashSet<string> defaultNameList = new HashSet<string>
+        {
+            "Image",
+            "Text (TMP)",
+            "RawImage",
+            "Background",
+            "Checkmark",
+            "Label",
+            "Text (Legacy)",
+            "Arrow",
+            "Placeholder",
+            "Fill",
+            "Handle",
+            "Viewport",
+            "Scrollbar Horizontal",
+            "Scrollbar Vertical"
+        };
 
         private void Awake()
         {
-            FindChildrenUIComponent<Button>();
-            FindChildrenUIComponent<Slider>();
-            FindChildrenUIComponent<Toggle>();
-            FindChildrenUIComponent<InputField>();
-            FindChildrenUIComponent<ScrollRect>();
-            FindChildrenUIComponent<Dropdown>();
-            FindChildrenUIComponent<Image>();
-            FindChildrenUIComponent<Text>();
-            FindChildrenUIComponent<TMP_Text>();
+            // 一次遍历完成控件缓存；每种控件不再各扫一遍整棵子树。
+            UIBehaviour[] controls = GetComponentsInChildren<UIBehaviour>(true);
+            for (int i = 0; i < controls.Length; i++)
+            {
+                UIBehaviour control = controls[i];
+                if (control == null) continue;
+                BasePanel ownerPanel = control.GetComponentInParent<BasePanel>();
+                if (ownerPanel != null && ownerPanel != this) continue;
+                RegisterControl(control);
+            }
             OnAwake();
         }
 
@@ -74,124 +86,131 @@ namespace UPandaGF
         /// </summary>
         public abstract void OnClose();
         /// <summary>
+        /// 面板已打开时再次请求打开：默认只置顶，不重复执行 OnOpen。
+        /// 需要根据新参数刷新内容时重写此方法。
+        /// </summary>
+        public virtual void OnRefresh(object panelArg = null) { }
+        /// <summary>面板被上层模态面板遮挡时调用；不要在这里销毁对象。</summary>
+        public virtual void OnPause() { }
+        /// <summary>遮挡它的上层模态面板关闭后调用。</summary>
+        public virtual void OnResume() { }
+
+        /// <summary>
         /// 按钮监听事件，重写时自己根据传入的按钮名字处理对应按钮的逻辑
         /// </summary>
-        /// <param name="btnName">按钮名字</param>
         protected virtual void Button_OnClick(string btnName) { }
-        /// <summary>
-        /// Toggle组件监听事件，也是根据传入的名字处理对应的事件
-        /// </summary>
-        /// <param name="toggleName">Toggle名字</param>
-        /// <param name="value">Toggle的值</param>
+        /// <summary>Toggle 监听事件。</summary>
         protected virtual void Toggle_OnValueChanged(string toggleName, bool value) { }
-        /// <summary>
-        /// Slider组件监听事件
-        /// </summary>
-        /// <param name="SliderName"></param>
-        /// <param name="value"></param>
-        protected virtual void Slider_OnValueChanged(string SliderName, float value) { }
+        /// <summary>Slider 监听事件。</summary>
+        protected virtual void Slider_OnValueChanged(string sliderName, float value) { }
+        /// <summary>Scrollbar 监听事件。</summary>
+        protected virtual void Scrollbar_OnValueChanged(string scrollbarName, float value) { }
+        /// <summary>Dropdown 监听事件。</summary>
+        protected virtual void Dropdown_OnValueChanged(string dropdownName, int value) { }
+        /// <summary>TMP_Dropdown 监听事件。</summary>
+        protected virtual void TMP_Dropdown_OnValueChanged(string dropdownName, int value) { }
+        /// <summary>InputField 值改变。</summary>
+        protected virtual void InputField_OnValueChanged(string inputFieldName, string value) { }
+        /// <summary>InputField 提交。</summary>
+        protected virtual void InputField_onSubmit(string inputFieldName, string value) { }
+        /// <summary>InputField 结束编辑。</summary>
+        protected virtual void InputField_onEndEdit(string inputFieldName, string value) { }
+        /// <summary>TMP_InputField 值改变。</summary>
+        protected virtual void TMP_InputField_OnValueChanged(string inputFieldName, string value) { }
+        /// <summary>TMP_InputField 提交。</summary>
+        protected virtual void TMP_InputField_onSubmit(string inputFieldName, string value) { }
+        /// <summary>TMP_InputField 结束编辑。</summary>
+        protected virtual void TMP_InputField_onEndEdit(string inputFieldName, string value) { }
 
-        /// <summary>
-        /// InputField组件监听输入值改变事件
-        /// </summary>
-        /// <param name="InputFieldName"></param>
-        /// <param name="value"></param>
-        protected virtual void InputField_OnValueChanged(string InputFieldName, string value) { }
-        /// <summary>
-        /// InputField组件监听输入提交事件
-        /// </summary>
-        /// <param name="InputFieldName"></param>
-        /// <param name="value"></param>
-        protected virtual void InputField_onSubmit(string InputFieldName, string value) { }
-        /// <summary>
-        /// InputField组件监听输入结束事件
-        /// </summary>
-        /// <param name="InputFieldName"></param>
-        /// <param name="value"></param>
-        protected virtual void InputField_onEndEdit(string InputFieldName, string value) { }
-
-        /// <summary>
-        /// 找到对应的UI组件并放入容器中
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        private void FindChildrenUIComponent<T>() where T : UIBehaviour
+        private void RegisterControl(UIBehaviour control)
         {
-            T[] controls = this.GetComponentsInChildren<T>(true);
-            for (int i = 0; i < controls.Length; i++)
+            string objName = control.gameObject.name;
+            if (controlDic.TryGetValue(objName, out List<UIBehaviour> list))
             {
-                string objName = controls[i].gameObject.name;
-                if (controlDic.ContainsKey(objName))
-                {
-                    if (!defaultNameList.Contains(objName))
-                    {
-                        controlDic[objName].Add(controls[i]);
-                    }
-                }
-                else
-                {
-                    controlDic.Add(objName, new List<UIBehaviour>() { controls[i] });
-                }
-                //让Button、Toggle、Slider组件监听上事件
-                if (controls[i] is Button)
-                {
-                    (controls[i] as Button).onClick.AddListener(() =>
-                    {
-                        Button_OnClick(objName);
-                    });
-                }
-                else if (controls[i] is Toggle)
-                {
-                    (controls[i] as Toggle).onValueChanged.AddListener((isSelect) =>
-                    {
-                        Toggle_OnValueChanged(objName, isSelect);
-                    });
-                }
-                else if (controls[i] is Slider)
-                {
-                    (controls[i] as Slider).onValueChanged.AddListener((value) =>
-                    {
-                        Slider_OnValueChanged(objName, value);
-                    });
-                }
-                else if (controls[i] is InputField)
-                {
-                    (controls[i] as InputField).onValueChanged.AddListener((value) =>
-                    {
-                        InputField_OnValueChanged(objName, value);
-                    });
-                    (controls[i] as InputField).onSubmit.AddListener(value => InputField_onSubmit(objName, value));
-                    (controls[i] as InputField).onEndEdit.AddListener(value => InputField_onEndEdit(objName, value));
-                }
+                if (!defaultNameList.Contains(objName)) list.Add(control);
+            }
+            else
+            {
+                controlDic.Add(objName, new List<UIBehaviour> { control });
+            }
+
+            if (control is Button button)
+                Events.Listen(button.onClick, () => Button_OnClick(objName));
+            else if (control is Toggle toggle)
+                Events.Listen(toggle.onValueChanged, value => Toggle_OnValueChanged(objName, value));
+            else if (control is Slider slider)
+                Events.Listen(slider.onValueChanged, value => Slider_OnValueChanged(objName, value));
+            else if (control is Scrollbar scrollbar)
+                Events.Listen(scrollbar.onValueChanged, value => Scrollbar_OnValueChanged(objName, value));
+            else if (control is TMP_Dropdown tmpDropdown)
+                Events.Listen(tmpDropdown.onValueChanged, value => TMP_Dropdown_OnValueChanged(objName, value));
+            else if (control is Dropdown dropdown)
+                Events.Listen(dropdown.onValueChanged, value => Dropdown_OnValueChanged(objName, value));
+            else if (control is TMP_InputField tmpInput)
+            {
+                Events.Listen(tmpInput.onValueChanged, value => TMP_InputField_OnValueChanged(objName, value));
+                Events.Listen(tmpInput.onSubmit, value => TMP_InputField_onSubmit(objName, value));
+                Events.Listen(tmpInput.onEndEdit, value => TMP_InputField_onEndEdit(objName, value));
+            }
+            else if (control is InputField input)
+            {
+                Events.Listen(input.onValueChanged, value => InputField_OnValueChanged(objName, value));
+                Events.Listen(input.onSubmit, value => InputField_onSubmit(objName, value));
+                Events.Listen(input.onEndEdit, value => InputField_onEndEdit(objName, value));
             }
         }
+
         /// <summary>
-        /// 根据组件挂载对象的名字获得对应UI组件
+        /// 根据组件挂载对象的名字获得对应UI组件；找不到时返回 null 并记录错误。
         /// </summary>
-        /// <param name="controlName">对应UI组件</param>
-        /// <returns></returns>
         protected T GetControl<T>(string controlName) where T : UIBehaviour
         {
-            if (controlDic.ContainsKey(controlName))
-            {
-                for (int i = 0; i < controlDic[controlName].Count; i++)
-                {
-                    if (controlDic[controlName][i] is T)
-                    {
-                        return controlDic[controlName][i] as T;
-                    }
-                }
-            }
+            if (TryGetControl(controlName, out T control)) return control;
             Debug.LogError($"“{controlName}”不存在!");
             return null;
         }
 
+        /// <summary>尝试查找控件，不输出错误日志。</summary>
+        protected bool TryGetControl<T>(string controlName, out T control) where T : UIBehaviour
+        {
+            control = null;
+            if (!controlDic.TryGetValue(controlName, out List<UIBehaviour> list)) return false;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] is T typed)
+                {
+                    control = typed;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         protected void AddCustomEventListener(UIBehaviour control, EventTriggerType type, UnityAction<BaseEventData> callBack)
         {
+            if (control == null || callBack == null) return;
             EventTrigger trigger = control.gameObject.GetOrAddComponent<EventTrigger>();
             EventTrigger.Entry entry = new EventTrigger.Entry();
             entry.eventID = type;
             entry.callback.AddListener(callBack);
             trigger.triggers.Add(entry);
+            Events.Add(new DisposableAction(() =>
+            {
+                if (trigger != null) trigger.triggers.Remove(entry);
+            }));
+        }
+
+        /// <summary>关闭时释放本次打开登记的事件，保留控件级绑定以便面板池复用。</summary>
+        public void DisposeOpenEvents()
+        {
+            openEvents.Dispose();
+        }
+
+        /// <summary>销毁/归还池失败时释放全部事件，幂等。</summary>
+        public void DisposeEventScopes()
+        {
+            openEvents.Dispose();
+            events.Dispose();
         }
     }
 }

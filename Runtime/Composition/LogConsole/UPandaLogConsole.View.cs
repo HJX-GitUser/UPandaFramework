@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -822,12 +822,19 @@ namespace UPandaGF
         {
             FrameworkDiagnosticsSnapshot snapshot = GetDiagnostics();
             float width = rect.width - 18f;
+            float contentHeight = 3000f;
+            if (snapshot.UI != null)
+            {
+                contentHeight = Mathf.Max(contentHeight,
+                    1400f + snapshot.UI.Panels.Count * RowHeight
+                    + snapshot.UI.Pool.Count * (RowHeight * 0.6f));
+            }
             Rect pageDragArea = rect;
             pageDragArea.width = Mathf.Max(1f, rect.width - 20f);
             HandleDragScroll(pageDragArea, ref pageScroll, ref pageDragging,
-                ref pageDragStartMouse, ref pageDragStartScroll, 3000f - rect.height);
+                ref pageDragStartMouse, ref pageDragStartScroll, contentHeight - rect.height);
             pageScroll = GUI.BeginScrollView(rect, pageScroll,
-                new Rect(0f, 0f, width, 3000f), false, true, GUIStyle.none, GUI.skin.verticalScrollbar);
+                new Rect(0f, 0f, width, contentHeight), false, true, GUIStyle.none, GUI.skin.verticalScrollbar);
             float y = 4f;
             DrawSection(ref y, width, "框架状态");
             DrawInfo(ref y, width, "生命周期", snapshot.FrameworkState +
@@ -867,8 +874,49 @@ namespace UPandaGF
                 icons != null ? icons.showMemoryImage : null);
             DrawInfo(ref y, width, "场景", "作用域 " + snapshot.SceneScopes + " / 待处理请求 " + snapshot.PendingSceneRequests,
                 icons != null ? icons.showSceneImage : null);
-            DrawInfo(ref y, width, "UI", "已打开 " + snapshot.OpenPanels + " / 加载中 " + snapshot.PendingPanels,
+            UIDiagnosticsSnapshot ui = snapshot.UI;
+            DrawInfo(ref y, width, "UI",
+                ui == null
+                    ? "已打开 " + snapshot.OpenPanels + " / 加载中 " + snapshot.PendingPanels
+                    : "已打开 " + ui.OpenPanels + " / 加载中 " + ui.PendingPanels
+                      + " / 空闲池 " + ui.PooledPanels
+                      + " / 命中 " + ui.PoolHits + " 未命中 " + ui.PoolMisses,
                 icons != null ? icons.infoImage : null);
+
+            if (ui != null)
+            {
+                DrawSection(ref y, width, "UI 面板状态 / 加载耗时");
+                if (ui.Panels.Count == 0)
+                    DrawInfo(ref y, width, "面板", "当前没有打开的面板", icons != null ? icons.infoImage : null);
+                for (int i = 0; i < ui.Panels.Count; i++)
+                {
+                    UIPanelDiagnostic panel = ui.Panels[i];
+                    string value = PanelStateText(panel.State)
+                        + " · " + panel.Layer
+                        + " · order " + panel.Order
+                        + " · load " + panel.LoadMilliseconds.ToString("0.0") + " ms"
+                        + " / open " + panel.OpenMilliseconds.ToString("0.0") + " ms"
+                        + (panel.Modal ? " · 模态" : string.Empty)
+                        + (panel.Paused ? " · 暂停" : string.Empty)
+                        + (panel.Pooled ? " · 可池化" : string.Empty);
+                    DrawInfo(ref y, width, panel.Key, value, icons != null ? icons.infoImage : null);
+                }
+
+                if (ui.Pool.Count > 0)
+                {
+                    DrawSection(ref y, width, "UI 空闲池");
+                    for (int i = 0; i < ui.Pool.Count; i++)
+                    {
+                        UIPoolEntryDiagnostic entry = ui.Pool[i];
+                        DrawInfo(ref y, width, entry.Key, "空闲 " + entry.Count,
+                            icons != null ? icons.showMemoryImage : null);
+                    }
+                }
+                DrawInfo(ref y, width, "实例统计",
+                    "创建 " + ui.InstancesCreated + " / 回收 " + ui.InstancesReturned
+                    + " / 销毁 " + ui.InstancesDestroyed,
+                    icons != null ? icons.showMemoryImage : null);
+            }
 
             DrawSection(ref y, width, "应用 / 运行时");
             DrawInfo(ref y, width, "平台", Application.platform + " / " + SystemInfo.deviceType, icons != null ? icons.softwareImage : null);
@@ -889,6 +937,18 @@ namespace UPandaGF
                 nextDiagnosticsAt = Time.realtimeSinceStartup + 0.5f;
             }
             return diagnostics;
+        }
+
+        private static string PanelStateText(UIPanelState state)
+        {
+            switch (state)
+            {
+                case UIPanelState.Loading: return "加载中";
+                case UIPanelState.Opened: return "已打开";
+                case UIPanelState.Closing: return "关闭中";
+                case UIPanelState.Failed: return "失败";
+                default: return "已关闭";
+            }
         }
 
         private static string ModuleStateText(FrameworkModuleState state)

@@ -13,7 +13,7 @@ Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行�
 
 要求 **Unity 2021.3 LTS 或更高**；2021.3.45f2c1 与 2022.3.53f1c1 均已编译并跑通 EditMode/PlayMode 回归。
 
-[Gitee](https://gitee.com/he-jinxian/upanda-framework.git) · [GitHub](https://github.com/HJX-GitUser/UPandaFramework.git) · [变更记录](CHANGELOG.md)
+[Gitee](https://gitee.com/he-jinxian/upanda-framework.git) · [GitHub](https://github.com/HJX-GitUser/UPandaFramework.git) · [常见问题](Documentation~/FAQ.md)
 
 > 优化计划与阶段性验证记录归档在框架外（维护者本地 `优化记录`），不随包发布。
 
@@ -60,7 +60,7 @@ public static class AppEntry
 | `UPandaGF.Editor` | Editor 工具，引用运行时与玩法模块，以及 ExcelDataReader DLL（MIT）。 |
 | `UPandaGF.Tests.EditMode` / `UPandaGF.Tests` | EditMode 单元测试与 PlayMode 集成回归。 |
 
-0.4.0 → 0.5.0 的程序集、命名空间与目录迁移见 [迁移指南](Documentation~/MIGRATION-0.5.md)；业务代码需要把 `using UPandaGF.RunTime.*` / `ReplaySystem` / `AssetBundleBrowser` 替换为新命名空间，并补充直接引用的模块程序集。日志面板替换见 [0.6 迁移指南](Documentation~/MIGRATION-0.6.md)。
+0.4.0 → 0.5.0 的程序集、命名空间与目录迁移见 [迁移指南](Documentation~/MIGRATION-0.5.md)；业务代码需要把 `using UPandaGF.RunTime.*` / `ReplaySystem` / `AssetBundleBrowser` 替换为新命名空间，并补充直接引用的模块程序集。日志面板替换见 [0.6 迁移指南](Documentation~/MIGRATION-0.6.md)，UI 面板生命周期/层栈/绑定升级见 [UI 迁移指南](Documentation~/MIGRATION-UI.md)。
 
 ## 核心模块
 

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace UPandaGF
 {
@@ -30,7 +30,8 @@ namespace UPandaGF
 
         private void Awake()
         {
-            canvas = GetComponent<Canvas>();
+            // Inspector 允许注册外部 Canvas；只有未赋值时才取自身组件，避免覆盖手工配置。
+            if (canvas == null) canvas = GetComponent<Canvas>();
             if (canvas == null)
                 Debug.LogError("canvas 组件不存在！！！");
         }

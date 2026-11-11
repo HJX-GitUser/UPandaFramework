@@ -19,8 +19,9 @@ PlayMode 回归依赖宿主工程里的测试场景/资源（`LifecycleFixtures`
 | --- | --- |
 | `sync-package.ps1` / `.sh` | 把本包镜像到宿主工程 `Assets/upanda-framework`（排除 `.git`/`Library`/`Temp`/`Logs`/`obj`）。 |
 | `invoke-unity.ps1` | 内部使用的 Unity 批处理调用器：清锁、轮询退出标记、按进程树清理、输出退出码。 |
-| `run-tests.ps1` / `.sh` | 运行 EditMode 或 PlayMode，轮询结果 XML（避免 Unity 收尾挂死），然后调用结果校验。 |
+| `run-tests.ps1` / `.sh` | 运行 EditMode 或 PlayMode，轮询结果 XML（避免 Unity 收尾挂死），然后调用结果校验；`-MinTotal`/`MIN_TOTAL` 可设用例数下限。 |
 | `check-test-results.ps1` / `.sh` | 解析 NUnit XML：`total == 0`、`failed > 0` 或少于 `--min` 基线都返回非 0。 |
+| `validate-ui-panels.ps1` / `.sh` | 调 `UPandaGF.GFEditor.UIPanelValidator.ValidateForCI` 校验 UI 面板配置；失败返回非 0。 |
 | `build-player.ps1` / `.sh` | 调 `FrameworkBuildPipeline.BuildFromCommandLine`，按目标校验产物是否存在。 |
 
 PowerShell 脚本执行策略受限时，用 `powershell -ExecutionPolicy Bypass -File ...` 运行。
@@ -44,6 +45,10 @@ powershell -ExecutionPolicy Bypass -File Tools/ci/run-tests.ps1 `
 powershell -ExecutionPolicy Bypass -File Tools/ci/build-player.ps1 `
     -UnityPath $unity -ProjectPath D:\work\MyGame -PackagePath . `
     -Target StandaloneWindows64 -OutputPath Build
+
+# UI 面板配置校验（不跑完整测试）
+powershell -ExecutionPolicy Bypass -File Tools/ci/validate-ui-panels.ps1 `
+    -UnityPath $unity -ProjectPath D:\work\MyGame -PackagePath .
 ```
 
 Linux/macOS：
@@ -75,7 +80,7 @@ Tools/ci/build-player.sh Android /path/to/MyGame Build build-android.log
 工作流行为：
 
 1. 校验 `package.json` / `CHANGELOG.md` 元数据，并执行 `check_asmdef_settings.py`（Diagnostics 必须自动引用，Samples/测试不得自动引用）；
-2. 矩阵跑 Unity `2021.3.45f2c1` 与 `2022.3.53f1c1` 的 EditMode + PlayMode，并断言用例数不低于基线（EditMode 53、PlayMode 324）；
+2. 矩阵跑 Unity `2021.3.45f2c1` 与 `2022.3.53f1c1` 的 EditMode + PlayMode，并断言用例数不低于基线（EditMode 68、PlayMode 383）；EditMode 中的 `PackagePanelsPassValidation` 同时充当 UI 面板配置门禁；
 3. 对每个平台（Windows / Android / WebGL）构建 Player 并归档 `Build/`，2022.3 额外构建一次 Windows；
 4. 测试 XML 与构建日志作为 artifact 上传；
 5. 测试结果由 `check-test-results` 判定，0 个用例也失败。

@@ -6,6 +6,7 @@
     [string]$LogPath = '',
     [string]$PackagePath = '',
     [int]$TimeoutSeconds = 1800,
+    [int]$MinTotal = 0,
     [switch]$SkipWarmup
 )
 
@@ -48,5 +49,5 @@ if (Test-Path $logFull) {
     }
 }
 
-& (Join-Path $PSScriptRoot 'check-test-results.ps1') -Path $resultsFull
+& (Join-Path $PSScriptRoot 'check-test-results.ps1') -Path $resultsFull -MinTotal $MinTotal
 exit $LASTEXITCODE

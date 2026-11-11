@@ -50,9 +50,9 @@ jobs:
         testMode: [ editmode, playmode ]
         include:
           - testMode: editmode
-            minTests: 53
+            minTests: 68
           - testMode: playmode
-            minTests: 324
+            minTests: 383
     steps:
       - name: 要求已配置宿主工程
         run: |

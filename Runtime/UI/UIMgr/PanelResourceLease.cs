@@ -1,17 +1,33 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 
 namespace UPandaGF
 {
-    /// <summary>把面板预制体的资源持有凭据绑定到面板实例销毁，而非某一种关闭入口。</summary>
+    /// <summary>把面板预制体的资源持有凭据绑定到面板实例销毁，并在实例被外部销毁时通知管理器。</summary>
     [AddComponentMenu("")]
     internal sealed class PanelResourceLease : MonoBehaviour
     {
         private IDisposable lease;
-        public void Initialize(IDisposable value) { lease = value; }
+        private Action destroyed;
+
+        public void Initialize(IDisposable value, Action onDestroyed = null)
+        {
+            lease = value;
+            destroyed = onDestroyed;
+        }
+
         private void OnDestroy()
         {
-            lease?.Dispose(); lease = null;
+            IDisposable value = lease;
+            lease = null;
+            try { value?.Dispose(); }
+            finally
+            {
+                Action callback = destroyed;
+                destroyed = null;
+                try { callback?.Invoke(); }
+                catch (Exception e) { Debug.LogException(e); }
+            }
         }
     }
 }

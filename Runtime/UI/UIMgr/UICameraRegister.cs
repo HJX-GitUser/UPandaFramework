@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace UPandaGF
 {
@@ -18,8 +18,9 @@ namespace UPandaGF
 
         private void Awake()
         {
-            _camera = GetComponent<Camera>();
-            if (GetComponent<Camera>() == null)
+            // Inspector 允许注册外部相机；只有未赋值时才取自身组件，避免覆盖手工配置。
+            if (_camera == null) _camera = GetComponent<Camera>();
+            if (_camera == null)
                 Debug.LogError("Camera 组件不存在！！！");
         }
 

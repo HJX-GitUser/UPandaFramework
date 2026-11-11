@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # 运行 Unity EditMode/PlayMode 测试并做结果判定。
 # 用法：run-tests.sh <EditMode|PlayMode> [project-path] [results-xml] [log-file]
-# 环境变量：UNITY_PATH（必填）、PACKAGE_PATH（可选：测试前把包同步进工程）
+# 环境变量：UNITY_PATH（必填）、PACKAGE_PATH（可选：测试前把包同步进工程）、
+#           MIN_TOTAL（可选：期望的最少用例数，默认 0）
 set -euo pipefail
 
 TEST_PLATFORM="${1:?用法: run-tests.sh <EditMode|PlayMode> [project-path] [results-xml] [log-file]}"
@@ -34,7 +35,7 @@ if [ -f "$LOG_PATH" ] && grep -q 'error CS' "$LOG_PATH"; then
 fi
 
 # Unity 的退出码不足以判断测试失败（尤其在收尾异常时），以 XML 为准。
-"$SCRIPT_DIR/check-test-results.sh" "$RESULTS_PATH" || {
+"$SCRIPT_DIR/check-test-results.sh" "$RESULTS_PATH" --min "${MIN_TOTAL:-0}" || {
     echo "Unity 退出码：$UNITY_EXIT" >&2
     exit 1
 }

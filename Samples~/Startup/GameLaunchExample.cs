@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -153,7 +153,12 @@ public class GameLaunchExample : MonoBehaviour, IUIServiceConsumer
             catch (Exception e) { PLogger.LogError($"加载程序集 {path} 失败：{e}"); }
 
             if (assembly == null) PLogger.LogError($"热更程序集加载失败：{path}");
-            else loaded++;
+            else
+            {
+                loaded++;
+                // 热更程序集里的 UI 面板类型先注册给 UIManager，后续可直接按路径打开。
+                ui?.RegisterPanels(assembly);
+            }
         }
 
         if (loaded != HybridCLRScriptsList.Length)

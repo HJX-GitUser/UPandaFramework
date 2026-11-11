@@ -1,49 +1,67 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using UnityEditor;
-using System.IO;
-using System.Text;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
-using UnityEditor.Compilation;
-using System.Reflection;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.UI;
 using UPandaGF.GFEditor;
 
 namespace UPandaGF
 {
+    /// <summary>生成脚本时识别到的一个 UI 控件。</summary>
+    public sealed class UIAutoControl
+    {
+        public string TypeName;
+        public string FieldName;
+        public string GameObjectName;
+        public UIAutoControlEvent Event;
+    }
+
+    public enum UIAutoControlEvent
+    {
+        None,
+        Click,
+        BoolChanged,
+        FloatChanged,
+        IntChanged,
+        StringEndEdit
+    }
+
+    /// <summary>UI 面板脚本生成设置；与 EditorWindow 解耦，便于测试模板。</summary>
+    public sealed class UIAutoGeneratorSettings
+    {
+        public string ScriptName = "UIWindow";
+        public string NamespaceName = "Game.UI";
+        public E_UI_Layer Layer = E_UI_Layer.Popup;
+        public AssetLoadMethod LoadMethod = AssetLoadMethod.Resources;
+        public string LoadPath = "UI/UIWindow";
+        public UIPanelPlacement Placement = UIPanelPlacement.FullScreen;
+        public bool Modal;
+        public bool PauseGame;
+        public bool CloseOnBack = true;
+        public bool Pool;
+        public int Order;
+        public bool GenerateBindCode = true;
+        public bool GenerateEventStubs = true;
+    }
+
     /// <summary>
-    /// UGUI界面脚本自动生成器
+    /// 面板脚本生成器（UI-051 重写）。
+    /// <para>生成 partial <see cref="BasePanel"/> 子类：UILoadInfo、控件字段、OnAwake 控件缓存、
+    /// OnOpen/OnClose 模板与可选事件桩；使用 <c>TryGetControl</c> 按名称取控件，不依赖层级路径。</para>
+    /// <para>不再使用 EditorApplication.update / 自动反射初始化，生成后不会残留编辑器回调；
+    /// 组件由业务挂到预制体根节点，或由 UIManager 在打开时按 Type 添加。</para>
     /// </summary>
     public class UIAutoGenerator : EditorWindow
     {
-        [MenuItem("UPandaGF/Tools/UI/自动生成UI脚本(测试开发中)")]
-        public static void ShowWindow()
-        {
-            GetWindow<UIAutoGenerator>("UI脚本生成器");
-        }
+        private const string MenuWindow = "UPandaGF/UI/面板脚本生成器";
+        private const string MenuSelection = "GameObject/UPandaGF/UI/生成面板脚本";
 
-        [MenuItem("GameObject/UPandaGF/UI/生成UI控制脚本", false, 49)]
-        private static void GenerateUIScriptForSelection()
+        private static readonly HashSet<string> SupportedTypes = new HashSet<string>
         {
-            if (Selection.activeGameObject != null)
-            {
-                var generator = CreateInstance<UIAutoGenerator>();
-                generator.GenerateScript(Selection.activeGameObject);
-                DestroyImmediate(generator);
-            }
-        }
-
-        private string scriptName = "UIWindow";
-        private string namespaceName = "Game.UI";
-        private bool generateAutoBindCode = true;
-        private bool inheritMonoBehaviour = true;
-        private string baseClassName = "MonoBehaviour";
-        private Vector2 scrollPos;
-
-        private static readonly List<string> supportedTypes = new List<string>
-        {
-            "Canvas",
-            "CanvasGroup",
             "Image",
             "RawImage",
             "Text",
@@ -54,510 +72,446 @@ namespace UPandaGF
             "Scrollbar",
             "ScrollRect",
             "InputField",
-            "InputFieldTMP",
+            "TMP_InputField",
             "Dropdown",
-            "ToggleGroup",
-            "ScrollView"
+            "TMP_Dropdown",
+            "ToggleGroup"
         };
+
+        private static readonly HashSet<string> Keywords = new HashSet<string>
+        {
+            "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked",
+            "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
+            "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for",
+            "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock",
+            "long", "namespace", "new", "null", "object", "operator", "out", "override", "params",
+            "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short",
+            "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true",
+            "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual",
+            "void", "volatile", "while", "value", "var"
+        };
+
+        private UIAutoGeneratorSettings settings = new UIAutoGeneratorSettings();
+        private Vector2 scrollPos;
+        private string detectedSummary = "尚未检测";
+
+        [MenuItem(MenuWindow)]
+        public static void ShowWindow()
+        {
+            GetWindow<UIAutoGenerator>("UI 面板脚本生成器");
+        }
+
+        [MenuItem(MenuSelection, false, 49)]
+        private static void GenerateForSelection()
+        {
+            if (Selection.activeGameObject == null)
+            {
+                EditorUtility.DisplayDialog("生成面板脚本", "请先选择一个 UI 根节点。", "确定");
+                return;
+            }
+
+            UIAutoGenerator generator = CreateInstance<UIAutoGenerator>();
+            try { generator.GenerateScript(Selection.activeGameObject); }
+            finally { DestroyImmediate(generator); }
+        }
 
         private void OnGUI()
         {
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+            EditorGUILayout.Space(8);
+            EditorGUILayout.LabelField("UI 面板脚本生成器", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("选择 UI 根节点后生成 partial BasePanel 脚本；" +
+                                    "控件用 TryGetControl 缓存，事件登记到 OpenEvents，关闭时自动释放。",
+                MessageType.Info);
 
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("UI脚本生成器", EditorStyles.boldLabel);
-            EditorGUILayout.Space(5);
+            EditorGUILayout.Space(8);
+            settings.ScriptName = EditorGUILayout.TextField("类名", settings.ScriptName);
+            settings.NamespaceName = EditorGUILayout.TextField("命名空间", settings.NamespaceName);
+            settings.Layer = (E_UI_Layer)EditorGUILayout.EnumPopup("UI 层级", settings.Layer);
+            settings.LoadMethod = (AssetLoadMethod)EditorGUILayout.EnumPopup("加载方式", settings.LoadMethod);
+            settings.LoadPath = EditorGUILayout.TextField("资源路径", settings.LoadPath);
+            settings.Placement = (UIPanelPlacement)EditorGUILayout.EnumPopup("布局策略", settings.Placement);
+            settings.Modal = EditorGUILayout.Toggle("模态", settings.Modal);
+            settings.PauseGame = EditorGUILayout.Toggle("打开时暂停", settings.PauseGame);
+            settings.CloseOnBack = EditorGUILayout.Toggle("可返回关闭", settings.CloseOnBack);
+            settings.Pool = EditorGUILayout.Toggle("关闭后入池", settings.Pool);
+            settings.Order = EditorGUILayout.IntField("同层排序", settings.Order);
+            settings.GenerateBindCode = EditorGUILayout.Toggle("生成控件缓存", settings.GenerateBindCode);
+            settings.GenerateEventStubs = EditorGUILayout.Toggle("生成事件桩", settings.GenerateEventStubs);
 
-            EditorGUILayout.HelpBox("选择UI根节点后，点击生成按钮自动生成UI控制脚本", MessageType.Info);
-
-            EditorGUILayout.Space(10);
-            scriptName = EditorGUILayout.TextField("脚本名称", scriptName);
-            namespaceName = EditorGUILayout.TextField("命名空间", namespaceName);
-            baseClassName = EditorGUILayout.TextField("基类名称", baseClassName);
-
-            generateAutoBindCode = EditorGUILayout.Toggle("生成自动绑定代码", generateAutoBindCode);
-            inheritMonoBehaviour = EditorGUILayout.Toggle("继承MonoBehaviour", inheritMonoBehaviour);
-
-            EditorGUILayout.Space(20);
-
-            if (GUILayout.Button("生成UI脚本", GUILayout.Height(40)))
+            EditorGUILayout.Space(6);
+            if (GUILayout.Button("扫描选中节点", GUILayout.Height(24)) && Selection.activeGameObject != null)
             {
-                if (Selection.activeGameObject != null)
-                {
-                    GenerateScript(Selection.activeGameObject);
-                }
+                List<UIAutoControl> controls = CollectControls(Selection.activeGameObject);
+                detectedSummary = controls.Count + " 个控件：" +
+                                  string.Join(", ", controls.Select(c => c.GameObjectName + "(" + c.TypeName + ")").ToArray());
+                if (string.IsNullOrEmpty(settings.LoadPath) || settings.LoadPath == "UI/UIWindow")
+                    settings.LoadPath = DeriveLoadPath(Selection.activeGameObject);
+            }
+            EditorGUILayout.LabelField("检测结果", detectedSummary);
+
+            EditorGUILayout.Space(8);
+            if (GUILayout.Button("生成面板脚本", GUILayout.Height(36)))
+            {
+                if (Selection.activeGameObject == null)
+                    EditorUtility.DisplayDialog("生成面板脚本", "请先选择一个 UI 根节点。", "确定");
                 else
-                {
-                    EditorUtility.DisplayDialog("提示", "请先选择一个UI GameObject", "确定");
-                }
+                    GenerateScript(Selection.activeGameObject);
             }
 
             EditorGUILayout.EndScrollView();
         }
 
-        public void GenerateScript(GameObject uiRoot)
+        /// <summary>生成并保存脚本；保存成功返回 Assets 相对路径，取消/失败返回 null。</summary>
+        public string GenerateScript(GameObject uiRoot)
         {
             if (uiRoot == null)
             {
-                Debug.LogError("UI根节点为空");
-                return;
+                Debug.LogError("[UIAutoGenerator] UI 根节点为空。");
+                return null;
             }
-
-            // 收集所有UI组件
-            Dictionary<string, List<ComponentInfo>> components = CollectComponents(uiRoot);
-
-            // 生成脚本内容
-            string scriptContent = GenerateScriptContent(uiRoot.name, components);
-
-            // 保存脚本文件
-            string path = SaveScriptFile(scriptName, scriptContent);
-
-            if (!string.IsNullOrEmpty(path))
+            if (!IsValidIdentifier(settings.ScriptName))
             {
-                // 自动添加组件到GameObject
-                AddComponentToGameObject(uiRoot, scriptName, path);
-
-                // 编译后自动绑定
-                EditorApplication.update += () => AutoBindAfterCompile(uiRoot, path);
-
-                AssetDatabase.Refresh();
-                EditorUtility.DisplayDialog("成功", $"UI脚本已生成: {path}", "确定");
+                EditorUtility.DisplayDialog("生成面板脚本", "类名必须是合法 C# 标识符。", "确定");
+                return null;
             }
+            if (!string.IsNullOrEmpty(settings.NamespaceName) && !IsValidNamespace(settings.NamespaceName))
+            {
+                EditorUtility.DisplayDialog("生成面板脚本", "命名空间格式不合法。", "确定");
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(settings.LoadPath)) settings.LoadPath = DeriveLoadPath(uiRoot);
+            List<UIAutoControl> controls = CollectControls(uiRoot);
+            string content = BuildScriptContent(settings, controls);
+            string path = SaveScriptFile(settings.ScriptName, content);
+            if (string.IsNullOrEmpty(path)) return null;
+
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            EditorUtility.DisplayDialog("生成面板脚本",
+                "脚本已生成：\n" + path +
+                "\n\n下一步：\n1. 把组件挂到预制体根节点（或让 UIManager 按 Type 添加）。" +
+                "\n2. 确认 [UILoadInfo] 的资源路径与预制体位置一致。" +
+                "\n3. 运行 UPandaGF/UI/校验面板配置。", "确定");
+            return path;
         }
 
-        private Dictionary<string, List<ComponentInfo>> CollectComponents(GameObject root)
+        /// <summary>
+        /// 纯模板方法（供测试/工具复用）：根据设置与控件列表生成脚本内容。
+        /// 不读写文件、不依赖当前选择。
+        /// </summary>
+        public static string BuildScriptContent(UIAutoGeneratorSettings settings, IReadOnlyList<UIAutoControl> controls)
         {
-            Dictionary<string, List<ComponentInfo>> components = new Dictionary<string, List<ComponentInfo>>();
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+            controls = controls ?? Array.Empty<UIAutoControl>();
+            string className = settings.ScriptName;
+            bool hasNamespace = !string.IsNullOrEmpty(settings.NamespaceName);
+            string indent = hasNamespace ? "    " : "";
+            string inner = hasNamespace ? indent + "    " : "    ";
 
-            // 遍历所有子物体
-            Transform[] allChildren = root.GetComponentsInChildren<Transform>(true);
-
-            foreach (Transform child in allChildren)
-            {
-                if (child == root.transform) continue;
-
-                // 检查支持的组件类型
-                Component[] allComponents = child.GetComponents<Component>();
-
-                foreach (Component component in allComponents)
-                {
-                    if (component == null) continue;
-
-                    string typeName = component.GetType().Name;
-
-                    if (IsSupportedType(typeName))
-                    {
-                        if (!components.ContainsKey(typeName))
-                        {
-                            components[typeName] = new List<ComponentInfo>();
-                        }
-
-                        string fieldName = GenerateFieldName(child.name, typeName);
-
-                        components[typeName].Add(new ComponentInfo
-                        {
-                            fieldName = fieldName,
-                            gameObjectName = child.name,
-                            path = GetRelativePath(child, root.transform),
-                            component = component
-                        });
-                    }
-                }
-
-                // 如果GameObject没有特殊组件，也记录为GameObject类型
-                if (allComponents.Length <= 1) // 只有Transform组件
-                {
-                    if (!components.ContainsKey("GameObject"))
-                    {
-                        components["GameObject"] = new List<ComponentInfo>();
-                    }
-
-                    string fieldName = GenerateFieldName(child.name, "GameObject");
-
-                    components["GameObject"].Add(new ComponentInfo
-                    {
-                        fieldName = fieldName,
-                        gameObjectName = child.name,
-                        path = GetRelativePath(child, root.transform),
-                        component = child.transform
-                    });
-                }
-            }
-
-            return components;
-        }
-
-        private string GenerateScriptContent(string uiName, Dictionary<string, List<ComponentInfo>> components)
-        {
             StringBuilder sb = new StringBuilder();
-
-            // 添加using语句
+            sb.AppendLine("// <auto-generated>");
+            sb.AppendLine("// 由 UPandaGF/UI/面板脚本生成器生成于 " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "。");
+            sb.AppendLine("// 建议只修改标记为 TODO 的部分；重新生成会覆盖本文件。");
+            sb.AppendLine("// </auto-generated>");
             sb.AppendLine("using UnityEngine;");
             sb.AppendLine("using UnityEngine.UI;");
             sb.AppendLine("using TMPro;");
-            sb.AppendLine("using System.Collections;");
-            sb.AppendLine("using System.Collections.Generic;");
+            sb.AppendLine("using UPandaGF;");
             sb.AppendLine();
-
-            // 添加命名空间
-            if (!string.IsNullOrEmpty(namespaceName))
+            if (hasNamespace)
             {
-                sb.AppendLine($"namespace {namespaceName}");
+                sb.AppendLine("namespace " + settings.NamespaceName);
                 sb.AppendLine("{");
             }
 
-            // 类定义
-            string inheritance = inheritMonoBehaviour ? $" : {baseClassName}" : "";
-            sb.AppendLine($"    /// <summary>");
-            sb.AppendLine($"    /// {uiName} UI控制脚本");
-            sb.AppendLine($"    /// 自动生成于: {System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}");
-            sb.AppendLine($"    /// </summary>");
-            sb.AppendLine($"    public class {scriptName}{inheritance}");
-            sb.AppendLine("    {");
+            sb.AppendLine(inner + "/// <summary>");
+            sb.AppendLine(inner + "/// " + className + " 面板。");
+            sb.AppendLine(inner + "/// </summary>");
+            sb.AppendLine(inner + "[" + BuildLoadInfo(settings) + "]");
+            sb.AppendLine(inner + "public partial class " + className + " : BasePanel");
+            sb.AppendLine(inner + "{");
+            string body = inner + "    ";
 
-            // 生成字段
-            sb.AppendLine("        #region UI Components");
-            foreach (var kvp in components)
+            if (controls.Count > 0)
             {
-                string typeName = kvp.Key;
-                foreach (var compInfo in kvp.Value)
+                sb.AppendLine(body + "#region 控件引用");
+                for (int i = 0; i < controls.Count; i++)
                 {
-                    sb.AppendLine($"        [SerializeField] private {typeName} {compInfo.fieldName};");
+                    UIAutoControl control = controls[i];
+                    sb.AppendLine(body + "[SerializeField] private " + control.TypeName + " " + control.FieldName + ";");
+                }
+                sb.AppendLine(body + "#endregion");
+                sb.AppendLine();
+            }
+
+            if (settings.GenerateBindCode)
+            {
+                sb.AppendLine(body + "protected override void OnAwake()");
+                sb.AppendLine(body + "{");
+                sb.AppendLine(body + "    AutoBindComponents();");
+                sb.AppendLine(body + "}");
+                sb.AppendLine();
+            }
+
+            sb.AppendLine(body + "public override void OnOpen(object panelArg = null)");
+            sb.AppendLine(body + "{");
+            sb.AppendLine(body + "    // TODO: 根据 panelArg 刷新显示；OpenEvents 在 OnClose 时自动释放。");
+            if (settings.GenerateEventStubs)
+            {
+                for (int i = 0; i < controls.Count; i++)
+                {
+                    string listener = BuildListener(controls[i]);
+                    if (!string.IsNullOrEmpty(listener)) sb.AppendLine(body + "    " + listener);
                 }
             }
-            sb.AppendLine("        #endregion");
+            sb.AppendLine(body + "}");
             sb.AppendLine();
 
-            // 生成属性
-            sb.AppendLine("        #region UI Properties");
-            foreach (var kvp in components)
+            sb.AppendLine(body + "public override void OnClose()");
+            sb.AppendLine(body + "{");
+            sb.AppendLine(body + "    // TODO: 停止本面板的计时器/试听等；事件与绑定由框架释放。");
+            sb.AppendLine(body + "}");
+            sb.AppendLine();
+
+            if (settings.GenerateBindCode)
             {
-                string typeName = kvp.Key;
-                foreach (var compInfo in kvp.Value)
+                sb.AppendLine(body + "/// <summary>从 BasePanel 的控件缓存取引用；不依赖层级路径。</summary>");
+                sb.AppendLine(body + "private void AutoBindComponents()");
+                sb.AppendLine(body + "{");
+                if (controls.Count == 0)
                 {
-                    string propertyName = char.ToUpper(compInfo.fieldName[0]) + compInfo.fieldName.Substring(1);
-                    sb.AppendLine($"        public {typeName} {propertyName} => {compInfo.fieldName};");
+                    sb.AppendLine(body + "    // 未发现可缓存的 UI 控件。");
                 }
-            }
-            sb.AppendLine("        #endregion");
-            sb.AppendLine();
-
-            // 生成初始化方法
-            sb.AppendLine("        #region Initialization");
-            sb.AppendLine("        /// <summary>");
-            sb.AppendLine("        /// 自动绑定UI组件");
-            sb.AppendLine("        /// </summary>");
-            sb.AppendLine("        private void AutoBindComponents()");
-            sb.AppendLine("        {");
-            sb.AppendLine("            if (transform == null) return;");
-            sb.AppendLine();
-
-            foreach (var kvp in components)
-            {
-                foreach (var compInfo in kvp.Value)
+                else
                 {
-                    string type = kvp.Key;
-                    sb.AppendLine($"            // {compInfo.gameObjectName}");
-                    sb.AppendLine($"            {compInfo.fieldName} = transform.Find(\"{compInfo.path}\")");
-
-                    if (type != "GameObject" && type != "Transform")
+                    for (int i = 0; i < controls.Count; i++)
                     {
-                        sb.AppendLine($"                .GetComponent<{type}>();");
+                        UIAutoControl control = controls[i];
+                        sb.AppendLine(body + "    TryGetControl(\"" + control.GameObjectName + "\", out " + control.FieldName + ");");
+                        sb.AppendLine(body + "    if (" + control.FieldName + " == null)");
+                        sb.AppendLine(body + "        Debug.LogError(\"[" + className + "] 找不到控件：" +
+                                      Escape(control.GameObjectName) + " (" + control.TypeName + ")\");");
                     }
-                    else
-                    {
-                        sb.AppendLine($"                .gameObject;");
-                    }
+                }
+                sb.AppendLine(body + "}");
+                sb.AppendLine();
+            }
 
-                    sb.AppendLine($"            if ({compInfo.fieldName} == null)");
-                    sb.AppendLine($"                Debug.LogError($\"找不到组件: {compInfo.gameObjectName} ({type})\");");
+            if (settings.GenerateEventStubs)
+            {
+                for (int i = 0; i < controls.Count; i++)
+                {
+                    UIAutoControl control = controls[i];
+                    if (control.Event == UIAutoControlEvent.None) continue;
+                    string signature = BuildHandlerSignature(control);
+                    if (string.IsNullOrEmpty(signature)) continue;
+                    sb.AppendLine(body + "private void " + signature);
+                    sb.AppendLine(body + "{");
+                    sb.AppendLine(body + "    // TODO: 处理 " + Escape(control.GameObjectName) + " 的交互。");
+                    sb.AppendLine(body + "}");
                     sb.AppendLine();
                 }
             }
 
-            sb.AppendLine("        }");
-            sb.AppendLine();
-
-            sb.AppendLine("        /// <summary>");
-            sb.AppendLine("        /// 初始化UI");
-            sb.AppendLine("        /// </summary>");
-            sb.AppendLine("        public virtual void Initialize()");
-            sb.AppendLine("        {");
-            if (generateAutoBindCode)
-            {
-                sb.AppendLine("            AutoBindComponents();");
-            }
-            sb.AppendLine("            SetupEventListeners();");
-            sb.AppendLine("        }");
-            sb.AppendLine("        #endregion");
-            sb.AppendLine();
-
-            // 生成事件监听设置
-            sb.AppendLine("        #region Event Listeners");
-            sb.AppendLine("        /// <summary>");
-            sb.AppendLine("        /// 设置事件监听");
-            sb.AppendLine("        /// </summary>");
-            sb.AppendLine("        private void SetupEventListeners()");
-            sb.AppendLine("        {");
-
-            foreach (var kvp in components)
-            {
-                if (kvp.Key == "Button")
-                {
-                    foreach (var compInfo in kvp.Value)
-                    {
-                        string methodName = $"On{char.ToUpper(compInfo.fieldName[0])}{compInfo.fieldName.Substring(1)}Click";
-                        sb.AppendLine($"            if ({compInfo.fieldName} != null)");
-                        sb.AppendLine($"                {compInfo.fieldName}.onClick.AddListener({methodName});");
-                    }
-                }
-                else if (kvp.Key == "Toggle")
-                {
-                    foreach (var compInfo in kvp.Value)
-                    {
-                        string methodName = $"On{char.ToUpper(compInfo.fieldName[0])}{compInfo.fieldName.Substring(1)}ValueChanged";
-                        sb.AppendLine($"            if ({compInfo.fieldName} != null)");
-                        sb.AppendLine($"                {compInfo.fieldName}.onValueChanged.AddListener((value) => {methodName}(value));");
-                    }
-                }
-                else if (kvp.Key == "Slider")
-                {
-                    foreach (var compInfo in kvp.Value)
-                    {
-                        string methodName = $"On{char.ToUpper(compInfo.fieldName[0])}{compInfo.fieldName.Substring(1)}ValueChanged";
-                        sb.AppendLine($"            if ({compInfo.fieldName} != null)");
-                        sb.AppendLine($"                {compInfo.fieldName}.onValueChanged.AddListener({methodName});");
-                    }
-                }
-            }
-
-            sb.AppendLine("        }");
-            sb.AppendLine();
-
-            // 生成事件方法模板
-            sb.AppendLine("        #region Event Methods");
-
-            foreach (var kvp in components)
-            {
-                if (kvp.Key == "Button")
-                {
-                    foreach (var compInfo in kvp.Value)
-                    {
-                        string methodName = $"On{char.ToUpper(compInfo.fieldName[0])}{compInfo.fieldName.Substring(1)}Click";
-                        sb.AppendLine($"        /// <summary>");
-                        sb.AppendLine($"        /// {compInfo.gameObjectName} 点击事件");
-                        sb.AppendLine($"        /// </summary>");
-                        sb.AppendLine($"        private void {methodName}()");
-                        sb.AppendLine($"        {{");
-                        sb.AppendLine($"            // TODO: 实现点击逻辑");
-                        sb.AppendLine($"            Debug.Log($\"{compInfo.fieldName} 被点击\");");
-                        sb.AppendLine($"        }}");
-                        sb.AppendLine();
-                    }
-                }
-                else if (kvp.Key == "Toggle")
-                {
-                    foreach (var compInfo in kvp.Value)
-                    {
-                        string methodName = $"On{char.ToUpper(compInfo.fieldName[0])}{compInfo.fieldName.Substring(1)}ValueChanged";
-                        sb.AppendLine($"        /// <summary>");
-                        sb.AppendLine($"        /// {compInfo.gameObjectName} 值改变事件");
-                        sb.AppendLine($"        /// </summary>");
-                        sb.AppendLine($"        private void {methodName}(bool value)");
-                        sb.AppendLine($"        {{");
-                        sb.AppendLine($"            // TODO: 实现值改变逻辑");
-                        sb.AppendLine($"            Debug.Log($\"{compInfo.fieldName} 值改变: {{value}}\");");
-                        sb.AppendLine($"        }}");
-                        sb.AppendLine();
-                    }
-                }
-            }
-
-            sb.AppendLine("        #endregion");
-            sb.AppendLine("        ");
-
-            // 生成清理方法
-            sb.AppendLine("        #region Cleanup");
-            sb.AppendLine("        /// <summary>");
-            sb.AppendLine("        /// 清理事件监听");
-            sb.AppendLine("        /// </summary>");
-            sb.AppendLine("        private void OnDestroy()");
-            sb.AppendLine("        {");
-            sb.AppendLine("            RemoveEventListeners();");
-            sb.AppendLine("        }");
-            sb.AppendLine();
-
-            sb.AppendLine("        /// <summary>");
-            sb.AppendLine("        /// 移除事件监听");
-            sb.AppendLine("        /// </summary>");
-            sb.AppendLine("        private void RemoveEventListeners()");
-            sb.AppendLine("        {");
-
-            foreach (var kvp in components)
-            {
-                if (kvp.Key == "Button")
-                {
-                    foreach (var compInfo in kvp.Value)
-                    {
-                        string methodName = $"On{char.ToUpper(compInfo.fieldName[0])}{compInfo.fieldName.Substring(1)}Click";
-                        sb.AppendLine($"            if ({compInfo.fieldName} != null)");
-                        sb.AppendLine($"                {compInfo.fieldName}.onClick.RemoveListener({methodName});");
-                    }
-                }
-            }
-
-            sb.AppendLine("        }");
-            sb.AppendLine("        #endregion");
-
-            sb.AppendLine("    }");
-
-            if (!string.IsNullOrEmpty(namespaceName))
-            {
-                sb.AppendLine("}");
-            }
-
+            sb.AppendLine(inner + "}");
+            if (hasNamespace) sb.AppendLine("}");
             return sb.ToString();
         }
 
-        private string SaveScriptFile(string fileName, string content)
+        /// <summary>从选中节点收集可绑定控件；跳过嵌套的其它 BasePanel 子树。</summary>
+        public static List<UIAutoControl> CollectControls(GameObject root)
         {
-            string path = EditorUtility.SaveFilePanel("保存UI脚本", "Assets/Scripts/UI", fileName, "cs");
+            List<UIAutoControl> result = new List<UIAutoControl>();
+            if (root == null) return result;
+            HashSet<string> usedFields = new HashSet<string>();
+            HashSet<string> seenControls = new HashSet<string>();
 
-            if (!string.IsNullOrEmpty(path))
+            Transform[] all = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++)
             {
-                // 确保路径在 Assets 目录下（用目录边界判断，避免 Assets2/ 之类的前缀绕过）
-                if (!EditorDestructiveGuard.IsInsideAssets(path))
+                Transform child = all[i];
+                if (child == null || child == root.transform) continue;
+                BasePanel owner = child.GetComponentInParent<BasePanel>();
+                if (owner != null && owner.gameObject != root) continue;
+
+                Component[] components = child.GetComponents<Component>();
+                for (int j = 0; j < components.Length; j++)
                 {
-                    Debug.LogError("请将脚本保存在Assets目录内");
-                    return null;
-                }
-                if (!EditorDestructiveGuard.ConfirmOverwrite("覆盖 UI 脚本", path))
-                    return null;
+                    Component component = components[j];
+                    if (component == null) continue;
+                    string typeName = component.GetType().Name;
+                    if (!SupportedTypes.Contains(typeName)) continue;
+                    // TryGetControl 只按名称+类型取第一个；同名同类型的重复控件无法区分，跳过以免生成永远绑定到同一个控件的字段。
+                    if (!seenControls.Add(child.name + "|" + typeName)) continue;
 
-                // 创建目录（逐级创建，父目录缺失也能补上；同时兼容绝对路径）
-                EditorAssetPathUtility.EnsureAbsoluteDirectoryForFile(path);
-
-                File.WriteAllText(path, content, Encoding.UTF8);
-                return path;
-            }
-
-            return null;
-        }
-
-        private void AddComponentToGameObject(GameObject target, string componentName, string scriptPath)
-        {
-            // 脚本编译后会自动添加组件
-            // 这里只需要确保脚本存在
-        }
-
-        private void AutoBindAfterCompile(GameObject uiRoot, string scriptPath)
-        {
-            if (EditorApplication.isCompiling) return;
-
-            EditorApplication.update -= () => AutoBindAfterCompile(uiRoot, scriptPath);
-
-            // 等待一帧确保编译完成
-            EditorApplication.delayCall += () =>
-            {
-                if (uiRoot == null) return;
-
-                // 获取脚本类型
-                string relativePath = "Assets" + scriptPath.Replace(Application.dataPath, "");
-                MonoScript script = AssetDatabase.LoadAssetAtPath<MonoScript>(relativePath);
-
-                if (script != null)
-                {
-                    System.Type scriptType = script.GetClass();
-
-                    if (scriptType != null)
+                    UIAutoControl control = new UIAutoControl
                     {
-                        // 添加或获取组件
-                        Component component = uiRoot.GetComponent(scriptType);
-                        if (component == null)
-                        {
-                            component = uiRoot.AddComponent(scriptType);
-                        }
-
-                        // 如果启用了自动绑定，调用初始化方法
-                        if (generateAutoBindCode)
-                        {
-                            // 通过反射调用Initialize方法
-                            MethodInfo initMethod = scriptType.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Instance);
-                            if (initMethod != null)
-                            {
-                                initMethod.Invoke(component, null);
-                            }
-                        }
-
-                        EditorUtility.SetDirty(uiRoot);
-                        Selection.activeObject = uiRoot;
-                    }
+                        TypeName = typeName,
+                        GameObjectName = child.name,
+                        FieldName = BuildFieldName(child.name, typeName, usedFields),
+                        Event = ResolveEvent(typeName)
+                    };
+                    result.Add(control);
                 }
-            };
-        }
-
-        private bool IsSupportedType(string typeName)
-        {
-            return supportedTypes.Contains(typeName);
-        }
-
-        private string GenerateFieldName(string gameObjectName, string componentType)
-        {
-            // 清理名称，移除特殊字符
-            string cleanName = Regex.Replace(gameObjectName, @"[^a-zA-Z0-9_]", "");
-            if (string.IsNullOrEmpty(cleanName)) cleanName = "ui";
-
-            // 如果名称以数字开头，添加前缀
-            if (char.IsDigit(cleanName[0]))
-            {
-                cleanName = "_" + cleanName;
             }
-
-            // 转换为驼峰命名
-            cleanName = char.ToLower(cleanName[0]) + cleanName.Substring(1);
-
-            // 添加类型后缀避免重复
-            string suffix = componentType;
-            if (componentType.EndsWith("TMP"))
-                suffix = "TMP";
-            else if (componentType.Length > 0)
-                suffix = componentType.Substring(0, 1).ToUpper();
-
-            return $"{cleanName}{suffix}";
+            return result;
         }
 
-        private string GetRelativePath(Transform child, Transform root)
+        private static string BuildLoadInfo(UIAutoGeneratorSettings settings)
         {
-            List<string> path = new List<string>();
-            Transform current = child;
+            StringBuilder sb = new StringBuilder();
+            sb.Append("UILoadInfo(E_UI_Layer.").Append(settings.Layer)
+              .Append(", AssetLoadMethod.").Append(settings.LoadMethod)
+              .Append(", \"").Append(Escape(settings.LoadPath)).Append("\"");
+            if (settings.Placement != UIPanelPlacement.FullScreen)
+                sb.Append(", placement = UIPanelPlacement.").Append(settings.Placement);
+            if (settings.Modal) sb.Append(", modal = true");
+            if (settings.PauseGame) sb.Append(", pauseGame = true");
+            if (!settings.CloseOnBack) sb.Append(", closeOnBack = false");
+            if (settings.Pool) sb.Append(", pool = true");
+            if (settings.Order != 0) sb.Append(", order = ").Append(settings.Order);
+            sb.Append(")");
+            return sb.ToString();
+        }
 
-            while (current != root && current != null)
+        private static string BuildListener(UIAutoControl control)
+        {
+            string handler = BuildHandlerName(control);
+            if (string.IsNullOrEmpty(handler)) return null;
+            return "OpenEvents.Listen(" + control.FieldName + "." + GetUnityEventName(control.Event) +
+                   ", " + handler + ");";
+        }
+
+        private static string BuildHandlerName(UIAutoControl control)
+        {
+            if (control.Event == UIAutoControlEvent.None) return null;
+            string property = char.ToUpperInvariant(control.FieldName[0]) + control.FieldName.Substring(1);
+            switch (control.Event)
             {
-                path.Insert(0, current.name);
-                current = current.parent;
+                case UIAutoControlEvent.Click: return "On" + property + "Click";
+                case UIAutoControlEvent.StringEndEdit: return "On" + property + "EndEdit";
+                default: return "On" + property + "ValueChanged";
             }
-
-            return string.Join("/", path);
         }
 
-        private class ComponentInfo
+        private static string BuildHandlerSignature(UIAutoControl control)
         {
-            public string fieldName;
-            public string gameObjectName;
-            public string path;
-            public Component component;
+            string name = BuildHandlerName(control);
+            if (string.IsNullOrEmpty(name)) return null;
+            switch (control.Event)
+            {
+                case UIAutoControlEvent.Click: return name + "()";
+                case UIAutoControlEvent.BoolChanged: return name + "(bool value)";
+                case UIAutoControlEvent.FloatChanged: return name + "(float value)";
+                case UIAutoControlEvent.IntChanged: return name + "(int value)";
+                case UIAutoControlEvent.StringEndEdit: return name + "(string value)";
+                default: return null;
+            }
+        }
+
+        private static string GetUnityEventName(UIAutoControlEvent controlEvent)
+        {
+            switch (controlEvent)
+            {
+                case UIAutoControlEvent.Click: return "onClick";
+                case UIAutoControlEvent.StringEndEdit: return "onEndEdit";
+                default: return "onValueChanged";
+            }
+        }
+
+        private static UIAutoControlEvent ResolveEvent(string typeName)
+        {
+            switch (typeName)
+            {
+                case "Button": return UIAutoControlEvent.Click;
+                case "Toggle": return UIAutoControlEvent.BoolChanged;
+                case "Slider":
+                case "Scrollbar": return UIAutoControlEvent.FloatChanged;
+                case "Dropdown":
+                case "TMP_Dropdown": return UIAutoControlEvent.IntChanged;
+                case "InputField":
+                case "TMP_InputField": return UIAutoControlEvent.StringEndEdit;
+                default: return UIAutoControlEvent.None;
+            }
+        }
+
+        private static string BuildFieldName(string gameObjectName, string typeName, HashSet<string> used)
+        {
+            string clean = Regex.Replace(gameObjectName ?? string.Empty, "[^A-Za-z0-9_]", string.Empty);
+            if (string.IsNullOrEmpty(clean)) clean = "ui";
+            if (char.IsDigit(clean[0])) clean = "_" + clean;
+            clean = char.ToLowerInvariant(clean[0]) + clean.Substring(1);
+            if (Keywords.Contains(clean)) clean += "Field";
+
+            if (used.Add(clean)) return clean;
+            string suffix = typeName.StartsWith("TMP_", StringComparison.Ordinal)
+                ? "TMP" : typeName;
+            string candidate = clean + suffix;
+            int index = 2;
+            while (!used.Add(candidate)) candidate = clean + suffix + index++;
+            return candidate;
+        }
+
+        private static string DeriveLoadPath(GameObject root)
+        {
+            string assetPath = AssetDatabase.GetAssetPath(root);
+            if (!string.IsNullOrEmpty(assetPath))
+            {
+                int index = assetPath.IndexOf("/Resources/", StringComparison.Ordinal);
+                if (index >= 0)
+                {
+                    string relative = assetPath.Substring(index + "/Resources/".Length);
+                    return Path.ChangeExtension(relative, null).Replace('\\', '/');
+                }
+            }
+            return "UI/" + (root != null ? root.name : "UIWindow");
+        }
+
+        private static string SaveScriptFile(string fileName, string content)
+        {
+            string path = EditorUtility.SaveFilePanel("保存面板脚本", "Assets/Scripts/UI", fileName, "cs");
+            if (string.IsNullOrEmpty(path)) return null;
+            if (!EditorDestructiveGuard.IsInsideAssets(path))
+            {
+                Debug.LogError("[UIAutoGenerator] 请将脚本保存在 Assets 目录内。");
+                return null;
+            }
+            if (!EditorDestructiveGuard.ConfirmOverwrite("覆盖 UI 脚本", path)) return null;
+
+            EditorAssetPathUtility.EnsureAbsoluteDirectoryForFile(path);
+            File.WriteAllText(path, content, new UTF8Encoding(false));
+            return "Assets" + path.Substring(Application.dataPath.Length);
+        }
+
+        private static bool IsValidIdentifier(string value)
+        {
+            return !string.IsNullOrEmpty(value) &&
+                   Regex.IsMatch(value, @"^[A-Za-z_][A-Za-z0-9_]*$") &&
+                   !Keywords.Contains(value);
+        }
+
+        private static bool IsValidNamespace(string value)
+        {
+            string[] parts = value.Split('.');
+            for (int i = 0; i < parts.Length; i++)
+                if (!IsValidIdentifier(parts[i])) return false;
+            return true;
+        }
+
+        private static string Escape(string value)
+        {
+            return (value ?? string.Empty).Replace("\\", "\\\\").Replace("\"", "\\\"");
         }
     }
 
-    /// <summary>
-    /// 自定义属性，用于标记自动绑定的UI元素
-    /// </summary>
+    /// <summary>标记字段由生成器自动绑定；保留给旧脚本/自定义 Inspector 使用。</summary>
     public class AutoBindAttribute : PropertyAttribute
     {
         public string Path { get; private set; }
-        public System.Type ComponentType { get; private set; }
+        public Type ComponentType { get; private set; }
 
-        public AutoBindAttribute(string path, System.Type componentType = null)
+        public AutoBindAttribute(string path, Type componentType = null)
         {
             Path = path;
             ComponentType = componentType;

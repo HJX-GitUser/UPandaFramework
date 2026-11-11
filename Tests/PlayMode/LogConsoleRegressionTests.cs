@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -107,6 +107,10 @@ namespace UPandaGF.Tests
             objects.Add(go);
             var console = go.AddComponent<UPandaLogConsole>();
             console.enabled = false; // 测试期间不接管 Unity 自身日志
+            // 日志面板会把显示偏好写进 PlayerPrefs；测试必须显式重置，避免受宿主上一次会话影响。
+            console.SetSeverity(true, true, true);
+            console.SetCollapse(false);
+            console.SetFilter("");
             console.Clear();
             return console;
         }
