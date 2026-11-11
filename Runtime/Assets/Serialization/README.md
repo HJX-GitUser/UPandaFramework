@@ -46,4 +46,4 @@ public static class SerializationExample
 3. `SaveFile` 直接覆盖旧格式时也会保留旧数据。提交依赖应用独占目录，同一槽位的并发写入需要调用方串行化。备份由应用按保留策略管理。旧 NRBF 中无法明确解释的字段，例如特定 DateTime 夏令时歧义状态，需要专用迁移。
 4. AB 运行端通过 `AssetReferenceSerializer.Decode` 读取新旧清单。AB 工具生成新清单时会使用新版封装，必要时保留旧文件或原加密内容。发布时让构建端与运行端使用一致的 AES 设置。新客户端可读取旧清单，仍在使用旧解析器的客户端需继续访问兼容清单。 [清单校验](AssetReferenceValidation.cs)
 
-在 Unity Test Runner 运行 [序列化迁移测试](../../../Tests/PlayMode/SerializationMigrationTests.cs)，覆盖共享引用、损坏文件和备份迁移。事务回滚另见 [框架回归](../../../Tests/PlayMode/FrameworkRegressionTests.cs)。已有的 [迁移验证](../../../OptimzeLog/SerializationMigration/README.md) 与 [跨平台验证](../../../OptimzeLog/CrossPlatform/README.md) 为历史记录。发布项目仍需对自己的存档 DTO、目标裁剪级别、旧存档样本和清单版本做实际读回验证。
+在 Unity Test Runner 运行 [序列化迁移测试](../../../Tests/PlayMode/SerializationMigrationTests.cs)，覆盖共享引用、损坏文件和备份迁移。事务回滚另见 [框架回归](../../../Tests/PlayMode/FrameworkRegressionTests.cs)。已有的迁移验证与跨平台验证记录归档在框架外（不随包发布）。发布项目仍需对自己的存档 DTO、目标裁剪级别、旧存档样本和清单版本做实际读回验证。

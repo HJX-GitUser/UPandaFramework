@@ -16,4 +16,4 @@
 
 水面和体积云依赖 Built-in 的 Surface Shader 生成流程，无法直接作为 URP 或 HDRP 的材质运行。暗角手写 Shader 和置顶文字采用传统 ShaderLab/CG。旧 Shader Graph 也需要在目标 Unity 中确认升级后仍能生成正确的 Pass。即使素材导入成功，仍需在发布使用的相机、渲染管线和 Player 中核对渲染效果。
 
-运行案例前先看 Inspector 中的脚本、Shader、材质和纹理引用，优先处理 Missing Script 和粉色材质，再评估画面与帧耗时。框架历史跨平台探针未覆盖这些视觉案例。 [跨平台验证边界](../../OptimzeLog/CrossPlatform/README.md)
+运行案例前先看 Inspector 中的脚本、Shader、材质和纹理引用，优先处理 Missing Script 和粉色材质，再评估画面与帧耗时。框架历史跨平台探针未覆盖这些视觉案例。跨平台验证记录归档在框架外（不随包发布）。

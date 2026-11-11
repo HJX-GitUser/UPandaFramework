@@ -60,4 +60,4 @@ public static class FirstScene
 
 ## 相关文档
 
-[应用服务](../../Core/Services/README.md) · [资源与场景加载](../../Assets/SourcesLoadMgr/README.md) · [启动内容更新](../../Assets/HotUpdate/README.md) · [AssetBundle 工具](../../../Editor/AssetBundleTools/README.md) · [P0 启动验证记录](../../../OptimzeLog/P0Startup/VALIDATION.md)
+[应用服务](../../Core/Services/README.md) · [资源与场景加载](../../Assets/SourcesLoadMgr/README.md) · [启动内容更新](../../Assets/HotUpdate/README.md) · [AssetBundle 工具](../../../Editor/AssetBundleTools/README.md) · P0 启动验证记录归档在框架外（不随包发布）

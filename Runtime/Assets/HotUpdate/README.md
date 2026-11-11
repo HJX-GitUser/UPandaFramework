@@ -39,4 +39,4 @@
 
 支持后台线程的平台将文件验证和提交放到工作线程。WebGL 仍在主线程执行文件阶段，提交等待 IndexedDB 写回。Android 通过 `StatFs` 查询余量，WebGL 查询站点配额。相关接口见 [平台存储](../AssetsMgr/README.md)。
 
-在 Unity Test Runner 运行 [热更回归](../../../Tests/PlayMode/HotUpdateRegressionTests.cs)，重点验证同大小损坏包、提交失败恢复、缓存保护、预算、取消和恢复日志。用实际目标 Player 覆盖 HTTP 不可用、随包启动及 WebGL 刷新后读取。本模块的阶段性验证记录见 [热更存储审计](../../../OptimzeLog/HotUpdateStorage/README.md)。
+在 Unity Test Runner 运行 [热更回归](../../../Tests/PlayMode/HotUpdateRegressionTests.cs)，重点验证同大小损坏包、提交失败恢复、缓存保护、预算、取消和恢复日志。用实际目标 Player 覆盖 HTTP 不可用、随包启动及 WebGL 刷新后读取。本模块的阶段性验证记录归档在框架外（不随包发布）。

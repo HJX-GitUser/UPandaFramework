@@ -19,4 +19,4 @@ CI 用 `Tools/ci/run-tests.*` 跑 EditMode/PlayMode，并由 `check-test-results
 
 ## 历史与发布验证
 
-`OptimzeLog` 保留了回归 XML、探针和平台结果。跨平台记录在隔离工程中验证了 Windows IL2CPP 和 WebGL Edge 基础路径，Android 当轮完成 APK 构建，设备运行需独立验收。历史覆盖和本地当前版本的运行结果应分别记录。实际发布还需要测试宿主首场景、目标平台主包与清单、可选热更、存储恢复和所用玩法。 [历史索引](../OptimzeLog/OPTIMIZATION.md) · [跨平台矩阵](../OptimzeLog/CrossPlatform/README.md)
+优化计划与历史回归 XML、探针和平台结果归档在框架外（维护者本地 `优化记录`，不随包发布）。跨平台记录在隔离工程中验证了 Windows IL2CPP 和 WebGL Edge 基础路径，Android 当轮完成 APK 构建，设备运行需独立验收。历史覆盖和本地当前版本的运行结果应分别记录。实际发布还需要测试宿主首场景、目标平台主包与清单、可选热更、存储恢复和所用玩法。

@@ -48,4 +48,4 @@ if (path != null && await manager.LoadAsync(path))
 
 ## 验证
 
-用 `UPandaGF → Runtime → ReplaySystem → 创建回放示例场景（新建场景）` 生成场景。现有回归覆盖采样预算、逆向 Seek、物理状态恢复、旧格式、异步文件和取消。历史隔离工程完成 Windows Mono Player 和回放专项回归，后续跨平台探针也记录了 Windows IL2CPP 与 WebGL 的核心回放结果。业务场景的目标绑定、帧耗时及 Android 真机流程需要单独核对。 [示例生成器](../../../Editor/ReplaySystemEditor/ReplaySystemDemoBuilder.cs) [回放测试](../../../Tests/PlayMode/ReplayPerformanceTests.cs) [回放历史数据](../../../OptimzeLog/ReplayPerformance/README.md) [跨平台历史数据](../../../OptimzeLog/CrossPlatform/README.md)
+用 `UPandaGF → Runtime → ReplaySystem → 创建回放示例场景（新建场景）` 生成场景。现有回归覆盖采样预算、逆向 Seek、物理状态恢复、旧格式、异步文件和取消。历史隔离工程完成 Windows Mono Player 和回放专项回归，后续跨平台探针也记录了 Windows IL2CPP 与 WebGL 的核心回放结果。业务场景的目标绑定、帧耗时及 Android 真机流程需要单独核对。 [示例生成器](../../../Editor/ReplaySystemEditor/ReplaySystemDemoBuilder.cs) [回放测试](../../../Tests/PlayMode/ReplayPerformanceTests.cs) 回放历史数据与跨平台历史数据归档在框架外（不随包发布）。

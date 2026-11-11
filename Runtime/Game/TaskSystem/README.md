@@ -38,4 +38,4 @@ if (quests != null && quests.AcceptQuest("Quest_KillWolves"))
 
 ## 演示与核对
 
-随附四份模板的脚本 GUID 与当前 QuestDefinition 的 meta 不一致。使用业务任务时新建定义。试用演示时，先保留要继续使用的任务配置，再用 `UPandaGF → Runtime → 任务系统 → 一键搭建（任务资产 + UI + 演示场景）` 重建固定路径下的任务资产，并在当前场景搭好演示 UI 和物体。先完成一项任务并提交，再观察前置解锁、可重复任务及存档恢复。框架历史跨平台探针未覆盖整套任务流程。 [演示安装器](../../../Editor/CustomInspector/TaskSystem/QuestDemoInstaller.cs) [随附任务定义](Resources/Quests/) [平台验证边界](../../../OptimzeLog/CrossPlatform/README.md)
+随附四份模板的脚本 GUID 与当前 QuestDefinition 的 meta 不一致。使用业务任务时新建定义。试用演示时，先保留要继续使用的任务配置，再用 `UPandaGF → Runtime → 任务系统 → 一键搭建（任务资产 + UI + 演示场景）` 重建固定路径下的任务资产，并在当前场景搭好演示 UI 和物体。先完成一项任务并提交，再观察前置解锁、可重复任务及存档恢复。框架历史跨平台探针未覆盖整套任务流程。 [演示安装器](../../../Editor/CustomInspector/TaskSystem/QuestDemoInstaller.cs) [随附任务定义](Resources/Quests/) 平台验证记录归档在框架外（不随包发布）。

@@ -13,7 +13,9 @@ Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行�
 
 要求 **Unity 2021.3 LTS 或更高**；2021.3.45f2c1 与 2022.3.53f1c1 均已编译并跑通 EditMode/PlayMode 回归。
 
-[Gitee](https://gitee.com/he-jinxian/upanda-framework.git) · [GitHub](https://github.com/HJX-GitUser/UPandaFramework.git) · [变更记录](CHANGELOG.md) · [优化计划](OPTIMIZATION_PLAN.md)
+[Gitee](https://gitee.com/he-jinxian/upanda-framework.git) · [GitHub](https://github.com/HJX-GitUser/UPandaFramework.git) · [变更记录](CHANGELOG.md)
+
+> 优化计划与阶段性验证记录归档在框架外（维护者本地 `优化记录`），不随包发布。
 
 ## 集成到 Unity 项目
 1. 导入框架目录及 `.meta`，在 Package Manager 确认 uGUI、TextMeshPro 与 Input System 可用。运行时输入后端按工程的 Active Input Handling 自动选择：启用新 Input System 时使用 `InputSystemBackend`，否则回退旧 Input Manager。使用 HybridCLR 程序集加载、URP 效果或运行测试时，再核对对应宿主依赖。
@@ -90,7 +92,7 @@ public static class AppEntry
 
 - 在 Unity Test Runner 中运行 EditMode 与 PlayMode。部分 fixture 会临时创建资源、AB 或修改构建场景，完整测试适合在隔离宿主运行。 [测试入口](Tests/README.md)
 - CI 脚本在 `Tools/ci/`：EditMode/PlayMode、结果 XML 校验（0 用例或 `failed > 0` 返回非 0）与三平台构建；GitHub Actions 工作流见 `.github/workflows/ci.yml`。 [CI 说明](Tools/ci/README.md)
-- `OptimzeLog` 保存阶段性验证结果。Windows IL2CPP 与 WebGL 的历史探针来自隔离工程，Android 当轮完成 APK 构建。集成后在目标项目与设备上单独验收。 [历史索引](OptimzeLog/OPTIMIZATION.md) · [跨平台记录](OptimzeLog/CrossPlatform/README.md)
+- 优化计划与阶段性验证记录归档在框架外（维护者本地 `优化记录`，不随包发布）。Windows IL2CPP 与 WebGL 的历史探针来自隔离工程，Android 当轮完成 APK 构建。集成后在目标项目与设备上单独验收。
 - C# 与 Markdown 文件遵循仓库的编码和行尾配置。新增 Unity 资源或移动资源时保留正确的 `.meta`。运行时调用 UnityEditor API 要处于编辑器编译条件内。 [源码格式](.editorconfig)
 
 框架原创部分采用 MIT 许可。随仓库提供的第三方代码、库和资产遵循各自的许可。 [LICENSE](LICENSE) · [第三方声明](THIRD_PARTY_NOTICES.md)
