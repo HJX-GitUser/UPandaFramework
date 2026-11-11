@@ -185,9 +185,9 @@ public override void OnOpen(object panelArg = null)
 
 ### UI 相机与渲染管线
 
-- `UIManager` 自建或通过 `UICameraRegister`/`ResetCamera` 接收的相机都会自动调用 `UICameraPipeline.Adapt`：Built-in 保证 `depth >= 10`；URP 追加 `UniversalAdditionalCameraData` 并设为 Base/priority；HDRP 追加 `HDAdditionalCameraData` 并开启 `clearDepth`。
-- 不需要在业务里手动 `AddComponent<UniversalAdditionalCameraData>()`；包不引用 SRP 程序集，未安装对应管线时只警告一次。
-- 运行时切换画质/渲染管线后会自动重新适配；URP 使用 Base+priority 方案，不主动维护 Camera Stack。若项目已有 Overlay UI 相机栈，请在注册前配置并确认 `UICameraRegister._camera` 指向该相机。
+- `UIManager` 自建或通过 `UICameraRegister`/`ResetCamera` 接收的相机都会自动协商：Built-in 保证 `depth >= 10`；URP 使用方案 B（UI 相机 Overlay + 主相机 Camera Stack），没有主相机时先回退 Base，并在场景加载/管线切换/`RefreshCameraStack()` 时重试；HDRP 追加 `HDAdditionalCameraData` 并开启 `clearDepth`。
+- 不需要在业务里手动 `AddComponent<UniversalAdditionalCameraData>()`；包不引用 SRP 程序集，未安装对应管线时只警告一次。URP 主相机需要是 `Camera.main`（Tag = MainCamera）；多主相机项目可在切换后调用 `UIManager.RefreshCameraStack()`，或用 `UiCameraStackOwner` 查询当前持有者。
+- 运行时切换画质/渲染管线后会自动重新适配，并从旧主相机 stack 移除 UI 相机；已预先配置为 Overlay 并加入 stack 的相机不会被改回 Base。
 
 ## 10. 校验器与脚本生成器
 

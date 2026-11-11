@@ -73,6 +73,7 @@ namespace UPandaGF.Tests
             {
                 manager.Configure(new NoopAssets());
                 manager.Init();
+                manager.RefreshCameraStack();
 
                 Assert.IsNotNull(manager.uiCamera);
                 Assert.AreEqual(CameraClearFlags.Depth, manager.uiCamera.clearFlags);

@@ -2,7 +2,13 @@
 
 所有 Notable 变更记录在此文件。版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)；UI 框架的分阶段验证证据保存在仓库外的 `优化记录/`，不随 UPM 包发布。
 
-## [Unreleased] — 目标 0.9.0
+## [Unreleased]
+
+### Planned
+
+- 设置面板纵切（依赖 `ISettingsService`）、1.0 前 API 冻结评审、旧 `panelDic` 收口。
+
+## [0.8.1] - 2026-11-12
 
 ### Added
 
@@ -13,7 +19,7 @@
 - 数据绑定：`Observable<T>`、`BoolObservable`/`FloatObservable`/`IntObservable`/`StringObservable`/`ColorObservable`、`CompositeDisposable`、`UIBinder`、`TMPUIBinder`、`UISafeArea`。
 - 动态列表与设置行：`UIItemPool`、`UISettingItem`、`UISettingRow`（Toggle/Slider/Dropdown/Button/ReadOnly）、`UISettingList`（描述表驱动 + 行复用）。
 - 焦点与缩放：`UIFocusNavigator`（默认焦点/方向导航/Submit/Cancel/Remember/Restore）、`UICanvasScale`、`UIManager.SetUiScale`/`IUIService.UiScale`。
-- UI 相机渲染管线适配：`UICameraPipeline` 自动识别 Built-in/URP/HDRP；URP 追加 `UniversalAdditionalCameraData`（Base + priority），HDRP 追加 `HDAdditionalCameraData`（clearDepth），运行时切换管线会重新适配且不硬依赖 SRP 程序集。
+- UI 相机渲染管线适配：`UICameraPipeline` 自动识别 Built-in/URP/HDRP；URP 默认方案 B（UI 相机 Overlay + 主相机 Camera Stack，无主相机时回退 Base），HDRP 追加 `HDAdditionalCameraData`（clearDepth），运行时切换管线会重新适配且不硬依赖 SRP 程序集。
 - 工具链：`UIPanelValidator`（菜单 `UPandaGF/UI/校验面板配置`，CI 入口 `ValidateForCI`）、重写的 `UIAutoGenerator`（partial BasePanel + UILoadInfo + 事件桩，TMP 类型，无 `EditorApplication.update` 残留）、`Tools/ci/validate-ui-panels.*`。
 - 文档：`Documentation~/MIGRATION-UI.md`。
 
@@ -28,6 +34,7 @@
 
 ### Fixed
 
+- 预配置为 Overlay 的 URP UI 相机被 `UICameraPipeline` 强制改回 Base；现在保留 Overlay 与 Camera Stack。
 - `UIAutoGenerator` 生成的脚本缺少 `OnOpen`/`OnClose`、包含不存在的类型名、`EditorApplication.update` 退订无效。
 - 自定义 Canvas 缺层、EventSystem 输入模块不匹配、默认隐藏预制体未先激活导致的打开失败。
 - 面板被外部销毁后记录残留；`OnOpen` 内自关闭的返回值语义。

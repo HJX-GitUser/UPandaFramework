@@ -145,10 +145,13 @@ if (services.Input.GetButtonDown("Cancel", "UI")) navigator.Cancel();
 
 ## 渲染管线适配
 
-- `UIManager` 在创建或接收 UI 相机时自动调用 [`UICameraPipeline.Adapt`](UICameraPipeline.cs)：Built-in 只保证 `depth` 不低于 10；URP 通过反射追加 `UniversalAdditionalCameraData`，设为 Base 并提高 priority；HDRP 追加 `HDAdditionalCameraData` 并开启 `clearDepth`。
-- 不引用 URP/HDRP 程序集：未安装对应管线时只记录一次警告，Built-in 工程照常工作。运行时画质档位切换 SRP 时，`RenderPipelineManager.activeRenderPipelineTypeChanged` 会触发重新适配，无需重建 Canvas。
-- `UICameraPipeline.Detect()` 返回 `BuiltIn`/`Universal`/`HighDefinition`/`Unknown`；自定义相机可在注册后直接调用 `UICameraPipeline.Adapt(camera)`。
-- URP 采用「Base 相机 + 高 priority」方案，不主动加入 Camera Stack；若项目要求 Overlay UI 相机，请在 `UICameraRegister` 之前自行加入主相机 stack，并保持引用。
+- `UIManager` 在创建或接收 UI 相机后自动调用 [`UICameraPipeline`](UICameraPipeline.cs) 协商相机关系：
+  - **Built-in**：保证 `depth >= 10`，保持 Canvas 的 `ScreenSpaceCamera`。
+  - **URP（方案 B）**：若场景存在 `Camera.main`，把 UI 相机设为 `Overlay` 并加入主相机的 Camera Stack，关闭 UI 相机的后处理；主相机保持 `Base`。主相机尚未加载时先回退 Base，随后在 `SceneManager.sceneLoaded`、管线切换或手动 `RefreshCameraStack()` 时重试。
+  - **HDRP**：反射追加 `HDAdditionalCameraData` 并开启 `clearDepth`。
+- 不引用 URP/HDRP 程序集：未安装对应管线时只记录一次警告，Built-in 工程照常工作。`RenderPipelineManager.activeRenderPipelineTypeChanged` 会在运行时切换 SRP 后重新适配，无需重建 Canvas。
+- `UICameraPipeline.Detect()` 返回 `BuiltIn`/`Universal`/`HighDefinition`/`Unknown`；`ConfigureOverlay`/`RemoveFromStack`/`MakeBase` 可供自定义相机流程使用。`UIManager.UiCameraStackOwner` 可查询当前持有 UI 相机的主相机。
+- 通过 `UICameraRegister`/`ResetCamera` 注册的场景 UI 相机走同一流程；若相机已预先配置为 Overlay 并加入 stack，`UICameraPipeline` 会保留该配置，不会改回 Base。
 
 ## 校验与脚本生成
 

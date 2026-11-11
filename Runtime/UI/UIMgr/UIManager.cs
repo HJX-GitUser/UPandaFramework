@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace UPandaGF
@@ -127,6 +128,8 @@ namespace UPandaGF
         private bool toastPumpRunning;
         private bool destroyed;
         private bool pipelineHooked;
+        private bool sceneLoadedHooked;
+        private Camera uiCameraStackOwner;
 
         /// <summary>每个面板路径最多缓存的空闲实例数；0 表示不缓存。</summary>
         public int MaxPooledPerPath
@@ -306,15 +309,16 @@ namespace UPandaGF
             }
             if (ReferenceEquals(uiCamera, arg))
             {
-                UICameraPipeline.Adapt(arg);
+                ApplyUiCameraPipeline();
                 return;
             }
 
             Camera previous = uiCamera;
+            DetachOverlay();
             uiCamera = arg;
-            UICameraPipeline.Adapt(arg);
             if (uiCanvas != null && uiCanvas.renderMode == RenderMode.ScreenSpaceCamera)
                 uiCanvas.worldCamera = arg;
+            ApplyUiCameraPipeline();
             if (previous != null && previous != arg && ownsCamera)
                 previous.gameObject.SetActive(false);
             ownsCamera = false;
@@ -329,8 +333,9 @@ namespace UPandaGF
                 uiCamera = InitCamera();
                 ownsCamera = true;
             }
-            UICameraPipeline.Adapt(uiCamera);
             HookPipelineChanges();
+            HookSceneLoaded();
+            ApplyUiCameraPipeline();
             if (uiCanvas == null)
             {
                 uiCanvas = InitUICanvas(uiCamera);
@@ -364,13 +369,88 @@ namespace UPandaGF
             pipelineHooked = false;
         }
 
-        /// <summary>画质档位切换 SRP 时补/更新 URP/HDRP 的相机数据，不重建 Canvas。</summary>
+        /// <summary>画质档位切换 SRP 时补/更新 URP Camera Stack 与 HDRP 数据，不重建 Canvas。</summary>
         private void OnActiveRenderPipelineChanged()
         {
             if (destroyed) return;
-            UICameraPipeline.Adapt(uiCamera);
+            DetachOverlay();
+            ApplyUiCameraPipeline();
             log.Info("[UIManager] 渲染管线变化为 " + UICameraPipeline.Detect() + "，已重新适配 UI 相机。");
             EnsureCanvasSettings();
+        }
+
+        private void HookSceneLoaded()
+        {
+            if (sceneLoadedHooked) return;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            sceneLoadedHooked = true;
+        }
+
+        private void UnhookSceneLoaded()
+        {
+            if (!sceneLoadedHooked) return;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            sceneLoadedHooked = false;
+        }
+
+        /// <summary>主相机通常随场景加载出现；场景切换后重新尝试加入 URP Camera Stack。</summary>
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (destroyed) return;
+            ApplyUiCameraPipeline();
+        }
+
+        /// <summary>
+        /// 重新协商 UI 相机与主相机的关系：
+        /// URP 优先方案 B（UI 相机 Overlay + 主相机 Camera Stack）；没有主相机时回退 Base，
+        /// Built-in/HDRP 继续使用 Base/HDRP 适配。
+        /// </summary>
+        private void ApplyUiCameraPipeline()
+        {
+            if (destroyed || uiCamera == null) return;
+
+            UIRenderPipelineKind kind = UICameraPipeline.Detect();
+            if (kind == UIRenderPipelineKind.Universal)
+            {
+                Camera main = Camera.main;
+                if (main != null && main != uiCamera && main.isActiveAndEnabled)
+                {
+                    if (uiCameraStackOwner != null && uiCameraStackOwner != main)
+                        UICameraPipeline.RemoveFromStack(uiCameraStackOwner, uiCamera);
+                    if (UICameraPipeline.ConfigureOverlay(main, uiCamera))
+                    {
+                        uiCameraStackOwner = main;
+                        return;
+                    }
+                }
+
+                if (uiCameraStackOwner != null)
+                {
+                    UICameraPipeline.RemoveFromStack(uiCameraStackOwner, uiCamera);
+                    uiCameraStackOwner = null;
+                }
+                UICameraPipeline.MakeBase(uiCamera);
+                return;
+            }
+
+            DetachOverlay();
+            UICameraPipeline.Adapt(uiCamera, kind);
+        }
+
+        /// <summary>手动重新适配（例如运行中才生成/切换主相机）。</summary>
+        public void RefreshCameraStack()
+        {
+            ApplyUiCameraPipeline();
+        }
+
+        /// <summary>当前持有 URP Camera Stack 的主相机；未使用 Camera Stack 时为 null。</summary>
+        public Camera UiCameraStackOwner => uiCameraStackOwner;
+
+        private void DetachOverlay()
+        {
+            if (uiCameraStackOwner != null && uiCamera != null)
+                UICameraPipeline.RemoveFromStack(uiCameraStackOwner, uiCamera);
+            uiCameraStackOwner = null;
         }
 
         /// <summary>
@@ -1688,6 +1768,8 @@ namespace UPandaGF
         {
             if (destroyed) return;
             destroyed = true;
+            DetachOverlay();
+            UnhookSceneLoaded();
             UnhookPipelineChanges();
 
             while (toastQueue.Count > 0)
