@@ -1,0 +1,19 @@
+{
+    "schemaVersion":  1,
+    "defaultLocale":  "zh-Hans",
+    "fallbackLocale":  "en",
+    "locales":  [
+                    {
+                        "code":  "zh-Hans",
+                        "displayName":  "简体中文",
+                        "table":  "Localization/zh-Hans",
+                        "overrideTable":  ""
+                    },
+                    {
+                        "code":  "en",
+                        "displayName":  "English",
+                        "table":  "Localization/en",
+                        "overrideTable":  ""
+                    }
+                ]
+}

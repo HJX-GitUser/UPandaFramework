@@ -1,0 +1,7 @@
+{
+    "name": "UPandaGF.Localization",
+    "references": [
+        "UPandaGF.Contracts"
+    ],
+    "autoReferenced": false
+}

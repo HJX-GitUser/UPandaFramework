@@ -118,6 +118,8 @@ namespace UPandaGF.Tests
             public ISaveService Saves => null;
             public ISceneService Scenes => null;
             public IInputService Input => null;
+            public ISettingsService Settings => null;
+            public ILocalizationService Localization => null;
             public IPauseService Pause => null;
             public IGameClock Clock => null;
             public ITimerService Timer => null;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -73,6 +73,9 @@ namespace UPandaGF
 
         protected virtual void ApplyCommon()
         {
+            // 运行时动态生成的行没有 Inspector 引用：按约定名称 "Label"/"Description" 自动查找。
+            if (label == null) label = FindText("Label", false);
+            if (description == null) description = FindText("Description", false);
             SetText(label, Item.Label);
             bool hasDescription = !string.IsNullOrEmpty(Item.Description);
             SetText(description, hasDescription ? Item.Description : null);

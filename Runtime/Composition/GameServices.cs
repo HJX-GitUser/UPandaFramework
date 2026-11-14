@@ -1,4 +1,4 @@
-/* ==========================================================================================
+﻿/* ==========================================================================================
  * GameServices —— 服务组合根（Composition Root）
  *
  * 【职责】
@@ -44,8 +44,12 @@ namespace UPandaGF
         public ISaveService Saves { get; }
         /// <summary>场景加载/卸载（串行队列 + 资源作用域）</summary>
         public ISceneService Scenes => SceneService;
-        /// <summary>输入（动作映射 + 上下文栈）</summary>
+        /// <summary>输入（动作映射 + 上下文栈 + 运行时改键）</summary>
         public IInputService Input => InputService;
+        /// <summary>玩家系统设置（音频/画面/显示/输入/语言/辅助功能/隐私）</summary>
+        public ISettingsService Settings => SettingsService;
+        /// <summary>本地多语言（内置/项目表、语言切换事件）</summary>
+        public ILocalizationService Localization => LocalizationService;
         /// <summary>暂停（与 Clock 是同一个 GameTimeService 的两个视角）</summary>
         public IPauseService Pause => TimeService;
         /// <summary>游戏时钟（暂停时 DeltaTime 为 0）</summary>
@@ -71,6 +75,12 @@ namespace UPandaGF
         public GameTimeService TimeService { get; }
         public TimerService TimerService { get; }
         public ConfigService ConfigService { get; }
+        /// <summary>设置服务具体实现（生命周期接入/诊断用）。</summary>
+        public SettingsService SettingsService { get; }
+        /// <summary>设置描述表（诊断/扩展检查用）。</summary>
+        public SettingsRegistry SettingsRegistry { get; }
+        /// <summary>本地化服务具体实现（诊断/扩展用）。</summary>
+        public LocalizationService LocalizationService { get; }
         public GameFlowController FlowController { get; }
         public AppLifecycleService AppLifecycleService { get; }
         /// <summary>底层资源加载器（ResourcesLoader），扩展方法/诊断会用到</summary>
@@ -121,8 +131,19 @@ namespace UPandaGF
             SceneService = new SceneService(new UnitySceneBackend(), SceneService.SelectAssetProvider(config.method, assets));
             ConfigService = new ConfigService();
             TimerService = new TimerService();
+            // 设置：描述表驱动 + 平台应用器；数据与存档分离（persistentDataPath/Settings）。
+            SettingsRegistry = new SettingsRegistry();
+            SettingsService = new SettingsService(
+                new SettingsStore(), SettingsRegistry,
+                SettingsAppliers.CreateDefaults(Audio, InputService, Log), Log, TimerService,
+                migrations: SettingsMigrationRegistry.CreateChain(),
+                safeMode: SettingsSafeMode.Default);
+            // 本地化：内置表 Resources + 项目覆盖表；Settings 步骤之后再加载。
+            LocalizationService = new LocalizationService(Assets, SettingsService, config.localization, Log);
             // 前后台暂停接入同一个 GameTimeService（嵌套暂停，不会与菜单暂停打架）
             AppLifecycleService = new AppLifecycleService(TimeService);
+            // 切后台/退出/低内存时保存设置；退出前 GameServices 还会显式保存一次。
+            SettingsService.AttachLifecycle(AppLifecycleService);
             FlowController = new GameFlowController();
             FlowController.Configure(this);
             // 计时器自己不跑帧循环，由 PublicMono.Update 驱动；用 scaled 时间，所以暂停时自动停
@@ -148,6 +169,10 @@ namespace UPandaGF
             try { Http.CancelAll(); } catch (Exception e) { errors.Add(e); }
             if (httpHost != null) UnityEngine.Object.Destroy(httpHost);
             if (timerDriver != null) timerDriver.RemoveUpdateListener(TickTimers);
+            // 设置先落盘再释放计时器/生命周期：退出通知可能已经触发过一次保存，这里幂等兜底。
+            try { await SettingsService.SaveAsync(SettingsSaveReason.Quit); } catch (Exception e) { errors.Add(e); }
+            try { LocalizationService.Dispose(); } catch (Exception e) { errors.Add(e); }
+            try { SettingsService.Dispose(); } catch (Exception e) { errors.Add(e); }
             try { TimerService.Dispose(); } catch (Exception e) { errors.Add(e); }
             try { AppLifecycleService.Dispose(); } catch (Exception e) { errors.Add(e); }
             try { audio.Dispose(); } catch (Exception e) { errors.Add(e); }

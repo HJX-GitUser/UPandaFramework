@@ -1,0 +1,558 @@
+{
+    "schemaVersion":  1,
+    "locale":  "en",
+    "entries":  [
+                    {
+                        "key":  "settings.panel.title",
+                        "value":  "Settings"
+                    },
+                    {
+                        "key":  "settings.panel.close",
+                        "value":  "Close"
+                    },
+                    {
+                        "key":  "settings.panel.reset",
+                        "value":  "Reset to Defaults"
+                    },
+                    {
+                        "key":  "settings.panel.resetConfirm",
+                        "value":  "Click Again to Confirm"
+                    },
+                    {
+                        "key":  "settings.panel.previewTip",
+                        "value":  "Settings applied temporarily. Keep or revert (auto-revert on timeout)."
+                    },
+                    {
+                        "key":  "settings.panel.previewKeep",
+                        "value":  "Keep"
+                    },
+                    {
+                        "key":  "settings.panel.previewRevert",
+                        "value":  "Revert"
+                    },
+                    {
+                        "key":  "settings.category.audio",
+                        "value":  "Audio"
+                    },
+                    {
+                        "key":  "settings.category.graphics",
+                        "value":  "Graphics"
+                    },
+                    {
+                        "key":  "settings.category.display",
+                        "value":  "Display"
+                    },
+                    {
+                        "key":  "settings.category.input",
+                        "value":  "Controls"
+                    },
+                    {
+                        "key":  "settings.category.language",
+                        "value":  "Language"
+                    },
+                    {
+                        "key":  "settings.category.accessibility",
+                        "value":  "Accessibility"
+                    },
+                    {
+                        "key":  "settings.category.gameplay",
+                        "value":  "Gameplay"
+                    },
+                    {
+                        "key":  "settings.category.privacy",
+                        "value":  "Privacy \u0026 Network"
+                    },
+                    {
+                        "key":  "settings.category.system",
+                        "value":  "System"
+                    },
+                    {
+                        "key":  "settings.audio.master.label",
+                        "value":  "Master Volume"
+                    },
+                    {
+                        "key":  "settings.audio.music.label",
+                        "value":  "Music"
+                    },
+                    {
+                        "key":  "settings.audio.sfx.label",
+                        "value":  "Sound Effects"
+                    },
+                    {
+                        "key":  "settings.audio.muteAll.label",
+                        "value":  "Mute All"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.label",
+                        "value":  "Quality Preset"
+                    },
+                    {
+                        "key":  "settings.graphics.antiAliasing.label",
+                        "value":  "Anti-Aliasing"
+                    },
+                    {
+                        "key":  "settings.graphics.shadowQuality.label",
+                        "value":  "Shadow Quality"
+                    },
+                    {
+                        "key":  "settings.graphics.textureQuality.label",
+                        "value":  "Texture Quality"
+                    },
+                    {
+                        "key":  "settings.graphics.renderScale.label",
+                        "value":  "Render Scale"
+                    },
+                    {
+                        "key":  "settings.graphics.brightness.label",
+                        "value":  "Brightness"
+                    },
+                    {
+                        "key":  "settings.display.mode.label",
+                        "value":  "Display Mode"
+                    },
+                    {
+                        "key":  "settings.display.width.label",
+                        "value":  "Resolution Width"
+                    },
+                    {
+                        "key":  "settings.display.height.label",
+                        "value":  "Resolution Height"
+                    },
+                    {
+                        "key":  "settings.display.refreshRate.label",
+                        "value":  "Refresh Rate"
+                    },
+                    {
+                        "key":  "settings.display.vsync.label",
+                        "value":  "V-Sync"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.label",
+                        "value":  "Frame Rate Limit"
+                    },
+                    {
+                        "key":  "settings.input.mouseSensitivity.label",
+                        "value":  "Mouse Sensitivity"
+                    },
+                    {
+                        "key":  "settings.input.gamepadSensitivity.label",
+                        "value":  "Gamepad Sensitivity"
+                    },
+                    {
+                        "key":  "settings.input.invertY.label",
+                        "value":  "Invert Y Axis"
+                    },
+                    {
+                        "key":  "settings.input.gamepadDeadzone.label",
+                        "value":  "Gamepad Deadzone"
+                    },
+                    {
+                        "key":  "settings.input.vibration.label",
+                        "value":  "Vibration"
+                    },
+                    {
+                        "key":  "settings.input.aimMode.label",
+                        "value":  "Aim Mode"
+                    },
+                    {
+                        "key":  "settings.input.bindings.label",
+                        "value":  "Key Bindings"
+                    },
+                    {
+                        "key":  "settings.language.ui.label",
+                        "value":  "Display Language"
+                    },
+                    {
+                        "key":  "settings.language.subtitles.label",
+                        "value":  "Subtitles"
+                    },
+                    {
+                        "key":  "settings.language.subtitleSize.label",
+                        "value":  "Subtitle Size"
+                    },
+                    {
+                        "key":  "settings.accessibility.uiScale.label",
+                        "value":  "UI Scale"
+                    },
+                    {
+                        "key":  "settings.accessibility.screenShake.label",
+                        "value":  "Screen Shake"
+                    },
+                    {
+                        "key":  "settings.accessibility.flashIntensity.label",
+                        "value":  "Flash Intensity"
+                    },
+                    {
+                        "key":  "settings.accessibility.colorblindMode.label",
+                        "value":  "Colorblind Mode"
+                    },
+                    {
+                        "key":  "settings.accessibility.reduceMotion.label",
+                        "value":  "Reduce Motion"
+                    },
+                    {
+                        "key":  "settings.gameplay.difficulty.label",
+                        "value":  "Difficulty"
+                    },
+                    {
+                        "key":  "settings.gameplay.autosave.label",
+                        "value":  "Autosave"
+                    },
+                    {
+                        "key":  "settings.privacy.telemetry.label",
+                        "value":  "Telemetry"
+                    },
+                    {
+                        "key":  "settings.privacy.crashReport.label",
+                        "value":  "Crash Reports"
+                    },
+                    {
+                        "key":  "settings.privacy.personalizedAds.label",
+                        "value":  "Personalized Ads"
+                    },
+                    {
+                        "key":  "settings.system.firstRunCompleted.label",
+                        "value":  "First Run Completed"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.option.Low",
+                        "value":  "Low"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.option.Medium",
+                        "value":  "Medium"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.option.High",
+                        "value":  "High"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.option.Ultra",
+                        "value":  "Ultra"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.option.Custom",
+                        "value":  "Custom"
+                    },
+                    {
+                        "key":  "settings.graphics.antiAliasing.option.Off",
+                        "value":  "Off"
+                    },
+                    {
+                        "key":  "settings.graphics.antiAliasing.option.x2",
+                        "value":  "2x"
+                    },
+                    {
+                        "key":  "settings.graphics.antiAliasing.option.x4",
+                        "value":  "4x"
+                    },
+                    {
+                        "key":  "settings.graphics.antiAliasing.option.x8",
+                        "value":  "8x"
+                    },
+                    {
+                        "key":  "settings.graphics.shadowQuality.option.Off",
+                        "value":  "Off"
+                    },
+                    {
+                        "key":  "settings.graphics.shadowQuality.option.Low",
+                        "value":  "Low"
+                    },
+                    {
+                        "key":  "settings.graphics.shadowQuality.option.Medium",
+                        "value":  "Medium"
+                    },
+                    {
+                        "key":  "settings.graphics.shadowQuality.option.High",
+                        "value":  "High"
+                    },
+                    {
+                        "key":  "settings.graphics.textureQuality.option.Low",
+                        "value":  "Low"
+                    },
+                    {
+                        "key":  "settings.graphics.textureQuality.option.Medium",
+                        "value":  "Medium"
+                    },
+                    {
+                        "key":  "settings.graphics.textureQuality.option.High",
+                        "value":  "High"
+                    },
+                    {
+                        "key":  "settings.display.mode.option.ExclusiveFullScreen",
+                        "value":  "Exclusive Fullscreen"
+                    },
+                    {
+                        "key":  "settings.display.mode.option.Borderless",
+                        "value":  "Borderless"
+                    },
+                    {
+                        "key":  "settings.display.mode.option.Windowed",
+                        "value":  "Windowed"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Fps30",
+                        "value":  "30"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Fps60",
+                        "value":  "60"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Fps120",
+                        "value":  "120"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Fps144",
+                        "value":  "144"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Fps240",
+                        "value":  "240"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Unlimited",
+                        "value":  "Unlimited"
+                    },
+                    {
+                        "key":  "settings.language.subtitleSize.option.Small",
+                        "value":  "Small"
+                    },
+                    {
+                        "key":  "settings.language.subtitleSize.option.Medium",
+                        "value":  "Medium"
+                    },
+                    {
+                        "key":  "settings.language.subtitleSize.option.Large",
+                        "value":  "Large"
+                    },
+                    {
+                        "key":  "settings.language.subtitleSize.option.ExtraLarge",
+                        "value":  "Extra Large"
+                    },
+                    {
+                        "key":  "settings.gameplay.difficulty.option.Easy",
+                        "value":  "Easy"
+                    },
+                    {
+                        "key":  "settings.gameplay.difficulty.option.Normal",
+                        "value":  "Normal"
+                    },
+                    {
+                        "key":  "settings.gameplay.difficulty.option.Hard",
+                        "value":  "Hard"
+                    },
+                    {
+                        "key":  "settings.input.aimMode.option.Hold",
+                        "value":  "Hold"
+                    },
+                    {
+                        "key":  "settings.input.aimMode.option.Toggle",
+                        "value":  "Toggle"
+                    },
+                    {
+                        "key":  "settings.accessibility.colorblindMode.option.Off",
+                        "value":  "Off"
+                    },
+                    {
+                        "key":  "settings.accessibility.colorblindMode.option.Protanopia",
+                        "value":  "Protanopia"
+                    },
+                    {
+                        "key":  "settings.accessibility.colorblindMode.option.Deuteranopia",
+                        "value":  "Deuteranopia"
+                    },
+                    {
+                        "key":  "settings.accessibility.colorblindMode.option.Tritanopia",
+                        "value":  "Tritanopia"
+                    },
+                    {
+                        "key":  "settings.language.system",
+                        "value":  "Follow System"
+                    },
+                    {
+                        "key":  "settings.input.bindings.reset.label",
+                        "value":  "Reset Key Bindings"
+                    },
+                    {
+                        "key":  "settings.input.bindings.reset.tooltip",
+                        "value":  "Clear player overrides and restore defaults"
+                    },
+                    {
+                        "key":  "settings.rebind.hint",
+                        "value":  "Press a new key (Esc to cancel)"
+                    },
+                    {
+                        "key":  "settings.rebind.canceled",
+                        "value":  "Rebind canceled"
+                    },
+                    {
+                        "key":  "settings.rebind.missing",
+                        "value":  "Binding not found"
+                    },
+                    {
+                        "key":  "settings.rebind.success",
+                        "value":  "Bound: {0}"
+                    },
+                    {
+                        "key":  "settings.rebind.conflict",
+                        "value":  "Key already used by another action"
+                    },
+                    {
+                        "key":  "settings.rebind.reserved",
+                        "value":  "Reserved system key"
+                    },
+                    {
+                        "key":  "settings.rebind.invalid",
+                        "value":  "Invalid key"
+                    },
+                    {
+                        "key":  "settings.rebind.failed",
+                        "value":  "Rebind failed"
+                    },
+                    {
+                        "key":  "settings.rebind.retryHint",
+                        "value":  "; press another key (Esc to cancel)"
+                    },
+                    {
+                        "key":  "settings.input.axis",
+                        "value":  "Axis"
+                    },
+                    {
+                        "key":  "settings.input.unbound",
+                        "value":  "Unbound"
+                    },
+                    {
+                        "key":  "settings.description.toggle",
+                        "value":  "Click to cycle"
+                    },
+                    {
+                        "key":  "settings.description.readonly",
+                        "value":  "Provided by localization/platform"
+                    },
+                    {
+                        "key":  "settings.rebind.timeout",
+                        "value":  "Rebind timed out and was canceled"
+                    },
+                    {
+                        "key":  "settings.rebind.axisLocked",
+                        "value":  "Axis bindings cannot be rebound"
+                    },
+                    {
+                        "key":  "settings.input.action.MoveVertical",
+                        "value":  "Move Forward/Back"
+                    },
+                    {
+                        "key":  "settings.input.action.MoveHorizontal",
+                        "value":  "Move Left/Right"
+                    },
+                    {
+                        "key":  "settings.input.action.Handbrake",
+                        "value":  "Handbrake"
+                    },
+                    {
+                        "key":  "settings.input.action.CameraCycle",
+                        "value":  "Cycle Camera"
+                    },
+                    {
+                        "key":  "settings.input.action.Camera1",
+                        "value":  "Camera 1"
+                    },
+                    {
+                        "key":  "settings.input.action.Camera2",
+                        "value":  "Camera 2"
+                    },
+                    {
+                        "key":  "settings.input.action.Camera3",
+                        "value":  "Camera 3"
+                    },
+                    {
+                        "key":  "settings.input.action.Pause",
+                        "value":  "Pause"
+                    },
+                    {
+                        "key":  "settings.input.action.Interact",
+                        "value":  "Interact"
+                    },
+                    {
+                        "key":  "settings.input.action.Jump",
+                        "value":  "Jump"
+                    },
+                    {
+                        "key":  "settings.input.action.Confirm",
+                        "value":  "Confirm"
+                    },
+                    {
+                        "key":  "settings.input.action.Cancel",
+                        "value":  "Cancel"
+                    },
+                    {
+                        "key":  "settings.input.action.NavigateVertical",
+                        "value":  "Navigate Vertical"
+                    },
+                    {
+                        "key":  "settings.input.action.NavigateHorizontal",
+                        "value":  "Navigate Horizontal"
+                    },
+                    {
+                        "key":  "settings.panel.resetCategory",
+                        "value":  "Reset This Page"
+                    },
+                    {
+                        "key":  "settings.panel.previewCountdown",
+                        "value":  "{0}s remaining"
+                    },
+                    {
+                        "key":  "settings.panel.safeMode",
+                        "value":  "Safe mode: windowed 1280×720, low quality"
+                    },
+                    {
+                        "key":  "settings.display.resolution.label",
+                        "value":  "Resolution"
+                    },
+                    {
+                        "key":  "settings.display.resolution.tooltip",
+                        "value":  "Cycle through platform-supported resolutions"
+                    },
+                    {
+                        "key":  "settings.display.resolution.auto",
+                        "value":  "Auto"
+                    },
+                    {
+                        "key":  "settings.audio.ui.label",
+                        "value":  "UI Sounds"
+                    },
+                    {
+                        "key":  "settings.audio.voice.label",
+                        "value":  "Voice"
+                    },
+                    {
+                        "key":  "settings.audio.muteWhenUnfocused.label",
+                        "value":  "Mute When Unfocused"
+                    },
+                    {
+                        "key":  "settings.graphics.fieldOfView.label",
+                        "value":  "Field of View"
+                    },
+                    {
+                        "key":  "settings.display.monitor.label",
+                        "value":  "Monitor"
+                    },
+                    {
+                        "key":  "settings.display.monitor.tooltip",
+                        "value":  "Choose output monitor"
+                    },
+                    {
+                        "key":  "settings.audio.preview.label",
+                        "value":  "Preview Sound"
+                    },
+                    {
+                        "key":  "settings.audio.preview.tooltip",
+                        "value":  "Play a short tone at current master/SFX volume"
+                    },
+                    {
+                        "key":  "settings.description.select",
+                        "value":  "Select"
+                    }
+                ]
+}

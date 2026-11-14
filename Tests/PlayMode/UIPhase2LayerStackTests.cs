@@ -126,9 +126,26 @@ namespace UPandaGF.Tests
         private sealed class FakeInput : IInputService
         {
             public int Contexts;
-            public float GetAxis(string action, string context = "Gameplay") { return 0f; }
-            public bool GetButton(string action, string context = "Gameplay") { return false; }
-            public bool GetButtonDown(string action, string context = "Gameplay") { return false; }
+            public event Action BindingsChanged;
+            public float GetAxis(string action, string context = InputContexts.Gameplay) { return 0f; }
+            public bool GetButton(string action, string context = InputContexts.Gameplay) { return false; }
+            public bool GetButtonDown(string action, string context = InputContexts.Gameplay) { return false; }
+            public bool GetButtonUp(string action, string context = InputContexts.Gameplay) { return false; }
+            public void Bind(InputBinding binding) { BindingsChanged?.Invoke(); }
+            public bool Unbind(string action, string context = InputContexts.Gameplay) { return false; }
+            public System.Collections.Generic.IReadOnlyList<InputBinding> GetBindings()
+            {
+                return System.Array.Empty<InputBinding>();
+            }
+            public InputRebindResult TryRebind(InputBinding binding, bool allowReservedKey = false) { return InputRebindResult.Success; }
+            public bool TryCaptureKey(out KeyCode key) { key = KeyCode.None; return false; }
+            public bool ResetToDefaults() { return false; }
+            public System.Collections.Generic.IReadOnlyList<InputBinding> GetDefaultBindings()
+            {
+                return System.Array.Empty<InputBinding>();
+            }
+            public InputBinding[] ExportOverrides() { return System.Array.Empty<InputBinding>(); }
+            public void ApplyOverrides(System.Collections.Generic.IEnumerable<InputBinding> overrides) { }
             public IDisposable PushContext(string context, bool blockLower = true)
             {
                 Contexts++;
@@ -142,6 +159,8 @@ namespace UPandaGF.Tests
             public ILogService Log { get; set; }
             public IPauseService Pause { get; set; }
             public IInputService Input { get; set; }
+            public ISettingsService Settings => null;
+            public ILocalizationService Localization => null;
             public IAudioService Audio => null;
             public ISaveService Saves => null;
             public ISceneService Scenes => null;

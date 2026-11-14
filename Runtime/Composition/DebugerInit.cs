@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using System;
 using System.Threading.Tasks;
@@ -17,7 +17,8 @@ namespace UPandaGF
 
         public LogConfig logConfig;
 
-        float deltaTime = 0.0f;
+        private readonly FrameRateCounter frameRate = new FrameRateCounter(0.5f);
+        private bool wasShowingFps;
         GUIStyle mStyle;
         Rect rect = new Rect(0, 0, 500, 300);
         Rect buttonRect = new Rect(0, 0, 200, 50);
@@ -46,7 +47,12 @@ namespace UPandaGF
             UPGameRoot root = UPGameRoot.Instance;
             if (root == null) return;   // 修复：该组件被放到没有 UPGameRoot 的场景里时空引用
             ResolveDebugModel(root);
-            if (showFPS || debugModelEnabled) deltaTime += (Time.deltaTime - deltaTime) * 0.1f;
+            bool show = showFPS || debugModelEnabled;
+            if (show && !wasShowingFps) frameRate.Reset();
+            wasShowingFps = show;
+            // 用 unscaledDeltaTime：设置面板 pauseGame 会把 timeScale 设为 0，
+            // 用 Time.deltaTime 时 deltaTime 会衰减到 0，FPS 会被算成无穷大。
+            if (show) frameRate.Tick(Time.unscaledDeltaTime);
         }
 
         private bool debugModelResolved;
@@ -137,7 +143,7 @@ namespace UPandaGF
             ResolveDebugModel(root);
             if (!showFPS && !debugModelEnabled) return;
 
-            float fps = deltaTime > 0f ? 1.0f / deltaTime : 0f;   // 修复：deltaTime 为 0 时不再除零
+            float fps = frameRate.Fps;
             string text = string.Format(" FPS:{0:N0} ", fps);
             if (debugModelEnabled)
             {

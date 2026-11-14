@@ -100,6 +100,9 @@ public sealed class InventoryLauncher : MonoBehaviour, IUIServiceConsumer, IGame
 - `Observable<T>`（以及热更友好的 `BoolObservable`/`FloatObservable`/`IntObservable`/`StringObservable`/`ColorObservable`）只在值变化时推送；UI 不轮询。
 - `UIBinder` 提供 Text、Toggle、Slider、Dropdown、Selectable、GameObject、Graphic、Button 的常用绑定；TMP_Text/TMP_Dropdown 在 `TMPUIBinder` 中，避免不引用 TMP 的程序集被动依赖。绑定返回 `IDisposable`，推荐加入 `BasePanel.OpenEvents` 自动释放。
 - Toggle/Slider/Dropdown 使用 `SetValueWithoutNotify` 防止双向绑定回环；ui 改动会回写 Observable。
+- 本地化：`LocalizedText`（uGUI）/`LocalizedTMPText`（TMP）填 key 即可，组件由 `IGameServicesConsumer` 注入 `ILocalizationService`，语言切换自动刷新；动态代码可用 `LocalizationBinder.Bind(localization, text, key, args)`，返回 `IDisposable` 加入 `BasePanel.OpenEvents`。语言行/设置面板的 key 约定见 [本地化 README](../../Localization/README.md)。
+- 设置面板自带 `UIFocusNavigator`/`UIFocusInputBinder`（手柄/键盘焦点、Cancel 关闭）；`accessibility.uiScale` 由 `UIManager.Configure(IGameServices)` 自动消费，移动端自动挂 `UISafeArea`。
+- 设置面板多选项统一使用下拉；列表在 ScrollRect 外的 `DropdownOverlay` 上生成，避免被 viewport 的 `RectMask2D` 裁剪。`SettingsDropdownCanvasFixer` 把列表 Canvas 的 worldCamera/planeDistance 对齐根 Canvas，避免 Scene 可见但 Game 不可见；Template/Item 使用显式 `anchoredPosition + sizeDelta`，不要用负高度 offset。
 - `UISafeArea` 把 RectTransform 锚定到 `Screen.safeArea`，仅在安全区/分辨率变化时重算。
 
 ```csharp
@@ -116,6 +119,7 @@ UIBinder.AddTo(OpenEvents, UIBinder.BindToggle(muteToggle, muted));
 - 行预制体根节点挂 [`UISettingToggleRow`](UISettingRows.cs)/`UISettingSliderRow`/`UISettingDropdownRow`/`UISettingButtonRow`/`UISettingReadOnlyRow`；`Key` 未单独注册时回退到 Button 行。`Label`/`Value`/`Description` 可按名称自动查找，uGUI Text 与 TMP_Text 都支持。
 - Slider 支持 Min/Max/Step 吸附与数值文本；Dropdown 选项来自描述；Button/Key 的点击由 `Action` 承接。行的 `Bind` 会先释放上一次订阅，池化复用不会叠加监听。
 - [`UIItemPool`](UIItemPool.cs) 是不限于设置面板的通用行池，也可用于背包/任务等滚动列表；空闲上限、清理与计数见代码。
+- 框架内置系统设置面板：[`SettingsPresenter`](SettingsPresenter.cs) 把 `ISettingsService` 描述表转成 `UISettingItem`（含键位捕获、预览确认、分区过滤）；[`SettingsPanel`](SettingsPanel.cs) 在运行时构建布局，预制体只需根节点（`Resources/UI/SettingsPanel`）。打开方式 `services.UI.ShowPanelAsync<SettingsPanel>()`，新增设置项不需要改面板。
 
 ```csharp
 UISettingList list = settingsPanel.GetComponentInChildren<UISettingList>();
@@ -131,8 +135,9 @@ list.SetItems(new[]
 ## 焦点导航与 UI 缩放
 
 - [`UIFocusNavigator`](UIFocusNavigator.cs) 管理面板/页签内焦点：`FocusFirst` 默认选中、`Navigate` 方向移动、`NavigateOrAdjust` 在滑块上左右微调、`Submit` 确认、`Cancel` 走 `BackRequested`、`RememberFocus`/`RestoreFocus` 切页恢复；只接管本节点子树，不会抢其它面板的选中项。
+- [`UIFocusInputBinder`](UIFocusInputBinder.cs) 可选组件：把 `IInputService` 的 UI 上下文动作（`NavigateVertical/NavigateHorizontal/Confirm/Cancel`）接到导航器，支持按住方向键重复导航；通用面板按需挂载，内置设置面板会自动挂载。
 - 导航器不直接读输入设备，由面板把 `IInputService` 的动作映射到 `Navigate`/`Submit`/`Cancel`/`Adjust`，旧 Input Manager 与 Input System 都适用。
-- [`UICanvasScale`](UICanvasScale.cs) 把设计分辨率按缩放系数换算到 `CanvasScaler.referenceResolution`（0.5–2，1 为基准）；`UIManager.SetUiScale`/`IUIService.UiScale` 控制框架 Canvas，也可 `Bind(FloatObservable)` 跟随设置项。它只改参考分辨率，不改 match 模式或像素密度。
+- [`UICanvasScale`](UICanvasScale.cs) 把设计分辨率按缩放系数换算到 `CanvasScaler.referenceResolution`（0.5–2，1 为基准）；`UIManager.SetUiScale`/`IUIService.UiScale` 控制框架 Canvas，也可 `Bind(FloatObservable)` 跟随设置项。它只改参考分辨率，不改 match 模式或像素密度。`UIManager.Configure(IGameServices)` 会自动消费 `accessibility.uiScale`。
 - 与 [`UISafeArea`](UISafeArea.cs) 组合覆盖 0.8–1.3 缩放、刘海屏与 21:9。
 
 ```csharp
@@ -156,7 +161,7 @@ if (services.Input.GetButtonDown("Cancel", "UI")) navigator.Cancel();
 ## 校验与脚本生成
 
 - 菜单 **UPandaGF/UI/校验面板配置** 扫描运行时程序集里的 `BasePanel` 子类：`[UILoadInfo]`、`loadPath` 唯一性与格式、层级/加载方式、Resources 预制体根节点是否为 `RectTransform`、重名交互控件；错误会在 Console 中逐条列出。
-- CI/批处理入口：[`UIPanelValidator.ValidateForCI`](../Editor/UIEditor/UIPanelValidator.cs) 或 `Tools/ci/validate-ui-panels.ps1` / `.sh`；EditMode 用例 `PackagePanelsPassValidation` 也会在 CI 中失败。默认跳过测试/示例/Editor 程序集，宿主 `Assembly-CSharp` 的业务面板会纳入。
+- CI/批处理入口：[`UIPanelValidator.ValidateForCI`](../../../Editor/UIEditor/UIPanelValidator.cs) 或 `Tools/ci/validate-ui-panels.ps1` / `.sh`；EditMode 用例 `PackagePanelsPassValidation` 也会在 CI 中失败。默认跳过测试/示例/Editor 程序集，宿主 `Assembly-CSharp` 的业务面板会纳入。
 - 菜单 **UPandaGF/UI/面板脚本生成器**（或 `GameObject/UPandaGF/UI/生成面板脚本`）生成 `partial BasePanel` 脚本：`[UILoadInfo]`、控件字段、`OnAwake` 控件缓存、`OnOpen`/`OnClose` 模板与可选事件桩。
 - 生成器使用 `TryGetControl` 按 GameObject 名称取控件，不依赖层级路径；TMP 类型（`TMP_InputField`/`TMP_Dropdown`/`TextMeshProUGUI`）已支持，不再残留 `EditorApplication.update` 回调。
 - 生成后按提示把组件挂到预制体根节点（或让 `UIManager` 按 Type 添加），并运行面板校验。旧项目升级见 [MIGRATION-UI.md](../../../Documentation~/MIGRATION-UI.md)。

@@ -1,4 +1,4 @@
-﻿/* ==========================================================================================
+/* ==========================================================================================
  * PauseMenuController —— 可复用的暂停菜单行为
  *
  * 【怎么用】
@@ -38,7 +38,7 @@ namespace UPandaGF
             if (services == null || IsOpen) return;
             pause = services.Pause.Pause("Menu");
             // 压入 UI 上下文：Gameplay 输入被屏蔽，菜单导航键仍可用
-            context = services.Input.PushContext("UI");
+            context = services.Input.PushContext(InputContexts.UI);
             if (menuRoot != null) menuRoot.SetActive(true);
         }
         /// <summary>
@@ -55,7 +55,7 @@ namespace UPandaGF
         {
             if (services == null) return;
             // 开着时用 UI 上下文的 Cancel 关闭；关着时用 Gameplay 的 Pause 打开
-            if (IsOpen) { if (services.Input.GetButtonDown("Cancel", "UI")) Close(); }
+            if (IsOpen) { if (services.Input.GetButtonDown("Cancel", InputContexts.UI)) Close(); }
             else if (services.Input.GetButtonDown("Pause")) Open();
         }
         /// <summary>禁用/销毁时兜底关闭，保证暂停凭据一定被释放。</summary>

@@ -31,9 +31,17 @@ var pool = services.CreatePool(scope);
 
 ## 输入、暂停和计时
 
-`InputService` 按上下文查找动作。输入后端由 `InputBackendFactory` 按工程的 Active Input Handling 选择：启用新 Input System 时用 `InputSystemBackend`（Keyboard/Mouse/Gamepad 映射），否则用旧 Input Manager。输入轴和键位仍由 `UPGameRootConfig.inputBindings` 提供，切换后端不需要改配置。`PushContext("UI")` 返回上下文凭据，释放后移除该上下文。最上层命中的上下文决定输入，阻断层可屏蔽下面的上下文。暂停还会屏蔽 Gameplay 动作。 [输入实现](InputAndTime.cs)
+`InputService` 按上下文查找动作。输入后端由 `InputBackendFactory` 按工程的 Active Input Handling 选择：启用新 Input System 时用 `InputSystemBackend`（Keyboard/Mouse/Gamepad 映射），否则用旧 Input Manager。输入轴和键位仍由 `UPGameRootConfig.inputBindings` 提供，切换后端不需要改配置。`PushContext("UI")` 返回上下文凭据，释放后移除该上下文。最上层命中的上下文决定输入，阻断层可屏蔽下面的上下文。暂停还会屏蔽 Gameplay 动作。 [输入系统](../Input/README.md)
 
-`Pause.Pause(reason)` 返回可嵌套的暂停凭据。首个凭据冻结 `Time.timeScale` 和 `AudioListener.pause`，最后一份释放后恢复旧值。使用 `Clock.SetTimeScale` 可以在暂停期间更新待恢复的倍率。`PauseMenuController` 可挂在菜单外的常驻节点，将 `menuRoot` 绑定到菜单。控制器持有暂停和 UI 上下文凭据，关闭或禁用时归还。 [时间与暂停](InputAndTime.cs) · [菜单控制器](PauseMenuController.cs)
+0.8.2 起输入契约扩展为“查询 + 重绑”：
+
+- `GetAxis/GetButton/GetButtonDown/GetButtonUp` 查询动作；`GetButtonUp` 用于蓄力/长按等边沿检测。
+- `Bind/Unbind/GetBindings` 管理绑定（`Bind` 为拷贝语义，`GetBindings` 返回按注册顺序的快照）。
+- 上下文名统一使用 `InputContexts.Gameplay/UI/Rebind/Cutscene`；业务自定义上下文仍可用，但只有 `Gameplay` 会被暂停自动屏蔽。
+- `InputBackendFactory.SupportsAxis/SupportsKey` 可在设置 UI/启动校验中判断当前后端能力；`UPGameRootConfigFile.Validate` 已对新后端不支持的轴名/按键 fail-fast。
+- 绑定表内部为“上下文 → 动作”两级字典，每帧查询不产生字符串分配；`Dispose` 后 `Get*` 返回 0/false，`Bind/Unbind/PushContext` 抛 `ObjectDisposedException`。
+
+`Pause.Pause(reason)` 返回可嵌套的暂停凭据。首个凭据冻结 `Time.timeScale` 和 `AudioListener.pause`，最后一份释放后恢复旧值。使用 `Clock.SetTimeScale` 可以在暂停期间更新待恢复的倍率。`PauseMenuController` 可挂在菜单外的常驻节点，将 `menuRoot` 绑定到菜单。控制器持有暂停和 UI 上下文凭据，关闭或禁用时归还。 [时间与暂停](GameTimeService.cs) · [菜单控制器](../Input/PauseMenuController.cs)
 
 ```csharp
 using (services.Pause.Pause("Transition"))
@@ -53,10 +61,12 @@ scope.Own(services.Timer.Every(1f, RefreshHud, scaled: true));
 | `Flow` | 注册 `IGameState`，用 `StartAsync` 开始，通过 `GoToAsync` 切换。依次执行进入守卫、旧状态退出、新状态进入。守卫拒绝时保留当前状态。进入失败会标记 Failed，但旧状态已执行过退出；旧状态退出本身抛错会留下 Transitioning。 |
 | `AppLifecycle` | 订阅 `PauseChanged`、`FocusChanged`、`LowMemory`、`Quitting`。后台暂停和菜单使用同一套暂停凭据。退出通知是同步的，关键存档应在退出前完成或在通知中同步保存。根节点在就绪前不转发暂停、焦点和低内存通知。 |
 | `Saves` | `Save/Load/Exists/Delete` 同步访问 `Application.persistentDataPath/Saves` 下的槽位文件。槽位名需合法，主文件与备份均缺失时返回 `null`。读取先恢复中断事务；只有主文件内容损坏才回退 `.bak`，IO/权限错误直接抛出。两者均无法读取会抛 `InvalidDataException`。读取旧格式时不会自动重写槽位。 |
+| `Settings` | `ISettingsService`：描述表驱动的玩家设置（音频/画面/显示/输入/语言/辅助功能/隐私），独立存储 `persistentDataPath/Settings/settings.json`（原子写 + `.bak`）；`Set` 即时生效并防抖保存，`PreviewConfirm` 项 15 秒未提交自动回滚；切后台/退出/低内存由 `IAppLifecycle` 触发保存。实现与扩展方式见 [设置系统](../Settings/README.md)。 |
+| `Localization` | `ILocalizationService`：内置/项目 catalog、JSON 语言表合并、系统语言回退、`Get/Format` 与 `LocaleChanged`；启动顺序在 Settings 之后、UI 之前，详见 [本地化模块](../../Localization/README.md)。 |
 
 `EnterAsync` 和 `ExitAsync` 执行期间持有流程切换闸门；后续状态切换由外部在当前切换完成后发起。根关闭时先关闭 Scenes，再退出当前流程，状态的退出清理须适配这一顺序。 [配置](ConfigService.cs) · [流程](GameFlowController.cs) · [生命周期](AppLifecycleService.cs) · [存档](../../Save/FileSaveService.cs)
 
-WebGL 上 `Save` 写入 Unity 的虚拟文件系统。需要确认浏览器持久化时，在保存后于正常运行阶段等待 `PlatformStorage.FlushAsync()`，因为 `ISaveService.Save` 自身不会等待提交到 IndexedDB。 [平台存储](../../Assets/AssetsMgr/PlatformStorage.cs)
+WebGL 上 `Save` 写入 Unity 的虚拟文件系统。需要确认浏览器持久化时，在保存后于正常运行阶段等待 `PlatformStorage.FlushAsync()`，因为 `ISaveService.Save` 自身不会等待提交到 IndexedDB。 [平台存储](../../Contracts/PlatformStorage.cs)
 
 ## 诊断和验证
 

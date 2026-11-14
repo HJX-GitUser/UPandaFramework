@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UPandaGF;
+using UnityEngine;
 
 namespace UPandaGF.Gameplay.StateMachine
 {
@@ -77,9 +78,15 @@ namespace UPandaGF.Gameplay.StateMachine
     public class StateMachineExample : MonoBehaviour
     {
         private StateMachineManager manager;
+        private IInputBackend inputBackend;
 
         private PlayerState player;
         private MoveState move;
+
+        void Awake()
+        {
+            inputBackend = InputBackendFactory.Create();
+        }
 
         void Start()
         {
@@ -118,12 +125,12 @@ namespace UPandaGF.Gameplay.StateMachine
             if (manager == null) return;
 
             // 键盘演示不同的切换方式
-            if (Input.GetKeyDown(KeyCode.Alpha1)) manager.SwitchState("Idle");     // 单级切换
-            if (Input.GetKeyDown(KeyCode.Alpha2)) manager.SwitchState("Move");     // 单级切换（进入默认 Walk）
-            if (Input.GetKeyDown(KeyCode.Alpha3)) manager.SwitchState("Move/Run"); // 多级路径切换
-            if (Input.GetKeyDown(KeyCode.Alpha4)) manager.SwitchState("Attack");   // 单级切换
-            if (Input.GetKeyDown(KeyCode.B)) manager.GoBack();                     // 返回上一级
-            if (Input.GetKeyDown(KeyCode.T)) Debug.Log(manager.GetStateInfo());    // 打印状态树
+            if (inputBackend.Down(KeyCode.Alpha1)) manager.SwitchState("Idle");     // 单级切换
+            if (inputBackend.Down(KeyCode.Alpha2)) manager.SwitchState("Move");     // 单级切换（进入默认 Walk）
+            if (inputBackend.Down(KeyCode.Alpha3)) manager.SwitchState("Move/Run"); // 多级路径切换
+            if (inputBackend.Down(KeyCode.Alpha4)) manager.SwitchState("Attack");   // 单级切换
+            if (inputBackend.Down(KeyCode.B)) manager.GoBack();                     // 返回上一级
+            if (inputBackend.Down(KeyCode.T)) Debug.Log(manager.GetStateInfo());    // 打印状态树
         }
     }
 }

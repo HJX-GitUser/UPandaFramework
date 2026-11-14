@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace UPandaGF.Gameplay.Tasks
 {
@@ -23,7 +23,7 @@ namespace UPandaGF.Gameplay.Tasks
 
         private void Awake()
         {
-            if (input == null) { standalone = new InputService(new UnityLegacyInputBackend(), null); input = standalone; }
+            if (input == null) { standalone = new InputService(InputBackendFactory.Create(), null); input = standalone; }
             controller = GetComponent<CharacterController>();
         }
 

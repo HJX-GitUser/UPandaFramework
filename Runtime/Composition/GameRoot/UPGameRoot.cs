@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -86,6 +86,7 @@ namespace UPandaGF
         {
             if (config == null) config = new UPGameRootConfig();
             if (config.hotUpdate == null) config.hotUpdate = new HotUpdateSettings();
+            if (config.localization == null) config.localization = new LocalizationSettings();
             if (config.AssetAESConfig == null)
                 config.AssetAESConfig = new AssetBundleClassificationWindowConfig { enable = false };
             if (string.IsNullOrEmpty(config.LoadAssetPath))
@@ -199,6 +200,15 @@ namespace UPandaGF
                 }, async () => {
                     if (services != null) await services.ShutdownAsync();
                 });
+                // 设置必须在 UI 之前就绪：语言/UI 缩放/画质/分辨率都要在首个面板与首场景之前生效。
+                lifecycle.Add("Settings", async ct => {
+                    await services.Settings.LoadAsync(ct);
+                    await services.Settings.ApplyBootAsync(ct);
+                });
+                // 本地化必须在 UI 之前：面板/场景 LocalizedText 打开时语言表已就绪。
+                lifecycle.Add("Localization", async ct => {
+                    await services.Localization.LoadAsync(ct);
+                });
                 lifecycle.Add("UI", ct => {
                     _UIManager.Configure(services);
                     _UIManager.Init();
@@ -216,11 +226,15 @@ namespace UPandaGF
             try
             {
                 await lifecycle.InitializeAsync();
+                // 能完整走完启动链说明当前显示/画质可用，清除安全模式失败计数。
+                SettingsSafeMode.Default.MarkSuccess();
                 if (State == StartupState.Ready && !destroyed) OnInited();
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception e)
             {
+                // 下次启动若再次失败达到阈值，SettingsService 会强制安全显示设置。
+                SettingsSafeMode.Default.RecordFailure();
                 if (!destroyed && State == StartupState.Failed)
                 {
                     IsInitFailed = true;

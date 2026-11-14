@@ -318,7 +318,8 @@ namespace UPandaGF.GFEditor
                 return;   // 场景里已有（多半是 UIManager.Init() 建的）就不重复创建
             }
 
-            GameObject go = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            GameObject go = new GameObject("EventSystem", typeof(EventSystem));
+            UIManager.AddDefaultInputModule(go);
             go.transform.SetParent(parent, false);
             Undo.RegisterCreatedObjectUndo(go, "Create ObjPool Demo Object");
         }

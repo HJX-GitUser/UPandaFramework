@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UPandaGF;
+using UnityEngine;
 
 namespace UPandaGF.Gameplay
 {
@@ -31,6 +32,13 @@ public class SimpleCameraController : MonoBehaviour
     private Vector3 positionVelocity = Vector3.zero;
     public float currentZoom = 10f;
 
+    private IInputBackend inputBackend;
+
+    private void Awake()
+    {
+        inputBackend = InputBackendFactory.Create();
+    }
+
     private void Start()
     {
         targetPosition = transform.position;
@@ -56,10 +64,10 @@ public class SimpleCameraController : MonoBehaviour
 
     private void HandleRotation()
     {
-        if (Input.GetKey(rotateKey))
+        if (inputBackend.Held(rotateKey))
         {
-            float mouseX = Input.GetAxis("Mouse X") * rotationSpeed;
-            float mouseY = Input.GetAxis("Mouse Y") * rotationSpeed;
+            float mouseX = inputBackend.Axis("Mouse X") * rotationSpeed;
+            float mouseY = inputBackend.Axis("Mouse Y") * rotationSpeed;
 
             // Scene视图风格的旋转
             Vector3 euler = targetRotation.eulerAngles;
@@ -73,10 +81,10 @@ public class SimpleCameraController : MonoBehaviour
 
     private void HandlePan()
     {
-        if (Input.GetKey(panKey))
+        if (inputBackend.Held(panKey))
         {
-            float mouseX = Input.GetAxis("Mouse X");
-            float mouseY = Input.GetAxis("Mouse Y");
+            float mouseX = inputBackend.Axis("Mouse X");
+            float mouseY = inputBackend.Axis("Mouse Y");
 
             // 根据当前视角计算平移方向
             Vector3 right = targetRotation * Vector3.right;
@@ -89,7 +97,7 @@ public class SimpleCameraController : MonoBehaviour
     float scroll;
     private void HandleZoom()
     {
-        scroll = Input.GetAxis("Mouse ScrollWheel");
+        scroll = inputBackend.Axis("Mouse ScrollWheel");
         if (Mathf.Abs(scroll) > 0.01f)
         {
             // Scene视图风格的缩放：沿视线方向前进/后退
@@ -104,16 +112,16 @@ public class SimpleCameraController : MonoBehaviour
 
     private void HandleWASDMovement()
     {
-        if (Input.GetKey(moveKey))
+        if (inputBackend.Held(moveKey))
         {
             float speed = moveSpeed * Time.deltaTime;
-            if (Input.GetKey(KeyCode.LeftShift))
+            if (inputBackend.Held(KeyCode.LeftShift))
                 speed *= fastMoveMultiplier;
 
             Vector3 moveInput = new Vector3(
-                (Input.GetKey(KeyCode.D) ? 1 : 0) - (Input.GetKey(KeyCode.A) ? 1 : 0),
-                (Input.GetKey(KeyCode.E) ? 1 : 0) - (Input.GetKey(KeyCode.Q) ? 1 : 0),
-                (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0)
+                (inputBackend.Held(KeyCode.D) ? 1 : 0) - (inputBackend.Held(KeyCode.A) ? 1 : 0),
+                (inputBackend.Held(KeyCode.E) ? 1 : 0) - (inputBackend.Held(KeyCode.Q) ? 1 : 0),
+                (inputBackend.Held(KeyCode.W) ? 1 : 0) - (inputBackend.Held(KeyCode.S) ? 1 : 0)
             );
 
             if (moveInput.magnitude > 0)
@@ -134,7 +142,7 @@ public class SimpleCameraController : MonoBehaviour
         }
 
         // 聚焦到物体 (F键)
-        if (Input.GetKeyDown(KeyCode.F) && SelectionHasGameObject())
+        if (inputBackend.Down(KeyCode.F) && SelectionHasGameObject())
         {
             FocusOnSelection();
         }

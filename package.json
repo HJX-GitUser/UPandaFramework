@@ -1,6 +1,6 @@
 {
   "name": "com.upanda.framework",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "displayName": "UPandaFramework",
   "description": "Unity 客户端基础框架：启动装配、资源与热更、UI、音频、存档、日志，以及可选玩法模块。Unity client framework with startup, assets, UI, audio, save and logging.",
   "unity": "2021.3",
@@ -33,6 +33,11 @@
       "displayName": "Tasks",
       "description": "交互任务评分系统演示场景生成器与任务触发示例。",
       "path": "Samples~/Tasks"
+    },
+    {
+      "displayName": "Settings",
+      "description": "系统设置示例：打开设置面板、消费设置值（UI 缩放/亮度/灵敏度）、推荐配置与恢复默认；附场景生成器。",
+      "path": "Samples~/Settings"
     }
   ],
   "keywords": [

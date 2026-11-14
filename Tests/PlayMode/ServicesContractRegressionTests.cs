@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -52,6 +52,8 @@ public class ServicesContractRegressionTests
         public IAudioService Audio => null;
         public ISceneService Scenes => null;
         public IInputService Input => null;
+        public ISettingsService Settings => null;
+        public ILocalizationService Localization => null;
         public IPauseService Pause => null;
         public IGameClock Clock => null;
         public ITimerService Timer => null;

@@ -35,6 +35,8 @@ public class P1ScopeAndInputTests
         public float Axis(string axis) => .75f;
         public bool Held(KeyCode key) => key == KeyCode.Space || key == KeyCode.Return;
         public bool Down(KeyCode key) => Held(key);
+        public bool Up(KeyCode key) => false;
+        public bool TryCaptureKey(out KeyCode key) { key = KeyCode.None; return false; }
     }
     [Test] public void ScopeCancelsBeforeReleasingInReverseEvenIfCleanupThrows()
     {
@@ -366,6 +368,8 @@ public class P1ResourceIntegrationTests
         public ISaveService Saves => null;
         public ISceneService Scenes => null;
         public IInputService Input => null;
+        public ISettingsService Settings => null;
+        public ILocalizationService Localization => null;
         public IPauseService Pause => null;
         public IGameClock Clock => null;
         public ITimerService Timer => null;

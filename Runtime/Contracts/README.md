@@ -17,14 +17,16 @@
 | `IAssetService` | `AcquireAsync<T>(path, method, token)`，取得可释放的 Unity 资源租约。 |
 | `ISceneService`、`ILifetimeScope` | 串行场景请求、进度、场景作用域和作用域持有物。 |
 | `IAudioService`、`ISaveService` | 背景音乐及独占音效，以及按槽位读写存档。叠加音效入口见具体音频管理器。 |
-| `IInputService`、`IPauseService`、`IGameClock` | 动作输入、输入上下文、可嵌套暂停和时钟。 |
+| `IInputService`、`IPauseService`、`IGameClock` | 动作输入、输入上下文、可嵌套暂停和时钟；0.8.2 起输入契约集中在 [`Input/`](Input/README.md)（`IInputService`/`InputBinding`/`InputContexts`）。 |
+| `ISettingsService`、`SettingDescriptor` | 玩家系统设置：描述表、默认值、平台可用性、预览提交/回滚、保存与恢复默认；数据与存档分离，见 [`Settings/ISettingsService.cs`](Settings/ISettingsService.cs)。迁移/安全模式/未知字段保留见 [设置系统 README](../Core/Settings/README.md)。 |
+| `ILocalizationService`、`LocaleInfo` | 本地多语言：内置/项目语言表、系统语言回退、`Get/Format` 与语言切换事件；见 [`Localization/`](Localization/ILocalizationService.cs)。 |
 | `ITimerService` | `Delay`、`Every`、`DelayAsync`，支持 scaled 和 unscaled 时间。 |
 | `IConfigService`、`IGameFlowService`、`IAppLifecycle` | 运行期配置、业务流程状态机、应用生命周期通知。 |
 | `IHttpService`、`HttpResult<T>` | 可取消的 Task HTTP 请求、全局请求头、并发上限；失败以结果返回。 |
 | `IPoolService`、`IPool` | 创建根生命周期池 / 作用域池，异步取还实例、预热与容量控制。 |
 | `ILogService` | 不参与 `OPEN_PLOG` 编译期剔除的可注入日志；级别查询与异常输出。 |
 
-`IGameServices` 聚合这些接口（另有 `Http`、`Pools`、`Log`）。自定义实现和测试替身须实现当前成员；只验证部分功能的替身可以对未涉及的服务返回 `null`。运行期 Instantiate 的对象用 `services.Inject(gameObject)` 补注入；场景扫描覆盖不到它们。 [通用契约](Services.cs) · [基础契约](FoundationServices.cs) · [平台能力契约](PlatformServices.cs) · [音频管理器](../Audio/AudioMgr/README.md)
+`IGameServices` 聚合这些接口（另有 `Http`、`Pools`、`Log`、`Settings`、`Localization`）。自定义实现和测试替身须实现当前成员；只验证部分功能的替身可以对未涉及的服务返回 `null`。运行期 Instantiate 的对象用 `services.Inject(gameObject)` 补注入；场景扫描覆盖不到它们。 [通用契约](Services.cs) · [基础契约](FoundationServices.cs) · [平台能力契约](PlatformServices.cs) · [音频管理器](../Audio/AudioMgr/README.md)
 
 ## 资源持有
 

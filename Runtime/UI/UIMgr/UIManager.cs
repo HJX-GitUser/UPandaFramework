@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
@@ -224,10 +224,44 @@ namespace UPandaGF
         /// </summary>
         public void Configure(IGameServices services)
         {
+            DetachSettingsEvents();
             gameServices = services ?? throw new ArgumentNullException(nameof(services));
             assetService = services.Assets ?? throw new ArgumentException("IGameServices.Assets 不能为空。", nameof(services));
             if (services.Log != null) log = services.Log;
+            if (services.Settings != null)
+            {
+                services.Settings.Changed += OnSettingsChanged;
+                ApplyUiScaleFromSettings();
+            }
         }
+
+        /// <summary>设置里的 accessibility.uiScale 是 UI 缩放的唯一玩家来源；手动 SetUiScale 仍可用于调试。</summary>
+        private void OnSettingsChanged(SettingsChange change)
+        {
+            if (change.Key == "accessibility.uiScale") ApplyUiScaleFromSettings();
+        }
+
+        private void ApplyUiScaleFromSettings()
+        {
+            if (gameServices == null || gameServices.Settings == null || !gameServices.Settings.IsLoaded) return;
+            try
+            {
+                float scale = gameServices.Settings.Get<float>("accessibility.uiScale");
+                uiScale = UICanvasScale.ClampScale(scale);
+                if (uiCanvas != null) ApplyUiScale();
+            }
+            catch (Exception exception)
+            {
+                log.Warning("[UIManager] 读取 accessibility.uiScale 失败：" + exception.Message);
+            }
+        }
+
+        private void DetachSettingsEvents()
+        {
+            if (gameServices != null && gameServices.Settings != null)
+                gameServices.Settings.Changed -= OnSettingsChanged;
+        }
+
 
         /// <summary>
         /// 兼容旧接入：把旧的资源门面转成 IAssetService（内部仍然只有一条加载路径）。
@@ -683,7 +717,12 @@ namespace UPandaGF
             AddDefaultInputModule(eventSystem.gameObject);
         }
 
-        private static void AddDefaultInputModule(GameObject eventSystem)
+        /// <summary>
+        /// 按工程 Active Input Handling 给 EventSystem 添加默认输入模块：
+        /// 启用新 Input System 时优先 InputSystemUIInputModule，否则/包缺失时回退 StandaloneInputModule。
+        /// <para>公开给演示生成器/测试复用，避免在 New-only 工程里硬加 StandaloneInputModule。</para>
+        /// </summary>
+        public static void AddDefaultInputModule(GameObject eventSystem)
         {
 #if ENABLE_INPUT_SYSTEM
             // 通过类型名引用，避免 UI 程序集硬依赖 Unity.InputSystem；
@@ -1482,7 +1521,7 @@ namespace UPandaGF
             }
             if (record.modal && gameServices.Input != null)
             {
-                try { record.inputLease = gameServices.Input.PushContext("UI"); }
+                try { record.inputLease = gameServices.Input.PushContext(InputContexts.UI); }
                 catch (Exception e) { log.LogException(e); }
             }
         }
@@ -1768,6 +1807,7 @@ namespace UPandaGF
         {
             if (destroyed) return;
             destroyed = true;
+            DetachSettingsEvents();
             DetachOverlay();
             UnhookSceneLoaded();
             UnhookPipelineChanges();

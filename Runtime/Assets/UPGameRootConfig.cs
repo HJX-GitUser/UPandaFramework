@@ -49,6 +49,9 @@ namespace UPandaGF
 
         public HotUpdateSettings hotUpdate = new HotUpdateSettings();
 
+        [Tooltip("本地多语言：内置 catalog / 项目覆盖 catalog 路径与加载方式；留空项目路径只用内置 zh-Hans/en")]
+        public LocalizationSettings localization = new LocalizationSettings();
+
         [Tooltip("启用运行时日志控制台，正式包建议关闭")]
         public bool EnableDebugModel = false;
 
@@ -109,6 +112,14 @@ namespace UPandaGF
             if (value.hotUpdate == null) errors.Add("hotUpdate 配置为空");
             else if (value.hotUpdate.minimumFreeSpaceMB < 0 || value.hotUpdate.maximumStagingMB < 0 || value.hotUpdate.maximumManagedCacheMB < 0
                 || value.hotUpdate.retainedManifestCount < 1 || value.hotUpdate.retainedManifestCount > 10) errors.Add("热更容量或清单保留数量无效");
+            if (value.localization == null) errors.Add("本地化配置为空");
+            else
+            {
+                if (string.IsNullOrWhiteSpace(value.localization.builtInCatalogPath)) errors.Add("本地化内置 catalog 路径为空");
+                if (!string.IsNullOrWhiteSpace(value.localization.projectCatalogPath)
+                    && Path.IsPathRooted(value.localization.projectCatalogPath)) errors.Add("本地化项目 catalog 必须为相对路径");
+                if (!Enum.IsDefined(typeof(AssetLoadMethod), value.localization.projectLoadMethod)) errors.Add("本地化项目表加载方式无效");
+            }
             if (value.AssetAESConfig == null) errors.Add("AES 配置为空");
             else if (value.AssetAESConfig.enable)
             {
@@ -117,12 +128,24 @@ namespace UPandaGF
             }
             var actions = new System.Collections.Generic.HashSet<string>();
             if (value.inputBindings == null) errors.Add("输入映射为空");
+            else if (value.inputBindings.Length == 0) errors.Add("输入映射为空数组");
             else foreach (var binding in value.inputBindings)
             {
                 if (binding == null || string.IsNullOrWhiteSpace(binding.action) || string.IsNullOrWhiteSpace(binding.context)) { errors.Add("输入动作或上下文为空"); continue; }
                 if (!actions.Add(binding.context + "/" + binding.action)) errors.Add("输入动作重复：" + binding.context + "/" + binding.action);
                 if (!Enum.IsDefined(typeof(KeyCode), binding.positive) || !Enum.IsDefined(typeof(KeyCode), binding.negative)) errors.Add("输入按键无效：" + binding.action);
                 if (string.IsNullOrEmpty(binding.axis) && binding.positive == KeyCode.None && binding.negative == KeyCode.None) errors.Add("输入动作未绑定：" + binding.action);
+                if (!string.IsNullOrEmpty(binding.axis) && (binding.positive != KeyCode.None || binding.negative != KeyCode.None))
+                    errors.Add("axis 与 positive/negative 只能二选一：" + binding.context + "/" + binding.action);
+                if (InputBackendFactory.UsesInputSystemBackend)
+                {
+                    if (!string.IsNullOrEmpty(binding.axis) && !InputBackendFactory.SupportsAxis(binding.axis))
+                        errors.Add("新输入后端不支持的轴名：" + binding.axis + "（动作 " + binding.action + "）");
+                    if (!InputBackendFactory.SupportsKey(binding.positive))
+                        errors.Add("新输入后端不支持的按键：" + binding.positive + "（动作 " + binding.action + "）");
+                    if (!InputBackendFactory.SupportsKey(binding.negative))
+                        errors.Add("新输入后端不支持的按键：" + binding.negative + "（动作 " + binding.action + "）");
+                }
             }
             return errors;
         }
@@ -141,6 +164,7 @@ namespace UPandaGF
             var result = new UPGameRootConfig();
             JsonUtility.FromJsonOverwrite(json, result);
             if (result.hotUpdate == null) result.hotUpdate = new HotUpdateSettings();
+            if (result.localization == null) result.localization = new LocalizationSettings();
             return result;
         }
     }

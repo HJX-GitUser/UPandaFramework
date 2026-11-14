@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UPandaGF;
 using UPandaGF.GFEditor;
 using UPandaGF.Samples;
 
@@ -48,7 +49,8 @@ namespace UPandaGF.Gameplay.InteractiveScoring
             UnityEngine.SceneManagement.Scene scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
             SetupCamera();
 
-            GameObject eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            GameObject eventSystem = new GameObject("EventSystem", typeof(EventSystem));
+            UIManager.AddDefaultInputModule(eventSystem);
             eventSystem.transform.SetAsFirstSibling();
 
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);

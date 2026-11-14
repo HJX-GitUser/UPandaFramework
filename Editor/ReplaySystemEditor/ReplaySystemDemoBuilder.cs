@@ -1,4 +1,4 @@
-﻿﻿//
+//
 //  ReplaySystemDemoBuilder.cs
 //  路径：Assets/upanda-framework/Editor/ReplaySystemEditor/
 //
@@ -55,6 +55,7 @@
 //        所以这些物理物体不需要额外挂脚本 —— 与原型一致。
 // =============================================================================
 
+using UPandaGF;
 using UPandaGF.Gameplay.Replay;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -325,7 +326,8 @@ namespace UPandaGF.GFEditor
                 return; // 场景里已有就跳过
             }
 
-            GameObject go = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            GameObject go = new GameObject("EventSystem", typeof(EventSystem));
+            UIManager.AddDefaultInputModule(go);
             Undo.RegisterCreatedObjectUndo(go, "Create Replay Demo EventSystem");
         }
 

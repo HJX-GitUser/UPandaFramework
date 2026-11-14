@@ -6,6 +6,7 @@
         "UPandaGF.Core",
         "UPandaGF.Assets",
         "UPandaGF.UI",
+        "UPandaGF.Localization",
         "UPandaGF.Audio",
         "UPandaGF.Save",
         "UPandaGF.Diagnostics",

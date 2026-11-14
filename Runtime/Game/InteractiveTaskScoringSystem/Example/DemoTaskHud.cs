@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using UPandaGF;
 using UnityEngine;
 
 namespace UPandaGF.Gameplay.InteractiveScoring
@@ -17,6 +18,12 @@ namespace UPandaGF.Gameplay.InteractiveScoring
         private string lastEventLog = "";
         private GUIStyle boxStyle;
         private GUIStyle labelStyle;
+        private IInputBackend inputBackend;
+
+        private void Awake()
+        {
+            inputBackend = InputBackendFactory.Create();
+        }
 
         private void Start()
         {
@@ -45,9 +52,9 @@ namespace UPandaGF.Gameplay.InteractiveScoring
         private void Update()
         {
             if (TaskDataManager.Instance == null) return;
-            if (Input.GetKeyDown(KeyCode.G)) TaskDataManager.Instance.OperationInstructions();
-            if (Input.GetKeyDown(KeyCode.K)) TaskDataManager.Instance.SkipTask();
-            if (Input.GetKeyDown(KeyCode.S)) SaveReplay();
+            if (inputBackend.Down(KeyCode.G)) TaskDataManager.Instance.OperationInstructions();
+            if (inputBackend.Down(KeyCode.K)) TaskDataManager.Instance.SkipTask();
+            if (inputBackend.Down(KeyCode.S)) SaveReplay();
         }
 
         private void HandleStepStarted(TaskStepData step)

@@ -29,13 +29,6 @@ namespace UPandaGF
         /// <summary>删除槽位及其备份；均不存在返回 false。槽位校验规则与 Save/Load 一致。</summary>
         bool Delete(string slot);
     }
-    public interface IInputService
-    {
-        float GetAxis(string action, string context = "Gameplay");
-        bool GetButton(string action, string context = "Gameplay");
-        bool GetButtonDown(string action, string context = "Gameplay");
-        IDisposable PushContext(string context, bool blockLower = true);
-    }
     public interface IPauseService
     {
         bool IsPaused { get; }
@@ -79,6 +72,10 @@ namespace UPandaGF
         ISaveService Saves { get; }
         ISceneService Scenes { get; }
         IInputService Input { get; }
+        /// <summary>玩家系统设置（描述表驱动、独立持久化、平台应用器）</summary>
+        ISettingsService Settings { get; }
+        /// <summary>本地多语言（语言表、回退、语言切换事件）</summary>
+        ILocalizationService Localization { get; }
         IPauseService Pause { get; }
         IGameClock Clock { get; }
         ITimerService Timer { get; }

@@ -438,7 +438,8 @@ namespace UPandaGF.Tests
         [SetUp]
         public void SetUp()
         {
-            GameObject eventObject = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            GameObject eventObject = new GameObject("EventSystem", typeof(EventSystem));
+            UIManager.AddDefaultInputModule(eventObject);
             objects.Add(eventObject);
             eventSystem = eventObject.GetComponent<EventSystem>();
 

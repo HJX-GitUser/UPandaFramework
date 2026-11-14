@@ -1,0 +1,558 @@
+{
+    "schemaVersion":  1,
+    "locale":  "zh-Hans",
+    "entries":  [
+                    {
+                        "key":  "settings.panel.title",
+                        "value":  "系统设置"
+                    },
+                    {
+                        "key":  "settings.panel.close",
+                        "value":  "关闭"
+                    },
+                    {
+                        "key":  "settings.panel.reset",
+                        "value":  "恢复默认"
+                    },
+                    {
+                        "key":  "settings.panel.resetConfirm",
+                        "value":  "再次点击确认"
+                    },
+                    {
+                        "key":  "settings.panel.previewTip",
+                        "value":  "设置已临时应用，请确认保留或还原（超时自动还原）"
+                    },
+                    {
+                        "key":  "settings.panel.previewKeep",
+                        "value":  "保留"
+                    },
+                    {
+                        "key":  "settings.panel.previewRevert",
+                        "value":  "还原"
+                    },
+                    {
+                        "key":  "settings.category.audio",
+                        "value":  "音频"
+                    },
+                    {
+                        "key":  "settings.category.graphics",
+                        "value":  "画面"
+                    },
+                    {
+                        "key":  "settings.category.display",
+                        "value":  "显示"
+                    },
+                    {
+                        "key":  "settings.category.input",
+                        "value":  "操作"
+                    },
+                    {
+                        "key":  "settings.category.language",
+                        "value":  "语言"
+                    },
+                    {
+                        "key":  "settings.category.accessibility",
+                        "value":  "辅助功能"
+                    },
+                    {
+                        "key":  "settings.category.gameplay",
+                        "value":  "游戏"
+                    },
+                    {
+                        "key":  "settings.category.privacy",
+                        "value":  "隐私与网络"
+                    },
+                    {
+                        "key":  "settings.category.system",
+                        "value":  "系统"
+                    },
+                    {
+                        "key":  "settings.audio.master.label",
+                        "value":  "主音量"
+                    },
+                    {
+                        "key":  "settings.audio.music.label",
+                        "value":  "背景音乐"
+                    },
+                    {
+                        "key":  "settings.audio.sfx.label",
+                        "value":  "音效"
+                    },
+                    {
+                        "key":  "settings.audio.muteAll.label",
+                        "value":  "全部静音"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.label",
+                        "value":  "画质预设"
+                    },
+                    {
+                        "key":  "settings.graphics.antiAliasing.label",
+                        "value":  "抗锯齿"
+                    },
+                    {
+                        "key":  "settings.graphics.shadowQuality.label",
+                        "value":  "阴影质量"
+                    },
+                    {
+                        "key":  "settings.graphics.textureQuality.label",
+                        "value":  "纹理质量"
+                    },
+                    {
+                        "key":  "settings.graphics.renderScale.label",
+                        "value":  "渲染缩放"
+                    },
+                    {
+                        "key":  "settings.graphics.brightness.label",
+                        "value":  "亮度"
+                    },
+                    {
+                        "key":  "settings.display.mode.label",
+                        "value":  "显示模式"
+                    },
+                    {
+                        "key":  "settings.display.width.label",
+                        "value":  "分辨率宽度"
+                    },
+                    {
+                        "key":  "settings.display.height.label",
+                        "value":  "分辨率高度"
+                    },
+                    {
+                        "key":  "settings.display.refreshRate.label",
+                        "value":  "刷新率"
+                    },
+                    {
+                        "key":  "settings.display.vsync.label",
+                        "value":  "垂直同步"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.label",
+                        "value":  "帧率上限"
+                    },
+                    {
+                        "key":  "settings.input.mouseSensitivity.label",
+                        "value":  "鼠标灵敏度"
+                    },
+                    {
+                        "key":  "settings.input.gamepadSensitivity.label",
+                        "value":  "手柄灵敏度"
+                    },
+                    {
+                        "key":  "settings.input.invertY.label",
+                        "value":  "反转 Y 轴"
+                    },
+                    {
+                        "key":  "settings.input.gamepadDeadzone.label",
+                        "value":  "手柄死区"
+                    },
+                    {
+                        "key":  "settings.input.vibration.label",
+                        "value":  "震动"
+                    },
+                    {
+                        "key":  "settings.input.aimMode.label",
+                        "value":  "瞄准方式"
+                    },
+                    {
+                        "key":  "settings.input.bindings.label",
+                        "value":  "键位绑定"
+                    },
+                    {
+                        "key":  "settings.language.ui.label",
+                        "value":  "界面语言"
+                    },
+                    {
+                        "key":  "settings.language.subtitles.label",
+                        "value":  "字幕"
+                    },
+                    {
+                        "key":  "settings.language.subtitleSize.label",
+                        "value":  "字幕大小"
+                    },
+                    {
+                        "key":  "settings.accessibility.uiScale.label",
+                        "value":  "界面缩放"
+                    },
+                    {
+                        "key":  "settings.accessibility.screenShake.label",
+                        "value":  "屏幕震动强度"
+                    },
+                    {
+                        "key":  "settings.accessibility.flashIntensity.label",
+                        "value":  "闪光强度"
+                    },
+                    {
+                        "key":  "settings.accessibility.colorblindMode.label",
+                        "value":  "色觉辅助"
+                    },
+                    {
+                        "key":  "settings.accessibility.reduceMotion.label",
+                        "value":  "减弱动态效果"
+                    },
+                    {
+                        "key":  "settings.gameplay.difficulty.label",
+                        "value":  "难度"
+                    },
+                    {
+                        "key":  "settings.gameplay.autosave.label",
+                        "value":  "自动存档"
+                    },
+                    {
+                        "key":  "settings.privacy.telemetry.label",
+                        "value":  "数据统计"
+                    },
+                    {
+                        "key":  "settings.privacy.crashReport.label",
+                        "value":  "崩溃上报"
+                    },
+                    {
+                        "key":  "settings.privacy.personalizedAds.label",
+                        "value":  "个性化广告"
+                    },
+                    {
+                        "key":  "settings.system.firstRunCompleted.label",
+                        "value":  "首次启动完成"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.option.Low",
+                        "value":  "低"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.option.Medium",
+                        "value":  "中"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.option.High",
+                        "value":  "高"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.option.Ultra",
+                        "value":  "极高"
+                    },
+                    {
+                        "key":  "settings.graphics.preset.option.Custom",
+                        "value":  "自定义"
+                    },
+                    {
+                        "key":  "settings.graphics.antiAliasing.option.Off",
+                        "value":  "关"
+                    },
+                    {
+                        "key":  "settings.graphics.antiAliasing.option.x2",
+                        "value":  "2x"
+                    },
+                    {
+                        "key":  "settings.graphics.antiAliasing.option.x4",
+                        "value":  "4x"
+                    },
+                    {
+                        "key":  "settings.graphics.antiAliasing.option.x8",
+                        "value":  "8x"
+                    },
+                    {
+                        "key":  "settings.graphics.shadowQuality.option.Off",
+                        "value":  "关"
+                    },
+                    {
+                        "key":  "settings.graphics.shadowQuality.option.Low",
+                        "value":  "低"
+                    },
+                    {
+                        "key":  "settings.graphics.shadowQuality.option.Medium",
+                        "value":  "中"
+                    },
+                    {
+                        "key":  "settings.graphics.shadowQuality.option.High",
+                        "value":  "高"
+                    },
+                    {
+                        "key":  "settings.graphics.textureQuality.option.Low",
+                        "value":  "低"
+                    },
+                    {
+                        "key":  "settings.graphics.textureQuality.option.Medium",
+                        "value":  "中"
+                    },
+                    {
+                        "key":  "settings.graphics.textureQuality.option.High",
+                        "value":  "高"
+                    },
+                    {
+                        "key":  "settings.display.mode.option.ExclusiveFullScreen",
+                        "value":  "独占全屏"
+                    },
+                    {
+                        "key":  "settings.display.mode.option.Borderless",
+                        "value":  "无边框窗口"
+                    },
+                    {
+                        "key":  "settings.display.mode.option.Windowed",
+                        "value":  "窗口"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Fps30",
+                        "value":  "30"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Fps60",
+                        "value":  "60"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Fps120",
+                        "value":  "120"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Fps144",
+                        "value":  "144"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Fps240",
+                        "value":  "240"
+                    },
+                    {
+                        "key":  "settings.display.frameRateLimit.option.Unlimited",
+                        "value":  "不限制"
+                    },
+                    {
+                        "key":  "settings.language.subtitleSize.option.Small",
+                        "value":  "小"
+                    },
+                    {
+                        "key":  "settings.language.subtitleSize.option.Medium",
+                        "value":  "中"
+                    },
+                    {
+                        "key":  "settings.language.subtitleSize.option.Large",
+                        "value":  "大"
+                    },
+                    {
+                        "key":  "settings.language.subtitleSize.option.ExtraLarge",
+                        "value":  "特大"
+                    },
+                    {
+                        "key":  "settings.gameplay.difficulty.option.Easy",
+                        "value":  "简单"
+                    },
+                    {
+                        "key":  "settings.gameplay.difficulty.option.Normal",
+                        "value":  "普通"
+                    },
+                    {
+                        "key":  "settings.gameplay.difficulty.option.Hard",
+                        "value":  "困难"
+                    },
+                    {
+                        "key":  "settings.input.aimMode.option.Hold",
+                        "value":  "按住"
+                    },
+                    {
+                        "key":  "settings.input.aimMode.option.Toggle",
+                        "value":  "切换"
+                    },
+                    {
+                        "key":  "settings.accessibility.colorblindMode.option.Off",
+                        "value":  "关"
+                    },
+                    {
+                        "key":  "settings.accessibility.colorblindMode.option.Protanopia",
+                        "value":  "红色盲"
+                    },
+                    {
+                        "key":  "settings.accessibility.colorblindMode.option.Deuteranopia",
+                        "value":  "绿色盲"
+                    },
+                    {
+                        "key":  "settings.accessibility.colorblindMode.option.Tritanopia",
+                        "value":  "蓝色盲"
+                    },
+                    {
+                        "key":  "settings.language.system",
+                        "value":  "跟随系统"
+                    },
+                    {
+                        "key":  "settings.input.bindings.reset.label",
+                        "value":  "恢复默认键位"
+                    },
+                    {
+                        "key":  "settings.input.bindings.reset.tooltip",
+                        "value":  "清除玩家覆盖层，回到默认绑定"
+                    },
+                    {
+                        "key":  "settings.rebind.hint",
+                        "value":  "请按下新按键（Esc 取消）"
+                    },
+                    {
+                        "key":  "settings.rebind.canceled",
+                        "value":  "已取消改键"
+                    },
+                    {
+                        "key":  "settings.rebind.missing",
+                        "value":  "绑定不存在"
+                    },
+                    {
+                        "key":  "settings.rebind.success",
+                        "value":  "已绑定：{0}"
+                    },
+                    {
+                        "key":  "settings.rebind.conflict",
+                        "value":  "该按键已被其它动作使用"
+                    },
+                    {
+                        "key":  "settings.rebind.reserved",
+                        "value":  "该按键为系统保留键"
+                    },
+                    {
+                        "key":  "settings.rebind.invalid",
+                        "value":  "按键无效"
+                    },
+                    {
+                        "key":  "settings.rebind.failed",
+                        "value":  "改键失败"
+                    },
+                    {
+                        "key":  "settings.rebind.retryHint",
+                        "value":  "，请按其它键（Esc 取消）"
+                    },
+                    {
+                        "key":  "settings.input.axis",
+                        "value":  "轴"
+                    },
+                    {
+                        "key":  "settings.input.unbound",
+                        "value":  "未绑定"
+                    },
+                    {
+                        "key":  "settings.description.toggle",
+                        "value":  "点击切换"
+                    },
+                    {
+                        "key":  "settings.description.readonly",
+                        "value":  "由本地化系统/平台提供"
+                    },
+                    {
+                        "key":  "settings.rebind.timeout",
+                        "value":  "改键超时，已取消"
+                    },
+                    {
+                        "key":  "settings.rebind.axisLocked",
+                        "value":  "轴绑定不可重绑"
+                    },
+                    {
+                        "key":  "settings.input.action.MoveVertical",
+                        "value":  "前后移动"
+                    },
+                    {
+                        "key":  "settings.input.action.MoveHorizontal",
+                        "value":  "左右移动"
+                    },
+                    {
+                        "key":  "settings.input.action.Handbrake",
+                        "value":  "手刹"
+                    },
+                    {
+                        "key":  "settings.input.action.CameraCycle",
+                        "value":  "切换视角"
+                    },
+                    {
+                        "key":  "settings.input.action.Camera1",
+                        "value":  "视角 1"
+                    },
+                    {
+                        "key":  "settings.input.action.Camera2",
+                        "value":  "视角 2"
+                    },
+                    {
+                        "key":  "settings.input.action.Camera3",
+                        "value":  "视角 3"
+                    },
+                    {
+                        "key":  "settings.input.action.Pause",
+                        "value":  "暂停"
+                    },
+                    {
+                        "key":  "settings.input.action.Interact",
+                        "value":  "互动"
+                    },
+                    {
+                        "key":  "settings.input.action.Jump",
+                        "value":  "跳跃"
+                    },
+                    {
+                        "key":  "settings.input.action.Confirm",
+                        "value":  "确认"
+                    },
+                    {
+                        "key":  "settings.input.action.Cancel",
+                        "value":  "取消"
+                    },
+                    {
+                        "key":  "settings.input.action.NavigateVertical",
+                        "value":  "导航上下"
+                    },
+                    {
+                        "key":  "settings.input.action.NavigateHorizontal",
+                        "value":  "导航左右"
+                    },
+                    {
+                        "key":  "settings.panel.resetCategory",
+                        "value":  "恢复本页默认"
+                    },
+                    {
+                        "key":  "settings.panel.previewCountdown",
+                        "value":  "剩余 {0} 秒"
+                    },
+                    {
+                        "key":  "settings.panel.safeMode",
+                        "value":  "已启用安全模式：窗口化 1280×720、低画质"
+                    },
+                    {
+                        "key":  "settings.display.resolution.label",
+                        "value":  "分辨率"
+                    },
+                    {
+                        "key":  "settings.display.resolution.tooltip",
+                        "value":  "从平台支持的分辨率中循环选择"
+                    },
+                    {
+                        "key":  "settings.display.resolution.auto",
+                        "value":  "自动"
+                    },
+                    {
+                        "key":  "settings.audio.ui.label",
+                        "value":  "界面音效"
+                    },
+                    {
+                        "key":  "settings.audio.voice.label",
+                        "value":  "语音"
+                    },
+                    {
+                        "key":  "settings.audio.muteWhenUnfocused.label",
+                        "value":  "失焦时静音"
+                    },
+                    {
+                        "key":  "settings.graphics.fieldOfView.label",
+                        "value":  "相机视野"
+                    },
+                    {
+                        "key":  "settings.display.monitor.label",
+                        "value":  "显示器"
+                    },
+                    {
+                        "key":  "settings.display.monitor.tooltip",
+                        "value":  "选择输出显示器"
+                    },
+                    {
+                        "key":  "settings.audio.preview.label",
+                        "value":  "试听音效"
+                    },
+                    {
+                        "key":  "settings.audio.preview.tooltip",
+                        "value":  "按当前主音量/音效音量播放短音"
+                    },
+                    {
+                        "key":  "settings.description.select",
+                        "value":  "点击选择"
+                    }
+                ]
+}

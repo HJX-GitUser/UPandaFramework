@@ -5,6 +5,8 @@
         "UPandaGF.Contracts",
         "UPandaGF.Core",
         "UPandaGF.Assets",
+        "UPandaGF.Localization",
+        "UPandaGF.Audio",
         "UPandaGF.Diagnostics",
         "Unity.TextMeshPro"
     ],

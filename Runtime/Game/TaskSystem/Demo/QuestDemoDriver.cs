@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UPandaGF;
 using UnityEngine;
 
 namespace UPandaGF.Gameplay.Tasks
@@ -42,6 +43,12 @@ namespace UPandaGF.Gameplay.Tasks
         public int fontSize = 18;
 
         private bool acceptingQuests;
+        private IInputBackend inputBackend;
+
+        private void Awake()
+        {
+            inputBackend = InputBackendFactory.Create();
+        }
 
         private void Start()
         {
@@ -114,27 +121,27 @@ namespace UPandaGF.Gameplay.Tasks
         private void Update()
         {
             // ---- 四类玩法事件，全部都只有一行 ----
-            if (Input.GetKeyDown(KeyCode.Alpha1)) GameplayEventBus.RaiseEnemyKilled(wolfId, 1);
-            if (Input.GetKeyDown(KeyCode.Alpha2)) GameplayEventBus.RaiseItemCollected(herbId, 1);
-            if (Input.GetKeyDown(KeyCode.Alpha3)) GameplayEventBus.RaiseLocationReached(locationId);
-            if (Input.GetKeyDown(KeyCode.Alpha4)) GameplayEventBus.RaiseNpcTalked(npcId);
+            if (inputBackend.Down(KeyCode.Alpha1)) GameplayEventBus.RaiseEnemyKilled(wolfId, 1);
+            if (inputBackend.Down(KeyCode.Alpha2)) GameplayEventBus.RaiseItemCollected(herbId, 1);
+            if (inputBackend.Down(KeyCode.Alpha3)) GameplayEventBus.RaiseLocationReached(locationId);
+            if (inputBackend.Down(KeyCode.Alpha4)) GameplayEventBus.RaiseNpcTalked(npcId);
 
             // ---- 批量击杀，快速把"击杀 5 只野狼"推满 ----
-            if (Input.GetKeyDown(KeyCode.K)) GameplayEventBus.RaiseEnemyKilled(wolfId, 5);
+            if (inputBackend.Down(KeyCode.K)) GameplayEventBus.RaiseEnemyKilled(wolfId, 5);
 
             // ---- 接受第一个可接受的任务 ----
-            if (Input.GetKeyDown(KeyCode.A)) AcceptFirstAvailableQuest();
+            if (inputBackend.Down(KeyCode.A)) AcceptFirstAvailableQuest();
 
             // ---- 提交第一个可提交的任务 ----
-            if (Input.GetKeyDown(KeyCode.N)) TurnInFirstCompletedQuest();
+            if (inputBackend.Down(KeyCode.N)) TurnInFirstCompletedQuest();
 
             QuestManager manager = this.manager;
             if (manager == null) return;
 
             // ---- 存档 / 读档 / 重置 ----
-            if (Input.GetKeyDown(KeyCode.S)) manager.SaveToSlot();
-            if (Input.GetKeyDown(KeyCode.L)) manager.LoadFromSlot();
-            if (Input.GetKeyDown(KeyCode.R)) manager.ResetAllProgress();
+            if (inputBackend.Down(KeyCode.S)) manager.SaveToSlot();
+            if (inputBackend.Down(KeyCode.L)) manager.LoadFromSlot();
+            if (inputBackend.Down(KeyCode.R)) manager.ResetAllProgress();
         }
 
         private void TurnInFirstCompletedQuest()

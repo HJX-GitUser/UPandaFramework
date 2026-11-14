@@ -70,6 +70,7 @@ namespace UPandaGF
         private int frameCount;
         private string sceneName = string.Empty;
         private DateTime startedAt;
+        private IInputBackend inputBackend;
 
         /// <summary>最多保留条数。</summary>
         public int MaxStoredEntries
@@ -146,6 +147,7 @@ namespace UPandaGF
         {
             EnsureStore();
             LoadPreferences();
+            inputBackend = InputBackendFactory.Create();
             startedAt = DateTime.Now;
             sceneName = SceneManager.GetActiveScene().name;
         }
@@ -267,7 +269,7 @@ namespace UPandaGF
             if (!initialized) return;
             UpdateMetrics();
             if (!pauseCapture) ProcessPending(maxDrainPerFrame);
-            if (toggleKey != KeyCode.None && Input.GetKeyDown(toggleKey)) Toggle();
+            if (toggleKey != KeyCode.None && inputBackend.Down(toggleKey)) Toggle();
         }
 
         private void UpdateMetrics()

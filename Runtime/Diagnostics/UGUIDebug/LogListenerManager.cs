@@ -66,6 +66,11 @@ public class LogListenerManager : MonoBehaviour
     private bool needsUpdate = false;
     private System.DateTime lastLogTime = System.DateTime.Now;
 
+#if !ENABLE_LEGACY_INPUT_MANAGER
+    /// <summary>新 Input System 工程下日志面板快捷键已禁用，只提示一次的标记。</summary>
+    private static bool warnedLegacyShortcutDisabled;
+#endif
+
     // 日志类型过滤器
     private bool showInfo = true;
     private bool showWarning = true;
@@ -270,6 +275,7 @@ public class LogListenerManager : MonoBehaviour
     private void Update()
     {
         // 快捷键监听
+#if ENABLE_LEGACY_INPUT_MANAGER
         bool togglePressed = false;
 
         if (ctrlRequired)
@@ -286,6 +292,16 @@ public class LogListenerManager : MonoBehaviour
         {
             TogglePanel();
         }
+
+#else
+        // 新 Input System-only 工程访问 UnityEngine.Input 会抛 InvalidOperationException；
+        // 本程序集（UPandaGF.Diagnostics）不能引用 Core，故禁用快捷键并只告警一次。
+        if (!warnedLegacyShortcutDisabled)
+        {
+            warnedLegacyShortcutDisabled = true;
+            Debug.LogWarning("[LogListenerManager] 当前工程未启用旧版 Input Manager（ENABLE_LEGACY_INPUT_MANAGER 未定义），日志面板快捷键已禁用；请使用面板按钮或 TogglePanel() API。");
+        }
+#endif
 
         // 定期更新UI
         if (Time.time - lastUpdateTime > updateInterval && needsUpdate)

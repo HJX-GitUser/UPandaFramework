@@ -9,6 +9,8 @@
 | 计时、配置、流程、启动指标和场景归属 | [FoundationServiceTests](EditMode/FoundationServiceTests.cs) · [场景分类](EditMode/ScenePathClassificationTests.cs) · [场景提供者](EditMode/SceneServiceAssetProviderTests.cs) |
 | 数据管线与编辑器护栏 | [Excel 二进制 v2](EditMode/ExcelBinaryV2Tests.cs) · [Excel 生成端链路](EditMode/ExcelGenerationPipelineTests.cs) · [编辑器护栏/AB 构建校验](EditMode/EditorGuardTests.cs) · [PlayerPrefs](EditMode/ExcelAndPlayerPrefsTests.cs) |
 | 启动、回滚、状态机、槽位存档恢复和根装配 | [P0RegressionTests](PlayMode/P0RegressionTests.cs) · [P1RegressionTests](PlayMode/P1RegressionTests.cs) |
+| 输入映射/契约/配置校验 | [InputMappingTests](EditMode/Input/InputMappingTests.cs) · [InputServiceContractTests](EditMode/Input/InputServiceContractTests.cs) · [InputRebindTests](EditMode/Input/InputRebindTests.cs) · [InputSystemIntegrationTests](EditMode/Input/InputSystemIntegrationTests.cs) |
+| 输入改键与 UI 焦点接线 | [InputRebindTests](EditMode/Input/InputRebindTests.cs) · [UIFocusInputBinderTests](PlayMode/UIFocusInputBinderTests.cs) |
 | 资源、请求协调、事件与销毁 | [FrameworkRegressionTests](PlayMode/FrameworkRegressionTests.cs) · [LifecycleRegressionTests](PlayMode/LifecycleRegressionTests.cs) · [CoordinationRegressionTests](PlayMode/CoordinationRegressionTests.cs) |
 | UI 面板生命周期与打开竞态 | [UIPhase1RegressionTests](PlayMode/UIPhase1RegressionTests.cs) |
 | UI 五层栈、模态、返回与 Toast | [UIPhase2LayerStackTests](PlayMode/UIPhase2LayerStackTests.cs) |
@@ -18,6 +20,9 @@
 | UI 行池/设置描述表/焦点导航/UI 缩放 | [UIListAndFocusTests](PlayMode/UIListAndFocusTests.cs) |
 | UI 面板校验器/脚本生成器 | [UIPanelToolingTests](EditMode/UIPanelToolingTests.cs) |
 | UI 相机渲染管线适配 | [UICameraPipelineTests](PlayMode/UICameraPipelineTests.cs) |
+| 系统设置服务/面板/迁移/安全模式 | [SettingsServiceTests](EditMode/Settings/SettingsServiceTests.cs) · [SettingsPresenterTests](EditMode/Settings/SettingsPresenterTests.cs) · [SettingsMigrationAndSafeModeTests](EditMode/Settings/SettingsMigrationAndSafeModeTests.cs) · [SettingsPanelSmokeTests](PlayMode/SettingsPanelSmokeTests.cs) |
+| 本地化服务/CSV/场景刷新 | [LocalizationServiceTests](EditMode/Localization/LocalizationServiceTests.cs) · [LocalizationCsvTests](EditMode/Localization/LocalizationCsvTests.cs) · [LocalizationPlayModeTests](PlayMode/LocalizationPlayModeTests.cs) |
+| 帧率统计 | [FrameRateCounterTests](EditMode/FrameRateCounterTests.cs) |
 | 描边代理渲染、网格共享与层级接管 | [OutlinePlayModeTests](PlayMode/OutlinePlayModeTests.cs) |
 | 平台、热更、序列化、回放与日志 | [PlatformCompatibilityTests](PlayMode/PlatformCompatibilityTests.cs) · [HotUpdateRegressionTests](PlayMode/HotUpdateRegressionTests.cs) · [SerializationMigrationTests](PlayMode/SerializationMigrationTests.cs) · [ReplayPerformanceTests](PlayMode/ReplayPerformanceTests.cs) · [LogConsoleRegressionTests](PlayMode/LogConsoleRegressionTests.cs) · [日志图标绑定](EditMode/LogConsoleIconTests.cs) |
 

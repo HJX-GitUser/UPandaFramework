@@ -146,7 +146,7 @@ services.Inject(gameObject); // 同时注入两类消费者
 
 ### Q3.1 `IGameServices` 提供哪些能力？
 
-`Assets`、`Audio`、`Saves`、`Scenes`、`Input`、`Pause`、`Clock`、`Timer`、`Config`、`Flow`、`AppLifecycle`、`Http`、`Pools`、`Log`。业务依赖接口，不依赖具体管理器；诊断/高级 API 再使用具体类型。 [服务契约](../Runtime/Contracts/Services.cs)
+`Assets`、`Audio`、`Saves`、`Scenes`、`Input`、`Pause`、`Clock`、`Timer`、`Config`、`Flow`、`AppLifecycle`、`Http`、`Pools`、`Log`、`Settings`、`Localization`。业务依赖接口，不依赖具体管理器；诊断/高级 API 再使用具体类型。 [服务契约](../Runtime/Contracts/Services.cs)
 
 ### Q3.2 组件如何拿到服务？
 
@@ -386,10 +386,11 @@ TMP 使用 `TMPUIBinder`。绑定只订阅变化，不轮询；Toggle/Slider/Dro
 
 ### Q5.16 安全区、缩放和手柄焦点呢？
 
-- `UISafeArea` 已提供安全区适配。
-- CanvasScaler 的参考分辨率/匹配模式当前由项目 Canvas 配置；设置面板若要动态缩放，需要在宿主侧统一 CanvasScaler。
-- `UIFocusNavigator` 尚未内置；手柄焦点/返回/滑块微调需要宿主接入 EventSystem 和 Input System。
-- 这两项是 Phase 4 剩余工作，不要假定框架已自动处理。
+- `UISafeArea` 已提供安全区适配；设置面板在移动端会自动挂载。
+- `accessibility.uiScale` 已由 `UIManager.Configure(IGameServices)` 直接消费，启动和设置变化时自动调用 `SetUiScale`；CanvasScaler 仍由宿主 Canvas 配置。
+- `UIFocusNavigator` + `UIFocusInputBinder` 已提供；设置面板会自动挂载并把方向/Confirm/Cancel 映射到焦点导航，不需要宿主再写绑定组件。
+- `UIManager` 只暴露 `HandleBack()`，不会自动轮询 `Cancel`；返回键由宿主在合适的输入层调用，避免和 `PauseMenuController` 抢同一个动作。
+- 这些是通用 UI 接缝：业务面板可复用 `UIFocusInputBinder`，但不要假定所有面板都会自动接管输入。
 
 ### Q5.17 热更新面板怎么接？
 
@@ -423,7 +424,14 @@ UIDiagnosticsSnapshot ui2 = all.UI;
 
 ### Q5.21 框架有内置设置面板吗？
 
-没有完整的 `ISettingsService`/设置面板实现。`系统设置功能设计.md` 是独立设计；UI 层只提供面板、层栈、暂停/输入、Toast、数据绑定和安全区等接缝。设置存储/Applier/预览回滚需要宿主或后续设置模块实现。
+有。`ISettingsService` + `SettingsPresenter` + `SettingsPanel` 已随框架提供：
+
+- 数据：`Runtime/Contracts/Settings/SettingsData.cs` / `SettingsEnums.cs`；
+- 服务：`Runtime/Core/Settings/SettingsService.cs`；
+- 面板：`Runtime/UI/UIMgr/SettingsPanel.cs`，运行时构建布局；
+- 打开：`services.UI.ShowPanelAsync<SettingsPanel>()`。
+
+支持音频/画面/显示/输入/语言/辅助功能/游戏/隐私分区，包含预览确认、15 秒回滚、恢复默认、键位改绑和多语言下拉。启动步骤为 `Services → Settings → Localization → UI`。详细扩展方式见 [设置系统](../Runtime/Core/Settings/README.md)。
 
 ---
 
@@ -465,19 +473,35 @@ services.Audio.PlayUniqueSound("Audio/Confirm");
 ### Q6.7 设置、配置、存档有什么区别？
 
 - **开发配置**：`UPGameRootConfig`/`IConfigService`，发布配置，玩家不可见。
-- **玩家设置**：应独立存储、跨存档保留；当前框架没有完整设置服务。
+- **玩家设置**：`ISettingsService`，独立存储 `persistentDataPath/Settings/settings.json`，跨存档保留；包含 `schemaVersion` 迁移、未知字段保留、安全模式。
 - **游戏存档**：按槽位保存进度，删除存档不应删除玩家设置。
 
 ### Q6.8 输入上下文怎么用？
 
 ```csharp
-using (services.Input.PushContext("UI"))
+using (services.Input.PushContext(InputContexts.UI))
 {
     // 只处理 UI 上下文，Gameplay 被阻断
 }
 ```
 
-上下文用 `IDisposable` 成对释放；暂停也会屏蔽 Gameplay 动作。 [输入与暂停](../Runtime/Core/Services/InputAndTime.cs)
+上下文用 `IDisposable` 成对释放；`InputContexts` 提供 `Gameplay/UI/Rebind/Cutscene` 常量；暂停也会屏蔽 `Gameplay` 动作。0.8.2 起可以直接改键/枚举绑定：
+
+```csharp
+services.Input.Bind(new InputBinding { action = "Jump", context = InputContexts.Gameplay, positive = KeyCode.Space });
+foreach (var binding in services.Input.GetBindings()) { /* 设置面板展示 */ }
+services.Input.Unbind("Jump", InputContexts.Gameplay);
+```
+
+注意 `Bind` 是拷贝语义；轴类动作（`MoveVertical/MoveHorizontal`）的轴名仍不可运行时重绑；手柄按键的重绑受 `KeyCode.JoystickButtonN` 模型限制。 [输入系统](../Runtime/Core/Input/README.md)
+
+### Q6.8b 新输入系统支持哪些键/手柄？
+
+- 轴：`Vertical`（W/S + 方向键 + 左摇杆 Y）、`Horizontal`（A/D + 方向键 + 左摇杆 X）、`Mouse X/Y`、`Mouse ScrollWheel`。
+- 键盘：字母/数字/小键盘/标点/F1–F12/方向键/修饰键/Insert/CapsLock/NumLock/ScrollLock/Print/Pause/Menu 等。
+- 鼠标：左/右/中键 + `Mouse3`（后退）/`Mouse4`（前进）；`Mouse5/6` 不支持并告警。
+- 手柄：`KeyCode.JoystickButton0–15` 映射到 A/B/X/Y、LB/RB、Back/Start、L3/R3、Dpad、LT/RT（框架约定顺序）；其他玩家槽位 `JoystickButtonN` 暂不支持。
+- 未映射的轴/按键只会警告一次并返回 0/false。完整的支持矩阵与已知限制见 `Documentation~/RELEASE-NOTES-0.8.2.md`。
 
 ### Q6.9 暂停为什么会泄漏？
 
@@ -496,6 +520,18 @@ using (services.Input.PushContext("UI"))
 ### Q6.12 场景作用域和资源租约是什么关系？
 
 作用域可以 `Own` 资源租约、暂停凭据、订阅凭据；Dispose 时先 Cancel 再逆序释放。业务自己 `AcquireAsync` 的租约要自己 Dispose，或通过 `AcquireInScopeAsync` 挂到作用域。 [作用域](../Runtime/Core/Services/LifetimeScope.cs)
+
+### Q6.13 出包后帧率设置无效？
+
+优先检查 VSync：
+
+- Unity 在 `QualitySettings.vSyncCount > 0` 时会忽略 `Application.targetFrameRate`；
+- 默认 `display.vsync = true`，只改帧率上限不会生效；
+- 当前设置服务在改帧率时会自动关闭 VSync，并在冲突时输出警告；
+- `Application.targetFrameRate = -1` 是平台默认帧率，不保证真正无上限；
+- Android 还需检查 Optimized Frame Pacing / Adaptive Performance，实际 FPS 通常只能取刷新率的整数分频。
+
+如果项目在运行时调用 `QualitySettings.SetQualityLevel`，之后要重新应用一次 `FrameRateSettingsApplier`。 [设置系统](../Runtime/Core/Settings/README.md)
 
 ---
 

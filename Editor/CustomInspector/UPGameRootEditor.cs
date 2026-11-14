@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -81,6 +81,9 @@ namespace UPandaGF.GFEditor
                         MessageType.Info);
                     break;
             }
+
+            EditorGUILayout.Space();
+            ShowArg("config.localization", "本地多语言（内置/项目 catalog）", true);
 
             EditorGUILayout.Space(10);
             SyncLogConsole();

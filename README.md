@@ -1,6 +1,6 @@
 # UPandaFramework
 
-Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行时提供场景、资源、热更、UI、音频、存档、输入、HTTP、对象池、日志和帧调度，`Runtime/Game` 提供可选玩法组件，`Editor` 提供打包与内容工具。框架作为源码目录放在宿主项目的 `Assets/upanda-framework`，导入时应一并保留 `.meta`，以便 Unity 恢复脚本、场景、预制体和材质引用。
+Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行时提供场景、资源、热更、UI、音频、存档、输入、HTTP、对象池、日志、系统设置、本地多语言和帧调度，`Runtime/Game` 提供可选玩法组件，`Editor` 提供打包与内容工具。框架作为源码目录放在宿主项目的 `Assets/upanda-framework`，导入时应一并保留 `.meta`，以便 Unity 恢复脚本、场景、预制体和材质引用。
 
 安装方式二选一：
 
@@ -18,7 +18,7 @@ Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行�
 > 优化计划与阶段性验证记录归档在框架外（维护者本地 `优化记录`），不随包发布。
 
 ## 集成到 Unity 项目
-1. 导入框架目录及 `.meta`，在 Package Manager 确认 uGUI、TextMeshPro 与 Input System 可用。运行时输入后端按工程的 Active Input Handling 自动选择：启用新 Input System 时使用 `InputSystemBackend`，否则回退旧 Input Manager。使用 HybridCLR 程序集加载、URP 效果或运行测试时，再核对对应宿主依赖。
+1. 导入框架目录及 `.meta`，在 Package Manager 确认 uGUI、TextMeshPro 与 Input System 可用。运行时输入后端按工程的 Active Input Handling 自动选择：启用新 Input System 时使用 `InputSystemBackend`，否则回退旧 Input Manager。0.8.2 起新后端支持方向键、小键盘/标点/系统键、鼠标侧键（Mouse3/4）与 `JoystickButton0–15` 手柄按钮；轴名仍只支持 `Vertical/Horizontal/Mouse X/Mouse Y/Mouse ScrollWheel`，自定义轴请迁移 `InputAction`。设置系统改键使用 `IInputService.Bind/Unbind/GetBindings` 与 `InputContexts` 常量。使用 HybridCLR 程序集加载、URP 效果或运行测试时，再核对对应宿主依赖。
 2. 在启动场景通过 `UPandaGF → 创建UPGameRoot` 创建根节点。菜单还会创建可选的 `GameLaunchExample`。每个应用只保留一条启动流程，将启动场景加入 Build Settings。
 3. 在 Inspector 选择资源模式。编辑器直读使用 AssetDatabase；Player 可直接使用 `Resources` 目录，或使用 AssetBundle（先按目标平台打包并生成 `assetData.assetref`）。保存场景会把根配置导出到 `Assets/StreamingAssets/Data/GameRootConfig.json`。
 4. 在示例上设置 `firstScene`，或在自己的入口等待根就绪，再调用 `root.Services.Scenes.LoadAsync(...)`。AB 场景使用清单登记的完整路径。接入热更前，先验证随包资源能启动。
@@ -48,11 +48,12 @@ public static class AppEntry
 | --- | --- |
 | `UPandaGF.Contracts` | 服务接口、公共枚举、资源租约。 |
 | `UPandaGF.Diagnostics` | 日志原语（PLogger / LogService / LogConfig）与 uGUI 日志面板；`autoReferenced = true`，默认自动引用。 |
-| `UPandaGF.Core` | 启动生命周期、时间/输入/计时器/配置/流程/场景/作用域、事件、单例、PublicMono、HTTP。 |
+| `UPandaGF.Core` | 启动生命周期、时间/输入/计时器/配置/流程/场景/作用域、系统设置、事件、单例、PublicMono、HTTP。 |
 | `UPandaGF.Assets` | Resources / AssetBundle / StreamingAssets、下载、热更、对象池、清单序列化。 |
-| `UPandaGF.UI` | UIManager、面板基类、UI 辅助组件。 |
-| `UPandaGF.Audio` | AudioMgr。 |
+| `UPandaGF.UI` | UIManager、面板基类、UI 辅助组件、内置设置面板与本地化文本组件。 |
+| `UPandaGF.Audio` | AudioMgr、可选的 AudioMixer 设置绑定与试听。 |
 | `UPandaGF.Save` | 槽位存档、PlayerPrefs、Excel 表读取。 |
+| `UPandaGF.Localization` | 本地多语言：内置/项目 catalog、JSON 表、系统语言与回退、语言切换事件。 |
 | `UPandaGF.Gameplay` / `.Tasks` / `.InteractiveScoring` / `.Replay` | 可选玩法模块；`autoReferenced = false`。 |
 | `UPandaGF.Runtime` | 组合根（UPGameRoot / GameServices / 日志控制台），引用全部运行时模块。 |
 | `UPandaGF.Visuals` | Shader 目录边界，具体效果仍受渲染管线和材质配置约束。 |
@@ -67,6 +68,9 @@ public static class AppEntry
 | 模块 | 文档 |
 | --- | --- |
 | 启动和应用服务 | [GameRoot](Runtime/Composition/GameRoot/README.md) · [Contracts](Runtime/Contracts/README.md) · [服务与场景作用域](Runtime/Core/Services/README.md) |
+| 输入与暂停 | [输入系统](Runtime/Core/Input/README.md) · [暂停/时钟/计时](Runtime/Core/Services/README.md) |
+| 系统设置 | [设置服务与扩展](Runtime/Core/Settings/README.md) · [设置面板](Runtime/UI/UIMgr/SettingsPanel.cs) · [设置契约](Runtime/Contracts/Settings/ISettingsService.cs) |
+| 本地多语言 | [本地化模块](Runtime/Localization/README.md) · [本地化契约](Runtime/Contracts/Localization/ILocalizationService.cs) |
 | 资源与内容更新 | [资源与平台存储](Runtime/Assets/AssetsMgr/README.md) · [AB 加载](Runtime/Assets/AssetsMgr/AssetBundleMgr/README.md) · [资源入口与场景](Runtime/Assets/SourcesLoadMgr/README.md) · [启动热更](Runtime/Assets/HotUpdate/README.md) |
 | HTTP 与文件下载 | [HTTPTool](Runtime/Core/HTTPTool/README.md) · [Downloader](Runtime/Assets/DownloadMgr/README.md) |
 | UI、音频与复用 | [uGUI](Runtime/UI/UIMgr/README.md) · [音频](Runtime/Audio/AudioMgr/README.md) · [对象池](Runtime/Assets/ObjPool/README.md) |

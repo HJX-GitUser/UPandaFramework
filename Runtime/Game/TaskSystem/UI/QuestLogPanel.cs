@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using UPandaGF;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -57,6 +58,7 @@ namespace UPandaGF.Gameplay.Tasks
         private QuestInstance selected;
         private CanvasGroup canvasGroup;
         private bool isVisible;
+        private IInputBackend inputBackend;
 
         public bool IsVisible { get { return isVisible; } }
 
@@ -64,6 +66,7 @@ namespace UPandaGF.Gameplay.Tasks
 
         private void Awake()
         {
+            inputBackend = InputBackendFactory.Create();
             ResolveReferences();
             EnsureButtons();
             QuestUiFactory.EnsureReadableFonts(gameObject);
@@ -100,8 +103,8 @@ namespace UPandaGF.Gameplay.Tasks
         private void Update()
         {
             // 仅快捷键检测；任务状态刷新全部走事件
-            if (toggleKey != KeyCode.None && Input.GetKeyDown(toggleKey)) Toggle();
-            if (turnInKey != KeyCode.None && Input.GetKeyDown(turnInKey)) HandleTurnInClicked();
+            if (toggleKey != KeyCode.None && inputBackend.Down(toggleKey)) Toggle();
+            if (turnInKey != KeyCode.None && inputBackend.Down(turnInKey)) HandleTurnInClicked();
         }
 
         private void ResolveReferences()

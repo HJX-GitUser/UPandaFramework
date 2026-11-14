@@ -1,0 +1,16 @@
+{
+    "name": "UPandaGF.Samples.Settings.Editor",
+    "references": [
+        "UPandaGF.Samples.Settings",
+        "UPandaGF.Editor",
+        "UPandaGF.Runtime",
+        "UPandaGF.Contracts",
+        "UPandaGF.Core",
+        "UPandaGF.Assets",
+        "UPandaGF.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": false
+}

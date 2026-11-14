@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UPandaGF;
 
 namespace UPandaGF.Gameplay
@@ -31,7 +31,7 @@ public class VehicleInput : MonoBehaviour, IGameServicesConsumer
     private IInputService input;
     private InputService standalone;
     public void Configure(IGameServices services) { standalone?.Dispose(); standalone = null; input = services.Input; }
-    private void Awake() { if (input == null) { standalone = new InputService(new UnityLegacyInputBackend(), null); input = standalone; } }
+    private void Awake() { if (input == null) { standalone = new InputService(InputBackendFactory.Create(), null); input = standalone; } }
     private void OnDestroy() { standalone?.Dispose(); }
     void Update()
     {

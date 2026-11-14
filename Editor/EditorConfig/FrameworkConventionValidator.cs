@@ -22,8 +22,8 @@ namespace UPandaGF.GFEditor
         }
         private static readonly Rule[] Rules =
         {
-            new Rule { Id = "NO_DIRECT_INPUT", Pattern = new Regex(@"\bInput\s*\.\s*(Get|mouse|touch|anyKey)", RegexOptions.Compiled),
-                Message = "请使用 IInputService，不要在业务里直接读 UnityEngine.Input。", AllowFiles = new[] { "InputAndTime.cs" } },
+            new Rule { Id = "NO_DIRECT_INPUT", Pattern = new Regex(@"(?<!\.)\bInput\s*\.\s*(Get|mouse|touch|anyKey)", RegexOptions.Compiled),
+                Message = "请使用 IInputService，不要在业务里直接读 UnityEngine.Input。", AllowFiles = new[] { "InputBackend.cs", "LogListenerManager.cs" } },
             new Rule { Id = "NO_RESOURCES_LOAD", Pattern = new Regex(@"\bResources\s*\.\s*Load", RegexOptions.Compiled),
                 Message = "请使用 IAssetService / ResourcesLoader，不要直接 Resources.Load。", AllowFiles = new[] { "ResourcesLoader.cs" } },
             new Rule { Id = "NO_FIND_OBJECT", Pattern = new Regex(@"\bFindObjectOfType\s*\(|\bFindObjectsOfType\s*\(", RegexOptions.Compiled),

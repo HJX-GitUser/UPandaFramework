@@ -17,8 +17,17 @@ namespace UPandaGF.Tests.EditMode
             Assert.IsNotNull(backend);
 #if ENABLE_INPUT_SYSTEM
             Assert.AreEqual("InputSystemBackend", backend.GetType().Name);
+            Assert.IsTrue(InputBackendFactory.UsesInputSystemBackend);
+            Assert.IsTrue(InputBackendFactory.SupportsAxis("Vertical"));
+            Assert.IsFalse(InputBackendFactory.SupportsAxis("CustomAxis"));
+            Assert.IsTrue(InputBackendFactory.SupportsKey(UnityEngine.KeyCode.Alpha1));
+            Assert.IsFalse(InputBackendFactory.SupportsKey(UnityEngine.KeyCode.F13));
 #else
             Assert.AreEqual("UnityLegacyInputBackend", backend.GetType().Name);
+            Assert.IsFalse(InputBackendFactory.UsesInputSystemBackend);
+            // 旧后端把合法性交给引擎/InputManager，编译期一律报告“支持”。
+            Assert.IsTrue(InputBackendFactory.SupportsAxis("CustomAxis"));
+            Assert.IsTrue(InputBackendFactory.SupportsKey(UnityEngine.KeyCode.F13));
 #endif
         }
     }

@@ -33,7 +33,7 @@ public static class FirstScene
 | Configuration | 读取、复制并校验启动配置。 |
 | Logging / Data | 初始化日志和旧二进制数据服务。 |
 | ContentUpdate / Assets | AB 模式准备清单，再初始化主包和资源后端。 |
-| Services / UI | 组装 `IGameServices`，把资源服务接入 UI。 |
+| Services / Settings / Localization / UI | 组装 `IGameServices`（含设置与本地化服务），加载并应用玩家设置（音频/画质/显示/输入），再加载语言表，最后把资源服务接入 UI。 |
 | 外部步骤 | `ConfigureLifecycle` 允许注册 `IStartupModule`，注册完成后与内建步骤一同运行。 |
 | 发布就绪 | 为已加载场景绑定 `IGameServicesConsumer`，广播 `GFLoadedEvent`。后续场景加载时继续扫描场景中的消费者。 |
 

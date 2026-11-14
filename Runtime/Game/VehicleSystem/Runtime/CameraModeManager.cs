@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UPandaGF;
+using UnityEngine;
 
 namespace UPandaGF.Gameplay
 {
@@ -45,6 +46,7 @@ public class CameraModeManager : MonoBehaviour
     private CameraMode mode = CameraMode.ThirdPerson;
     private float orbitYaw;
     private float orbitPitchCurrent;
+    private IInputBackend inputBackend;
 
     // 平滑过渡状态
     private bool transitioning;
@@ -54,6 +56,7 @@ public class CameraModeManager : MonoBehaviour
 
     void Awake()
     {
+        inputBackend = InputBackendFactory.Create();
         // 自动查找相机与输入
         if (cameraTransform == null)
         {
@@ -158,8 +161,8 @@ public class CameraModeManager : MonoBehaviour
     /// <summary>环绕视角的鼠标输入</summary>
     private void UpdateOrbitInput()
     {
-        orbitYaw += Input.GetAxis("Mouse X") * orbitMouseSensitivity;
-        orbitPitchCurrent -= Input.GetAxis("Mouse Y") * orbitMouseSensitivity;
+        orbitYaw += inputBackend.Axis("Mouse X") * orbitMouseSensitivity;
+        orbitPitchCurrent -= inputBackend.Axis("Mouse Y") * orbitMouseSensitivity;
         orbitPitchCurrent = Mathf.Clamp(orbitPitchCurrent, orbitMinPitch, orbitMaxPitch);
     }
 }

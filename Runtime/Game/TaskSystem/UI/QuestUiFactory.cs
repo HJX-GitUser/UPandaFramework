@@ -1,4 +1,4 @@
-﻿﻿using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace UPandaGF.Gameplay.Tasks
@@ -223,16 +223,15 @@ namespace UPandaGF.Gameplay.Tasks
 
         /// <summary>
         /// 保证场景里有 EventSystem（否则按钮点不动）。
-        /// 注意：若工程启用了新版 Input System，请把 StandaloneInputModule 换成 InputSystemUIInputModule。
+        /// 按工程 Active Input Handling 选择输入模块（New-only 使用 InputSystemUIInputModule）。
         /// </summary>
         public static void EnsureEventSystem()
         {
             if (UnityEngine.EventSystems.EventSystem.current != null) return;
             if (UnityEngine.Object.FindObjectOfType<UnityEngine.EventSystems.EventSystem>() != null) return;
 
-            new GameObject("EventSystem",
-                typeof(UnityEngine.EventSystems.EventSystem),
-                typeof(UnityEngine.EventSystems.StandaloneInputModule));
+            var eventSystem = new GameObject("EventSystem", typeof(UnityEngine.EventSystems.EventSystem));
+            UIManager.AddDefaultInputModule(eventSystem);
         }
 
         // ========================= 运行时自动生成的列表行 =========================

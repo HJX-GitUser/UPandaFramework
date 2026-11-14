@@ -9,8 +9,9 @@
 | `Coroutines` | `HowUseMonoMgr`：PublicMono 协程与线程调度 | Core |
 | `StateMachine` | Idle/Move/Walk/Run/Attack 状态机示例 | Gameplay |
 | `Tasks` | 交互任务评分演示场景生成器 + `TaskTriggerExample` | Gameplay.Tasks / InteractiveScoring |
+| `Settings` | 系统设置示例：打开 `SettingsPanel`、消费 UI 缩放/亮度/灵敏度、推荐配置与恢复默认；附场景生成器 | Runtime / UI |
 
-每个示例目录自带 asmdef（`UPandaGF.Samples.*`），导入多个示例不会互相覆盖。示例编辑器工具（`Pooling/Editor`、`Tasks/Editor`）生成的内容写到工程内 `Assets/UPandaFrameworkDemos/`，不会写进只读的包目录。
+每个示例目录自带 asmdef（`UPandaGF.Samples.*`），导入多个示例不会互相覆盖。示例编辑器工具（`Pooling/Editor`、`Tasks/Editor`、`Settings/Editor`）生成的内容写到工程内 `Assets/UPandaFrameworkDemos/`，不会写进只读的包目录。
 
 ## 模块内演示脚本
 

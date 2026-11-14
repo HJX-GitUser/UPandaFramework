@@ -1,0 +1,8 @@
+{
+    "name": "UPandaGF.Samples.Settings",
+    "references": [
+        "UPandaGF.Contracts",
+        "UPandaGF.UI"
+    ],
+    "autoReferenced": false
+}

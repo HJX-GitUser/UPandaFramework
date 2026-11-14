@@ -37,7 +37,7 @@ if (loopSource != null)
 
 循环音效的异步回调可能晚于请求方的生命周期。回调需要判断业务对象是否仍有效；若业务已结束，应立即停止收到的音源。`StopAllSound()` 同时停止独占和叠加音效并取消相关等待，不影响 BGM。叠加音效自然结束后自动回收。独占音效自然结束仍持有租约，直到停止、替换或管理器释放。
 
-按路径加载的音效或 BGM 会在对应音源停止、替换、回收或管理器释放时归还租约，取消后的迟到结果也会归还。业务不要再用底层加载器重复卸载同一份持有。显式 `PauseBKMusic` 会暂停淡变推进；正常淡变使用 unscaled 时间。`GameTimeService` 的全局音频暂停使用 `AudioListener.pause`，该状态与 BGM 自身暂停分开。 [资源持有与取消](AudioMgr.cs) · [全局暂停](../../Core/Services/InputAndTime.cs)
+按路径加载的音效或 BGM 会在对应音源停止、替换、回收或管理器释放时归还租约，取消后的迟到结果也会归还。业务不要再用底层加载器重复卸载同一份持有。显式 `PauseBKMusic` 会暂停淡变推进；正常淡变使用 unscaled 时间。`GameTimeService` 的全局音频暂停使用 `AudioListener.pause`，该状态与 BGM 自身暂停分开。 [资源持有与取消](AudioMgr.cs) · [全局暂停](../../Core/Services/GameTimeService.cs)
 
 ## 关闭和验证
 
