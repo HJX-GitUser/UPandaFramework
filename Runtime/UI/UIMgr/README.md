@@ -102,6 +102,7 @@ public sealed class InventoryLauncher : MonoBehaviour, IUIServiceConsumer, IGame
 - Toggle/Slider/Dropdown 使用 `SetValueWithoutNotify` 防止双向绑定回环；ui 改动会回写 Observable。
 - 本地化：`LocalizedText`（uGUI）/`LocalizedTMPText`（TMP）填 key 即可，组件由 `IGameServicesConsumer` 注入 `ILocalizationService`，语言切换自动刷新；动态代码可用 `LocalizationBinder.Bind(localization, text, key, args)`，返回 `IDisposable` 加入 `BasePanel.OpenEvents`。语言行/设置面板的 key 约定见 [本地化 README](../../Localization/README.md)。
 - 设置面板自带 `UIFocusNavigator`/`UIFocusInputBinder`（手柄/键盘焦点、Cancel 关闭）；`accessibility.uiScale` 由 `UIManager.Configure(IGameServices)` 自动消费，移动端自动挂 `UISafeArea`。
+- `UIManager.AutoCreateEventSystem`（默认 `true`）控制场景没有 EventSystem 时是否自动创建；通过 `UPGameRootConfig.autoCreateEventSystem` 配置。关闭后需在首个 UI 打开前预置 EventSystem 和输入模块，否则点击/焦点导航不可用。
 - 设置面板多选项统一使用下拉；列表在 ScrollRect 外的 `DropdownOverlay` 上生成，避免被 viewport 的 `RectMask2D` 裁剪。`SettingsDropdownCanvasFixer` 把列表 Canvas 的 worldCamera/planeDistance 对齐根 Canvas，避免 Scene 可见但 Game 不可见；Template/Item 使用显式 `anchoredPosition + sizeDelta`，不要用负高度 offset。
 - `UISafeArea` 把 RectTransform 锚定到 `Screen.safeArea`，仅在安全区/分辨率变化时重算。
 

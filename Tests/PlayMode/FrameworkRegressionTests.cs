@@ -101,6 +101,15 @@ public class FrameworkRegressionTests
         Assert.AreSame(b, loader.Load("UI/Canvas", typeof(GameObject)));
         Assert.AreEqual(1, loader.GetAssetsRefCount<GameObject>("UI/Canvas"));
     }
+    [UnityTest] public IEnumerator UIManager_CanDisableEventSystemAutoCreation()
+    {
+        var manager = Component<UIManager>();
+        manager.AutoCreateEventSystem = false;
+        manager.Init();
+        yield return null;
+        Assert.IsNull(manager.GetComponentInChildren<UnityEngine.EventSystems.EventSystem>(true),
+            "关闭自动创建后不应生成 EventSystem 子物体。");
+    }
     [UnityTest] public IEnumerator ConcurrentPanelRequestsShareInstanceAndReleaseReference()
     {
         var loader = Component<ResourcesLoader>();

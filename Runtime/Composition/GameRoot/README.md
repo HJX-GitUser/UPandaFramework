@@ -49,7 +49,7 @@ public static class FirstScene
 | Player | 优先读取 `Assets/StreamingAssets/Data/GameRootConfig.json` 对应的随包文件。文件缺失、读不到或解析失败时，回退到场景序列化配置。读到的配置若在 schema、平台或字段上不合法，校验会终止启动。 |
 | 保存场景与构建前 | 编辑器持久化工具从已打开场景查找根并写入 JSON。多场景编辑时，留意工具取的是找到的首个有效根。 |
 
-`method` 区分编辑器直读与 AB。AB 模式还使用 `bundleTarget`、`LoadAssetPath`、`remoteURL`、AES 与热更预算。Player 仅接受 AB 模式，资源路径、主包与目标平台必须配套。运行中读取 `Config` 会得到防御性副本，适合诊断和低频读取。 [配置校验](../../Assets/UPGameRootConfig.cs) · [配置持久化](../../../Editor/CustomInspector/UPGameRootConfigPersistence.cs)
+`method` 区分编辑器直读与 AB。AB 模式还使用 `bundleTarget`、`LoadAssetPath`、`remoteURL`、AES 与热更预算。Player 仅接受 AB 模式，资源路径、主包与目标平台必须配套。`autoCreateEventSystem` 控制 UIManager 在场景无 EventSystem 时是否自动创建；关闭后需在首个 UI 前预置 EventSystem。运行中读取 `Config` 会得到防御性副本，适合诊断和低频读取。 [配置校验](../../Assets/UPGameRootConfig.cs) · [配置持久化](../../../Editor/CustomInspector/UPGameRootConfigPersistence.cs)
 
 ## 当前边界
 

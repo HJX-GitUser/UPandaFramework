@@ -52,6 +52,9 @@ namespace UPandaGF
         [Tooltip("本地多语言：内置 catalog / 项目覆盖 catalog 路径与加载方式；留空项目路径只用内置 zh-Hans/en")]
         public LocalizationSettings localization = new LocalizationSettings();
 
+        [Tooltip("没有 EventSystem 时是否由 UIManager 自动创建；关闭后请在首个 UI 前手动放置 EventSystem")]
+        public bool autoCreateEventSystem = true;
+
         [Tooltip("启用运行时日志控制台，正式包建议关闭")]
         public bool EnableDebugModel = false;
 

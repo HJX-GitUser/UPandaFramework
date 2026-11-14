@@ -210,6 +210,7 @@ namespace UPandaGF
                     await services.Localization.LoadAsync(ct);
                 });
                 lifecycle.Add("UI", ct => {
+                    _UIManager.AutoCreateEventSystem = runtimeConfig.autoCreateEventSystem;
                     _UIManager.Configure(services);
                     _UIManager.Init();
                     return Task.CompletedTask;

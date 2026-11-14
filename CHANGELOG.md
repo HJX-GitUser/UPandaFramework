@@ -15,6 +15,9 @@
 
 ### Added
 
+- **UI EventSystem 自动创建开关**：新增 `UIManager.AutoCreateEventSystem` 与
+  `UPGameRootConfig.autoCreateEventSystem`（默认 true）。关闭后 UIManager 不再自动生成 EventSystem，
+  缺少时输出一次警告；适合宿主已有统一 EventSystem/输入模块的项目。
 - **设置消费与合规补强**：
   - 新增 `graphics.fieldOfView`，新增 `SettingsCameraBinder`（相机 FOV）与 `SettingsInputProfile`
     （鼠标/手柄灵敏度、死区、反转、震动、瞄准方式），供控制器/相机读取。

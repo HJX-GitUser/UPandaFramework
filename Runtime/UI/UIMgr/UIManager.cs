@@ -145,6 +145,8 @@ namespace UPandaGF
         private bool ownsCanvas;
         private bool ownsCamera;
         private bool warnedInputModule;
+        private bool warnedMissingEventSystem;
+        private bool autoCreateEventSystem = true;
         private float uiScale = 1f;
 
         private IAssetService assetService;
@@ -645,6 +647,16 @@ namespace UPandaGF
             }
         }
 
+        /// <summary>
+        /// 没有 EventSystem 时是否由 UIManager 自动创建，默认 true。
+        /// 关闭后请确保首个 UI 面板打开前场景中已有 EventSystem 和输入模块，否则 UI 点击/导航失效。
+        /// </summary>
+        public bool AutoCreateEventSystem
+        {
+            get { return autoCreateEventSystem; }
+            set { autoCreateEventSystem = value; }
+        }
+
         /// <summary>确保场景中有可用的 EventSystem；默认输入模块按当前 Input Handling 选择。</summary>
         private void EnsureEventSystem()
         {
@@ -657,6 +669,17 @@ namespace UPandaGF
             EventSystem found = FindEventSystem();
             if (found == null)
             {
+                if (!autoCreateEventSystem)
+                {
+                    if (!warnedMissingEventSystem && log != null)
+                    {
+                        warnedMissingEventSystem = true;
+                        log.Warning("[UIManager] 已关闭自动创建 EventSystem，但场景中未找到 EventSystem；UI 点击和焦点导航将不可用。");
+                    }
+                    uiEventSystem = null;
+                    return;
+                }
+
                 GameObject eventObj = new GameObject("EventSystem");
                 Transform parent = transform.parent != null ? transform.parent : transform;
                 eventObj.transform.SetParent(parent, false);

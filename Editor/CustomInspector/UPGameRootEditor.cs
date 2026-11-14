@@ -84,6 +84,7 @@ namespace UPandaGF.GFEditor
 
             EditorGUILayout.Space();
             ShowArg("config.localization", "本地多语言（内置/项目 catalog）", true);
+            ShowArg("config.autoCreateEventSystem", "自动创建 EventSystem（关闭后需场景预置）");
 
             EditorGUILayout.Space(10);
             SyncLogConsole();
