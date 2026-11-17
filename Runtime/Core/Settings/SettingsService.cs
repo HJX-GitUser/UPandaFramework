@@ -291,7 +291,7 @@ namespace UPandaGF
                 PreviewStateChanged?.Invoke(false);
             }
 
-            return SaveAsync(SettingsSaveReason.Explicit, token).ContinueWith(_ => true, TaskContinuationOptions.ExecuteSynchronously);
+            return Task.FromResult(SaveCurrent(SettingsSaveReason.Explicit));
         }
 
         /// <inheritdoc />
@@ -318,6 +318,12 @@ namespace UPandaGF
             if (!loaded || disposed) return Task.CompletedTask;
             if (token.IsCancellationRequested) return Task.FromCanceled(token);
 
+            SaveCurrent(reason);
+            return Task.CompletedTask;
+        }
+
+        private bool SaveCurrent(SettingsSaveReason reason)
+        {
             CancelSaveTimer();
             string error;
             bool success = store.Save(current, out error);
@@ -331,7 +337,7 @@ namespace UPandaGF
                 if (log != null) log.Error("[Settings] 设置保存失败：" + error);
                 SaveFailed?.Invoke(error);
             }
-            return Task.CompletedTask;
+            return success;
         }
 
         /// <inheritdoc />

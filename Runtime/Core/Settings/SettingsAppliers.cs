@@ -141,7 +141,11 @@ namespace UPandaGF
                 QualitySettings.antiAliasing = antiAliasing;
                 QualitySettings.shadows = shadows;
                 QualitySettings.shadowResolution = shadowResolution;
+#if UNITY_2022_2_OR_NEWER
+                QualitySettings.globalTextureMipmapLimit = textureLimit;
+#else
                 QualitySettings.masterTextureLimit = textureLimit;
+#endif
                 float renderScale = Mathf.Clamp(next.graphics.renderScale, 0.5f, 1f);
                 if (boot || previous == null || !Mathf.Approximately(previous.graphics.renderScale, renderScale))
                     ScalableBufferManager.ResizeBuffers(renderScale, renderScale);
@@ -305,7 +309,6 @@ namespace UPandaGF
         {
             if (next == null || Application.isMobilePlatform) return;
             DisplayOptions display = next.display;
-            if (display.width <= 0 || display.height <= 0) return; // 0 = 沿用平台当前值
 
             bool boot = reason == SettingsApplyReason.Boot || previous == null;
             if (!boot
@@ -318,14 +321,19 @@ namespace UPandaGF
 
             TryMoveMonitor(display.monitor, boot, previous, display);
 
+            int targetWidth = display.width > 0 ? display.width : Screen.width;
+            int targetHeight = display.height > 0 ? display.height : Screen.height;
+            if (targetWidth <= 0 || targetHeight <= 0) return;
+
             Resolution target = new Resolution
             {
-                width = display.width,
-                height = display.height,
+                width = targetWidth,
+                height = targetHeight,
                 refreshRate = display.refreshRate
             };
             Resolution resolved;
-            if (DisplayResolutionResolver.TryResolve(display.width, display.height, display.refreshRate,
+            if (display.width > 0 && display.height > 0
+                && DisplayResolutionResolver.TryResolve(display.width, display.height, display.refreshRate,
                     Screen.resolutions, out resolved))
             {
                 target = resolved;

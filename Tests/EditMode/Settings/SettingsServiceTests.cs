@@ -179,6 +179,25 @@ namespace UPandaGF.Tests
         }
 
         [Test]
+        public void Preview_Commit_ReturnsFalseWhenSaveFails()
+        {
+            string blockedPath = Path.Combine(directory, "blocked");
+            Directory.CreateDirectory(blockedPath);
+            var service = new SettingsService(
+                new SettingsStore(blockedPath),
+                DesktopRegistry(),
+                new ISettingsApplier[0],
+                new FakeLog(),
+                new ManualTimer());
+            service.LoadAsync().GetAwaiter().GetResult();
+
+            Assert.IsTrue(service.Set("graphics.antiAliasing", AntiAliasingMode.x2));
+            Assert.IsTrue(service.IsPreviewing);
+            Assert.IsFalse(service.CommitAsync().GetAwaiter().GetResult(),
+                "设置文件保存失败时，CommitAsync 必须返回 false。");
+        }
+
+        [Test]
         public void Preview_Timeout_RollsBack()
         {
             var timer = new ManualTimer();
