@@ -93,7 +93,7 @@ Unity 的 asmdef 引用不要依赖“传递引用”；**直接使用哪个模�
 
 ### Q1.6 框架依赖哪些 Unity 包？
 
-`package.json` 声明 TextMeshPro、Input System 等依赖。若项目是源码拷贝而不是 UPM，需自行确认这些包已安装；UPM 安装会自动解析。
+`package.json` 声明 TextMeshPro、Input System、Cinemachine 等依赖。UPM 安装会自动解析这些包；若项目是源码拷贝而不是 UPM，需自行确认/安装对应包。Cinemachine 当前固定 `2.10.3`，兼容 Unity 2021.3。
 
 ---
 
@@ -591,7 +591,7 @@ Android Tools 对工程路径有 ASCII 限制；工程路径含中文/空格可�
 
 检查：
 - Unity 版本是否满足 2021.3；
-- TextMeshPro/Input System 依赖是否解析；
+- TextMeshPro/Input System/Cinemachine 依赖是否解析；
 - 业务 asmdef 是否引用实际使用的模块；
 - 包内 `.meta` 是否完整（源码拷贝时）。
 

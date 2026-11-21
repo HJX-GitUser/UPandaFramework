@@ -15,6 +15,9 @@
 
 ### Added
 
+- **Cinemachine 依赖**：`package.json` 新增 `com.unity.cinemachine@2.10.3`，UPM 导入时自动安装；
+  源码拷贝需手动安装同版本。框架不强制引用 Cinemachine 程序集；新增可选程序集 `UPandaGF.Cinemachine`
+  与 `SettingsCinemachineBinder`，可把 `graphics.fieldOfView` 写入虚拟相机镜头。
 - **UI EventSystem 自动创建开关**：新增 `UIManager.AutoCreateEventSystem` 与
   `UPGameRootConfig.autoCreateEventSystem`（默认 true）。关闭后 UIManager 不再自动生成 EventSystem，
   缺少时输出一次警告；适合宿主已有统一 EventSystem/输入模块的项目。

@@ -100,7 +100,7 @@ await services.UI.ShowPanelAsync<SettingsPanel>(SettingsCategory.Input); // 指�
 - **安全模式**：`SettingsSafeMode` 独立记录连续启动失败，达到 2 次后强制窗口化 1280×720 + 低画质 + UI 缩放 1；完整启动成功后自动清除。文件在 `persistentDataPath/Settings/safe-mode.json`。
 - **结构迁移**：`ISettingsMigration` + `SettingsMigrationChain` 逐级迁移；旧文件缺少 `schemaVersion` 按 0 处理，未来版本迁移失败时回退默认值且不覆盖原文件。项目可在启动前通过 `SettingsMigrationRegistry.Register(...)` 注入自定义迁移。
 - **未知字段保留**：保存时用 `SettingsJsonMerge` 把已知字段覆盖到原始 JSON 上，保留未来版本/其它模块写入的未知字段（对象递归合并，对象数组按 `key`/`id`/`name` 合并，无 key 数组整体替换；解析失败退回已知 JSON）。
-- **消费入口**：`graphics.fieldOfView` 由 `SettingsCameraBinder` 应用到相机；`SettingsInputProfile` 暴露输入灵敏度/死区/反转/震动/瞄准方式；`audio.ui`、`audio.voice`、`audio.muteWhenUnfocused` 由 `SettingsAudioMixerBinder` 写入 AudioMixer；`graphics.renderScale` 由图形应用器消费；`graphics.brightness` 可由 `SettingsVolumeBrightnessBinder` 反射写入 URP/HDRP `ColorAdjustments.postExposure`。
+- **消费入口**：`graphics.fieldOfView` 由 `SettingsCameraBinder` 应用到相机；使用 Cinemachine 时可挂 `SettingsCinemachineBinder` 写入虚拟相机镜头；`SettingsInputProfile` 暴露输入灵敏度/死区/反转/震动/瞄准方式；`audio.ui`、`audio.voice`、`audio.muteWhenUnfocused` 由 `SettingsAudioMixerBinder` 写入 AudioMixer；`graphics.renderScale` 由图形应用器消费；`graphics.brightness` 可由 `SettingsVolumeBrightnessBinder` 反射写入 URP/HDRP `ColorAdjustments.postExposure`。
 - **显示器**：`display.monitor` 由 `DisplaySettingsApplier` 通过 `Screen.GetDisplayLayout` / `Screen.MoveMainWindowTo` 切换；设置面板显示显示器下拉。
 - **音频试听**：设置面板“试听音效”用 `SettingsAudioPreview` 运行时生成短音，不依赖音频资源。
 - **首启同意**：`SettingsConsent` 扩展提供 `NeedsConsent`/`Accept`/`Decline`，状态落在 `privacy.termsVersion`（0 未处理、-1 拒绝、正数为已同意版本）和 `privacy.consentUtc`；普通设置页不显示这两项。

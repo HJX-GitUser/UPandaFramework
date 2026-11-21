@@ -6,7 +6,8 @@
   "unity": "2021.3",
   "dependencies": {
     "com.unity.inputsystem": "1.11.2",
-    "com.unity.textmeshpro": "3.0.6"
+    "com.unity.textmeshpro": "3.0.6",
+    "com.unity.cinemachine": "2.10.3"
   },
   "samples": [
     {

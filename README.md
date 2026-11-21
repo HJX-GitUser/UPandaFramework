@@ -8,7 +8,7 @@ Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行�
   - Gitee：`https://gitee.com/he-jinxian/upanda-framework.git#master`
   - GitHub：`https://github.com/HJX-GitUser/UPandaFramework.git#main`
 
-  两个地址指向同一份代码，分支名取各自默认分支（Gitee 为 `master`，GitHub 为 `main`），也可把后缀换成具体 tag 固定版本。需要宿主已安装 Git，并确认 TextMeshPro 与 Input System 依赖可解析。
+  两个地址指向同一份代码，分支名取各自默认分支（Gitee 为 `master`，GitHub 为 `main`），也可把后缀换成具体 tag 固定版本。需要宿主已安装 Git，并确认 TextMeshPro、Input System 与 Cinemachine 依赖可解析；UPM 安装时 `com.unity.cinemachine@2.10.3` 会自动安装。
 - **源码拷贝**：把整个 `upanda-framework` 目录（含 `.meta`）复制到 `Assets/upanda-framework`。
 
 要求 **Unity 2021.3 LTS 或更高**；2021.3.45f2c1 与 2022.3.53f1c1 均已编译并跑通 EditMode/PlayMode 回归。
@@ -18,10 +18,12 @@ Unity 客户端基础框架。`UPGameRoot` 负责启动和服务装配，运行�
 > 优化计划与阶段性验证记录归档在框架外（维护者本地 `优化记录`），不随包发布。
 
 ## 集成到 Unity 项目
-1. 导入框架目录及 `.meta`，在 Package Manager 确认 uGUI、TextMeshPro 与 Input System 可用。运行时输入后端按工程的 Active Input Handling 自动选择：启用新 Input System 时使用 `InputSystemBackend`，否则回退旧 Input Manager。0.8.2 起新后端支持方向键、小键盘/标点/系统键、鼠标侧键（Mouse3/4）与 `JoystickButton0–15` 手柄按钮；轴名仍只支持 `Vertical/Horizontal/Mouse X/Mouse Y/Mouse ScrollWheel`，自定义轴请迁移 `InputAction`。设置系统改键使用 `IInputService.Bind/Unbind/GetBindings` 与 `InputContexts` 常量。使用 HybridCLR 程序集加载、URP 效果或运行测试时，再核对对应宿主依赖。
+1. 导入框架目录及 `.meta`，在 Package Manager 确认 uGUI、TextMeshPro、Input System 与 Cinemachine 可用。UPM 安装会自动解析 `com.unity.cinemachine@2.10.3`；源码拷贝不会被 Package Manager 自动安装，需要手动添加同版本 Cinemachine。运行时输入后端按工程的 Active Input Handling 自动选择：启用新 Input System 时使用 `InputSystemBackend`，否则回退旧 Input Manager。0.8.2 起新后端支持方向键、小键盘/标点/系统键、鼠标侧键（Mouse3/4）与 `JoystickButton0–15` 手柄按钮；轴名仍只支持 `Vertical/Horizontal/Mouse X/Mouse Y/Mouse ScrollWheel`，自定义轴请迁移 `InputAction`。设置系统改键使用 `IInputService.Bind/Unbind/GetBindings` 与 `InputContexts` 常量。使用 HybridCLR 程序集加载、URP 效果或运行测试时，再核对对应宿主依赖。
 2. 在启动场景通过 `UPandaGF → 创建UPGameRoot` 创建根节点。菜单还会创建可选的 `GameLaunchExample`。每个应用只保留一条启动流程，将启动场景加入 Build Settings。
 3. 在 Inspector 选择资源模式。编辑器直读使用 AssetDatabase；Player 可直接使用 `Resources` 目录，或使用 AssetBundle（先按目标平台打包并生成 `assetData.assetref`）。保存场景会把根配置导出到 `Assets/StreamingAssets/Data/GameRootConfig.json`。
 4. 在示例上设置 `firstScene`，或在自己的入口等待根就绪，再调用 `root.Services.Scenes.LoadAsync(...)`。AB 场景使用清单登记的完整路径。接入热更前，先验证随包资源能启动。
+
+**Cinemachine**：UPM 安装会随包解析 `com.unity.cinemachine@2.10.3`，框架不强制引用其程序集，可直接使用 `CinemachineBrain` / `CinemachineVirtualCamera`。源码拷贝需在 Package Manager 手动安装同版本。设置系统的 `graphics.fieldOfView` 默认由 `SettingsCameraBinder` 作用于真实 `Camera`；若要驱动虚拟相机，可挂 `SettingsCinemachineBinder`，或在设置变更事件中读取该值并写入 `CinemachineVirtualCamera.m_Lens.FieldOfView`。
 
 [启动与配置](Runtime/Composition/GameRoot/README.md) · [启动示例](Samples~/Startup/GameLaunchExample.cs) · [AssetBundle 打包](Editor/AssetBundleTools/README.md)
 
@@ -55,6 +57,7 @@ public static class AppEntry
 | `UPandaGF.Save` | 槽位存档、PlayerPrefs、Excel 表读取。 |
 | `UPandaGF.Localization` | 本地多语言：内置/项目 catalog、JSON 表、系统语言与回退、语言切换事件。 |
 | `UPandaGF.Gameplay` / `.Tasks` / `.InteractiveScoring` / `.Replay` | 可选玩法模块；`autoReferenced = false`。 |
+| `UPandaGF.Cinemachine` | 可选的 Cinemachine 设置联动（`SettingsCinemachineBinder`）；依赖包内声明的 Cinemachine 2.10.3。 |
 | `UPandaGF.Runtime` | 组合根（UPGameRoot / GameServices / 日志控制台），引用全部运行时模块。 |
 | `UPandaGF.Visuals` | Shader 目录边界，具体效果仍受渲染管线和材质配置约束。 |
 | `UPandaGF.Samples.*` | `Samples~` 内的可选示例（导入后才有 `UPandaGF.Samples.Startup` 等程序集）；模块内演示脚本为 `UPandaGF.Samples.*Demo`，`autoReferenced = false`，不会进入 Player。 |
@@ -83,7 +86,7 @@ public static class AppEntry
 | --- | --- |
 | 目标与流程 | [任务](Runtime/Game/TaskSystem/README.md) · [交互评分](Runtime/Game/InteractiveTaskScoringSystem/ReadMe.md) · [分层状态机](Runtime/Game/StateMachine/README.md) |
 | 模拟与回放 | [场景回放](Runtime/Game/ReplaySystem/README.md) · [机械臂 CCD](Runtime/Game/RobotCCDIK/README.md) · [车辆与相机](Runtime/Game/VehicleSystem/README.md) |
-| 视觉与示例 | [自由相机](Runtime/Game/SimpleCameraControl/README.md) · [描边](Runtime/Game/OutLine/README.md) · [暗角](Runtime/Game/Vignette/README.md) · [Shader 与案例](Runtime/Shader/README.md) · [排序示例](Runtime/Game/Study/README.md) |
+| 视觉与示例 | [自由相机](Runtime/Game/SimpleCameraControl/README.md) · [Cinemachine 设置集成](Runtime/Game/Cinemachine/README.md) · [描边](Runtime/Game/OutLine/README.md) · [暗角](Runtime/Game/Vignette/README.md) · [Shader 与案例](Runtime/Shader/README.md) · [排序示例](Runtime/Game/Study/README.md) |
 | 工具链 | [Editor 工具索引](Editor/README.md) · [AssetBundle 打包与发布](Editor/AssetBundleTools/README.md) · [示例入口](Samples~/README.md) |
 
 ## 构建与发布

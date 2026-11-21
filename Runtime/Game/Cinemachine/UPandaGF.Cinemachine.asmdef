@@ -1,0 +1,25 @@
+{
+    "name": "UPandaGF.Cinemachine",
+    "rootNamespace": "",
+    "references": [
+        "UPandaGF.Contracts",
+        "Cinemachine"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UPANDA_CINEMACHINE"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.cinemachine",
+            "expression": "2.0.0",
+            "define": "UPANDA_CINEMACHINE"
+        }
+    ],
+    "noEngineReferences": false
+}
